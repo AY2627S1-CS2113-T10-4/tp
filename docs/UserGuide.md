@@ -1,42 +1,37 @@
-# User Guide
+# UniEnable User Guide
 
 ## Introduction
 
-{Give a product intro}
+UniEnable is a command-line project for managing dated activities with start/end
+times and demand levels, and looking up hub accessibility information.
+This Week 8 baseline starts, accepts input, and exits with `bye`. Other v1.0
+commands are not implemented yet.
 
 ## Quick Start
 
-{Give steps to get started quickly}
+1. Install Java 25.
+2. Obtain the built `unienable.jar` (developers can run `./gradlew shadowJar`).
+3. In its directory, run `java -jar unienable.jar`.
+4. Enter `bye` to exit. End of input also ends the application cleanly.
 
-1. Ensure that you have Java 25 or above installed.
-1. Down the latest version of `Duke` from [here](http://link.to/duke).
+## Planned v1.0 Command Summary
 
-## Features 
+The authoritative team contract is [V1_SPEC.md](V1_SPEC.md).
 
-{Give detailed description of each feature}
+```text
+help
+add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH]
+list
+list demand
+delete INDEX
+mark INDEX
+unmark INDEX
+facility HUB
+bye
+```
 
-### Adding a todo: `todo`
-Adds a new item to the list of todo items.
-
-Format: `todo n/TODO_NAME d/DEADLINE`
-
-* The `DEADLINE` can be in a natural language format.
-* The `TODO_NAME` cannot contain punctuation.  
-
-Example of usage: 
-
-`todo n/Write the rest of the User Guide d/next week`
-
-`todo n/Refactor the User Guide to remove passive voice d/13/04/2020`
-
-## FAQ
-
-**Q**: How do I transfer my data to another computer? 
-
-**A**: {your answer here}
-
-## Command Summary
-
-{Give a 'cheat sheet' of commands here}
-
-* Add todo `todo n/TODO_NAME d/DEADLINE`
+Command words, prefixes, and supported hub codes are case-insensitive. Names
+preserve capitalization. Parameters may appear in any order. Dates use
+`YYYY-MM-DD`, times use 24-hour `HH:mm`, and indexes are 1-based.
+Demand is `LOW`, `MEDIUM`, or `HIGH` and defaults to `MEDIUM` when omitted.
+Detailed feature instructions will be added alongside the feature implementations.
