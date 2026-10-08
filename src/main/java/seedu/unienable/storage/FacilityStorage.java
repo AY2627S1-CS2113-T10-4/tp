@@ -44,6 +44,7 @@ public class FacilityStorage {
      */
     public LoadResult<Facility> load(Reader source) throws UniEnableException {
         Map<String, FacilityBuilder> facilities = new LinkedHashMap<>();
+        Set<String> ids = new HashSet<>();
         Set<String> names = new HashSet<>();
         List<FeatureLine> featureLines = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
@@ -60,7 +61,7 @@ public class FacilityStorage {
                 try {
                     switch (fields[0]) {
                     case "FACILITY":
-                        addFacility(fields, facilities, names);
+                        addFacility(fields, facilities, ids, names);
                         break;
                     case "FEATURE":
                         featureLines.add(new FeatureLine(lineNumber, fields));
@@ -107,14 +108,16 @@ public class FacilityStorage {
     /**
      * Registers a valid facility only after all uniqueness checks pass.
      */
-    private void addFacility(String[] fields, Map<String, FacilityBuilder> facilities, Set<String> names) {
+    private void addFacility(String[] fields, Map<String, FacilityBuilder> facilities,
+                             Set<String> ids, Set<String> names) {
         if (fields.length != 4) {
             throw new IllegalArgumentException("FACILITY requires exactly 4 fields.");
         }
         if (fields[1].isBlank() || fields[2].isBlank()) {
             throw new IllegalArgumentException("Facility ID and name must not be empty.");
         }
-        if (facilities.containsKey(fields[1])) {
+        String normalizedId = fields[1].toUpperCase(Locale.ROOT);
+        if (ids.contains(normalizedId)) {
             throw new IllegalArgumentException("Duplicate facility ID: " + fields[1]);
         }
         String normalizedName = fields[2].toUpperCase(Locale.ROOT);
@@ -122,6 +125,7 @@ public class FacilityStorage {
             throw new IllegalArgumentException("Duplicate facility name: " + fields[2]);
         }
         facilities.put(fields[1], new FacilityBuilder(fields[1], fields[2], optionalText(fields[3])));
+        ids.add(normalizedId);
         names.add(normalizedName);
     }
 
