@@ -20,13 +20,13 @@ and accessibility-feature searches. Activity commands remain planned in this che
 | Command | Purpose |
 | --- | --- |
 | `facility list` | Display all nine facilities and all their recorded accessibility information |
-| `facility HUB` | Display the details of one facility by hub code or stable ID |
+| `facility LOCATION` | Display the details of one facility by hub code or stable ID |
 | `facility find type/FEATURE [status/YES\|NO\|UNKNOWN]` | Find facilities with a recorded accessibility feature and status |
 | `bye` | Exit the application |
 
 Command words, feature types, status values, hub codes, and facility IDs are
 case-insensitive. Surrounding spaces and repeated whitespace are accepted.
-`HUB` and `FEATURE` are placeholders to replace with actual values.
+`LOCATION` and `FEATURE` are placeholders to replace with actual values.
 
 ## Facility HUB
 
@@ -54,7 +54,7 @@ This command accepts no extra arguments.
 Format:
 
 ```text
-facility HUB
+facility LOCATION
 ```
 
 Examples:

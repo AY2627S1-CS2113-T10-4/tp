@@ -11,7 +11,7 @@ import seedu.unienable.model.enums.AccessibilityStatus;
  * Formatting preserves record order and does not read input or print to the console.
  */
 public final class FacilityOutputFormatter {
-    private static final String LOOKUP_USAGE = "Usage: facility HUB\nExample: facility AS4";
+    private static final String LOOKUP_USAGE = "Usage: facility LOCATION\nExample: facility AS4";
 
     /**
      * Prevents construction of this utility class.

@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +35,8 @@ public class FacilityStorage {
     /**
      * Parses facility data from a caller-owned reader, which is not closed by this method.
      * Features may precede their facility declaration; association occurs after reading all lines.
-     * Record tags and enums are exact matches. Names are preserved but checked for duplicates ignoring case.
+     * Record tags and enums are exact matches. IDs and names retain their spelling and must be unpadded.
+     * Duplicate IDs and names use the same case-insensitive comparison as facility lookup.
      *
      * @param source reader containing facility and feature records
      * @return valid facilities and warnings carrying physical source line numbers
@@ -109,24 +109,41 @@ public class FacilityStorage {
      * Registers a valid facility only after all uniqueness checks pass.
      */
     private void addFacility(String[] fields, Map<String, FacilityBuilder> facilities,
-                             Set<String> ids, Set<String> names) {
+            Set<String> ids, Set<String> names) {
         if (fields.length != 4) {
             throw new IllegalArgumentException("FACILITY requires exactly 4 fields.");
         }
         if (fields[1].isBlank() || fields[2].isBlank()) {
             throw new IllegalArgumentException("Facility ID and name must not be empty.");
         }
-        String normalizedId = fields[1].toUpperCase(Locale.ROOT);
-        if (ids.contains(normalizedId)) {
+        if (!fields[1].equals(fields[1].strip()) || !fields[2].equals(fields[2].strip())) {
+            throw new IllegalArgumentException("Facility ID and name must not have surrounding whitespace.");
+        }
+        if (containsIgnoreCase(ids, fields[1])) {
             throw new IllegalArgumentException("Duplicate facility ID: " + fields[1]);
         }
-        String normalizedName = fields[2].toUpperCase(Locale.ROOT);
-        if (names.contains(normalizedName)) {
+        if (containsIgnoreCase(names, fields[2])) {
             throw new IllegalArgumentException("Duplicate facility name: " + fields[2]);
         }
         facilities.put(fields[1], new FacilityBuilder(fields[1], fields[2], optionalText(fields[3])));
-        ids.add(normalizedId);
-        names.add(normalizedName);
+        ids.add(fields[1]);
+        names.add(fields[2]);
+    }
+
+    /**
+     * Checks identifiers using the same comparison as FacilityManager lookup.
+     *
+     * @param identifiers original identifiers from accepted records.
+     * @param candidate identifier being checked for duplication.
+     * @return whether an accepted identifier matches ignoring case.
+     */
+    private boolean containsIgnoreCase(Set<String> identifiers, String candidate) {
+        for (String identifier : identifiers) {
+            if (identifier.equalsIgnoreCase(candidate)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

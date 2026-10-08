@@ -68,7 +68,7 @@ public class UniEnableFacilityViewTest {
 
         assertEquals(expectedWelcome()
                 + expectedResponse("[WARNING] Expected exactly one facility ID or name.\n"
-                        + "Usage: facility HUB\nExample: facility AS4\n")
+                        + "Usage: facility LOCATION\nExample: facility AS4\n")
                 + expectedResponse("Goodbye from UniEnable!\n"), output);
     }
 
@@ -80,7 +80,7 @@ public class UniEnableFacilityViewTest {
         String output = runWithInput("facility as hello\nfacility AS4\nbye\n");
 
         assertTrue(output.contains("[WARNING] Expected exactly one facility ID or name.\n"
-                + "Usage: facility HUB\nExample: facility AS4"));
+                + "Usage: facility LOCATION\nExample: facility AS4"));
         assertTrue(output.contains("[F04] AS4 - Faculty of Arts and Social Sciences, Block 4"));
         assertTrue(output.endsWith(expectedResponse("Goodbye from UniEnable!\n")));
     }
@@ -95,10 +95,10 @@ public class UniEnableFacilityViewTest {
         String expected = expectedWelcome()
                 + expectedResponse("[WARNING] Unknown facility 'as99'.\n\nSupported facilities:\n"
                         + "AS1, AS2, AS3, AS4, AS5, AS6, AS7, AS8, CLB\n\n"
-                        + "Usage: facility HUB\nExample: facility AS4\n")
+                        + "Usage: facility LOCATION\nExample: facility AS4\n")
                 + expectedResponse("[WARNING] Unknown facility 'hello'.\n\nSupported facilities:\n"
                         + "AS1, AS2, AS3, AS4, AS5, AS6, AS7, AS8, CLB\n\n"
-                        + "Usage: facility HUB\nExample: facility AS4\n")
+                        + "Usage: facility LOCATION\nExample: facility AS4\n")
                 + expectedResponse("[F04] AS4 - Faculty of Arts and Social Sciences, Block 4\n\n"
                         + "Accessibility Features:\n"
                         + "STEP_FREE_ENTRANCE | YES | Ground floor entrance\n"
@@ -120,7 +120,7 @@ public class UniEnableFacilityViewTest {
 
         String expected = expectedWelcome()
                 + expectedResponse("[WARNING] Invalid facility command.\n"
-                        + "Usage: facility HUB\nExample: facility AS4\n")
+                        + "Usage: facility LOCATION\nExample: facility AS4\n")
                 + expectedResponse("[F04] AS4 - Faculty of Arts and Social Sciences, Block 4\n\n"
                         + "Accessibility Features:\n"
                         + "STEP_FREE_ENTRANCE | YES | Ground floor entrance\n"
@@ -141,7 +141,7 @@ public class UniEnableFacilityViewTest {
 
         String expected = expectedWelcome()
                 + expectedResponse("[WARNING] Invalid facility command.\n"
-                        + "Usage: facility HUB\nExample: facility AS4\n")
+                        + "Usage: facility LOCATION\nExample: facility AS4\n")
                 + expectedResponse("Goodbye from UniEnable!\n");
         assertEquals(expected, output);
     }

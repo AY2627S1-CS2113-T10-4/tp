@@ -67,7 +67,7 @@ public class Parser {
     }
 
     /**
-     * Recognizes facility HUB, facility list, and facility find.
+     * Recognizes facility LOCATION, facility list, and facility find.
      *
      * @param words command words, beginning with facility
      * @return the facility command to execute
@@ -76,7 +76,7 @@ public class Parser {
     private Command parseFacility(String[] words) throws ParseException {
         if (words.length >= 2 && "view".equalsIgnoreCase(words[1])) {
             throw new ParseException(WARNING_MESSAGE + " Invalid facility command.\n"
-                    + "Usage: facility HUB\nExample: facility AS4");
+                    + "Usage: facility LOCATION\nExample: facility AS4");
         }
 
         if (words.length >= 2 && "list".equalsIgnoreCase(words[1])) {
@@ -96,7 +96,7 @@ public class Parser {
 
         if (words.length != 2) {
             throw new ParseException(WARNING_MESSAGE + " Expected exactly one facility ID or name.\n"
-                    + "Usage: facility HUB\nExample: facility AS4");
+                    + "Usage: facility LOCATION\nExample: facility AS4");
         }
         if (facilityManager == null) {
             throw new ParseException(WARNING_MESSAGE + " Facility reference data is unavailable.");

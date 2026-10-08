@@ -111,7 +111,7 @@ public class FacilityViewCommandTest {
                 () -> command.execute(new ActivityList(), new Storage()));
 
         assertEquals("[WARNING] Unknown facility 'AS10'.\n\nSupported facilities:\nAS1"
-                + "\n\nUsage: facility HUB\nExample: facility AS4",
+                + "\n\nUsage: facility LOCATION\nExample: facility AS4",
                 exception.getMessage());
     }
 
