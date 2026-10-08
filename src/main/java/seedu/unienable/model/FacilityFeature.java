@@ -1,0 +1,66 @@
+package seedu.unienable.model;
+
+import seedu.unienable.model.enums.AccessibilityStatus;
+
+/**
+ * One immutable accessibility feature recorded at a facility.
+ */
+public final class FacilityFeature {
+    private final Type type;
+    private final AccessibilityStatus status;
+    private final String notes;
+
+    /**
+     * Creates a reference-data object without parsing or normalizing the supplied values.
+     *
+     * @param type feature category
+     * @param status recorded accessibility status; UNKNOWN means unconfirmed
+     * @param notes optional notes, or null
+     */
+    public FacilityFeature(Type type, AccessibilityStatus status, String notes) {
+        this.type = type;
+        this.status = status;
+        this.notes = notes;
+    }
+
+    /**
+     * Returns the type value recorded for this object.
+     *
+     * @return feature category
+     */
+    public Type getType() {
+        return type;
+    }
+
+    /**
+     * Returns the status value recorded for this object.
+     *
+     * @return recorded accessibility status; UNKNOWN means unconfirmed
+     */
+    public AccessibilityStatus getStatus() {
+        return status;
+    }
+
+    /**
+     * Returns the notes value recorded for this object.
+     *
+     * @return optional notes, or null
+     */
+    public String getNotes() {
+        return notes;
+    }
+
+    /**
+     * Supported categories of facility accessibility features.
+     */
+    public enum Type {
+        LIFT,
+        RAMP,
+        SHELTERED_RAMP,
+        ACCESSIBLE_WASHROOM,
+        STEP_FREE_ENTRANCE,
+        REST_POINT,
+        AUTOMATIC_DOOR,
+        OTHER
+    }
+}
