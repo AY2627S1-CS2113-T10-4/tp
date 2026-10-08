@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.unienable.ui.Ui;
+
 import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
 
 /**
@@ -30,7 +32,7 @@ public class UniEnableFacilityViewTest {
         assertTrue(output.contains("LIFT | YES | Lift serves floors 1-6\n"));
         assertTrue(output.contains("ACCESSIBLE_WASHROOM | YES | Floors 3-6\n"));
         assertTrue(output.contains(AccessibilityDisclaimer.TEXT));
-        assertTrue(output.endsWith("Goodbye from UniEnable!\n"));
+        assertTrue(output.endsWith(expectedResponse("Goodbye from UniEnable!\n")));
     }
 
     /**
@@ -54,7 +56,7 @@ public class UniEnableFacilityViewTest {
         assertTrue(output.contains("[WARNING] Unknown facility 'AS10'."));
         assertTrue(output.contains("Supported facilities:\nAS1, AS2, AS3, AS4, AS5, AS6, AS7, AS8, CLB"));
         assertTrue(output.contains("Known facilities in the local reference:"));
-        assertTrue(output.endsWith("Goodbye from UniEnable!\n"));
+        assertTrue(output.endsWith(expectedResponse("Goodbye from UniEnable!\n")));
     }
 
     /**
@@ -64,10 +66,10 @@ public class UniEnableFacilityViewTest {
     public void main_facilityLookupMissingArgument_displaysUsage() {
         String output = runWithInput("facility\nbye\n");
 
-        assertEquals("Welcome to UniEnable! Type bye to exit.\n"
-                + "[WARNING] Expected exactly one facility ID or name.\n"
-                + "Usage: facility HUB\nExample: facility AS4\n"
-                + "Goodbye from UniEnable!\n", output);
+        assertEquals(expectedWelcome()
+                + expectedResponse("[WARNING] Expected exactly one facility ID or name.\n"
+                        + "Usage: facility HUB\nExample: facility AS4\n")
+                + expectedResponse("Goodbye from UniEnable!\n"), output);
     }
 
     /**
@@ -80,7 +82,7 @@ public class UniEnableFacilityViewTest {
         assertTrue(output.contains("[WARNING] Expected exactly one facility ID or name.\n"
                 + "Usage: facility HUB\nExample: facility AS4"));
         assertTrue(output.contains("[F04] AS4 - Faculty of Arts and Social Sciences, Block 4"));
-        assertTrue(output.endsWith("Goodbye from UniEnable!\n"));
+        assertTrue(output.endsWith(expectedResponse("Goodbye from UniEnable!\n")));
     }
 
     /**
@@ -90,20 +92,21 @@ public class UniEnableFacilityViewTest {
     public void main_twoUnknownFacilities_displaysEachWarningOnceAndContinues() {
         String output = runWithInput("facility as99\nfacility hello\nfacility AS4\nbye\n");
 
-        String expected = "Welcome to UniEnable! Type bye to exit.\n"
-                + "[WARNING] Unknown facility 'as99'.\n\nSupported facilities:\n"
-                + "AS1, AS2, AS3, AS4, AS5, AS6, AS7, AS8, CLB\n\n"
-                + "Usage: facility HUB\nExample: facility AS4\n"
-                + "[WARNING] Unknown facility 'hello'.\n\nSupported facilities:\n"
-                + "AS1, AS2, AS3, AS4, AS5, AS6, AS7, AS8, CLB\n\n"
-                + "Usage: facility HUB\nExample: facility AS4\n"
-                + "[F04] AS4 - Faculty of Arts and Social Sciences, Block 4\n\n"
-                + "Accessibility Features:\n"
-                + "STEP_FREE_ENTRANCE | YES | Ground floor entrance\n"
-                + "LIFT | YES | Lift serves floors 1-6\n"
-                + "ACCESSIBLE_WASHROOM | YES | Floors 3-6\n\n"
-                + AccessibilityDisclaimer.TEXT + "\n"
-                + "Goodbye from UniEnable!\n";
+        String expected = expectedWelcome()
+                + expectedResponse("[WARNING] Unknown facility 'as99'.\n\nSupported facilities:\n"
+                        + "AS1, AS2, AS3, AS4, AS5, AS6, AS7, AS8, CLB\n\n"
+                        + "Usage: facility HUB\nExample: facility AS4\n")
+                + expectedResponse("[WARNING] Unknown facility 'hello'.\n\nSupported facilities:\n"
+                        + "AS1, AS2, AS3, AS4, AS5, AS6, AS7, AS8, CLB\n\n"
+                        + "Usage: facility HUB\nExample: facility AS4\n")
+                + expectedResponse("[F04] AS4 - Faculty of Arts and Social Sciences, Block 4\n\n"
+                        + "Accessibility Features:\n"
+                        + "STEP_FREE_ENTRANCE | YES | Ground floor entrance\n"
+                        + "LIFT | YES | Lift serves floors 1-6\n"
+                        + "ACCESSIBLE_WASHROOM | YES | Floors 3-6\n\n"
+                        + AccessibilityDisclaimer.TEXT
+                        + "\n")
+                + expectedResponse("Goodbye from UniEnable!\n");
         assertEquals(expected, output);
     }
 
@@ -115,16 +118,17 @@ public class UniEnableFacilityViewTest {
     public void main_oldFacilityViewSyntax_displaysWarningAndContinues() {
         String output = runWithInput("facility view AS4\nfacility AS4\nbye\n");
 
-        String expected = "Welcome to UniEnable! Type bye to exit.\n"
-                + "[WARNING] Invalid facility command.\n"
-                + "Usage: facility HUB\nExample: facility AS4\n"
-                + "[F04] AS4 - Faculty of Arts and Social Sciences, Block 4\n\n"
-                + "Accessibility Features:\n"
-                + "STEP_FREE_ENTRANCE | YES | Ground floor entrance\n"
-                + "LIFT | YES | Lift serves floors 1-6\n"
-                + "ACCESSIBLE_WASHROOM | YES | Floors 3-6\n\n"
-                + AccessibilityDisclaimer.TEXT + "\n"
-                + "Goodbye from UniEnable!\n";
+        String expected = expectedWelcome()
+                + expectedResponse("[WARNING] Invalid facility command.\n"
+                        + "Usage: facility HUB\nExample: facility AS4\n")
+                + expectedResponse("[F04] AS4 - Faculty of Arts and Social Sciences, Block 4\n\n"
+                        + "Accessibility Features:\n"
+                        + "STEP_FREE_ENTRANCE | YES | Ground floor entrance\n"
+                        + "LIFT | YES | Lift serves floors 1-6\n"
+                        + "ACCESSIBLE_WASHROOM | YES | Floors 3-6\n\n"
+                        + AccessibilityDisclaimer.TEXT
+                        + "\n")
+                + expectedResponse("Goodbye from UniEnable!\n");
         assertEquals(expected, output);
     }
 
@@ -135,11 +139,31 @@ public class UniEnableFacilityViewTest {
     public void main_oldFacilityViewWithoutHub_displaysCurrentUsage() {
         String output = runWithInput("facility view\nbye\n");
 
-        String expected = "Welcome to UniEnable! Type bye to exit.\n"
-                + "[WARNING] Invalid facility command.\n"
-                + "Usage: facility HUB\nExample: facility AS4\n"
-                + "Goodbye from UniEnable!\n";
+        String expected = expectedWelcome()
+                + expectedResponse("[WARNING] Invalid facility command.\n"
+                        + "Usage: facility HUB\nExample: facility AS4\n")
+                + expectedResponse("Goodbye from UniEnable!\n");
         assertEquals(expected, output);
+    }
+
+    /**
+     * Builds the expected welcome response with the logo below the greeting.
+     *
+     * @return complete bordered welcome response
+     */
+    private String expectedWelcome() {
+        return expectedResponse("Welcome to UniEnable! Type bye to exit.\n" + Ui.getLogo() + "\n");
+    }
+
+    /**
+     * Builds the expected console response with the example's 60-underscore borders.
+     *
+     * @param message expected message including its final line break
+     * @return complete bordered response
+     */
+    private String expectedResponse(String message) {
+        String line = "____________________________________________________________";
+        return line + "\n" + message + line + "\n";
     }
 
     /**

@@ -76,7 +76,8 @@ STEP_FREE_ENTRANCE | YES | Ground floor entrance
 LIFT | YES | Lift serves floors 1-6
 ACCESSIBLE_WASHROOM | YES | Floors 3-6
 
-Sample local accessibility reference data. Distances are estimates and may be incomplete. Please verify with current campus information when needed.
+Sample local accessibility reference data. Distances are estimates and may be incomplete.
+Please verify with current campus information when needed.
 ```
 
 Features recorded as NO are displayed as well. Missing optional descriptions or

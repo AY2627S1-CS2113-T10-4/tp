@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.unienable.ui.Ui;
+
 import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
 
 /**
@@ -78,7 +80,7 @@ public class UniEnableFacilityFindTest {
 
         String usage = "Usage: facility find type/FEATURE [status/YES|NO|UNKNOWN]";
         assertTrue(output.indexOf(usage) != output.lastIndexOf(usage));
-        assertTrue(output.endsWith("Goodbye from UniEnable!\n"));
+        assertTrue(output.endsWith(expectedResponse("Goodbye from UniEnable!\n")));
     }
 
     /**
@@ -118,7 +120,7 @@ public class UniEnableFacilityFindTest {
         assertTrue(output.contains("Facilities with REST_POINT (status: YES):\n[F08] AS8"));
         assertTrue(output.contains("Known facilities in the local reference:"));
         assertTrue(output.contains("[F04] AS4 - Faculty of Arts and Social Sciences, Block 4"));
-        assertTrue(output.endsWith("Goodbye from UniEnable!\n"));
+        assertTrue(output.endsWith(expectedResponse("Goodbye from UniEnable!\n")));
     }
 
     /**
@@ -132,11 +134,34 @@ public class UniEnableFacilityFindTest {
         String warning = "[WARNING] Invalid facility find filters.\n"
                 + "Usage: facility find type/FEATURE [status/YES|NO|UNKNOWN]\n"
                 + "Example: facility find type/LIFT status/NO\n";
-        String expected = "Welcome to UniEnable! Type bye to exit.\n"
-                + warning + warning
-                + "Facilities with REST_POINT (status: YES):\n[F08] AS8\n\n"
-                + AccessibilityDisclaimer.TEXT + "\nGoodbye from UniEnable!\n";
+        String expected = expectedWelcome()
+                + expectedResponse(warning)
+                + expectedResponse(warning)
+                + expectedResponse("Facilities with REST_POINT (status: YES):\n[F08] AS8\n\n"
+                        + AccessibilityDisclaimer.TEXT
+                        + "\n")
+                + expectedResponse("Goodbye from UniEnable!\n");
         assertEquals(expected, output);
+    }
+
+    /**
+     * Builds the expected welcome response with the logo below the greeting.
+     *
+     * @return complete bordered welcome response
+     */
+    private String expectedWelcome() {
+        return expectedResponse("Welcome to UniEnable! Type bye to exit.\n" + Ui.getLogo() + "\n");
+    }
+
+    /**
+     * Builds the expected console response with the example's 60-underscore borders.
+     *
+     * @param message expected message including its final line break
+     * @return complete bordered response
+     */
+    private String expectedResponse(String message) {
+        String line = "____________________________________________________________";
+        return line + "\n" + message + line + "\n";
     }
 
     /**

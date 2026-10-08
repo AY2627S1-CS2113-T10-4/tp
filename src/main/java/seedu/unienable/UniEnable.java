@@ -37,7 +37,7 @@ public class UniEnable {
             ui.showMessage("Facility dataset unavailable: " + exception.getMessage());
         }
 
-        ui.showMessage("Welcome to UniEnable! Type bye to exit.");
+        ui.showWelcome();
         while (ui.hasNextLine()) {
             try {
                 CommandResult result = parser.parse(ui.readLine()).execute(activities, storage);
