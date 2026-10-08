@@ -4,9 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,9 @@ import seedu.unienable.storage.LoadResult;
  * Verifies that bundled facility and connection data work together through both lookup managers.
  */
 class FacilityConnectionIntegrationTest {
+    /**
+     * Checks that both bundled datasets load their expected record counts without warnings.
+     */
     @Test
     public void bundledDatasets_loadExpectedRecordsWithoutWarnings() throws UniEnableException {
         LoadResult<Facility> facilities = new FacilityStorage().load();
@@ -36,11 +40,17 @@ class FacilityConnectionIntegrationTest {
         assertFalse(connections.hasWarnings());
     }
 
+    /**
+     * Checks that every bundled endpoint is a known facility name and each connection can be found by ID.
+     */
     @Test
     public void bundledConnections_allEndpointsResolveToFacilityNames() throws UniEnableException {
         List<Facility> facilities = new FacilityStorage().load().getRecords();
         List<Connection> connections = new ConnectionStorage(facilities).load().getRecords();
-        Set<String> names = facilities.stream().map(Facility::getName).collect(Collectors.toSet());
+        Set<String> names = new HashSet<>();
+        for (Facility facility : facilities) {
+            names.add(facility.getName());
+        }
         ConnectionManager manager = new ConnectionManager(connections);
 
         for (Connection connection : connections) {
@@ -50,26 +60,62 @@ class FacilityConnectionIntegrationTest {
         }
     }
 
+    /**
+     * Checks that lookup and filtering retain bundled accessibility details, notes, and barriers.
+     */
     @Test
     public void bundledDataset_featureAndConnectionQueries_preserveAccessibilityDetails()
             throws UniEnableException {
-        FacilityManager facilities = new FacilityManager(new FacilityStorage().load().getRecords());
-        ConnectionManager connections = new ConnectionManager(
-                new ConnectionStorage(facilities.getFacilities()).load().getRecords());
+        List<Facility> loadedFacilities = new FacilityStorage().load().getRecords();
+        FacilityManager facilities = new FacilityManager(loadedFacilities);
+        List<Connection> loadedConnections = new ConnectionStorage(facilities.getFacilities()).load().getRecords();
+        ConnectionManager connections = new ConnectionManager(loadedConnections);
 
-        assertEquals("AS1", facilities.findFacility("f01").orElseThrow().getName());
-        assertEquals("CLB", facilities.findFacility("F09").orElseThrow().getName());
-        assertEquals(List.of("AS1", "AS2"), facilities.findByFeature(
-                FacilityFeature.Type.LIFT, AccessibilityStatus.NO)
-                .stream().map(Facility::getName).toList());
-        assertEquals(List.of("AS8"), facilities.findByFeature(FacilityFeature.Type.REST_POINT)
-                .stream().map(Facility::getName).toList());
+        Facility as1 = facilities.findFacility("f01").orElseThrow();
+        Facility clb = facilities.findFacility("F09").orElseThrow();
+        List<Facility> withoutLift = facilities.findByFeature(FacilityFeature.Type.LIFT, AccessibilityStatus.NO);
+        List<Facility> withRestPoint = facilities.findByFeature(FacilityFeature.Type.REST_POINT);
+        List<Connection> reverseMatches = connections.findConnections("AS6", "CLB", null, null, null);
+        List<Connection> unshelteredRamps = connections.findConnections("AS2", "AS1", TraversalType.RAMP,
+                AccessibilityStatus.YES, ShelterStatus.NO);
+        Connection ramp = connections.findConnection(7).orElseThrow();
+        Connection narrowPassage = connections.findConnection(4).orElseThrow();
 
-        assertEquals(List.of(1), connections.findConnections("AS6", "CLB", null, null, null)
-                .stream().map(Connection::getId).toList());
-        assertEquals(List.of(7), connections.findConnections("AS2", "AS1", TraversalType.RAMP,
-                AccessibilityStatus.YES, ShelterStatus.NO).stream().map(Connection::getId).toList());
-        assertTrue(connections.findConnection(7).orElseThrow().getNotes().contains("unsheltered"));
-        assertTrue(connections.findConnection(4).orElseThrow().getKnownBarrier().contains("Narrow"));
+        assertEquals("AS1", as1.getName());
+        assertEquals("CLB", clb.getName());
+        assertEquals(List.of("AS1", "AS2"), facilityNames(withoutLift));
+        assertEquals(List.of("AS8"), facilityNames(withRestPoint));
+        assertEquals(List.of(1), connectionIds(reverseMatches));
+        assertEquals(List.of(7), connectionIds(unshelteredRamps));
+        assertTrue(ramp.getNotes().contains("unsheltered"));
+        assertTrue(narrowPassage.getKnownBarrier().contains("Narrow"));
+    }
+
+    /**
+     * Returns facility names in result order so assertions also check ordering.
+     *
+     * @param facilities facilities returned by a lookup or filter
+     * @return their names in the same order
+     */
+    private static List<String> facilityNames(List<Facility> facilities) {
+        List<String> names = new ArrayList<>();
+        for (Facility facility : facilities) {
+            names.add(facility.getName());
+        }
+        return names;
+    }
+
+    /**
+     * Returns connection IDs in result order so assertions also check ordering.
+     *
+     * @param connections connections returned by a loader or filter
+     * @return their IDs in the same order
+     */
+    private static List<Integer> connectionIds(List<Connection> connections) {
+        List<Integer> ids = new ArrayList<>();
+        for (Connection connection : connections) {
+            ids.add(connection.getId());
+        }
+        return ids;
     }
 }

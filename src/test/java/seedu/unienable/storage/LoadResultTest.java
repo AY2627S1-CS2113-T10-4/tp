@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Test;
  */
 public class LoadResultTest {
 
+    /**
+     * Checks that valid records are retained without introducing warnings.
+     */
     @Test
     public void constructor_validRecords_returnsRecords() {
         LoadResult<String> result = new LoadResult<>(
@@ -25,6 +28,9 @@ public class LoadResultTest {
         assertFalse(result.hasWarnings());
     }
 
+    /**
+     * Checks that recorded warnings are returned and reported as present.
+     */
     @Test
     public void constructor_withWarnings_reportsWarnings() {
         LoadResult<String> result = new LoadResult<>(
@@ -34,6 +40,9 @@ public class LoadResultTest {
         assertEquals(List.of("Line 2 was skipped"), result.getWarnings());
     }
 
+    /**
+     * Checks that later changes to the input records and warnings do not affect the result.
+     */
     @Test
     public void constructor_mutableInputs_defensivelyCopies() {
         List<String> records = new ArrayList<>(List.of("AS1"));
@@ -49,6 +58,9 @@ public class LoadResultTest {
         assertFalse(result.hasWarnings());
     }
 
+    /**
+     * Checks that warnings are retained even when there are no valid records.
+     */
     @Test
     public void constructor_emptyRecordsWithWarnings_preservesWarnings() {
         LoadResult<String> result = new LoadResult<>(
@@ -59,6 +71,9 @@ public class LoadResultTest {
         assertTrue(result.hasWarnings());
     }
 
+    /**
+     * Checks that callers cannot add records to the returned list.
+     */
     @Test
     public void getRecords_mutationAttempt_rejected() {
         LoadResult<String> result = new LoadResult<>(List.of("AS1"), List.of());
@@ -67,6 +82,9 @@ public class LoadResultTest {
         assertEquals(List.of("AS1"), result.getRecords());
     }
 
+    /**
+     * Checks that callers cannot remove warnings from the returned list.
+     */
     @Test
     public void getWarnings_mutationAttempt_rejected() {
         LoadResult<String> result = new LoadResult<>(List.of("AS1"), List.of("Line 2 was skipped"));

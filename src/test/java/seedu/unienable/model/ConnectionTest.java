@@ -9,7 +9,13 @@ import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.model.enums.ShelterStatus;
 import seedu.unienable.model.enums.TraversalType;
 
+/**
+ * Tests connection fields, supported enums, and absent optional text.
+ */
 class ConnectionTest {
+    /**
+     * Checks that all supplied connection fields, including the final notes field, are retained.
+     */
     @Test
     public void constructor_suppliedValues_preservesAllFields() {
         Connection connection = new Connection(7, "F02", "F01", 125, AccessibilityStatus.NO,
@@ -25,6 +31,9 @@ class ConnectionTest {
         assertEquals("Between blocks", connection.getNotes());
     }
 
+    /**
+     * Checks that every accessibility and shelter combination retains both statuses.
+     */
     @Test
     public void constructor_eachStatusCombination_preservesDistinctStatuses() {
         for (AccessibilityStatus accessibility : AccessibilityStatus.values()) {
@@ -37,6 +46,9 @@ class ConnectionTest {
         }
     }
 
+    /**
+     * Checks that every supported traversal type is retained.
+     */
     @Test
     public void constructor_eachTraversalType_preservesType() {
         for (TraversalType type : TraversalType.values()) {
@@ -46,6 +58,9 @@ class ConnectionTest {
         }
     }
 
+    /**
+     * Checks that absent optional text stays null and the model retains a supplied zero distance.
+     */
     @Test
     public void constructor_nullOptionalFields_preservesNulls() {
         Connection connection = new Connection(1, "F01", "F02", 0, AccessibilityStatus.UNKNOWN,

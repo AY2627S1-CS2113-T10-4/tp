@@ -20,6 +20,9 @@ import seedu.unienable.model.enums.TraversalType;
  * Covers lookup and filtering edge cases that are not covered by the initial manager tests.
  */
 class FacilityConnectionEdgeCasesTest {
+    /**
+     * Checks that an ID match takes precedence over another facility's matching name.
+     */
     @Test
     public void findFacility_identifierMatchesIdAndAnotherName_idTakesPrecedence() {
         Facility nameMatch = facility("F01", "F02");
@@ -29,6 +32,9 @@ class FacilityConnectionEdgeCasesTest {
         assertEquals(idMatch, manager.findFacility("f02").orElseThrow());
     }
 
+    /**
+     * Checks that a null facility identifier raises a null-pointer exception.
+     */
     @Test
     public void findFacility_nullIdentifier_rejected() {
         FacilityManager manager = new FacilityManager(List.of());
@@ -36,6 +42,9 @@ class FacilityConnectionEdgeCasesTest {
         assertThrows(NullPointerException.class, () -> manager.findFacility(null));
     }
 
+    /**
+     * Checks that null feature types and statuses are rejected.
+     */
     @Test
     public void findByFeature_nullTypeOrStatus_rejected() {
         FacilityManager manager = new FacilityManager(List.of());
@@ -46,6 +55,9 @@ class FacilityConnectionEdgeCasesTest {
                 () -> manager.findByFeature(FacilityFeature.Type.LIFT, null));
     }
 
+    /**
+     * Checks that an empty facility collection produces empty listings and search results.
+     */
     @Test
     public void facilityManager_emptyDataset_returnsNoMatches() {
         FacilityManager manager = new FacilityManager(List.of());
@@ -55,6 +67,9 @@ class FacilityConnectionEdgeCasesTest {
         assertTrue(manager.findByFeature(FacilityFeature.Type.LIFT).isEmpty());
     }
 
+    /**
+     * Checks that a shelter-only filter distinguishes YES, NO, and UNKNOWN.
+     */
     @Test
     public void findConnections_shelterOnly_matchesExactStatuses() {
         Connection yes = connection(1, "AS1", "AS2", TraversalType.PATH,
@@ -70,6 +85,9 @@ class FacilityConnectionEdgeCasesTest {
         assertEquals(List.of(unknown), manager.findConnections(null, null, null, null, ShelterStatus.UNKNOWN));
     }
 
+    /**
+     * Checks that a type-only filter keeps source order rather than sorting by connection ID.
+     */
     @Test
     public void findConnections_typeOnly_preservesOriginalOrder() {
         Connection first = connection(9, "AS1", "AS2", TraversalType.PATH,
@@ -84,6 +102,9 @@ class FacilityConnectionEdgeCasesTest {
                 null, null));
     }
 
+    /**
+     * Checks that a mismatch in any combined criterion produces no results.
+     */
     @Test
     public void findConnections_conflictingFilters_returnsEmpty() {
         Connection only = connection(1, "AS1", "AS2", TraversalType.RAMP,
@@ -98,6 +119,9 @@ class FacilityConnectionEdgeCasesTest {
                 AccessibilityStatus.YES, ShelterStatus.YES).isEmpty());
     }
 
+    /**
+     * Checks that an empty connection collection produces no matches for a valid filter.
+     */
     @Test
     public void connectionManager_emptyDataset_returnsNoMatchesForValidFilter() {
         ConnectionManager manager = new ConnectionManager(List.of());
@@ -107,10 +131,28 @@ class FacilityConnectionEdgeCasesTest {
         assertTrue(manager.findConnections("AS1", null, null, null, null).isEmpty());
     }
 
+    /**
+     * Creates a facility for identity lookup tests without recorded features.
+     *
+     * @param id the facility ID
+     * @param name the facility name
+     * @return a facility without a description or features
+     */
     private static Facility facility(String id, String name) {
         return new Facility(id, name, null, List.of());
     }
 
+    /**
+     * Creates a connection with the fields needed by edge-case filters.
+     *
+     * @param id the connection ID
+     * @param from the first stored facility name
+     * @param to the second stored facility name
+     * @param type the traversal type
+     * @param accessibility the recorded accessibility status
+     * @param shelter the recorded shelter status
+     * @return a fifty-metre connection without optional text
+     */
     private static Connection connection(int id, String from, String to, TraversalType type,
             AccessibilityStatus accessibility, ShelterStatus shelter) {
         return new Connection(id, from, to, 50, accessibility, type, shelter, null, null);

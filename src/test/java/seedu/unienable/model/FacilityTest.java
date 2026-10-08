@@ -12,7 +12,13 @@ import org.junit.jupiter.api.Test;
 
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+/**
+ * Tests facility fields, feature-list copying, and collection immutability.
+ */
 class FacilityTest {
+    /**
+     * Checks that a facility retains its ID, name, description, and feature order.
+     */
     @Test
     public void constructor_multipleFeatures_preservesAllFieldsAndOrder() {
         FacilityFeature lift = new FacilityFeature(FacilityFeature.Type.LIFT, AccessibilityStatus.YES, null);
@@ -24,18 +30,27 @@ class FacilityTest {
         assertEquals(List.of(lift, ramp), facility.getFeatures());
     }
 
+    /**
+     * Checks that a facility with no recorded features returns an empty list.
+     */
     @Test
     public void constructor_emptyFeatures_preservesEmptyList() {
         Facility facility = new Facility("F02", "AS2", "Another block", List.of());
         assertTrue(facility.getFeatures().isEmpty());
     }
 
+    /**
+     * Checks that an absent description remains null.
+     */
     @Test
     public void constructor_nullDescription_preservesNull() {
         Facility facility = new Facility("F01", "AS1", null, List.of());
         assertNull(facility.getDescription());
     }
 
+    /**
+     * Checks that changing the caller's feature list does not change the facility.
+     */
     @Test
     public void constructor_inputListChanged_doesNotChangeFeatures() {
         FacilityFeature lift = new FacilityFeature(FacilityFeature.Type.LIFT, AccessibilityStatus.YES, null);
@@ -46,6 +61,9 @@ class FacilityTest {
         assertEquals(List.of(lift), facility.getFeatures());
     }
 
+    /**
+     * Checks that callers cannot remove features from the returned list.
+     */
     @Test
     public void getFeatures_mutationAttempt_rejected() {
         FacilityFeature lift = new FacilityFeature(FacilityFeature.Type.LIFT, AccessibilityStatus.YES, null);
