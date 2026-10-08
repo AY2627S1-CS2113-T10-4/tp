@@ -5,12 +5,20 @@ import seedu.unienable.model.enums.ShelterStatus;
 import seedu.unienable.model.enums.TraversalType;
 
 /**
- * An immutable bidirectional physical connection between two facility IDs.
+ * Represents a bidirectional connection between two facilities.
+ * The endpoints use facility names, such as AS1 and CLB,
+ * rather than stable facility IDs such as F01.
  * The from and to labels identify endpoints, not a permitted travel direction.
  */
 public final class Connection {
     private final int id;
+    /**
+     * One endpoint's facility name, preserved as recorded in the dataset.
+     */
     private final String from;
+    /**
+     * The other endpoint's facility name; its position does not imply a travel direction.
+     */
     private final String to;
     private final int distanceInMetres;
     private final AccessibilityStatus accessibility;
@@ -23,8 +31,8 @@ public final class Connection {
      * Creates a connection without parsing or normalizing the supplied values.
      *
      * @param id connection ID
-     * @param from one endpoint facility ID
-     * @param to the other endpoint facility ID
+     * @param from one endpoint facility name, such as AS1
+     * @param to the other endpoint facility name, such as CLB
      * @param distanceInMetres recorded distance in metres
      * @param accessibility recorded accessibility; UNKNOWN means unconfirmed
      * @param type physical traversal category
@@ -54,14 +62,14 @@ public final class Connection {
     }
 
     /**
-     * Returns one endpoint ID, without implying a travel direction.
+     * Returns one endpoint facility name, without implying a travel direction.
      */
     public String getFrom() {
         return from;
     }
 
     /**
-     * Returns the other endpoint ID.
+     * Returns the other endpoint facility name.
      */
     public String getTo() {
         return to;
