@@ -17,6 +17,11 @@ public class ActivityList {
         this.activities = new ArrayList<>(activities);
     }
 
+    // TODO [Branch 1]: Add the insertion API here after coordinating with Branch 2.
+    // TODO [Branch 2]: Add agreed ordering, displayed-index lookup, and deletion APIs here.
+    // TODO [Branch 3]: Add completion update APIs here after agreeing on indexes with Branch 2.
+    // Coordinate edits to this shared class; command and parser files have separate owners.
+
     /**
      * Returns an immutable snapshot in the collection's current order.
      */

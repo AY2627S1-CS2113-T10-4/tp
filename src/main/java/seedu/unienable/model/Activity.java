@@ -16,6 +16,8 @@ public class Activity {
     private final DemandLevel demand;
     private final boolean isDone;
 
+    // TODO [Branch 1]: Coordinate any model validation here with Branch 3.
+    // Prefer input validation in your own command/parser files when no model change is needed.
     public Activity(String name, LocalDate date, LocalTime startTime, LocalTime endTime,
             DemandLevel demand, boolean isDone) {
         this.name = name;
@@ -46,6 +48,8 @@ public class Activity {
         return demand;
     }
 
+    // TODO [Branch 3]: Add agreed completion updates here; isDone is currently a final field.
+    // Coordinate field and constructor changes with Branch 1.
     public boolean isDone() {
         return isDone;
     }

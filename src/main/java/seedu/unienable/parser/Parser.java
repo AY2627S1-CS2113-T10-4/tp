@@ -57,6 +57,10 @@ public class Parser {
             return new ByeCommand();
         case "facility":
             return parseFacility(words);
+        // TODO [Branch 1]: Add add/help dispatch here; keep add parsing in AddCommandParser.
+        // TODO [Branch 2]: Add list/delete dispatch here; keep parsing in ListDeleteCommandParser.
+        // TODO [Branch 3]: Add mark/unmark dispatch here; keep parsing in MarkCommandParser.
+        // One team integrator should coordinate these shared switch edits.
         default:
             throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");
         }
