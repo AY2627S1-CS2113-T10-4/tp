@@ -9,15 +9,12 @@ import seedu.unienable.logic.FacilityManager;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.Facility;
 import seedu.unienable.storage.Storage;
-import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
-import seedu.unienable.ui.accessibility.FacilityDetailsFormatter;
+import seedu.unienable.ui.accessibility.FacilityOutputFormatter;
 
 /**
  * Shows the recorded accessibility features of a single facility.
  */
 public class FacilityViewCommand extends Command {
-    private static final String USAGE = "Usage: facility HUB\nExample: facility AS4";
-
     private final FacilityManager facilityManager;
     private final String identifier;
 
@@ -44,33 +41,11 @@ public class FacilityViewCommand extends Command {
     public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {
         Optional<Facility> matchingFacility = facilityManager.findFacility(identifier);
         if (matchingFacility.isEmpty()) {
-            throw new UniEnableException(formatUnknownFacility());
+            String warning = FacilityOutputFormatter.formatUnknownFacility(
+                    identifier, facilityManager.getFacilities());
+            throw new UniEnableException(warning);
         }
-        Facility facility = matchingFacility.get();
-        String output = FacilityDetailsFormatter.format(facility)
-                + "\n\n" + AccessibilityDisclaimer.TEXT;
-        return new CommandResult(output, false);
-    }
-
-    /**
-     * Formats a lookup failure with valid facility names and an example command.
-     *
-     * @return a warning message for the unknown facility
-     */
-    private String formatUnknownFacility() {
-        StringBuilder output = new StringBuilder("[WARNING] Unknown facility '");
-        output.append(identifier).append("'.\n\nSupported facilities:\n");
-        if (facilityManager.getFacilities().isEmpty()) {
-            output.append("None");
-        } else {
-            for (int i = 0; i < facilityManager.getFacilities().size(); i++) {
-                if (i > 0) {
-                    output.append(", ");
-                }
-                output.append(facilityManager.getFacilities().get(i).getName());
-            }
-        }
-        output.append("\n\n").append(USAGE);
-        return output.toString();
+        String message = FacilityOutputFormatter.formatFacility(matchingFacility.get());
+        return new CommandResult(message, false);
     }
 }

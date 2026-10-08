@@ -10,7 +10,7 @@ import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.storage.Storage;
-import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
+import seedu.unienable.ui.accessibility.FacilityOutputFormatter;
 
 /**
  * Lists facilities with a recorded accessibility feature and a specified status.
@@ -44,22 +44,7 @@ public class FacilityFindCommand extends Command {
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) {
         List<Facility> matches = facilityManager.findByFeature(type, status);
-        StringBuilder output = new StringBuilder("Facilities with ");
-        output.append(type).append(" (status: ").append(status).append("):");
-
-        if (matches.isEmpty()) {
-            output.append("\nNo matching facilities found.");
-        } else {
-            for (Facility facility : matches) {
-                output.append("\n[").append(facility.getId()).append("] ")
-                        .append(facility.getName());
-            }
-        }
-
-        if (status == AccessibilityStatus.UNKNOWN) {
-            output.append("\n\nUNKNOWN means the local dataset does not confirm the feature.");
-        }
-        output.append("\n\n").append(AccessibilityDisclaimer.TEXT);
-        return new CommandResult(output.toString(), false);
+        String message = FacilityOutputFormatter.formatFindResults(matches, type, status);
+        return new CommandResult(message, false);
     }
 }

@@ -1,13 +1,14 @@
 package seedu.unienable.command.accessibility.facility;
 
+import java.util.List;
+
 import seedu.unienable.command.Command;
 import seedu.unienable.command.CommandResult;
 import seedu.unienable.logic.FacilityManager;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.Facility;
 import seedu.unienable.storage.Storage;
-import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
-import seedu.unienable.ui.accessibility.FacilityDetailsFormatter;
+import seedu.unienable.ui.accessibility.FacilityOutputFormatter;
 
 /**
  * Lists all recorded details of facilities in the local reference dataset.
@@ -33,11 +34,8 @@ public class FacilityListCommand extends Command {
      */
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) {
-        StringBuilder output = new StringBuilder("Known facilities in the local reference:");
-        for (Facility facility : facilityManager.getFacilities()) {
-            output.append("\n\n").append(FacilityDetailsFormatter.format(facility));
-        }
-        output.append("\n\n").append(AccessibilityDisclaimer.TEXT);
-        return new CommandResult(output.toString(), false);
+        List<Facility> facilities = facilityManager.getFacilities();
+        String message = FacilityOutputFormatter.formatList(facilities);
+        return new CommandResult(message, false);
     }
 }
