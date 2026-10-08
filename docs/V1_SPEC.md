@@ -14,7 +14,7 @@ list demand
 delete INDEX
 mark INDEX
 unmark INDEX
-facility HUB
+facility LOCATION
 bye
 ```
 
