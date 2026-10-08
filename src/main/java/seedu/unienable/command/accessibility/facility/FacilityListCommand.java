@@ -7,9 +7,10 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.Facility;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
+import seedu.unienable.ui.accessibility.FacilityDetailsFormatter;
 
 /**
- * Lists the stable IDs and names of all facilities in the local reference dataset.
+ * Lists all recorded details of facilities in the local reference dataset.
  */
 public class FacilityListCommand extends Command {
     private final FacilityManager facilityManager;
@@ -34,7 +35,7 @@ public class FacilityListCommand extends Command {
     public CommandResult execute(ActivityList activities, Storage storage) {
         StringBuilder output = new StringBuilder("Known facilities in the local reference:");
         for (Facility facility : facilityManager.getFacilities()) {
-            output.append("\n[").append(facility.getId()).append("] ").append(facility.getName());
+            output.append("\n\n").append(FacilityDetailsFormatter.format(facility));
         }
         output.append("\n\n").append(AccessibilityDisclaimer.TEXT);
         return new CommandResult(output.toString(), false);

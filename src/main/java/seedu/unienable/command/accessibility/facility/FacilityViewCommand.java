@@ -4,18 +4,19 @@ import java.util.Optional;
 
 import seedu.unienable.command.Command;
 import seedu.unienable.command.CommandResult;
+import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.logic.FacilityManager;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.Facility;
-import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
+import seedu.unienable.ui.accessibility.FacilityDetailsFormatter;
 
 /**
  * Shows the recorded accessibility features of a single facility.
  */
 public class FacilityViewCommand extends Command {
-    private static final String USAGE = "Usage: facility view FACILITY\nExample: facility view AS4";
+    private static final String USAGE = "Usage: facility HUB\nExample: facility AS4";
 
     private final FacilityManager facilityManager;
     private final String identifier;
@@ -32,45 +33,32 @@ public class FacilityViewCommand extends Command {
     }
 
     /**
-     * Displays the facility details, or a helpful message if the facility is unknown.
+     * Displays facility details or reports an unknown facility through the checked error contract.
      *
      * @param activities activity collection, not modified by this command
      * @param storage activity storage, not used by this command
-     * @return non-exiting result containing facility details or an error
+     * @return non-exiting result containing facility details
+     * @throws UniEnableException if the facility is unknown
      */
     @Override
-    public CommandResult execute(ActivityList activities, Storage storage) {
+    public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {
         Optional<Facility> matchingFacility = facilityManager.findFacility(identifier);
         if (matchingFacility.isEmpty()) {
-            return new CommandResult(formatUnknownFacility(), false);
+            throw new UniEnableException(formatUnknownFacility());
         }
         Facility facility = matchingFacility.get();
-        StringBuilder output = new StringBuilder();
-        output.append("[").append(facility.getId()).append("] ").append(facility.getName());
-        if (facility.getDescription() != null && !facility.getDescription().isBlank()) {
-            output.append(" - ").append(facility.getDescription());
-        }
-        output.append("\n\nAccessibility Features:");
-        if (facility.getFeatures().isEmpty()) {
-            output.append("\nNo accessibility features recorded.");
-        }
-        for (FacilityFeature feature : facility.getFeatures()) {
-            output.append("\n").append(feature.getType()).append(" | ").append(feature.getStatus());
-            if (feature.getNotes() != null && !feature.getNotes().isBlank()) {
-                output.append(" | ").append(feature.getNotes());
-            }
-        }
-        output.append("\n\n").append(AccessibilityDisclaimer.TEXT);
-        return new CommandResult(output.toString(), false);
+        String output = FacilityDetailsFormatter.format(facility)
+                + "\n\n" + AccessibilityDisclaimer.TEXT;
+        return new CommandResult(output, false);
     }
 
     /**
      * Formats a lookup failure with valid facility names and an example command.
      *
-     * @return an error message for the unknown facility
+     * @return a warning message for the unknown facility
      */
     private String formatUnknownFacility() {
-        StringBuilder output = new StringBuilder("Error: Unknown facility '");
+        StringBuilder output = new StringBuilder("[WARNING] Unknown facility '");
         output.append(identifier).append("'.\n\nSupported facilities:\n");
         if (facilityManager.getFacilities().isEmpty()) {
             output.append("None");

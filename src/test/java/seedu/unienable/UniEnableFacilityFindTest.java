@@ -1,5 +1,6 @@
 package seedu.unienable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -88,9 +89,9 @@ public class UniEnableFacilityFindTest {
         String output = runWithInput("facility find type/ESCALATOR\n"
                 + "facility find type/LIFT status/MAYBE\nbye\n");
 
-        assertTrue(output.contains("Unknown facility feature type 'ESCALATOR'."));
+        assertTrue(output.contains("[WARNING] Unknown facility feature type 'ESCALATOR'."));
         assertTrue(output.contains("Supported types: LIFT, RAMP"));
-        assertTrue(output.contains("Invalid facility status 'MAYBE'."));
+        assertTrue(output.contains("[WARNING] Invalid facility status 'MAYBE'."));
         assertTrue(output.contains("Supported statuses: YES, NO, UNKNOWN"));
     }
 
@@ -107,17 +108,35 @@ public class UniEnableFacilityFindTest {
     }
 
     /**
-     * Tests that new find commands do not break existing list and view commands.
+     * Tests that new find commands do not break existing list and lookup commands.
      */
     @Test
-    public void main_findThenListAndView_allCommandsWork() {
+    public void main_findThenListAndLookup_allCommandsWork() {
         String output = runWithInput("facility find type/REST_POINT\n"
-                + "facility list\nfacility view AS4\nbye\n");
+                + "facility list\nfacility AS4\nbye\n");
 
         assertTrue(output.contains("Facilities with REST_POINT (status: YES):\n[F08] AS8"));
         assertTrue(output.contains("Known facilities in the local reference:"));
         assertTrue(output.contains("[F04] AS4 - Faculty of Arts and Social Sciences, Block 4"));
         assertTrue(output.endsWith("Goodbye from UniEnable!\n"));
+    }
+
+    /**
+     * Tests that invalid names each warn once before a valid feature search succeeds.
+     */
+    @Test
+    public void main_findInvalidNames_displaysWarningsAndContinues() {
+        String output = runWithInput("facility find as99\nfacility find hello world\n"
+                + "facility find type/REST_POINT\nbye\n");
+
+        String warning = "[WARNING] Invalid facility find filters.\n"
+                + "Usage: facility find type/FEATURE [status/YES|NO|UNKNOWN]\n"
+                + "Example: facility find type/LIFT status/NO\n";
+        String expected = "Welcome to UniEnable! Type bye to exit.\n"
+                + warning + warning
+                + "Facilities with REST_POINT (status: YES):\n[F08] AS8\n\n"
+                + AccessibilityDisclaimer.TEXT + "\nGoodbye from UniEnable!\n";
+        assertEquals(expected, output);
     }
 
     /**

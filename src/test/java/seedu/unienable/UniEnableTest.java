@@ -14,11 +14,27 @@ import org.junit.jupiter.api.Test;
  * Verifies only the common console bootstrap, without exercising future features.
  */
 class UniEnableTest {
+    /**
+     * Tests that a misspelled command warns and still allows bye to end the console.
+     */
     @Test
-    public void main_unimplementedInputThenMixedCaseBye_exitsCleanly() {
+    public void main_misspelledCommandThenMixedCaseBye_warnsAndExitsCleanly() {
         assertEquals("Welcome to UniEnable! Type bye to exit.\n"
-                + "This command is not implemented in the baseline. Type bye to exit.\n"
-                + "Goodbye from UniEnable!\n", runWithInput("unknown\nByE\nignored\n"));
+                + "[WARNING] Unrecognized command. Type bye to exit.\n"
+                + "Goodbye from UniEnable!\n", runWithInput("faciliy\nByE\nignored\n"));
+    }
+
+    /**
+     * Tests that bye with an extra argument warns instead of exiting the console early.
+     */
+    @Test
+    public void main_byeWithExtraArgument_warnsAndContinues() {
+        String output = runWithInput("bye extra\nByE\nignored\n");
+
+        String expected = "Welcome to UniEnable! Type bye to exit.\n"
+                + "[WARNING] Unrecognized command. Type bye to exit.\n"
+                + "Goodbye from UniEnable!\n";
+        assertEquals(expected, output);
     }
 
     @Test
