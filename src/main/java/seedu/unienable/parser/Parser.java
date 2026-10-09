@@ -13,10 +13,12 @@ import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
 /**
- * Recognizes bootstrap commands, facility lookup, facility list, and facility find.
+ * Recognizes Branch 1 add/help plus existing facility and bye commands.
  */
 public class Parser {
-    /** Shared prefix for warnings reported by this parser. */
+    /**
+     * Shared prefix for warnings reported by this parser.
+     */
     private static final String WARNING_MESSAGE = "[WARNING]";
 
     private final FacilityManager facilityManager;
@@ -38,7 +40,7 @@ public class Parser {
     }
 
     /**
-     * Dispatches bye and facility commands to their handlers.
+     * Dispatches supported user commands to their handlers.
      *
      * @param input command entered by the user
      * @return the command to execute
@@ -57,7 +59,15 @@ public class Parser {
             return new ByeCommand();
         case "facility":
             return parseFacility(words);
-        // TODO [Branch 1]: Add add/help dispatch here; keep add parsing in AddCommandParser.
+        case "add":
+            return new AddCommandParser().parse(trimmedInput.substring(words[0].length()).trim());
+        /*
+        case "help":
+            if (words.length != 1) {
+                throw new ParseException(WARNING_MESSAGE + " help does not take arguments.");
+            }
+            return new HelpCommand();
+        */
         // TODO [Branch 2]: Add list/delete dispatch here; keep parsing in ListDeleteCommandParser.
         // TODO [Branch 3]: Add mark/unmark dispatch here; keep parsing in MarkCommandParser.
         // One team integrator should coordinate these shared switch edits.
@@ -75,7 +85,8 @@ public class Parser {
      */
     private Command parseFacility(String[] words) throws ParseException {
         if (words.length >= 2 && "view".equalsIgnoreCase(words[1])) {
-            throw new ParseException(WARNING_MESSAGE + " Invalid facility command.\n"
+            throw new ParseException(WARNING_MESSAGE
+                    + " Invalid facility command.\n"
                     + "Usage: facility LOCATION\nExample: facility AS4");
         }
 
@@ -85,7 +96,8 @@ public class Parser {
                         + " facility list does not accept arguments.\nUsage: facility list");
             }
             if (facilityManager == null) {
-                throw new ParseException(WARNING_MESSAGE + " Facility reference data is unavailable.");
+                throw new ParseException(WARNING_MESSAGE
+                        + " Facility reference data is unavailable.");
             }
             return new FacilityListCommand(facilityManager);
         }
@@ -95,11 +107,13 @@ public class Parser {
         }
 
         if (words.length != 2) {
-            throw new ParseException(WARNING_MESSAGE + " Expected exactly one facility ID or name.\n"
+            throw new ParseException(WARNING_MESSAGE
+                    + " Expected exactly one facility ID or name.\n"
                     + "Usage: facility LOCATION\nExample: facility AS4");
         }
         if (facilityManager == null) {
-            throw new ParseException(WARNING_MESSAGE + " Facility reference data is unavailable.");
+            throw new ParseException(WARNING_MESSAGE
+                    + " Facility reference data is unavailable.");
         }
         return new FacilityViewCommand(facilityManager, words[1]);
     }
@@ -125,22 +139,25 @@ public class Parser {
         try {
             type = FacilityFeature.Type.valueOf(featureName.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            throw new ParseException(WARNING_MESSAGE + " Unknown facility feature type '" + featureName + "'.\n"
+            throw new ParseException(WARNING_MESSAGE
+                    + " Unknown facility feature type '" + featureName + "'.\n"
                     + "Supported types: LIFT, RAMP, SHELTERED_RAMP, ACCESSIBLE_WASHROOM, "
-                    + "STEP_FREE_ENTRANCE, REST_POINT, AUTOMATIC_DOOR, OTHER\n" + usage);
+                    + "STEP_FREE_ENTRANCE, REST_POINT, AUTOMATIC_DOOR, OTHER\n"+ usage);
         }
 
         AccessibilityStatus status = AccessibilityStatus.YES;
         if (words.length == 4) {
-            if (!words[3].regionMatches(true, 0, "status/", 0, 7)
-                    || words[3].length() == 7) {
-                throw new ParseException(WARNING_MESSAGE + " Invalid facility find filters.\n" + usage);
+            if (!words[3].regionMatches(true, 0, "status/", 0, 7) ||
+                    words[3].length() == 7) {
+                throw new ParseException(WARNING_MESSAGE
+                        + " Invalid facility find filters.\n" + usage);
             }
             String statusName = words[3].substring(7);
             try {
                 status = AccessibilityStatus.valueOf(statusName.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException exception) {
-                throw new ParseException(WARNING_MESSAGE + " Invalid facility status '" + statusName + "'.\n"
+                throw new ParseException(WARNING_MESSAGE
+                        + " Invalid facility status '" + statusName + "'.\n"
                         + "Supported statuses: YES, NO, UNKNOWN\n" + usage);
             }
         }

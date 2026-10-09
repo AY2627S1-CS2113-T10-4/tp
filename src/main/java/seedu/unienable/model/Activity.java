@@ -19,7 +19,7 @@ public class Activity {
     // TODO [Branch 1]: Coordinate any model validation here with Branch 3.
     // Prefer input validation in your own command/parser files when no model change is needed.
     public Activity(String name, LocalDate date, LocalTime startTime, LocalTime endTime,
-            DemandLevel demand, boolean isDone) {
+                    DemandLevel demand, boolean isDone) {
         this.name = name;
         this.date = date;
         this.startTime = startTime;
