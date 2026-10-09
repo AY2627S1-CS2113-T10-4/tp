@@ -49,10 +49,7 @@ public class FacilityCommandParser {
                 throw new ParseException(WARNING_MESSAGE
                         + " facility list does not accept arguments.\nUsage: facility list");
             }
-            if (facilityManager == null) {
-                throw new ParseException(WARNING_MESSAGE
-                        + " Facility reference data is unavailable.");
-            }
+            requireFacilityData();
             return new FacilityListCommand(facilityManager);
         }
 
@@ -65,10 +62,7 @@ public class FacilityCommandParser {
                     + " Expected exactly one facility ID or name.\n"
                     + "Usage: facility LOCATION\nExample: facility AS4");
         }
-        if (facilityManager == null) {
-            throw new ParseException(WARNING_MESSAGE
-                    + " Facility reference data is unavailable.");
-        }
+        requireFacilityData();
         return new FacilityViewCommand(facilityManager, words[1]);
     }
 
@@ -116,9 +110,16 @@ public class FacilityCommandParser {
             }
         }
 
+        requireFacilityData();
+        return new FacilityFindCommand(facilityManager, type, status);
+    }
+
+    /**
+     * Reports unavailable reference data after command arguments have been validated.
+     */
+    private void requireFacilityData() throws ParseException {
         if (facilityManager == null) {
             throw new ParseException(WARNING_MESSAGE + " Facility reference data is unavailable.");
         }
-        return new FacilityFindCommand(facilityManager, type, status);
     }
 }

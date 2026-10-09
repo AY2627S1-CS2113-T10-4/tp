@@ -18,3 +18,9 @@ _temp/
 
 /text-ui-test/ACTUAL.TXT
 text-ui-test/EXPECTED-UNIX.TXT
+
+# Private local regression data: never publish these files.
+/src/test/resources/regression/console.tsv
+/src/test/resources/regression/filters.tsv
+/src/test/resources/regression/session.tsv
+/src/test/resources/regression/storage.tsv

@@ -2,7 +2,6 @@ package seedu.unienable.logic;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import seedu.unienable.model.Connection;
@@ -94,7 +93,7 @@ public final class ConnectionManager {
         if (endpoint == null) {
             return null;
         }
-        String normalized = Objects.requireNonNull(endpoint).strip();
+        String normalized = endpoint.strip();
         if (normalized.isEmpty()) {
             throw new IllegalArgumentException("Connection endpoint must not be blank.");
         }

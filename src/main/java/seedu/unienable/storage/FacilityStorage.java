@@ -98,7 +98,15 @@ public class FacilityStorage {
         if (stream == null) {
             throw new UniEnableException("Missing facility dataset resource: " + resourcePath);
         }
-        try (Reader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
+        return loadOwnedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Closes an owned reader and reports close failures through the same checked error contract.
+     * Package access permits deterministic I/O failure tests without changing the public API.
+     */
+    LoadResult<Facility> loadOwnedReader(Reader source) throws UniEnableException {
+        try (Reader reader = source) {
             return load(reader);
         } catch (IOException exception) {
             throw readFailure(exception);
