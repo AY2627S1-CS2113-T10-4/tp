@@ -2,295 +2,193 @@ package seedu.unienable.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.List;
-
+import java.util.stream.Stream;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.api.TestFactory;
 import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Facility;
-import seedu.unienable.model.FacilityFeature;
-import seedu.unienable.model.enums.AccessibilityStatus;
 
 /**
- * Tests bundled facility data and isolated malformed-line recovery.
+ * Checks facility reference loading, malformed-record recovery, and I/O ownership.
  */
 class FacilityStorageTest {
-    private final FacilityStorage storage = new FacilityStorage();
+    private final FacilityStorage facilities = new FacilityStorage();
 
-    /**
-     * Checks all bundled facility IDs, names, feature counts, and selected descriptions and notes.
-     */
-    @Test
-    public void load_bundledDataset_preservesFacilitiesAndFeatures() throws UniEnableException {
-        LoadResult<Facility> result = storage.load();
-        List<Facility> facilities = result.getRecords();
-        List<String> ids = new ArrayList<>();
-        List<String> names = new ArrayList<>();
-        List<Integer> featureCounts = new ArrayList<>();
-        for (Facility facility : facilities) {
-            ids.add(facility.getId());
-            names.add(facility.getName());
-            featureCounts.add(facility.getFeatures().size());
-        }
-
-        assertFalse(result.hasWarnings());
-        assertEquals(List.of("F01", "F02", "F03", "F04", "F05", "F06", "F07", "F08", "F09"), ids);
-        assertEquals(List.of("AS1", "AS2", "AS3", "AS4", "AS5", "AS6", "AS7", "AS8", "CLB"), names);
-        assertEquals(List.of(2, 2, 2, 3, 3, 3, 3, 4, 3), featureCounts);
-        Facility as1 = result.getRecords().get(0);
-        assertEquals("Faculty of Arts and Social Sciences, Block 1", as1.getDescription());
-        assertEquals(FacilityFeature.Type.STEP_FREE_ENTRANCE, as1.getFeatures().get(0).getType());
-        assertEquals(AccessibilityStatus.NO, as1.getFeatures().get(1).getStatus());
-        assertEquals("Building has no lift; floors 4-5 are not accessible", as1.getFeatures().get(1).getNotes());
-        Facility as8 = result.getRecords().get(7);
-        assertEquals(FacilityFeature.Type.REST_POINT, as8.getFeatures().get(3).getType());
-        assertEquals("PitStop@FASS", as8.getFeatures().get(3).getNotes());
-        assertEquals("4th floor toilet requires staff card access",
-                result.getRecords().get(8).getFeatures().get(2).getNotes());
-    }
-
-    /**
-     * Checks that features can precede their facilities while preserving facility and feature order.
-     */
-    @Test
-    public void load_featuresBeforeFacilities_associatesByIdInSourceOrder() throws UniEnableException {
-        LoadResult<Facility> result = load("FEATURE|F02|LIFT|YES|Second hub\n"
-                + "FACILITY|F01|AS1|First\nFEATURE|F01|RAMP|NO|First hub\n"
-                + "FEATURE|F02|REST_POINT|UNKNOWN|Unconfirmed\nFACILITY|F02|AS2|Second\n");
-        assertFalse(result.hasWarnings());
-        assertEquals("First hub", result.getRecords().get(0).getFeatures().get(0).getNotes());
-        List<FacilityFeature> features = result.getRecords().get(1).getFeatures();
-        List<FacilityFeature.Type> types = new ArrayList<>();
-        for (FacilityFeature feature : features) {
-            types.add(feature.getType());
-        }
-        assertEquals(List.of(FacilityFeature.Type.LIFT, FacilityFeature.Type.REST_POINT), types);
-        assertEquals(AccessibilityStatus.UNKNOWN, features.get(1).getStatus());
-    }
-
-    /**
-     * Checks that missing optional text becomes null while Unicode text and spacing are preserved.
-     */
-    @Test
-    public void load_emptyOptionalText_returnsNullAndPreservesOtherText() throws UniEnableException {
-        LoadResult<Facility> result = load("FACILITY|F01|AS1|\nFEATURE|F01|LIFT|YES\n"
-                + "FEATURE|F01|RAMP|UNKNOWN|\nFACILITY|F02|AS2|  Café  \n"
-                + "FEATURE|F02|REST_POINT|NO|  Keep spacing  \n");
-        assertFalse(result.hasWarnings());
-        assertNull(result.getRecords().get(0).getDescription());
-        assertNull(result.getRecords().get(0).getFeatures().get(0).getNotes());
-        assertNull(result.getRecords().get(0).getFeatures().get(1).getNotes());
-        assertEquals("  Café  ", result.getRecords().get(1).getDescription());
-        assertEquals("  Keep spacing  ", result.getRecords().get(1).getFeatures().get(0).getNotes());
-    }
-
-    /**
-     * Checks that blank lines and comments produce neither records nor warnings.
-     */
-    @Test
-    public void load_blankAndCommentLines_ignored() throws UniEnableException {
-        LoadResult<Facility> result = load("\n  \n# Reference data\n  # Another comment\nFACILITY|F01|AS1|Block\n");
-        assertFalse(result.hasWarnings());
-        assertEquals(1, result.getRecords().size());
-    }
-
-    /**
-     * Checks that a duplicate ID is skipped without reserving the rejected facility's name.
-     */
-    @Test
-    public void load_duplicateId_keepsFirstFacilityAndDoesNotReserveRejectedName() throws UniEnableException {
-        LoadResult<Facility> result = load("FACILITY|F01|AS1|First\nFACILITY|F01|AS2|Duplicate\n"
-                + "FACILITY|F02|AS2|Valid\n");
-        List<String> names = new ArrayList<>();
-        for (Facility facility : result.getRecords()) {
-            names.add(facility.getName());
-        }
-        assertEquals(List.of("AS1", "AS2"), names);
-        assertWarning(result, 2, "Duplicate facility ID");
-    }
-
-    /**
-     * Checks that duplicate names, including different capitalization, do not reserve rejected IDs.
-     */
-    @Test
-    public void load_duplicateNamesIgnoringCase_keepsFirstAndDoesNotReserveRejectedId() throws UniEnableException {
-        for (String duplicateName : List.of("AS1", "as1")) {
-            LoadResult<Facility> result = load("FACILITY|F01|AS1|First\nFACILITY|F02|" + duplicateName
-                    + "|Duplicate\nFACILITY|F02|AS2|Valid\n");
-            List<String> ids = new ArrayList<>();
-            for (Facility facility : result.getRecords()) {
-                ids.add(facility.getId());
+    @TestFactory
+    Stream<DynamicTest> records() throws Exception {
+        var rows = recordCases().stream();
+        return rows.map(row -> DynamicTest.dynamicTest(row[0], () -> {
+            LoadResult<Facility> result = facilities.load(new StringReader(row[2]));
+            assertEquals(Integer.parseInt(row[3]), result.getRecords().size());
+            assertEquals(Integer.parseInt(row[4]), result.getWarnings().size());
+            assertEquals(!row[4].equals("0"), result.hasWarnings());
+            assertEquals(row[5], String.join(",", result.getRecords().stream().map(this::describe).toList()));
+            if (!row[6].isEmpty()) {
+                assertTrue(String.join("\n", result.getWarnings()).contains(row[6]), result.getWarnings().toString());
             }
-            assertEquals(List.of("F01", "F02"), ids);
-            assertWarning(result, 2, "Duplicate facility name");
-        }
+        }));
     }
 
     /**
-     * Checks that an unsupported feature type is skipped with a line-numbered warning.
+     * Serializes each facility field and ordered features for exact fixture comparisons.
      */
-    @Test
-    public void load_invalidFeatureType_skipsFeature() throws UniEnableException {
-        LoadResult<Facility> result = load("FACILITY|F01|AS1|Block\nFEATURE|F01|ESCALATOR|YES|Notes\n");
-        assertTrue(result.getRecords().get(0).getFeatures().isEmpty());
-        assertWarning(result, 2, "Invalid feature type");
+    private String describe(Facility f) {
+        return f.getId() + "|" + f.getName() + "|" + f.getDescription() + "|" + String.join(";",
+                f.getFeatures().stream().map(x -> x.getType() + "|" + x.getStatus() + "|" + x.getNotes()).toList());
     }
 
-    /**
-     * Checks that an unsupported accessibility status is skipped with a line-numbered warning.
-     */
     @Test
-    public void load_invalidStatus_skipsFeature() throws UniEnableException {
-        LoadResult<Facility> result = load("FACILITY|F01|AS1|Block\nFEATURE|F01|LIFT|MAYBE|Notes\n");
-        assertTrue(result.getRecords().get(0).getFeatures().isEmpty());
-        assertWarning(result, 2, "Invalid accessibility status");
+    void bundledDataset_preservesFacilitiesWithoutWarnings() throws Exception {
+        var hubs = facilities.load();
+        assertFalse(hubs.hasWarnings());
+        assertEquals(List.of("AS1", "AS2", "AS3", "AS4", "AS5", "AS6", "AS7", "AS8", "CLB"),
+                hubs.getRecords().stream().map(Facility::getName).toList());
     }
 
-    /**
-     * Checks that an unknown feature reference warns without removing a valid facility.
-     */
     @Test
-    public void load_unknownFacilityReference_warnsWithoutRemovingValidFacility() throws UniEnableException {
-        LoadResult<Facility> result = load("FEATURE|F99|LIFT|YES|Notes\nFACILITY|F01|AS1|Block\n");
-        assertEquals(1, result.getRecords().size());
-        assertWarning(result, 1, "Unknown facility ID");
-    }
-
-    /**
-     * Checks that malformed records and blank required fields leave valid records intact.
-     */
-    @Test
-    public void load_malformedRecords_skipsOnlyInvalidLines() throws UniEnableException {
-        List<String> invalidLines = List.of("FACILITY|F02|AS2", "FACILITY|F02|AS2|Block|Extra",
-                "FACILITY||AS2|Block", "FACILITY|F02||Block", "FACILITY| |AS2|Block",
-                "FACILITY|F02| |Block", "FEATURE|F01|LIFT", "FEATURE|F01|LIFT|YES||Extra", "OTHER|Data");
-        for (String invalidLine : invalidLines) {
-            LoadResult<Facility> result = load("FACILITY|F01|AS1|Block\n" + invalidLine + "\n");
-            assertEquals(1, result.getRecords().size(), invalidLine);
-            assertEquals(1, result.getWarnings().size(), invalidLine);
-            assertTrue(result.getWarnings().get(0).startsWith("Line 2:"), invalidLine);
-        }
-    }
-
-    /**
-     * Checks that invalid neighboring records preserve valid features and physical warning line numbers.
-     */
-    @Test
-    public void load_invalidNeighbouringRecords_retainsValidRecordsAndPhysicalLineNumbers() throws UniEnableException {
-        LoadResult<Facility> result = load("# Header\n\nFACILITY|F01|AS1|Block\nBROKEN\n"
-                + "FEATURE|F01|LIFT|YES|Valid\nFEATURE|F01|RAMP|BAD|Invalid\nFACILITY|F02|AS2|Block\n");
-        assertEquals(2, result.getRecords().size());
-        assertEquals(1, result.getRecords().get(0).getFeatures().size());
-        assertEquals(2, result.getWarnings().size());
-        boolean hasLine4Warning = false;
-        boolean hasLine6Warning = false;
-        for (String warning : result.getWarnings()) {
-            if (warning.startsWith("Line 4:")) {
-                hasLine4Warning = true;
-            }
-            if (warning.startsWith("Line 6:")) {
-                hasLine6Warning = true;
-            }
-        }
-        assertTrue(hasLine4Warning);
-        assertTrue(hasLine6Warning);
-    }
-
-    /**
-     * Checks that a missing bundled resource raises a descriptive exception.
-     */
-    @Test
-    public void loadResource_missingResource_failsClearly() {
-        UniEnableException exception = assertThrows(UniEnableException.class,
-                () -> storage.loadResource("/missing-facility-test-resource.txt"));
-        assertTrue(exception.getMessage().contains("Missing facility dataset resource"));
-    }
-
-    /**
-     * Checks that a read failure reports its message and retains the original exception as its cause.
-     */
-    @Test
-    public void load_ioFailure_reportsCauseRatherThanEmptySuccess() {
-        IOException cause = new IOException("Simulated read failure");
-        Reader source = new Reader() {
-            /**
-             * Simulates a read failure so the loader's exception handling can be checked.
-             *
-             * @param buffer the destination buffer
-             * @param offset the starting buffer position
-             * @param length the requested character count
-             * @return no value because every read fails
-             * @throws IOException always, using the original simulated failure
-             */
+    void failures_reportCausesAndMissingResources() {
+        assertThrows(UniEnableException.class, () -> facilities.loadResource("/missing-facilities"));
+        IOException cause = new IOException("read failed");
+        Reader broken = new Reader() {
             @Override
             public int read(char[] buffer, int offset, int length) throws IOException {
                 throw cause;
             }
-
-            /**
-             * Does nothing because the failing test reader owns no resources.
-             */
             @Override
             public void close() {
-                // No resources are owned by this synthetic reader.
+                throw new AssertionError("Caller owns this reader");
             }
         };
-        UniEnableException exception = assertThrows(UniEnableException.class, () -> storage.load(source));
-        assertTrue(exception.getMessage().contains("Simulated read failure"));
-        assertSame(cause, exception.getCause());
-    }
-
-    /**
-     * Checks that loading does not close a reader owned by the caller.
-     */
-    @Test
-    public void load_callerOwnedReader_leavesReaderOpen() throws UniEnableException {
-        boolean[] closed = {false};
-        StringReader source = new StringReader("FACILITY|F01|AS1|Block") {
-            /**
-             * Records closure so the test can detect the loader closing a caller-owned reader.
-             */
+        var error = assertThrows(UniEnableException.class, () -> facilities.load(broken));
+        assertEquals(cause, error.getCause());
+        assertTrue(error.getMessage().contains("read failed"));
+        Reader closeFailure = new FilterReader(new StringReader("")) {
             @Override
-            public void close() {
-                closed[0] = true;
-                super.close();
+            public void close() throws IOException {
+                throw cause;
             }
         };
-        storage.load(source);
-        assertFalse(closed[0]);
-        source.close();
+        var closeError = assertThrows(UniEnableException.class, () -> facilities.loadOwnedReader(closeFailure));
+        assertEquals(cause, closeError.getCause());
     }
 
     /**
-     * Loads a small in-memory dataset without changing bundled resources.
-     *
-     * @param text facility and feature records to test
-     * @return the loaded records and warnings
-     * @throws UniEnableException if reading the dataset fails
+     * Retains the original storage cases directly in Java so fresh checkouts can run them.
      */
-    private LoadResult<Facility> load(String text) throws UniEnableException {
-        return storage.load(new StringReader(text));
-    }
-
-    /**
-     * Checks that exactly one warning reports the expected line and reason.
-     *
-     * @param result the load result to inspect
-     * @param line the expected physical line number
-     * @param reason the expected warning text
-     */
-    private void assertWarning(LoadResult<Facility> result, int line, String reason) {
-        assertEquals(1, result.getWarnings().size());
-        assertTrue(result.getWarnings().get(0).startsWith("Line " + line + ":"));
-        assertTrue(result.getWarnings().get(0).contains(reason));
-    }
-}
+    private static List<String[]> recordCases() {
+        return List.of(
+                new String[]{"F_EMPTY", "F", "", "0", "0", "", ""},
+                new String[]{"F_COMMENTS", "F", "# Header\n  # Indented\n\n  ", "0", "0", "", ""},
+                new String[]{"F_VALID", "F", "FACILITY|F01|AS1|", "1", "0", "F01|AS1|null|", ""},
+                new String[]{"F_BEFORE", "F", "FEATURE|F01|LIFT|YES|Note\nFACILITY|F01|AS1|", "1", "0",
+                    "F01|AS1|null|LIFT|YES|Note", ""},
+                new String[]{"F_OPTIONALS", "F",
+                    "FACILITY|F01|AS1|  Café  \nFEATURE|F01|LIFT|NO\nFEATURE|F01|RAMP|UNKNOWN|", "1", "0",
+                    "F01|AS1|  Café  |LIFT|NO|null;RAMP|UNKNOWN|null", ""},
+                new String[]{"F_TAG", "F", "OTHER|F01|AS1|\nFACILITY|F01|AS1|", "1", "1", "F01|AS1|null|",
+                    "Unknown record type"},
+                new String[]{"F_SHORT", "F", "FACILITY|F01|AS1\nFACILITY|F01|AS1|", "1", "1", "F01|AS1|null|",
+                    "exactly 4 fields"},
+                new String[]{"F_LONG", "F", "FACILITY|F01|AS1||extra\nFACILITY|F01|AS1|", "1", "1", "F01|AS1|null|",
+                    "exactly 4 fields"},
+                new String[]{"F_ID_EMPTY", "F", "FACILITY||AS1|\nFACILITY|F01|AS1|", "1", "1", "F01|AS1|null|",
+                    "must not be empty"},
+                new String[]{"F_NAME_EMPTY", "F", "FACILITY|F01| |\nFACILITY|F01|AS1|", "1", "1", "F01|AS1|null|",
+                    "must not be empty"},
+                new String[]{"F_ID_SPACE", "F", "FACILITY| F01|AS1|\nFACILITY|F01|AS1|", "1", "1", "F01|AS1|null|",
+                    "surrounding whitespace"},
+                new String[]{"F_NAME_SPACE", "F", "FACILITY|F01|AS1 |\nFACILITY|F01|AS1|", "1", "1", "F01|AS1|null|",
+                    "surrounding whitespace"},
+                new String[]{"F_FEAT_SHORT", "F", "FEATURE|F01|LIFT\nFACILITY|F01|AS1|", "1", "1", "F01|AS1|null|",
+                    "4 or 5 fields"},
+                new String[]{"F_FEAT_LONG", "F", "FEATURE|F01|LIFT|YES|x|x\nFACILITY|F01|AS1|", "1", "1",
+                    "F01|AS1|null|", "4 or 5 fields"},
+                new String[]{"F_FEAT_UNKNOWN", "F", "FEATURE|F99|LIFT|YES\nFACILITY|F01|AS1|", "1", "1",
+                    "F01|AS1|null|", "Unknown facility ID"},
+                new String[]{"F_FEAT_TYPE", "F", "FEATURE|F01|BAD|YES\nFACILITY|F01|AS1|", "1", "1", "F01|AS1|null|",
+                    "Invalid feature type"},
+                new String[]{"F_FEAT_STATUS", "F", "FEATURE|F01|LIFT|MAYBE\nFACILITY|F01|AS1|", "1", "1",
+                    "F01|AS1|null|", "Invalid accessibility status"},
+                new String[]{"F_DUP_ID", "F", "FACILITY|F01|AS1|\nFACILITY|f01|AS2|\nFACILITY|F02|AS2|", "2", "1",
+                    "F01|AS1|null|,F02|AS2|null|", "Line 2: Duplicate facility ID"},
+                new String[]{"F_DUP_NAME", "F", "FACILITY|F01|AS1|\nFACILITY|F02|as1|\nFACILITY|F02|AS2|", "2", "1",
+                    "F01|AS1|null|,F02|AS2|null|", "Line 2: Duplicate facility name"},
+                new String[]{"F_UNICODE_ID", "F", "FACILITY|Fİ1|AS1|\nFACILITY|Fi1|AS2|\nFEATURE|Fİ1|LIFT|YES", "1",
+                    "1", "Fİ1|AS1|null|LIFT|YES|null", "Duplicate facility ID"},
+                new String[]{"F_UNICODE_REVERSE", "F", "FACILITY|Fi1|AS1|\nFACILITY|Fİ1|AS2|", "1", "1",
+                    "Fi1|AS1|null|", "Duplicate facility ID"},
+                new String[]{"F_UNICODE_NAME", "F", "FACILITY|F01|ASİ|\nFACILITY|F02|ASi|\nFACILITY|F02|AS2|", "2",
+                    "1", "F01|ASİ|null|,F02|AS2|null|", "Duplicate facility name"},
+                new String[]{"F_DISTINCT", "F", "FACILITY|Fß1|AS1|\nFACILITY|FSS1|AS2|", "2", "0",
+                    "Fß1|AS1|null|,FSS1|AS2|null|", ""},
+                new String[]{"F_FEATURE_LIFT_YES", "F", "FACILITY|F01|AS1|\nFEATURE|F01|LIFT|YES|Note", "1", "0",
+                    "F01|AS1|null|LIFT|YES|Note", ""},
+                new String[]{"F_FEATURE_LIFT_NO", "F", "FACILITY|F01|AS1|\nFEATURE|F01|LIFT|NO|Note", "1", "0",
+                    "F01|AS1|null|LIFT|NO|Note", ""},
+                new String[]{"F_FEATURE_LIFT_UNKNOWN", "F", "FACILITY|F01|AS1|\nFEATURE|F01|LIFT|UNKNOWN|Note", "1",
+                    "0", "F01|AS1|null|LIFT|UNKNOWN|Note", ""},
+                new String[]{"F_FEATURE_RAMP_YES", "F", "FACILITY|F01|AS1|\nFEATURE|F01|RAMP|YES|Note", "1", "0",
+                    "F01|AS1|null|RAMP|YES|Note", ""},
+                new String[]{"F_FEATURE_RAMP_NO", "F", "FACILITY|F01|AS1|\nFEATURE|F01|RAMP|NO|Note", "1", "0",
+                    "F01|AS1|null|RAMP|NO|Note", ""},
+                new String[]{"F_FEATURE_RAMP_UNKNOWN", "F", "FACILITY|F01|AS1|\nFEATURE|F01|RAMP|UNKNOWN|Note", "1",
+                    "0", "F01|AS1|null|RAMP|UNKNOWN|Note", ""},
+                new String[]{"F_FEATURE_SHELTERED_RAMP_YES", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|SHELTERED_RAMP|YES|Note", "1", "0",
+                    "F01|AS1|null|SHELTERED_RAMP|YES|Note", ""},
+                new String[]{"F_FEATURE_SHELTERED_RAMP_NO", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|SHELTERED_RAMP|NO|Note", "1", "0",
+                    "F01|AS1|null|SHELTERED_RAMP|NO|Note", ""},
+                new String[]{"F_FEATURE_SHELTERED_RAMP_UNKNOWN", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|SHELTERED_RAMP|UNKNOWN|Note", "1", "0",
+                    "F01|AS1|null|SHELTERED_RAMP|UNKNOWN|Note", ""},
+                new String[]{"F_FEATURE_ACCESSIBLE_WASHROOM_YES", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|ACCESSIBLE_WASHROOM|YES|Note", "1", "0",
+                    "F01|AS1|null|ACCESSIBLE_WASHROOM|YES|Note", ""},
+                new String[]{"F_FEATURE_ACCESSIBLE_WASHROOM_NO", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|ACCESSIBLE_WASHROOM|NO|Note", "1", "0",
+                    "F01|AS1|null|ACCESSIBLE_WASHROOM|NO|Note", ""},
+                new String[]{"F_FEATURE_ACCESSIBLE_WASHROOM_UNKNOWN", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|ACCESSIBLE_WASHROOM|UNKNOWN|Note", "1", "0",
+                    "F01|AS1|null|ACCESSIBLE_WASHROOM|UNKNOWN|Note", ""},
+                new String[]{"F_FEATURE_STEP_FREE_ENTRANCE_YES", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|STEP_FREE_ENTRANCE|YES|Note", "1", "0",
+                    "F01|AS1|null|STEP_FREE_ENTRANCE|YES|Note", ""},
+                new String[]{"F_FEATURE_STEP_FREE_ENTRANCE_NO", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|STEP_FREE_ENTRANCE|NO|Note", "1", "0",
+                    "F01|AS1|null|STEP_FREE_ENTRANCE|NO|Note", ""},
+                new String[]{"F_FEATURE_STEP_FREE_ENTRANCE_UNKNOWN", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|STEP_FREE_ENTRANCE|UNKNOWN|Note", "1", "0",
+                    "F01|AS1|null|STEP_FREE_ENTRANCE|UNKNOWN|Note", ""},
+                new String[]{"F_FEATURE_REST_POINT_YES", "F", "FACILITY|F01|AS1|\nFEATURE|F01|REST_POINT|YES|Note",
+                    "1", "0", "F01|AS1|null|REST_POINT|YES|Note", ""},
+                new String[]{"F_FEATURE_REST_POINT_NO", "F", "FACILITY|F01|AS1|\nFEATURE|F01|REST_POINT|NO|Note",
+                    "1", "0", "F01|AS1|null|REST_POINT|NO|Note", ""},
+                new String[]{"F_FEATURE_REST_POINT_UNKNOWN", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|REST_POINT|UNKNOWN|Note", "1", "0",
+                    "F01|AS1|null|REST_POINT|UNKNOWN|Note", ""},
+                new String[]{"F_FEATURE_AUTOMATIC_DOOR_YES", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|AUTOMATIC_DOOR|YES|Note", "1", "0",
+                    "F01|AS1|null|AUTOMATIC_DOOR|YES|Note", ""},
+                new String[]{"F_FEATURE_AUTOMATIC_DOOR_NO", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|AUTOMATIC_DOOR|NO|Note", "1", "0",
+                    "F01|AS1|null|AUTOMATIC_DOOR|NO|Note", ""},
+                new String[]{"F_FEATURE_AUTOMATIC_DOOR_UNKNOWN", "F",
+                    "FACILITY|F01|AS1|\nFEATURE|F01|AUTOMATIC_DOOR|UNKNOWN|Note", "1", "0",
+                    "F01|AS1|null|AUTOMATIC_DOOR|UNKNOWN|Note", ""},
+                new String[]{"F_FEATURE_OTHER_YES", "F", "FACILITY|F01|AS1|\nFEATURE|F01|OTHER|YES|Note", "1", "0",
+                    "F01|AS1|null|OTHER|YES|Note", ""},
+                new String[]{"F_FEATURE_OTHER_NO", "F", "FACILITY|F01|AS1|\nFEATURE|F01|OTHER|NO|Note", "1", "0",
+                    "F01|AS1|null|OTHER|NO|Note", ""},
+                new String[]{"F_FEATURE_OTHER_UNKNOWN", "F", "FACILITY|F01|AS1|\nFEATURE|F01|OTHER|UNKNOWN|Note",
+                    "1", "0", "F01|AS1|null|OTHER|UNKNOWN|Note", ""});
+    }}

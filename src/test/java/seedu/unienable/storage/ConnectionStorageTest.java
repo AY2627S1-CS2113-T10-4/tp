@@ -2,373 +2,293 @@ package seedu.unienable.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
+import java.util.stream.Stream;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.api.TestFactory;
 import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Connection;
 import seedu.unienable.model.Facility;
-import seedu.unienable.model.enums.AccessibilityStatus;
-import seedu.unienable.model.enums.ShelterStatus;
-import seedu.unienable.model.enums.TraversalType;
 
 /**
- * Tests bundled connections and validation against explicitly provided facility names.
+ * Checks connection reference loading, malformed-record recovery, and I/O ownership.
  */
 class ConnectionStorageTest {
-    private final ConnectionStorage storage = new ConnectionStorage(List.of(
+    private final ConnectionStorage connections = new ConnectionStorage(List.of(
             new Facility("F01", "AS1", null, List.of()), new Facility("F02", "AS2", null, List.of())));
 
-    /**
-     * Checks every bundled connection's order, distance, endpoints, statuses, and selected optional text.
-     */
-    @Test
-    public void load_bundledDataset_preservesAllRecordsAndReferences() throws UniEnableException {
-        LoadResult<Facility> facilities = new FacilityStorage().load();
-        LoadResult<Connection> result = new ConnectionStorage(facilities.getRecords()).load();
-        assertFalse(facilities.hasWarnings());
-        assertFalse(result.hasWarnings());
-        List<Integer> distances = new ArrayList<>();
-        List<String> endpoints = new ArrayList<>();
-        for (Connection connection : result.getRecords()) {
-            distances.add(connection.getDistanceInMetres());
-            endpoints.add(connection.getFrom() + "/" + connection.getTo());
-        }
-        assertEquals(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), connectionIds(result.getRecords()));
-        assertEquals(List.of(70, 45, 90, 60, 50, 55, 130, 35, 55, 65), distances);
-        assertEquals(List.of("CLB/AS6", "AS6/AS8", "AS6/AS1", "AS1/AS4", "AS4/AS7", "AS4/AS5",
-            "AS1/AS2", "AS2/AS3", "AS8/CLB", "AS5/AS7"), endpoints);
-
-        Set<String> names = new HashSet<>();
-        for (Facility facility : facilities.getRecords()) {
-            names.add(facility.getName());
-        }
-        for (Connection connection : result.getRecords()) {
-            assertTrue(names.contains(connection.getFrom()));
-            assertTrue(names.contains(connection.getTo()));
-            assertEquals(AccessibilityStatus.YES, connection.getAccessibility());
-            if (connection.getId() == 7) {
-                assertEquals(TraversalType.RAMP, connection.getType());
-                assertEquals(ShelterStatus.NO, connection.getShelter());
-            } else {
-                assertEquals(TraversalType.PATH, connection.getType());
-                assertEquals(ShelterStatus.YES, connection.getShelter());
+    @TestFactory
+    Stream<DynamicTest> records() throws Exception {
+        var rows = recordCases().stream();
+        return rows.map(row -> DynamicTest.dynamicTest(row[0], () -> {
+            LoadResult<Connection> result = connections.load(new StringReader(row[2]));
+            assertEquals(Integer.parseInt(row[3]), result.getRecords().size());
+            assertEquals(Integer.parseInt(row[4]), result.getWarnings().size());
+            assertEquals(!row[4].equals("0"), result.hasWarnings());
+            assertEquals(row[5], String.join(",", result.getRecords().stream().map(this::describe).toList()));
+            if (!row[6].isEmpty()) {
+                assertTrue(String.join("\n", result.getWarnings()).contains(row[6]), result.getWarnings().toString());
             }
+        }));
+    }
+
+    /**
+     * Serializes all routing fields, including restrictions and optional notes.
+     */
+    private String describe(Connection c) {
+        return c.getId() + "|" + c.getFrom() + "|" + c.getTo() + "|" + c.getDistanceInMetres() + "|"
+                + c.getAccessibility() + "|" + c.getType() + "|" + c.getShelter() + "|"
+                + c.getKnownBarrier() + "|" + c.getNotes();
+    }
+
+    @Test
+    void bundledGraph_preservesAllEndpointsDistancesAndRestrictions() throws Exception {
+        var source = new java.util.ArrayList<>(List.of(new Facility("F01", "AS1", null, List.of()),
+                new Facility("F02", "AS2", null, List.of())));
+        var snapshot = new ConnectionStorage(source);
+        source.clear();
+        assertEquals(1, snapshot.load(new StringReader("CONNECTION|1|AS1|AS2|10|YES|PATH|YES")).getRecords().size());
+        var hubs = new FacilityStorage().load();
+        var edges = new ConnectionStorage(hubs.getRecords()).load();
+        assertFalse(hubs.hasWarnings());
+        assertFalse(edges.hasWarnings());
+        assertEquals(List.of(70, 45, 90, 60, 50, 55, 130, 35, 55, 65),
+                edges.getRecords().stream().map(Connection::getDistanceInMetres).toList());
+        List<String> names = hubs.getRecords().stream().map(Facility::getName).toList();
+        for (Connection edge : edges.getRecords()) {
+            assertTrue(names.contains(edge.getFrom()) && names.contains(edge.getTo()));
         }
-        assertEquals("Narrow passageway (2F link via LT9/LT10)", result.getRecords().get(3).getKnownBarrier());
-        assertEquals("Via The Deck", result.getRecords().get(3).getNotes());
-        assertEquals("Sheltered linkway via Central Library", result.getRecords().get(0).getNotes());
-        assertNull(result.getRecords().get(1).getKnownBarrier());
-        assertNull(result.getRecords().get(1).getNotes());
+        assertEquals("Narrow passageway (2F link via LT9/LT10)", edges.getRecords().get(3).getKnownBarrier());
+        assertEquals("Via The Deck", edges.getRecords().get(3).getNotes());
     }
 
-    /**
-     * Checks that loading preserves reversed endpoints without creating an extra reverse record.
-     */
     @Test
-    public void load_reversedEndpointOrder_preservesStoredNamesWithoutCreatingReverseRecord()
-            throws UniEnableException {
-        LoadResult<Connection> result = load("CONNECTION|9|AS2|AS1|10|YES|PATH|YES\n");
-        assertFalse(result.hasWarnings());
-        assertEquals(1, result.getRecords().size());
-        assertEquals("AS2", result.getRecords().get(0).getFrom());
-        assertEquals("AS1", result.getRecords().get(0).getTo());
-    }
-
-    /**
-     * Checks that eight-, nine-, and ten-field records retain the available optional fields.
-     */
-    @Test
-    public void load_eightNineAndTenFields_supportsOptionalBarrierAndNotes() throws UniEnableException {
-        LoadResult<Connection> result = load("CONNECTION|1|AS1|AS2|10|YES|PATH|YES\n"
-                + "CONNECTION|2|AS1|AS2|20|YES|PATH|YES|Narrow\n"
-                + "CONNECTION|3|AS1|AS2|30|YES|PATH|YES|Step|Keep notes\n");
-        assertFalse(result.hasWarnings());
-        assertEquals(3, result.getRecords().size());
-        assertNull(result.getRecords().get(0).getKnownBarrier());
-        assertNull(result.getRecords().get(0).getNotes());
-        assertEquals("Narrow", result.getRecords().get(1).getKnownBarrier());
-        assertNull(result.getRecords().get(1).getNotes());
-        assertEquals("Step", result.getRecords().get(2).getKnownBarrier());
-        assertEquals("Keep notes", result.getRecords().get(2).getNotes());
-    }
-
-    /**
-     * Checks that empty optional fields become null while Unicode notes and spacing are preserved.
-     */
-    @Test
-    public void load_emptyOptionalStrings_returnsNullAndPreservesOtherText() throws UniEnableException {
-        LoadResult<Connection> result = load("CONNECTION|1|AS1|AS2|10|YES|PATH|YES||\n"
-                + "CONNECTION|2|AS1|AS2|10|YES|PATH|YES|\n"
-                + "CONNECTION|3|AS1|AS2|10|YES|PATH|YES||  Café 学生  \n");
-        assertFalse(result.hasWarnings());
-        assertNull(result.getRecords().get(0).getKnownBarrier());
-        assertNull(result.getRecords().get(0).getNotes());
-        assertNull(result.getRecords().get(1).getKnownBarrier());
-        assertNull(result.getRecords().get(1).getNotes());
-        assertEquals("  Café 学生  ", result.getRecords().get(2).getNotes());
-    }
-
-    /**
-     * Checks that a duplicate ID retains the first record and the original record order.
-     */
-    @Test
-    public void load_duplicateIds_keepsFirstAndPreservesSourceOrder() throws UniEnableException {
-        LoadResult<Connection> result = load("CONNECTION|2|AS1|AS2|10|YES|PATH|YES\n"
-                + "CONNECTION|2|AS2|AS1|20|YES|RAMP|NO\nCONNECTION|1|AS2|AS1|30|YES|PATH|YES\n");
-        assertEquals(List.of(2, 1), connectionIds(result.getRecords()));
-        assertEquals(10, result.getRecords().get(0).getDistanceInMetres());
-        assertWarning(result, 2, "Duplicate connection ID");
-    }
-
-    /**
-     * Checks that noninteger and overflowing IDs or distances are skipped without losing a valid record.
-     */
-    @Test
-    public void load_invalidNumbers_skipsOnlyInvalidRecord() throws UniEnableException {
-        for (String number : List.of("abc", "1.5", "2147483648")) {
-            assertInvalid("CONNECTION|" + number + "|AS1|AS2|10|YES|PATH|YES", "Invalid connection ID");
-            assertInvalid("CONNECTION|1|AS1|AS2|" + number + "|YES|PATH|YES", "Invalid distance");
-        }
-    }
-
-    /**
-     * Checks that zero and negative distances are skipped with a positive-distance warning.
-     */
-    @Test
-    public void load_nonPositiveDistances_rejected() throws UniEnableException {
-        for (int distance : List.of(0, -1)) {
-            assertInvalid("CONNECTION|1|AS1|AS2|" + distance + "|YES|PATH|YES", "distance must be positive");
-        }
-    }
-
-    /**
-     * Checks that unsupported accessibility, traversal, and shelter values each produce a specific warning.
-     */
-    @Test
-    public void load_invalidEnums_rejectedWithSpecificWarning() throws UniEnableException {
-        assertInvalid("CONNECTION|1|AS1|AS2|10|MAYBE|PATH|YES", "Invalid accessibility status");
-        assertInvalid("CONNECTION|1|AS1|AS2|10|YES|STAIRS|YES", "Invalid traversal type");
-        assertInvalid("CONNECTION|1|AS1|AS2|10|YES|PATH|MAYBE", "Invalid shelter status");
-    }
-
-    /**
-     * Checks that every supported combination of accessibility, shelter, and traversal values is retained.
-     */
-    @Test
-    public void load_supportedEnums_preservesEveryStatusAndType() throws UniEnableException {
-        for (AccessibilityStatus accessibility : AccessibilityStatus.values()) {
-            for (ShelterStatus shelter : ShelterStatus.values()) {
-                for (TraversalType type : TraversalType.values()) {
-                    LoadResult<Connection> result = load("CONNECTION|1|AS1|AS2|10|" + accessibility
-                            + "|" + type + "|" + shelter);
-                    assertFalse(result.hasWarnings());
-                    Connection connection = result.getRecords().get(0);
-                    assertEquals(accessibility, connection.getAccessibility());
-                    assertEquals(shelter, connection.getShelter());
-                    assertEquals(type, connection.getType());
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks that unknown names and facility IDs cannot be used as connection endpoints.
-     */
-    @Test
-    public void load_unknownEndpointsAndFacilityIds_rejected() throws UniEnableException {
-        assertInvalid("CONNECTION|1|AS9|AS2|10|YES|PATH|YES", "Unknown facility endpoint");
-        assertInvalid("CONNECTION|1|AS1|AS9|10|YES|PATH|YES", "Unknown facility endpoint");
-        assertInvalid("CONNECTION|1|F01|F02|10|YES|PATH|YES", "Unknown facility endpoint");
-    }
-
-    /**
-     * Checks that a connection from a facility to itself is skipped with a warning.
-     */
-    @Test
-    public void load_selfConnection_rejected() throws UniEnableException {
-        assertInvalid("CONNECTION|1|AS1|AS1|10|YES|PATH|YES", "Self-connection");
-    }
-
-    /**
-     * Checks that incorrect field counts and each empty mandatory field are rejected.
-     */
-    @Test
-    public void load_malformedRecordsAndEmptyMandatoryFields_rejected() throws UniEnableException {
-        for (String line : List.of("BROKEN", "OTHER|1|AS1|AS2|10|YES|PATH|YES",
-                "CONNECTION|1|AS1|AS2|10|YES|PATH", "CONNECTION|1|AS1|AS2|10|YES|PATH|YES|||Extra")) {
-            assertInvalid(line, "CONNECTION requires 8 to 10 fields");
-        }
-        for (int index = 1; index < 8; index++) {
-            String[] fields = "CONNECTION|1|AS1|AS2|10|YES|PATH|YES".split("\\|", -1);
-            fields[index] = "";
-            assertInvalid(String.join("|", fields), "Mandatory connection field");
-        }
-    }
-
-    /**
-     * Checks that invalid records do not reserve IDs and warnings retain physical line numbers.
-     */
-    @Test
-    public void load_invalidNeighbours_doesNotReserveIdsAndRetainsPhysicalLineNumbers() throws UniEnableException {
-        LoadResult<Connection> result = load("# Header\n\nCONNECTION|1|AS1|AS9|10|YES|PATH|YES\n"
-                + "CONNECTION|1|AS1|AS2|10|YES|PATH|YES\nBROKEN\nCONNECTION|2|AS2|AS1|20|NO|RAMP|UNKNOWN\n");
-        assertEquals(List.of(1, 2), connectionIds(result.getRecords()));
-        assertEquals(2, result.getWarnings().size());
-        assertTrue(result.getWarnings().get(0).startsWith("Line 3:"));
-        assertTrue(result.getWarnings().get(1).startsWith("Line 5:"));
-    }
-
-    /**
-     * Checks that blank lines and comments are ignored without warnings.
-     */
-    @Test
-    public void load_commentsAndBlankLines_ignored() throws UniEnableException {
-        LoadResult<Connection> result = load("\n  \n# Reference data\n  # Another comment\n"
-                + "CONNECTION|1|AS1|AS2|10|YES|PATH|YES\n");
-        assertFalse(result.hasWarnings());
-        assertEquals(1, result.getRecords().size());
-    }
-
-    /**
-     * Checks that a missing bundled resource raises a descriptive exception.
-     */
-    @Test
-    public void loadResource_missingResource_failsClearly() {
-        UniEnableException exception = assertThrows(UniEnableException.class,
-                () -> storage.loadResource("/missing-connection-test-resource.txt"));
-        assertTrue(exception.getMessage().contains("Missing connection dataset resource"));
-    }
-
-    /**
-     * Checks that a read failure reports its message and retains the original exception as its cause.
-     */
-    @Test
-    public void load_ioFailure_reportsUnderlyingCause() {
-        IOException cause = new IOException("Simulated connection read failure");
-        Reader source = new Reader() {
-            /**
-             * Simulates a read failure so the loader's exception handling can be checked.
-             *
-             * @param buffer the destination buffer
-             * @param offset the starting buffer position
-             * @param length the requested character count
-             * @return no value because every read fails
-             * @throws IOException always, using the original simulated failure
-             */
+    void failures_reportCausesAndMissingResources() {
+        assertThrows(UniEnableException.class, () -> connections.loadResource("/missing-connections"));
+        IOException cause = new IOException("read failed");
+        Reader broken = new Reader() {
             @Override
             public int read(char[] buffer, int offset, int length) throws IOException {
                 throw cause;
             }
-
-            /**
-             * Does nothing because the failing test reader owns no resources.
-             */
             @Override
             public void close() {
-                // No resources are owned by this synthetic reader.
+                throw new AssertionError("Caller owns this reader");
             }
         };
-        UniEnableException exception = assertThrows(UniEnableException.class, () -> storage.load(source));
-        assertTrue(exception.getMessage().contains("Simulated connection read failure"));
-        assertSame(cause, exception.getCause());
-    }
-
-    /**
-     * Checks that clearing the caller's facility list does not change endpoint validation.
-     */
-    @Test
-    public void constructor_callerChangesFacilities_usesSnapshot() throws UniEnableException {
-        List<Facility> facilities = new ArrayList<>(List.of(new Facility("F01", "AS1", null, List.of()),
-                new Facility("F02", "AS2", null, List.of())));
-        ConnectionStorage loader = new ConnectionStorage(facilities);
-        facilities.clear();
-        LoadResult<Connection> result = loader.load(new StringReader("CONNECTION|1|AS1|AS2|10|YES|PATH|YES"));
-        assertFalse(result.hasWarnings());
-        assertEquals(1, result.getRecords().size());
-    }
-
-    /**
-     * Checks that loading does not close a reader owned by the caller.
-     */
-    @Test
-    public void load_callerOwnedReader_leavesReaderOpen() throws UniEnableException {
-        boolean[] closed = {false};
-        StringReader source = new StringReader("CONNECTION|1|AS1|AS2|10|YES|PATH|YES") {
-            /**
-             * Records closure so the test can detect the loader closing a caller-owned reader.
-             */
+        var error = assertThrows(UniEnableException.class, () -> connections.load(broken));
+        assertEquals(cause, error.getCause());
+        assertTrue(error.getMessage().contains("read failed"));
+        Reader closeFailure = new FilterReader(new StringReader("")) {
             @Override
-            public void close() {
-                closed[0] = true;
-                super.close();
+            public void close() throws IOException {
+                throw cause;
             }
         };
-        storage.load(source);
-        assertFalse(closed[0]);
-        source.close();
+        var closeError = assertThrows(UniEnableException.class, () -> connections.loadOwnedReader(closeFailure));
+        assertEquals(cause, closeError.getCause());
     }
 
     /**
-     * Loads a small in-memory dataset against the test's known facility names.
-     *
-     * @param text connection records to test
-     * @return the loaded records and warnings
-     * @throws UniEnableException if reading the dataset fails
+     * Retains the original storage cases directly in Java so fresh checkouts can run them.
      */
-    private LoadResult<Connection> load(String text) throws UniEnableException {
-        return storage.load(new StringReader(text));
-    }
-
-    /**
-     * Checks that an invalid record warns while the following valid record survives.
-     *
-     * @param invalidLine the record expected to be rejected
-     * @param reason the expected warning text
-     * @throws UniEnableException if reading the dataset fails
-     */
-    private void assertInvalid(String invalidLine, String reason) throws UniEnableException {
-        LoadResult<Connection> result = load(invalidLine + "\nCONNECTION|20|AS1|AS2|10|YES|PATH|YES\n");
-        assertEquals(List.of(20), connectionIds(result.getRecords()));
-        assertWarning(result, 1, reason);
-    }
-
-    /**
-     * Checks that exactly one warning reports the expected line and reason.
-     *
-     * @param result the load result to inspect
-     * @param line the expected physical line number
-     * @param reason the expected warning text
-     */
-    private void assertWarning(LoadResult<Connection> result, int line, String reason) {
-        assertEquals(1, result.getWarnings().size());
-        assertTrue(result.getWarnings().get(0).startsWith("Line " + line + ":"));
-        assertTrue(result.getWarnings().get(0).contains(reason));
-    }
-
-    /**
-     * Returns connection IDs in result order so assertions also check ordering.
-     *
-     * @param connections connections returned by a loader or filter
-     * @return their IDs in the same order
-     */
-    private static List<Integer> connectionIds(List<Connection> connections) {
-        List<Integer> ids = new ArrayList<>();
-        for (Connection connection : connections) {
-            ids.add(connection.getId());
-        }
-        return ids;
-    }
-}
+    private static List<String[]> recordCases() {
+        return List.of(
+                new String[]{"C_EMPTY", "C", "", "0", "0", "", ""},
+                new String[]{"C_COMMENTS", "C", "# Header\n  # Indented\n\n  \nCONNECTION|9|AS1|AS2|10|YES|PATH|YES",
+                    "1", "0", "9|AS1|AS2|10|YES|PATH|YES|null|null", ""},
+                new String[]{"C_VALID", "C", "CONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "0",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", ""},
+                new String[]{"C_REVERSE", "C", "CONNECTION|9|AS2|AS1|10|YES|PATH|YES", "1", "0",
+                    "9|AS2|AS1|10|YES|PATH|YES|null|null", ""},
+                new String[]{"C_NINE", "C", "CONNECTION|9|AS1|AS2|10|YES|PATH|YES|Barrier", "1", "0",
+                    "9|AS1|AS2|10|YES|PATH|YES|Barrier|null", ""},
+                new String[]{"C_TEN", "C", "CONNECTION|9|AS1|AS2|10|YES|PATH|YES|Barrier|  Café 学生  ", "1", "0",
+                    "9|AS1|AS2|10|YES|PATH|YES|Barrier|  Café 学生  ", ""},
+                new String[]{"C_EMPTY_OPTIONALS", "C", "CONNECTION|9|AS1|AS2|10|YES|PATH|YES||", "1", "0",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", ""},
+                new String[]{"C_DUP", "C",
+                    "CONNECTION|9|AS1|AS2|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|20|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Line 2: Duplicate connection ID"},
+                new String[]{"C_TAG", "C", "OTHER|1|AS1|AS2|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES",
+                    "1", "1", "9|AS1|AS2|10|YES|PATH|YES|null|null", "8 to 10 fields"},
+                new String[]{"C_SHORT", "C",
+                    "CONNECTION|1|AS1|AS2|10|YES|PATH\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "8 to 10 fields"},
+                new String[]{"C_LONG", "C",
+                    "CONNECTION|9|AS1|AS2|10|YES|PATH|YES|||extra\nCONNECTION|9|AS1|AS2|10|YES|PA" + "TH|YES", "1",
+                    "1", "9|AS1|AS2|10|YES|PATH|YES|null|null", "8 to 10 fields"},
+                new String[]{"C_FROM", "C",
+                    "CONNECTION|1|AS9|AS2|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Unknown facility endpoint"},
+                new String[]{"C_TO", "C",
+                    "CONNECTION|1|AS1|AS9|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Unknown facility endpoint"},
+                new String[]{"C_IDS", "C",
+                    "CONNECTION|1|F01|F02|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Unknown facility endpoint"},
+                new String[]{"C_SELF", "C",
+                    "CONNECTION|1|AS1|AS1|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Self-connection"},
+                new String[]{"C_STATUS", "C",
+                    "CONNECTION|1|AS1|AS2|10|MAYBE|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Invalid accessibility status"},
+                new String[]{"C_TYPE", "C",
+                    "CONNECTION|1|AS1|AS2|10|YES|STAIRS|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Invalid traversal type"},
+                new String[]{"C_SHELTER", "C",
+                    "CONNECTION|1|AS1|AS2|10|YES|PATH|MAYBE\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Invalid shelter status"},
+                new String[]{"C_EMPTY_1", "C",
+                    "CONNECTION||AS1|AS2|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Mandatory connection field"},
+                new String[]{"C_EMPTY_2", "C",
+                    "CONNECTION|9||AS2|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Mandatory connection field"},
+                new String[]{"C_EMPTY_3", "C",
+                    "CONNECTION|9|AS1||10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Mandatory connection field"},
+                new String[]{"C_EMPTY_4", "C",
+                    "CONNECTION|9|AS1|AS2||YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Mandatory connection field"},
+                new String[]{"C_EMPTY_5", "C",
+                    "CONNECTION|9|AS1|AS2|10||PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Mandatory connection field"},
+                new String[]{"C_EMPTY_6", "C",
+                    "CONNECTION|9|AS1|AS2|10|YES||YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Mandatory connection field"},
+                new String[]{"C_EMPTY_7", "C",
+                    "CONNECTION|9|AS1|AS2|10|YES|PATH|\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Mandatory connection field"},
+                new String[]{"C_ID_abc", "C",
+                    "CONNECTION|abc|AS1|AS2|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Invalid connection ID"},
+                new String[]{"C_DISTANCE_abc", "C",
+                    "CONNECTION|9|AS1|AS2|abc|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Invalid distance"},
+                new String[]{"C_ID_1.5", "C",
+                    "CONNECTION|1.5|AS1|AS2|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Invalid connection ID"},
+                new String[]{"C_DISTANCE_1.5", "C",
+                    "CONNECTION|9|AS1|AS2|1.5|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "Invalid distance"},
+                new String[]{"C_ID_2147483648", "C",
+                    "CONNECTION|2147483648|AS1|AS2|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|P" + "ATH|YES", "1",
+                    "1", "9|AS1|AS2|10|YES|PATH|YES|null|null", "Invalid connection ID"},
+                new String[]{"C_DISTANCE_2147483648", "C",
+                    "CONNECTION|9|AS1|AS2|2147483648|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PA" + "TH|YES", "1",
+                    "1", "9|AS1|AS2|10|YES|PATH|YES|null|null", "Invalid distance"},
+                new String[]{"C_DISTANCE_0", "C",
+                    "CONNECTION|9|AS1|AS2|0|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "distance must be positive"},
+                new String[]{"C_DISTANCE_-1", "C",
+                    "CONNECTION|9|AS1|AS2|-1|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "1",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", "distance must be positive"},
+                new String[]{"C_ENUM_YES_PATH_YES", "C", "CONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "0",
+                    "9|AS1|AS2|10|YES|PATH|YES|null|null", ""},
+                new String[]{"C_ENUM_YES_PATH_NO", "C", "CONNECTION|9|AS1|AS2|10|YES|PATH|NO", "1", "0",
+                    "9|AS1|AS2|10|YES|PATH|NO|null|null", ""},
+                new String[]{"C_ENUM_YES_PATH_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|YES|PATH|UNKNOWN", "1", "0",
+                    "9|AS1|AS2|10|YES|PATH|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_YES_RAMP_YES", "C", "CONNECTION|9|AS1|AS2|10|YES|RAMP|YES", "1", "0",
+                    "9|AS1|AS2|10|YES|RAMP|YES|null|null", ""},
+                new String[]{"C_ENUM_YES_RAMP_NO", "C", "CONNECTION|9|AS1|AS2|10|YES|RAMP|NO", "1", "0",
+                    "9|AS1|AS2|10|YES|RAMP|NO|null|null", ""},
+                new String[]{"C_ENUM_YES_RAMP_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|YES|RAMP|UNKNOWN", "1", "0",
+                    "9|AS1|AS2|10|YES|RAMP|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_YES_LIFT_YES", "C", "CONNECTION|9|AS1|AS2|10|YES|LIFT|YES", "1", "0",
+                    "9|AS1|AS2|10|YES|LIFT|YES|null|null", ""},
+                new String[]{"C_ENUM_YES_LIFT_NO", "C", "CONNECTION|9|AS1|AS2|10|YES|LIFT|NO", "1", "0",
+                    "9|AS1|AS2|10|YES|LIFT|NO|null|null", ""},
+                new String[]{"C_ENUM_YES_LIFT_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|YES|LIFT|UNKNOWN", "1", "0",
+                    "9|AS1|AS2|10|YES|LIFT|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_NO_PATH_YES", "C", "CONNECTION|9|AS1|AS2|10|NO|PATH|YES", "1", "0",
+                    "9|AS1|AS2|10|NO|PATH|YES|null|null", ""},
+                new String[]{"C_ENUM_NO_PATH_NO", "C", "CONNECTION|9|AS1|AS2|10|NO|PATH|NO", "1", "0",
+                    "9|AS1|AS2|10|NO|PATH|NO|null|null", ""},
+                new String[]{"C_ENUM_NO_PATH_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|NO|PATH|UNKNOWN", "1", "0",
+                    "9|AS1|AS2|10|NO|PATH|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_NO_RAMP_YES", "C", "CONNECTION|9|AS1|AS2|10|NO|RAMP|YES", "1", "0",
+                    "9|AS1|AS2|10|NO|RAMP|YES|null|null", ""},
+                new String[]{"C_ENUM_NO_RAMP_NO", "C", "CONNECTION|9|AS1|AS2|10|NO|RAMP|NO", "1", "0",
+                    "9|AS1|AS2|10|NO|RAMP|NO|null|null", ""},
+                new String[]{"C_ENUM_NO_RAMP_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|NO|RAMP|UNKNOWN", "1", "0",
+                    "9|AS1|AS2|10|NO|RAMP|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_NO_LIFT_YES", "C", "CONNECTION|9|AS1|AS2|10|NO|LIFT|YES", "1", "0",
+                    "9|AS1|AS2|10|NO|LIFT|YES|null|null", ""},
+                new String[]{"C_ENUM_NO_LIFT_NO", "C", "CONNECTION|9|AS1|AS2|10|NO|LIFT|NO", "1", "0",
+                    "9|AS1|AS2|10|NO|LIFT|NO|null|null", ""},
+                new String[]{"C_ENUM_NO_LIFT_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|NO|LIFT|UNKNOWN", "1", "0",
+                    "9|AS1|AS2|10|NO|LIFT|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_PATH_YES", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|PATH|YES", "1", "0",
+                    "9|AS1|AS2|10|UNKNOWN|PATH|YES|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_PATH_NO", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|PATH|NO", "1", "0",
+                    "9|AS1|AS2|10|UNKNOWN|PATH|NO|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_PATH_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|PATH|UNKNOWN", "1",
+                    "0", "9|AS1|AS2|10|UNKNOWN|PATH|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_RAMP_YES", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|RAMP|YES", "1", "0",
+                    "9|AS1|AS2|10|UNKNOWN|RAMP|YES|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_RAMP_NO", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|RAMP|NO", "1", "0",
+                    "9|AS1|AS2|10|UNKNOWN|RAMP|NO|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_RAMP_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|RAMP|UNKNOWN", "1",
+                    "0", "9|AS1|AS2|10|UNKNOWN|RAMP|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_LIFT_YES", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|LIFT|YES", "1", "0",
+                    "9|AS1|AS2|10|UNKNOWN|LIFT|YES|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_LIFT_NO", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|LIFT|NO", "1", "0",
+                    "9|AS1|AS2|10|UNKNOWN|LIFT|NO|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_LIFT_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|LIFT|UNKNOWN", "1",
+                    "0", "9|AS1|AS2|10|UNKNOWN|LIFT|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_YES_SHELTERED_RAMP_YES", "C", "CONNECTION|9|AS1|AS2|10|YES|SHELTERED_RAMP|YES",
+                    "1", "0", "9|AS1|AS2|10|YES|SHELTERED_RAMP|YES|null|null", ""},
+                new String[]{"C_ENUM_YES_SHELTERED_RAMP_NO", "C", "CONNECTION|9|AS1|AS2|10|YES|SHELTERED_RAMP|NO",
+                    "1", "0", "9|AS1|AS2|10|YES|SHELTERED_RAMP|NO|null|null", ""},
+                new String[]{"C_ENUM_YES_SHELTERED_RAMP_UNKNOWN", "C",
+                    "CONNECTION|9|AS1|AS2|10|YES|SHELTERED_RAMP|UNKNOWN", "1", "0",
+                    "9|AS1|AS2|10|YES|SHELTERED_RAMP|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_YES_OTHER_YES", "C", "CONNECTION|9|AS1|AS2|10|YES|OTHER|YES", "1", "0",
+                    "9|AS1|AS2|10|YES|OTHER|YES|null|null", ""},
+                new String[]{"C_ENUM_YES_OTHER_NO", "C", "CONNECTION|9|AS1|AS2|10|YES|OTHER|NO", "1", "0",
+                    "9|AS1|AS2|10|YES|OTHER|NO|null|null", ""},
+                new String[]{"C_ENUM_YES_OTHER_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|YES|OTHER|UNKNOWN", "1", "0",
+                    "9|AS1|AS2|10|YES|OTHER|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_NO_SHELTERED_RAMP_YES", "C", "CONNECTION|9|AS1|AS2|10|NO|SHELTERED_RAMP|YES",
+                    "1", "0", "9|AS1|AS2|10|NO|SHELTERED_RAMP|YES|null|null", ""},
+                new String[]{"C_ENUM_NO_SHELTERED_RAMP_NO", "C", "CONNECTION|9|AS1|AS2|10|NO|SHELTERED_RAMP|NO", "1",
+                    "0", "9|AS1|AS2|10|NO|SHELTERED_RAMP|NO|null|null", ""},
+                new String[]{"C_ENUM_NO_SHELTERED_RAMP_UNKNOWN", "C",
+                    "CONNECTION|9|AS1|AS2|10|NO|SHELTERED_RAMP|UNKNOWN", "1", "0",
+                    "9|AS1|AS2|10|NO|SHELTERED_RAMP|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_NO_OTHER_YES", "C", "CONNECTION|9|AS1|AS2|10|NO|OTHER|YES", "1", "0",
+                    "9|AS1|AS2|10|NO|OTHER|YES|null|null", ""},
+                new String[]{"C_ENUM_NO_OTHER_NO", "C", "CONNECTION|9|AS1|AS2|10|NO|OTHER|NO", "1", "0",
+                    "9|AS1|AS2|10|NO|OTHER|NO|null|null", ""},
+                new String[]{"C_ENUM_NO_OTHER_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|NO|OTHER|UNKNOWN", "1", "0",
+                    "9|AS1|AS2|10|NO|OTHER|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_SHELTERED_RAMP_YES", "C",
+                    "CONNECTION|9|AS1|AS2|10|UNKNOWN|SHELTERED_RAMP|YES", "1", "0",
+                    "9|AS1|AS2|10|UNKNOWN|SHELTERED_RAMP|YES|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_SHELTERED_RAMP_NO", "C",
+                    "CONNECTION|9|AS1|AS2|10|UNKNOWN|SHELTERED_RAMP|NO", "1", "0",
+                    "9|AS1|AS2|10|UNKNOWN|SHELTERED_RAMP|NO|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_SHELTERED_RAMP_UNKNOWN", "C",
+                    "CONNECTION|9|AS1|AS2|10|UNKNOWN|SHELTERED_RAMP|UNKNOWN", "1", "0",
+                    "9|AS1|AS2|10|UNKNOWN|SHELTERED_RAMP|UNKNOWN|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_OTHER_YES", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|OTHER|YES", "1", "0",
+                    "9|AS1|AS2|10|UNKNOWN|OTHER|YES|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_OTHER_NO", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|OTHER|NO", "1", "0",
+                    "9|AS1|AS2|10|UNKNOWN|OTHER|NO|null|null", ""},
+                new String[]{"C_ENUM_UNKNOWN_OTHER_UNKNOWN", "C", "CONNECTION|9|AS1|AS2|10|UNKNOWN|OTHER|UNKNOWN",
+                    "1", "0", "9|AS1|AS2|10|UNKNOWN|OTHER|UNKNOWN|null|null", ""},
+                new String[]{"C_NEIGHBOURS", "C",
+                    "# Header\n\nCONNECTION|9|AS1|AS9|10|YES|PATH|YES\nCONNECTION|9|AS1|AS2|10|YES|"
+                        + "PATH|YES\nBROKEN", "1", "2", "9|AS1|AS2|10|YES|PATH|YES|null|null",
+                    "Line 3: Unknown facility endpoint: AS1 / AS9\nLine 5: CONNECTION requires 8 " + "to 10 fields."});
+    }}

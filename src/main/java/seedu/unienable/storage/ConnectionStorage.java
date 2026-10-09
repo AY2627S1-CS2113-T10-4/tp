@@ -93,7 +93,15 @@ public class ConnectionStorage {
         if (stream == null) {
             throw new UniEnableException("Missing connection dataset resource: " + resourcePath);
         }
-        try (Reader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
+        return loadOwnedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Closes an owned reader and reports close failures through the same checked error contract.
+     * Package access permits deterministic I/O failure tests without changing the public API.
+     */
+    LoadResult<Connection> loadOwnedReader(Reader source) throws UniEnableException {
+        try (Reader reader = source) {
             return load(reader);
         } catch (IOException exception) {
             throw readFailure(exception);
