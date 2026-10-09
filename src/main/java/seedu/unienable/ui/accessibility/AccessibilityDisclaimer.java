@@ -4,8 +4,8 @@ package seedu.unienable.ui.accessibility;
  * Common safety disclaimer for read-only campus accessibility information.
  */
 public final class AccessibilityDisclaimer {
-    public static final String TEXT = "Sample local accessibility reference data. Distances are "
-            + "estimates and may be incomplete.\nPlease verify with current campus information when needed.";
+    public static final String TEXT = "Sample reference data.\n"
+            + "Verify with current campus information before you rely on it.  ";
 
     private AccessibilityDisclaimer() {
     }
