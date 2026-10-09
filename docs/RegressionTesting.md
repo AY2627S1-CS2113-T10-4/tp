@@ -1,15 +1,15 @@
 # Accessibility tests matching the source structure
 
 The test packages and class names mirror their corresponding production classes.
-The suite retains the existing scenarios, assertions, and local TSV inputs.
+The suite retains the existing scenarios and assertions, with case values stored directly in the test classes.
 The combined regression classes and TestSupport have been replaced by focused test classes;
 there are no regression folders.
 
-The four TSV files in src/test/resources are private local inputs, ignored by Git.
-Fresh clones and GitHub CI need those files supplied separately before running this suite.
-Missing files fail the tests; no tests are skipped and the coverage requirement is unchanged.
+Tests are self-contained and run in fresh clones and GitHub CI without local resource files.
+The four TSV files in src/test/resources remain ignored local reference copies.
+No tests are skipped and the coverage requirement is unchanged.
 
-Run `gradlew.bat clean check --console=plain` with Java 25 after supplying the local files.
+Run `gradlew.bat clean check --console=plain` with Java 25.
 This runs JUnit, Checkstyle, and a JaCoCo gate requiring 100% LINE and BRANCH coverage.
 Open `build/reports/tests/test/index.html` for named test results and
 `build/reports/jacoco/test/html/index.html` for coverage.
@@ -50,31 +50,33 @@ All paths below are under src/test/java/seedu/unienable.
 | ui/accessibility/FacilityDetailsFormatterTest.java | Omitted null, empty, and blank optional text with exact output assertions |
 
 Tests sharing a previous loop now live in the relevant class; checks remain in both applicable classes.
-The small private fixture-reading routine lives within each class that uses TSV data.
+Private case methods in each relevant test class return the original inputs and expected values.
 Console stream capture lives only in UniEnableTest. No shared TestSupport class is needed.
 No extra tests of trivial getters or enum constants were added solely to match filenames.
 
-Every Java test file and every resource file stays below 500 lines.
+Every Java test file stays below 500 lines.
 Matching individual production classes increases the total Java line count because imports and
 small setup routines repeat; the earlier approximate 500-line total is no longer the layout target.
 100% coverage measures execution, not correctness of every possible input or a future route algorithm.
 
-## Editing local test cases
+## Editing test cases
 
-Files under src/test/resources are UTF-8 TSV files.
-Each physical line is one case; lines starting with # are comments.
-Columns use actual tabs. A single - represents an empty column, including trailing columns.
-Literal backslash-n represents a newline inside a value. Tabs in values are not supported.
+Case methods return lists of string arrays containing the same values as the original local TSV rows:
 
-- console.tsv: case ID, input, expected output fragment, forbidden output fragment.
+- UniEnableTest.consoleCases: case ID, input, expected output fragment, forbidden output fragment.
   Each row is an independent JUnit dynamic test followed by bye.
-- session.tsv: the user's exact 27-command sequence and expected fragments.
+- UniEnableTest.sessionCases: the user's exact 27-command sequence and expected fragments.
   A single session also asserts five successful additions and fifteen warnings.
-- filters.tsv: case ID, from, to, traversal type, accessibility, shelter, expected comma-separated IDs.
-  A - filter means omitted.
-- storage.tsv: case ID, F or C, dataset text, record count, warning count,
-  complete serialized records, expected warning fragment.
-  FacilityStorageTest runs F rows; ConnectionStorageTest runs C rows.
-  Records verify all routing fields; invalid rows retain valid neighbors.
+- ConnectionManagerTest.filterCases: case ID, from, to, traversal type, accessibility, shelter,
+  expected comma-separated IDs. Empty strings represent omitted filters.
+- FacilityStorageTest.recordCases and ConnectionStorageTest.recordCases: case ID, F or C, dataset text,
+  record count, warning count, complete serialized records, expected warning fragment.
+  Each loader's test contains only its own rows. All routing fields and malformed-record cases remain.
 
-Keep these TSV files local. The exact four paths are ignored and must not be staged or published.
+Empty values are Java empty strings and newlines use Java newline escapes.
+Update these case methods when adding or changing an automated regression case.
+The ignored TSV files remain optional local references; editing them does not change the automated tests.
+Do not stage or publish those local files.
+
+The CI failure at commit 5ca8e93 occurred because the tests required ignored TSV resources.
+Keeping the cases inside their corresponding JUnit classes removes that dependency without reducing coverage.

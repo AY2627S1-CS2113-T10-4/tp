@@ -5,10 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
@@ -31,7 +28,7 @@ class ConnectionManagerTest {
 
     @TestFactory
     Stream<DynamicTest> filters() throws Exception {
-        return cases("filters").stream().map(row -> DynamicTest.dynamicTest(row[0], () -> {
+        return filterCases().stream().map(row -> DynamicTest.dynamicTest(row[0], () -> {
             var matches = connections.findConnections(text(row[1]), text(row[2]),
                     row[3].isEmpty() ? null : TraversalType.valueOf(row[3]),
                     row[4].isEmpty() ? null : AccessibilityStatus.valueOf(row[4]),
@@ -65,18 +62,32 @@ class ConnectionManagerTest {
     }
 
     /**
-     * Reads local UTF-8 cases; - means an omitted value and backslash-n means a newline.
+     * Retains the original filters cases directly in Java so fresh checkouts can run them.
      */
-    private static List<String[]> cases(String name) throws IOException {
-        try (var source = ConnectionManagerTest.class.getResourceAsStream("/" + name + ".tsv")) {
-            if (source == null) {
-                throw new IOException("Missing regression cases: " + name);
-            }
-            return Arrays.stream(new String(source.readAllBytes(), StandardCharsets.UTF_8).split("\\R"))
-                    .filter(line -> !line.isBlank() && !line.startsWith("#"))
-                    .map(line -> line.replace("\\n", "\n").split("\t", -1))
-                    .map(fields -> Arrays.stream(fields).map(value -> value.equals("-") ? "" : value)
-                            .toArray(String[]::new)).toList();
-        }
-    }
-}
+    private static List<String[]> filterCases() {
+        return List.of(
+                new String[]{"FROM", "AS1", "", "", "", "", "1"},
+                new String[]{"FROM_OTHER", "AS2", "", "", "", "", "1,2"},
+                new String[]{"TO", "", "AS1", "", "", "", "1"},
+                new String[]{"TO_OTHER", "", "AS2", "", "", "", "1,2"},
+                new String[]{"FORWARD", "AS1", "AS2", "", "", "", "1"},
+                new String[]{"REVERSE", "AS2", "AS1", "", "", "", "1"},
+                new String[]{"CROSS", "AS1", "AS3", "", "", "", ""},
+                new String[]{"ABSENT", "AS9", "", "", "", "", ""},
+                new String[]{"TO_ABSENT", "", "AS9", "", "", "", ""},
+                new String[]{"CASE", " as1 ", "aS2", "", "", "", "1"},
+                new String[]{"TYPE", "", "", "PATH", "", "", "1"},
+                new String[]{"TYPE_OTHER", "", "", "RAMP", "", "", "2"},
+                new String[]{"YES", "", "", "", "YES", "", "1"},
+                new String[]{"NO", "", "", "", "NO", "", ""},
+                new String[]{"UNKNOWN", "", "", "", "UNKNOWN", "", "2"},
+                new String[]{"SHELTER_YES", "", "", "", "", "YES", "1"},
+                new String[]{"SHELTER_NO", "", "", "", "", "NO", "2"},
+                new String[]{"SHELTER_UNKNOWN", "", "", "", "", "UNKNOWN", ""},
+                new String[]{"ALL", "AS2", "AS1", "PATH", "YES", "YES", "1"},
+                new String[]{"TYPE_CONFLICT", "AS1", "AS2", "RAMP", "YES", "YES", ""},
+                new String[]{"STATUS_CONFLICT", "AS1", "AS2", "PATH", "NO", "YES", ""},
+                new String[]{"SHELTER_CONFLICT", "AS1", "AS2", "PATH", "YES", "NO", ""},
+                new String[]{"SAME", "AS2", "AS2", "", "", "", ""},
+                new String[]{"SECOND", "AS3", "AS2", "RAMP", "UNKNOWN", "NO", "2"});
+    }}
