@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'checkstyle'
+    id 'jacoco'
     id 'com.gradleup.shadow' version '9.5.1'
 }
 
@@ -38,7 +39,7 @@ test {
 }
 
 application {
-    mainClass = 'seedu.duke.Duke'
+    mainClass = 'seedu.unienable.UniEnable'
 }
 
 jar {
@@ -49,7 +50,7 @@ jar {
 }
 
 shadowJar {
-    archiveFileName = 'duke.jar'
+    archiveFileName = 'unienable.jar'
 }
 
 checkstyle {
@@ -59,3 +60,54 @@ checkstyle {
 run {
     standardInput = System.in
 }
+
+// Measure facility commands and the connection foundations for accessible routing.
+jacoco {
+    toolVersion = '0.8.15'
+}
+
+def accessibilityClasses = [
+    'seedu/unienable/command/accessibility/facility/**',
+    'seedu/unienable/logic/FacilityManager*',
+    'seedu/unienable/logic/ConnectionManager*',
+    'seedu/unienable/model/Facility*',
+    'seedu/unienable/model/Connection*',
+    'seedu/unienable/model/enums/AccessibilityStatus*',
+    'seedu/unienable/model/enums/ShelterStatus*',
+    'seedu/unienable/model/enums/TraversalType*',
+    'seedu/unienable/parser/FacilityCommandParser*',
+    'seedu/unienable/storage/FacilityStorage*',
+    'seedu/unienable/storage/ConnectionStorage*',
+    'seedu/unienable/storage/LoadResult*',
+    'seedu/unienable/ui/accessibility/**'
+]
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    classDirectories.setFrom(sourceSets.main.output.classesDirs.asFileTree.matching {
+        include accessibilityClasses
+    })
+}
+
+jacocoTestCoverageVerification {
+    dependsOn test
+    classDirectories.setFrom(jacocoTestReport.classDirectories)
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                minimum = 1.0
+            }
+            limit {
+                counter = 'BRANCH'
+                minimum = 1.0
+            }
+        }
+    }
+}
+
+check.dependsOn jacocoTestReport, jacocoTestCoverageVerification
