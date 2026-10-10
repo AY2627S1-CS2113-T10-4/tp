@@ -2,7 +2,7 @@ package seedu.unienable.storage;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -178,7 +178,10 @@ public class Storage {
         try {
             Files.move(temporaryFile, activityFile, StandardCopyOption.REPLACE_EXISTING,
                     StandardCopyOption.ATOMIC_MOVE);
-        } catch (AtomicMoveNotSupportedException exception) {
+        } catch (FileSystemException exception) {
+            // Some Windows file systems reject atomic replacement even though a normal
+            // replacement is supported. The temporary file still prevents a partial
+            // write, so the fallback remains safe for the activity data.
             Files.move(temporaryFile, activityFile, StandardCopyOption.REPLACE_EXISTING);
         }
     }
