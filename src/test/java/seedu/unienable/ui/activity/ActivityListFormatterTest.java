@@ -41,10 +41,11 @@ class ActivityListFormatterTest {
 
     @Test
     void formatDemandList_usesDemandHeadingAndSameNumbering() {
-        String message = ActivityListFormatter.formatDemandList(List.of(mondayGym));
-        assertTrue(message.contains("demand"), "demand heading missing");
-        assertEquals("Activities by demand (HIGH to LOW):\n"
-                        + "1. Gym session (2026-10-12, 07:00-09:00) [HIGH]",
-                message, "demand view must use the same line format");
+        String headingAndNotice = "Activities by demand (HIGH to LOW):\n"
+                + "Note: Do not use indexes from 'list demand' for deletion.\n"
+                + "Run 'list' to find the correct index for 'delete INDEX'.\n";
+        assertEquals(headingAndNotice + "1. Gym session (2026-10-12, 07:00-09:00) [HIGH]",
+                ActivityListFormatter.formatDemandList(List.of(mondayGym)));
+        assertEquals(headingAndNotice + "No activities yet.", ActivityListFormatter.formatDemandList(List.of()));
     }
 }
