@@ -27,7 +27,7 @@ public final class DijkstraShortestPath {
      * Builds an adjacency list from the existing connection model.
      * Endpoints from inaccessible or unconfirmed links remain known vertices.
      *
-     * @param connections reference data supplied by ConnectionManager/ConnectionStorage
+     * @param connections reference data supplied by ConnectionManager/ConnectionStorage.
      */
     public DijkstraShortestPath(List<Connection> connections) {
         Objects.requireNonNull(connections, "connections");
@@ -48,8 +48,8 @@ public final class DijkstraShortestPath {
             if (connection.getAccessibility() != AccessibilityStatus.YES) {
                 continue;
             }
-            int from = indexByName.get(key(connection.getFrom()));
-            int to = indexByName.get(key(connection.getTo()));
+            int from = indexByName.get(normalizeEndpoint(connection.getFrom()));
+            int to = indexByName.get(normalizeEndpoint(connection.getTo()));
             int distance = connection.getDistanceInMetres();
             adjacency.get(from).add(new Node(to, distance, connection));
             adjacency.get(to).add(new Node(from, distance, connection));
@@ -59,7 +59,7 @@ public final class DijkstraShortestPath {
     /**
      * Makes endpoint lookup independent of case, whitespace and the system locale.
      */
-    private static String key(String name) {
+    private static String normalizeEndpoint(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Connection endpoint must not be blank");
         }
@@ -69,6 +69,8 @@ public final class DijkstraShortestPath {
     /**
      * Finds a shortest distance route, ignoring case and surrounding spaces.
      *
+     * @param from starting facility name, ignoring case and surrounding spaces.
+     * @param to destination facility name, ignoring case and surrounding spaces.
      * @return the route, or empty if the facilities cannot be connected with YES links
      * @throws IllegalArgumentException if either endpoint is unknown or blank
      */
@@ -99,7 +101,7 @@ public final class DijkstraShortestPath {
      * Assigns one vertex index to each normalized facility name.
      */
     private void addEndpoint(String name) {
-        String normalized = key(name);
+        String normalized = normalizeEndpoint(name);
         if (!indexByName.containsKey(normalized)) {
             indexByName.put(normalized, names.size());
             names.add(name.strip());
@@ -110,7 +112,7 @@ public final class DijkstraShortestPath {
      * Resolves a facility name and identifies its role when reporting an unknown start or end.
      */
     private int lookup(String name, String role) {
-        Integer index = indexByName.get(key(name));
+        Integer index = indexByName.get(normalizeEndpoint(name));
         if (index == null) {
             throw new IllegalArgumentException("Unknown connection " + role + ": " + name);
         }
@@ -121,6 +123,10 @@ public final class DijkstraShortestPath {
      * A path with its ordered facility names, original connections and total metres.
      * Each segment joins the corresponding adjacent stops in either stored direction.
      * A long total accommodates routes whose combined distance exceeds the int range.
+     *
+     * @param stops facility names in travel order.
+     * @param segments recorded connections joining adjacent stops.
+     * @param distanceInMetres total recorded distance along the route.
      */
     public record Route(List<String> stops, List<Connection> segments, long distanceInMetres) {
         /**

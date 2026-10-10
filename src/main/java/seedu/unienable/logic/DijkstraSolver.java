@@ -88,7 +88,7 @@ final class DijkstraSolver {
     }
 
     /**
-     * Relaxes every not-yet-settled neighbour of the current vertex.
+     * Relaxes every not-yet-settled neighbor of the current vertex.
      */
     private void eNeighbours(int u) {
         for (Node v : adj.get(u)) {

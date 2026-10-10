@@ -21,7 +21,7 @@ class RouteParserTest {
 
     @Test
     void validRouteCreatesCommand() throws ParseException {
-        assertInstanceOf(RouteCommand.class, parser.parseRoute(new String[]{"route", "from/as2", "to/clb"}));
+        assertInstanceOf(RouteCommand.class, parser.parseRoute(new String[] {"route", "from/as2", "to/clb"}));
     }
 
     @Test
@@ -54,11 +54,25 @@ class RouteParserTest {
 
     @Test
     void malformedArgumentsRejected() {
-        for (String input : List.of("route snxjsnd", "route AS2 CLB", "route from/as8 to/clb extra")) {
+        for (String input : List.of("route snxjsnd", "route AS2 CLB", "route from/as8 to/clb extra",
+                "route to/clb from/as8", "route from/as8 from/clb", "route to/as8 to/clb")) {
             var error = assertThrows(ParseException.class,
                     () -> parser.parseRoute(input.split("\\s+")), input);
             assertEquals("[WARNING] Invalid route command.\nUsage: route from/START to/END",
                     error.getMessage(), input);
         }
+    }
+
+    @Test
+    void parseRoute_unavailableData_preservesInputWarnings() {
+        var unavailableParser = new RouteParser(null);
+        var validInput = assertThrows(ParseException.class,
+                () -> unavailableParser.parseRoute(new String[] {"route", "FROM/as8", "TO/clb"}));
+        assertEquals("[WARNING] Connection reference data is unavailable.", validInput.getMessage());
+
+        var incompleteInput = assertThrows(ParseException.class,
+                () -> unavailableParser.parseRoute(new String[] {"route", "FROM/as8", "TO/"}));
+        assertEquals("[WARNING] Please enter a destination.\nUsage: route from/START to/END",
+                incompleteInput.getMessage());
     }
 }

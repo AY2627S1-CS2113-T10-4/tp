@@ -17,10 +17,14 @@ public class Parser {
      */
     private static final String WARNING_MESSAGE = "[WARNING]";
 
-    /** Handles facility commands using the available reference data. */
+    /**
+     * Handles facility commands using the available reference data.
+     */
     private final FacilityCommandParser facilityCommandParser;
 
-    /** Handles route commands using the available connection reference data. */
+    /**
+     * Handles route commands using the available connection reference data.
+     */
     private final RouteParser routeParser;
 
     /**
@@ -33,7 +37,7 @@ public class Parser {
     /**
      * Creates a parser with the available facility reference data.
      *
-     * @param facilityManager manager used by facility commands
+     * @param facilityManager manager used by facility commands.
      */
     public Parser(FacilityManager facilityManager) {
         this(facilityManager, null);
@@ -42,8 +46,8 @@ public class Parser {
     /**
      * Creates a parser with the available facility and connection reference data.
      *
-     * @param facilityManager manager used by facility commands, or null when unavailable
-     * @param connectionManager manager used by route commands, or null when unavailable
+     * @param facilityManager manager used by facility commands, or null when unavailable.
+     * @param connectionManager manager used by route commands, or null when unavailable.
      */
     public Parser(FacilityManager facilityManager, ConnectionManager connectionManager) {
         this.facilityCommandParser = new FacilityCommandParser(facilityManager);
@@ -53,7 +57,7 @@ public class Parser {
     /**
      * Dispatches supported user commands to their handlers.
      *
-     * @param input command entered by the user
+     * @param input command entered by the user.
      * @return the command to execute
      * @throws ParseException if the command is invalid or unavailable
      */
