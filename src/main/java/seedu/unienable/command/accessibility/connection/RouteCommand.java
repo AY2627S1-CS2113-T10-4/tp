@@ -22,7 +22,8 @@ import java.util.Optional;
  * The command only reads connection reference data; it never changes activities or storage.
  */
 public final class RouteCommand extends Command {
-    private static final String USAGE = "Usage: route FROM TO\nExample: route AS2 CLB";
+    private static final String USAGE = "Usage: route from/START to/END\n"
+            + "Example: route from/as2 to/clb";
 
     private final ConnectionManager connectionManager;
     private final String from;

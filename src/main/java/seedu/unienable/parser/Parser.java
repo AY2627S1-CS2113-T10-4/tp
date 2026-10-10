@@ -4,12 +4,13 @@ import java.util.Locale;
 
 import seedu.unienable.command.ByeCommand;
 import seedu.unienable.command.Command;
+import seedu.unienable.command.accessibility.connection.RouteCommand;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
 
 /**
- * Recognizes Branch 1 add/help plus existing facility and bye commands.
+ * Recognizes add, facility, route and bye commands.
  */
 public class Parser {
     /**
@@ -21,7 +22,7 @@ public class Parser {
     private final FacilityCommandParser facilityCommandParser;
 
     /**
-     * Loaded connection reference data reserved for route parsing; null when unavailable.
+     * Loaded connection reference data used by route commands; null when unavailable.
      */
     private final ConnectionManager connectionManager;
 
@@ -45,7 +46,7 @@ public class Parser {
      * Creates a parser with the available facility and connection reference data.
      *
      * @param facilityManager manager used by facility commands, or null when unavailable
-     * @param connectionManager manager reserved for route commands, or null when unavailable
+     * @param connectionManager manager used by route commands, or null when unavailable
      */
     public Parser(FacilityManager facilityManager, ConnectionManager connectionManager) {
         this.facilityCommandParser = new FacilityCommandParser(facilityManager);
@@ -72,6 +73,20 @@ public class Parser {
             return new ByeCommand();
         case "facility":
             return facilityCommandParser.parseFacility(words);
+        case "route":
+            if (words.length != 3
+                    || !words[1].toLowerCase(Locale.ROOT).startsWith("from/")
+                    || !words[2].toLowerCase(Locale.ROOT).startsWith("to/")
+                    || words[1].length() <= 5
+                    || words[2].length() <= 3) {
+                throw new ParseException(WARNING_MESSAGE
+                        + " Invalid route command.\nUsage: route from/START to/END");
+            }
+            if (connectionManager == null) {
+                throw new ParseException(WARNING_MESSAGE
+                        + " Connection reference data is unavailable.");
+            }
+            return new RouteCommand(connectionManager, words[1].substring(5), words[2].substring(3));
         case "add":
             return new AddCommandParser().parse(trimmedInput.substring(words[0].length()).trim());
         /*

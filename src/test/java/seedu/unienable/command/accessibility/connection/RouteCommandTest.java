@@ -138,10 +138,10 @@ class RouteCommandTest {
                 .getMessage().contains("Unknown connection endpoint: F01"));
         assertTrue(assertThrows(UniEnableException.class,
                 () -> new RouteCommand(manager, "A", " ").execute(activities, noStorageAccess))
-                .getMessage().contains("Usage: route FROM TO"));
+                .getMessage().contains("Usage: route from/START to/END"));
         assertTrue(assertThrows(UniEnableException.class,
                 () -> new RouteCommand(manager, null, "A").execute(activities, noStorageAccess))
-                .getMessage().contains("Usage: route FROM TO"));
+                .getMessage().contains("Usage: route from/START to/END"));
     }
 
     @Test
