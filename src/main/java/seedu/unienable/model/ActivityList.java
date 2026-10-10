@@ -1,12 +1,26 @@
 package seedu.unienable.model;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+
+import seedu.unienable.exception.InvalidIndexException;
 
 /**
  * Owns activity collection state without exposing its mutable backing list.
+ * The backing list stays in insertion (add) order; the display orderings used by
+ * {@code list} and {@code list demand} are applied on demand by the view methods,
+ * so Branch 1's append contract is untouched.
  */
 public class ActivityList {
+    /** Canonical {@code list} order: date, then start time; stable ties keep add order. */
+    private static final Comparator<Activity> CANONICAL_ORDER =
+            Comparator.comparing(Activity::getDate).thenComparing(Activity::getStartTime);
+
+    /** HIGH to LOW — reversed because the enum declares LOW, MEDIUM, HIGH; ties canonical. */
+    private static final Comparator<Activity> DEMAND_ORDER =
+            Comparator.comparing(Activity::getDemand).reversed().thenComparing(CANONICAL_ORDER);
+
     private final List<Activity> activities;
 
     public ActivityList() {
@@ -18,20 +32,55 @@ public class ActivityList {
     }
 
     /**
-     * Appends a newly created activity to the current in-memory collection.
-     * Branch 2 can build a sorted presentation without changing this contract.
-     *
-     * @param activity new activity to store
+     * Appends without ordering; the views apply display order, so Branch 1's
+     * append contract is untouched.
      */
     public void addActivity(Activity activity) {
         activities.add(java.util.Objects.requireNonNull(activity));
     }
-    // TODO [Branch 2]: Add agreed ordering, displayed-index lookup, and deletion APIs here.
-    // TODO [Branch 3]: Add completion update APIs here after agreeing on indexes with Branch 2.
+
+    /**
+     * Immutable snapshot sorted by date, then start time — the order {@code list}
+     * displays and {@code delete INDEX} resolves its index against.
+     */
+    public List<Activity> getCanonicalView() {
+        return activities.stream().sorted(CANONICAL_ORDER).toList();
+    }
+
+    /** Immutable snapshot grouped by demand (HIGH to LOW); ties keep canonical order. */
+    public List<Activity> getDemandView() {
+        return activities.stream().sorted(DEMAND_ORDER).toList();
+    }
+
+    /**
+     * Resolves a 1-based displayed index against the canonical view, removes that
+     * activity, and returns it. Removal is by object rather than by raw backing-list
+     * position, so the displayed index always refers to the order shown by
+     * {@code list}, never to insertion order.
+     *
+     * @throws InvalidIndexException when there are no activities, or when the index
+     *     is outside the range 1 to (number of activities)
+     */
+    public Activity deleteByDisplayedIndex(int displayedIndex) throws InvalidIndexException {
+        List<Activity> canonical = getCanonicalView();
+        if (canonical.isEmpty()) {
+            throw new InvalidIndexException("[WARNING] There are no activities to delete.");
+        }
+        if (displayedIndex < 1 || displayedIndex > canonical.size()) {
+            throw new InvalidIndexException("[WARNING] No activity at index " + displayedIndex
+                    + ". Valid range: 1 to " + canonical.size() + ".");
+        }
+        Activity removed = canonical.get(displayedIndex - 1);
+        activities.remove(removed);
+        return removed;
+    }
+
+    // TODO [Branch 3]: Add agreed completion update APIs here after agreeing on indexes with Branch 2.
     // Coordinate edits to this shared class; command and parser files have separate owners.
 
     /**
-     * Returns an immutable snapshot in the collection's current order.
+     * Immutable snapshot in insertion (add) order — storage order, not display order;
+     * use {@link #getCanonicalView()} when the ordering that the user sees is needed.
      */
     public List<Activity> getActivities() {
         return List.copyOf(activities);
