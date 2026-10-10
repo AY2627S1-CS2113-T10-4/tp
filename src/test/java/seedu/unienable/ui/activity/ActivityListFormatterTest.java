@@ -44,7 +44,7 @@ class ActivityListFormatterTest {
         String headingAndNotice = "Activities by demand (HIGH to LOW):\n"
                 + "Note: Do not use indexes from 'list demand' for deletion.\n"
                 + "Run 'list' to find the correct index for 'delete INDEX'.\n";
-        assertEquals(headingAndNotice + "1. Gym session (2026-10-12, 07:00-09:00) [HIGH]",
+        assertEquals(headingAndNotice + "1. Gym session (2026-10-12, 07:00-09:00) [HIGH] [ ]",
                 ActivityListFormatter.formatDemandList(List.of(mondayGym)));
         assertEquals(headingAndNotice + "No activities yet.", ActivityListFormatter.formatDemandList(List.of()));
     }

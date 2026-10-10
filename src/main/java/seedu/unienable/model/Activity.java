@@ -14,7 +14,7 @@ public class Activity {
     private final LocalTime startTime;
     private final LocalTime endTime;
     private final DemandLevel demand;
-    private final boolean isDone;
+    private boolean isDone;
 
     // TODO [Branch 1]: Coordinate any model validation here with Branch 3.
     // Prefer input validation in your own command/parser files when no model change is needed.
@@ -48,8 +48,20 @@ public class Activity {
         return demand;
     }
 
-    // TODO [Branch 3]: Add agreed completion updates here; isDone is currently a final field.
-    // Coordinate field and constructor changes with Branch 1.
+    /**
+     * Sets whether this activity is completed.
+     *
+     * @param done true when the activity has been completed
+     */
+    public void setDone(boolean done) {
+        isDone = done;
+    }
+
+    /**
+     * Returns the completion state used by list display and persistence.
+     *
+     * @return true when this activity is completed
+     */
     public boolean isDone() {
         return isDone;
     }

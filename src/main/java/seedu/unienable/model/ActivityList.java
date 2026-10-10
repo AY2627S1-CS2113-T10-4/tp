@@ -95,8 +95,42 @@ public class ActivityList {
         return removed;
     }
 
-    // TODO [Branch 3]: Add agreed completion update APIs here after agreeing on indexes with Branch 2.
-    // Coordinate edits to this shared class; command and parser files have separate owners.
+    /**
+     * Resolves a user-visible one-based index against the canonical chronological view.
+     *
+     * @param displayedIndex index shown by the chronological list command
+     * @return the activity at that index
+     * @throws InvalidIndexException when the index is outside the current canonical view
+     */
+    public Activity getByDisplayedIndex(int displayedIndex) throws InvalidIndexException {
+        List<Activity> canonical = getCanonicalView();
+        if (canonical.isEmpty()) {
+            throw new InvalidIndexException("[WARNING] There are no activities to update.");
+        }
+        if (displayedIndex < 1 || displayedIndex > canonical.size()) {
+            throw new InvalidIndexException("[WARNING] No activity at index " + displayedIndex
+                    + ". Valid range: 1 to " + canonical.size() + ".");
+        }
+        return canonical.get(displayedIndex - 1);
+    }
+
+    /**
+     * Updates completion state using the same canonical displayed index as list and delete.
+     *
+     * @param displayedIndex index shown by the chronological list command
+     * @param done desired completion state
+     * @return true when the activity state changed, false when it already had that state
+     * @throws InvalidIndexException when the index is outside the current canonical view
+     */
+    public boolean setDoneAtDisplayedIndex(int displayedIndex, boolean done)
+            throws InvalidIndexException {
+        Activity activity = getByDisplayedIndex(displayedIndex);
+        if (activity.isDone() == done) {
+            return false;
+        }
+        activity.setDone(done);
+        return true;
+    }
 
     /**
      * Returns an immutable snapshot in insertion (add) order, the storage order rather than display order;

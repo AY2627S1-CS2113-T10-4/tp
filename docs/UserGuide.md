@@ -5,7 +5,8 @@
 UniEnable is a command-line project for managing dated activities with start/end
 times and demand levels, and looking up hub accessibility information.
 The current Facility HUB supports detailed listings, individual facility lookups,
-and accessibility-feature searches. Activity commands remain planned in this checkout.
+and accessibility-feature searches. Activity commands are stored automatically in
+`data/activities.txt` and recover from malformed rows with warnings.
 
 ## Quick Start
 
@@ -22,6 +23,12 @@ and accessibility-feature searches. Activity commands remain planned in this che
 | `facility list` | Display all nine facilities and all their recorded accessibility information |
 | `facility LOCATION` | Display the details of one facility by hub code or stable ID |
 | `facility find type/FEATURE [status/YES\|NO\|UNKNOWN]` | Find facilities with a recorded accessibility feature and status |
+| `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH]` | Add an activity |
+| `list` | List activities chronologically |
+| `list demand` | List activities by demand |
+| `delete INDEX` | Delete an activity by its chronological index |
+| `mark INDEX` | Mark an activity as completed |
+| `unmark INDEX` | Mark an activity as incomplete |
 | `bye` | Exit the application |
 
 Command words, feature types, status values, hub codes, and facility IDs are
@@ -135,11 +142,12 @@ The supported facilities and lookup usage follow this warning. Enter
 Accessibility information is sample local reference data. Verify it with current
 campus information before relying on it.
 
-## Planned Activity Commands
+## Activity Commands
 
-The shared activity contract is [V1_SPEC.md](V1_SPEC.md). Its baseline notes
-describe the original starter version; the Facility HUB behavior implemented in
-this checkout is documented above.
+Activity indexes are one-based and refer to the chronological `list` order.
+The same index is used by `delete`, `mark`, and `unmark`. The `list demand`
+view changes the display order, so use `list` when choosing an index for a
+state-changing command.
 
 ```text
 help
@@ -151,7 +159,12 @@ mark INDEX
 unmark INDEX
 ```
 
-These activity commands are not implemented in this checkout. Activity names
-preserve capitalization, and planned activity parameters may appear in any order.
-Dates use `YYYY-MM-DD`, times use 24-hour `HH:mm`, and indexes are 1-based.
-Demand is LOW, MEDIUM, or HIGH and defaults to MEDIUM when omitted.
+Activity names preserve capitalization, and activity parameters may appear in
+any order. Dates use `YYYY-MM-DD`, times use 24-hour `HH:mm`, and demand is
+LOW, MEDIUM, or HIGH (defaulting to MEDIUM when omitted). Completion is shown
+as `[X]` or `[ ]` in activity lists.
+
+Activity records are loaded at startup and saved after successful add, delete,
+mark, and unmark changes. If a data row is malformed, UniEnable skips that row,
+reports its line number, and preserves the original file in a
+`.corrupt.bak` backup before a later save.

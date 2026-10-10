@@ -8,6 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
@@ -46,10 +48,27 @@ class UniEnableTest {
     }
 
     @Test
-    void emptyInput_preservesWelcomeFormatting() {
+    void emptyInput_preservesWelcomeFormatting() throws Exception {
         String border = "_".repeat(60) + "\n";
         assertEquals(border + "Welcome to UniEnable! Type bye to exit.\n" + Ui.getLogo() + "\n" + border,
                 console(""));
+    }
+
+    @Test
+    void activityCompletion_survivesAnApplicationRestart() throws Exception {
+        Path tempDir = Files.createTempDirectory("unienable-restart-test");
+        Path activityFile = tempDir.resolve("activities.txt");
+        try {
+            String firstSession = consoleAtPath(
+                    "add n/Exam d/2026-10-18 s/09:00 e/11:00 dem/HIGH\nmark 1\nbye\n", activityFile);
+            String secondSession = consoleAtPath("list\nbye\n", activityFile);
+
+            assertTrue(firstSession.contains("Marked activity as done: Exam"));
+            assertTrue(secondSession.contains("Exam (2026-10-18, 09:00-11:00) [HIGH] [X]"));
+        } finally {
+            Files.deleteIfExists(activityFile);
+            Files.deleteIfExists(tempDir);
+        }
     }
 
     /**
@@ -180,14 +199,25 @@ class UniEnableTest {
     /**
      * Captures an isolated console session and restores the caller's streams after execution.
      */
-    private static String console(String input) {
+    private static String console(String input) throws Exception {
+        Path tempDir = Files.createTempDirectory("unienable-console-test");
+        Path activityFile = tempDir.resolve("activities.txt");
+        try {
+            return consoleAtPath(input, activityFile);
+        } finally {
+            Files.deleteIfExists(activityFile);
+            Files.deleteIfExists(tempDir);
+        }
+    }
+
+    private static String consoleAtPath(String input, Path activityFile) throws Exception {
         var originalInput = System.in;
         var originalOutput = System.out;
         var output = new ByteArrayOutputStream();
         try (var captured = new PrintStream(output, true, StandardCharsets.UTF_8)) {
             System.setIn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
             System.setOut(captured);
-            UniEnable.main(new String[0]);
+            UniEnable.run(System.in, System.out, activityFile);
         } finally {
             System.setIn(originalInput);
             System.setOut(originalOutput);
