@@ -5,6 +5,7 @@ import java.util.Locale;
 import seedu.unienable.command.ByeCommand;
 import seedu.unienable.command.Command;
 import seedu.unienable.exception.ParseException;
+import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
 
 /**
@@ -20,6 +21,11 @@ public class Parser {
     private final FacilityCommandParser facilityCommandParser;
 
     /**
+     * Loaded connection reference data reserved for route parsing; null when unavailable.
+     */
+    private final ConnectionManager connectionManager;
+
+    /**
      * Creates a parser without loaded facility reference data.
      */
     public Parser() {
@@ -32,7 +38,18 @@ public class Parser {
      * @param facilityManager manager used by facility commands
      */
     public Parser(FacilityManager facilityManager) {
+        this(facilityManager, null);
+    }
+
+    /**
+     * Creates a parser with the available facility and connection reference data.
+     *
+     * @param facilityManager manager used by facility commands, or null when unavailable
+     * @param connectionManager manager reserved for route commands, or null when unavailable
+     */
+    public Parser(FacilityManager facilityManager, ConnectionManager connectionManager) {
         this.facilityCommandParser = new FacilityCommandParser(facilityManager);
+        this.connectionManager = connectionManager;
     }
 
     /**
