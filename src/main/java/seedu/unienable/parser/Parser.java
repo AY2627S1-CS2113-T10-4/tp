@@ -19,6 +19,9 @@ public class Parser {
     /** Handles facility commands using the available reference data. */
     private final FacilityCommandParser facilityCommandParser;
 
+    /** Handles list, list demand, and delete commands. */
+    private final ListDeleteCommandParser listDeleteCommandParser = new ListDeleteCommandParser();
+
     /**
      * Creates a parser without loaded facility reference data.
      */
@@ -57,6 +60,10 @@ public class Parser {
             return facilityCommandParser.parseFacility(words);
         case "add":
             return new AddCommandParser().parse(trimmedInput.substring(words[0].length()).trim());
+        case "list":
+            return listDeleteCommandParser.parseList(words);
+        case "delete":
+            return listDeleteCommandParser.parseDelete(words);
         /*
         case "help":
             if (words.length != 1) {
@@ -64,7 +71,6 @@ public class Parser {
             }
             return new HelpCommand();
         */
-        // TODO [Branch 2]: Add list/delete dispatch here; keep parsing in ListDeleteCommandParser.
         // TODO [Branch 3]: Add mark/unmark dispatch here; keep parsing in MarkCommandParser.
         // One team integrator should coordinate these shared switch edits.
         default:
