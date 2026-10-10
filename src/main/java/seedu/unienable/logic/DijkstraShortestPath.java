@@ -73,8 +73,8 @@ public final class DijkstraShortestPath {
      * @throws IllegalArgumentException if either endpoint is unknown or blank
      */
     public Optional<Route> findRoute(String from, String to) {
-        int source = lookup(from);
-        int destination = lookup(to);
+        int source = lookup(from, "startpoint");
+        int destination = lookup(to, "endpoint");
         DijkstraSolver solver = new DijkstraSolver(names.size());
         solver.dijkstra(adjacency, source);
         if (solver.getDistance(destination) == Long.MAX_VALUE) {
@@ -107,12 +107,12 @@ public final class DijkstraShortestPath {
     }
 
     /**
-     * Resolves an endpoint or rejects it rather than treating a typo as a disconnected route.
+     * Resolves a facility name and identifies its role when reporting an unknown start or end.
      */
-    private int lookup(String name) {
+    private int lookup(String name, String role) {
         Integer index = indexByName.get(key(name));
         if (index == null) {
-            throw new IllegalArgumentException("Unknown connection endpoint: " + name);
+            throw new IllegalArgumentException("Unknown connection " + role + ": " + name);
         }
         return index;
     }

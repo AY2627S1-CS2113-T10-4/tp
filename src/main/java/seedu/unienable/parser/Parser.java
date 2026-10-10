@@ -4,7 +4,6 @@ import java.util.Locale;
 
 import seedu.unienable.command.ByeCommand;
 import seedu.unienable.command.Command;
-import seedu.unienable.command.accessibility.connection.RouteCommand;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
@@ -21,10 +20,8 @@ public class Parser {
     /** Handles facility commands using the available reference data. */
     private final FacilityCommandParser facilityCommandParser;
 
-    /**
-     * Loaded connection reference data used by route commands; null when unavailable.
-     */
-    private final ConnectionManager connectionManager;
+    /** Handles route commands using the available connection reference data. */
+    private final RouteParser routeParser;
 
     /**
      * Creates a parser without loaded facility reference data.
@@ -50,7 +47,7 @@ public class Parser {
      */
     public Parser(FacilityManager facilityManager, ConnectionManager connectionManager) {
         this.facilityCommandParser = new FacilityCommandParser(facilityManager);
-        this.connectionManager = connectionManager;
+        this.routeParser = new RouteParser(connectionManager);
     }
 
     /**
@@ -74,19 +71,7 @@ public class Parser {
         case "facility":
             return facilityCommandParser.parseFacility(words);
         case "route":
-            if (words.length != 3
-                    || !words[1].toLowerCase(Locale.ROOT).startsWith("from/")
-                    || !words[2].toLowerCase(Locale.ROOT).startsWith("to/")
-                    || words[1].length() <= 5
-                    || words[2].length() <= 3) {
-                throw new ParseException(WARNING_MESSAGE
-                        + " Invalid route command.\nUsage: route from/START to/END");
-            }
-            if (connectionManager == null) {
-                throw new ParseException(WARNING_MESSAGE
-                        + " Connection reference data is unavailable.");
-            }
-            return new RouteCommand(connectionManager, words[1].substring(5), words[2].substring(3));
+            return routeParser.parseRoute(words);
         case "add":
             return new AddCommandParser().parse(trimmedInput.substring(words[0].length()).trim());
         /*

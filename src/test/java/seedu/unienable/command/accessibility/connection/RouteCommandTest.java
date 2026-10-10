@@ -21,13 +21,14 @@ import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.model.enums.ShelterStatus;
 import seedu.unienable.model.enums.TraversalType;
+import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.ConnectionStorage;
 import seedu.unienable.storage.FacilityStorage;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
 
 /**
- * Tests the read-only route command independently of the not-yet-wired CLI parser.
+ * Checks route output, endpoint errors and read-only command execution.
  */
 class RouteCommandTest {
     private final ActivityList activities = new ActivityList();
@@ -135,13 +136,28 @@ class RouteCommandTest {
 
         assertTrue(assertThrows(UniEnableException.class,
                 () -> new RouteCommand(manager, "F01", "A").execute(activities, noStorageAccess))
-                .getMessage().contains("Unknown connection endpoint: F01"));
+                .getMessage().contains("Unknown connection startpoint: F01"));
         assertTrue(assertThrows(UniEnableException.class,
                 () -> new RouteCommand(manager, "A", " ").execute(activities, noStorageAccess))
                 .getMessage().contains("Usage: route from/START to/END"));
         assertTrue(assertThrows(UniEnableException.class,
                 () -> new RouteCommand(manager, null, "A").execute(activities, noStorageAccess))
                 .getMessage().contains("Usage: route from/START to/END"));
+    }
+
+    @Test
+    void execute_unknownStartAndDestinationHaveDifferentWarnings() throws UniEnableException {
+        var facilities = new FacilityStorage().load().getRecords();
+        var connections = new ConnectionStorage(facilities).load().getRecords();
+        var parser = new Parser(null, new ConnectionManager(connections));
+
+        var unknownStart = assertThrows(UniEnableException.class,
+                () -> parser.parse("route from/abc to/as8").execute(activities, noStorageAccess));
+        var unknownDestination = assertThrows(UniEnableException.class,
+                () -> parser.parse("route from/as8 to/abc").execute(activities, noStorageAccess));
+
+        assertTrue(unknownStart.getMessage().startsWith("[WARNING] Unknown connection startpoint: abc\n"));
+        assertTrue(unknownDestination.getMessage().startsWith("[WARNING] Unknown connection endpoint: abc\n"));
     }
 
     @Test
