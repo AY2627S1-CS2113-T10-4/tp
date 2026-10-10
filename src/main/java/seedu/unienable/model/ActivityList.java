@@ -3,6 +3,7 @@ package seedu.unienable.model;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import seedu.unienable.exception.InvalidIndexException;
 
@@ -13,20 +14,32 @@ import seedu.unienable.exception.InvalidIndexException;
  * so Branch 1's append contract is untouched.
  */
 public class ActivityList {
-    /** Canonical {@code list} order: date, then start time; stable ties keep add order. */
+    /**
+     * Canonical {@code list} order: date, then start time; stable ties keep add order.
+     */
     private static final Comparator<Activity> CANONICAL_ORDER =
             Comparator.comparing(Activity::getDate).thenComparing(Activity::getStartTime);
 
-    /** HIGH to LOW — reversed because the enum declares LOW, MEDIUM, HIGH; ties canonical. */
+    /**
+     * HIGH to LOW, reversed because the enum declares LOW, MEDIUM, HIGH; ties keep canonical order.
+     */
     private static final Comparator<Activity> DEMAND_ORDER =
             Comparator.comparing(Activity::getDemand).reversed().thenComparing(CANONICAL_ORDER);
 
     private final List<Activity> activities;
 
+    /**
+     * Creates an empty activity collection.
+     */
     public ActivityList() {
         this(List.of());
     }
 
+    /**
+     * Creates an activity collection from a copy of the supplied insertion order.
+     *
+     * @param activities initial activities in insertion order.
+     */
     public ActivityList(List<Activity> activities) {
         this.activities = new ArrayList<>(activities);
     }
@@ -34,20 +47,25 @@ public class ActivityList {
     /**
      * Appends without ordering; the views apply display order, so Branch 1's
      * append contract is untouched.
+     *
+     * @param activity non-null activity to append.
+     * @throws NullPointerException if the activity is null
      */
     public void addActivity(Activity activity) {
-        activities.add(java.util.Objects.requireNonNull(activity));
+        activities.add(Objects.requireNonNull(activity));
     }
 
     /**
-     * Immutable snapshot sorted by date, then start time — the order {@code list}
+     * Returns an immutable snapshot sorted by date, then start time, the order {@code list}
      * displays and {@code delete INDEX} resolves its index against.
      */
     public List<Activity> getCanonicalView() {
         return activities.stream().sorted(CANONICAL_ORDER).toList();
     }
 
-    /** Immutable snapshot grouped by demand (HIGH to LOW); ties keep canonical order. */
+    /**
+     * Returns an immutable snapshot grouped by demand (HIGH to LOW); ties keep canonical order.
+     */
     public List<Activity> getDemandView() {
         return activities.stream().sorted(DEMAND_ORDER).toList();
     }
@@ -58,8 +76,10 @@ public class ActivityList {
      * position, so the displayed index always refers to the order shown by
      * {@code list}, never to insertion order.
      *
+     * @param displayedIndex 1-based index shown by the chronological {@code list} command.
+     * @return the removed activity
      * @throws InvalidIndexException when there are no activities, or when the index
-     *     is outside the range 1 to (number of activities)
+     *         is outside the range 1 to (number of activities)
      */
     public Activity deleteByDisplayedIndex(int displayedIndex) throws InvalidIndexException {
         List<Activity> canonical = getCanonicalView();
@@ -79,7 +99,7 @@ public class ActivityList {
     // Coordinate edits to this shared class; command and parser files have separate owners.
 
     /**
-     * Immutable snapshot in insertion (add) order — storage order, not display order;
+     * Returns an immutable snapshot in insertion (add) order, the storage order rather than display order;
      * use {@link #getCanonicalView()} when the ordering that the user sees is needed.
      */
     public List<Activity> getActivities() {
