@@ -118,7 +118,11 @@ public class Storage {
                     .map(Storage::formatActivity)
                     .toList();
             Path temporaryFile = activityFile.resolveSibling(activityFile.getFileName() + ".tmp");
-            Files.write(temporaryFile, lines, StandardCharsets.UTF_8,
+            String contents = String.join("\n", lines);
+            if (!lines.isEmpty()) {
+                contents += "\n";
+            }
+            Files.writeString(temporaryFile, contents, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING,
                     StandardOpenOption.WRITE);
             moveIntoPlace(temporaryFile);
