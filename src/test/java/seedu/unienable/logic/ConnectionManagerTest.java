@@ -11,10 +11,13 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Connection;
 import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.model.enums.ShelterStatus;
 import seedu.unienable.model.enums.TraversalType;
+import seedu.unienable.storage.ConnectionStorage;
+import seedu.unienable.storage.FacilityStorage;
 
 /**
  * Protects endpoint identity and combined filters for accessible route graph construction.
@@ -59,6 +62,39 @@ class ConnectionManagerTest {
         source.clear();
         assertEquals(List.of(first), snapshot.getConnections());
         assertTrue(new ConnectionManager(List.of()).findConnections("AS1", null, null, null, null).isEmpty());
+    }
+
+    @Test
+    void findRoute_usesLoadedCampusConnectionsInBothDirections() throws UniEnableException {
+        var facilities = new FacilityStorage().load().getRecords();
+        var loaded = new ConnectionStorage(facilities).load();
+        assertTrue(loaded.getWarnings().isEmpty());
+        var manager = new ConnectionManager(loaded.getRecords());
+        var route = manager.findRoute(" as2 ", "clb").orElseThrow();
+        assertEquals(List.of("AS2", "AS1", "AS6", "CLB"), route.stops());
+        assertEquals(List.of(7, 3, 1), route.segments().stream().map(Connection::getId).toList());
+        assertEquals(290, route.distanceInMetres());
+        assertEquals(List.of("CLB", "AS6", "AS1", "AS2"),
+                manager.findRoute("CLB", "AS2").orElseThrow().stops());
+        assertEquals(290, manager.findRoute("AS2", "CLB").orElseThrow().distanceInMetres());
+    }
+
+    @Test
+    void findRoute_preservesSnapshotAndRejectsUnknownEndpoints() {
+        var source = new ArrayList<>(List.of(first, second));
+        var manager = new ConnectionManager(source);
+        source.clear();
+        var route = manager.findRoute("AS2", "AS1").orElseThrow();
+        assertEquals(List.of("AS2", "AS1"), route.stops());
+        assertSame(first, route.segments().getFirst());
+        assertEquals(10, route.distanceInMetres());
+        assertTrue(manager.findRoute("AS1", "AS3").isEmpty());
+        assertEquals(0, manager.findRoute("AS3", "AS3").orElseThrow().distanceInMetres());
+        assertThrows(IllegalArgumentException.class, () -> manager.findRoute("F01", "AS1"));
+        assertThrows(IllegalArgumentException.class, () -> manager.findRoute("AS1", " "));
+        assertThrows(IllegalArgumentException.class, () -> manager.findRoute(null, "AS1"));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ConnectionManager(List.of()).findRoute("AS1", "AS2"));
     }
 
     /**

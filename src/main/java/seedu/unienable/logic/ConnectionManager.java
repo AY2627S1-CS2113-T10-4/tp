@@ -10,11 +10,15 @@ import seedu.unienable.model.enums.ShelterStatus;
 import seedu.unienable.model.enums.TraversalType;
 
 /**
- * Provides read-only lookups and filtering over loaded, bidirectional connection reference data.
+ * Provides read-only lookups, filtering and shortest accessible routes over bidirectional connection data.
  * Endpoints are short facility names such as AS1 and CLB, not stable IDs such as F01.
  */
 public final class ConnectionManager {
     private final List<Connection> connections;
+    /**
+     * Reuses the graph built from this manager's immutable connection snapshot.
+     */
+    private final DijkstraShortestPath shortestPath;
 
     /**
      * Creates a manager using a snapshot of the supplied connections.
@@ -23,6 +27,7 @@ public final class ConnectionManager {
      */
     public ConnectionManager(List<Connection> connections) {
         this.connections = List.copyOf(connections);
+        this.shortestPath = new DijkstraShortestPath(this.connections);
     }
 
     /**
@@ -32,6 +37,20 @@ public final class ConnectionManager {
      */
     public List<Connection> getConnections() {
         return connections;
+    }
+
+    /**
+     * Finds the shortest recorded route using only connections marked YES for accessibility.
+     * Each query has independent search state. Names ignore case and surrounding spaces.
+     * Shelter, traversal type and recorded barriers do not add further routing restrictions.
+     *
+     * @param from origin facility name, such as AS2 (not a stable ID such as F02)
+     * @param to destination facility name, such as CLB
+     * @return ordered stops, original connections and total metres, or empty if disconnected
+     * @throws IllegalArgumentException if either name is null, blank or absent from the connections
+     */
+    public Optional<DijkstraShortestPath.Route> findRoute(String from, String to) {
+        return shortestPath.findRoute(from, to);
     }
 
     /**

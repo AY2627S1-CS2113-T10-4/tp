@@ -2,10 +2,13 @@ package seedu.unienable;
 
 import seedu.unienable.command.CommandResult;
 import seedu.unienable.exception.UniEnableException;
+import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
 import seedu.unienable.model.ActivityList;
+import seedu.unienable.model.Connection;
 import seedu.unienable.model.Facility;
 import seedu.unienable.parser.Parser;
+import seedu.unienable.storage.ConnectionStorage;
 import seedu.unienable.storage.FacilityStorage;
 import seedu.unienable.storage.LoadResult;
 import seedu.unienable.storage.Storage;
@@ -20,20 +23,32 @@ final class ConsoleHelper {
     }
 
     /**
-     * Loads facility reference data and creates the parser used by the console.
-     * If loading fails, reports the problem and keeps bootstrap commands available.
+     * Loads facilities before connections so connection endpoints can be validated.
+     * A connection load failure keeps facility commands available; a facility load failure
+     * reports the problem and keeps bootstrap commands available.
      *
      * @param ui user interface for dataset warnings and loading errors
-     * @return parser with facility data, or a fallback parser when loading fails
+     * @return parser with available reference data, or a fallback when facilities cannot load
      */
     static Parser createParser(Ui ui) {
         try {
-            LoadResult<Facility> loaded = new FacilityStorage().load();
-            Parser parser = new Parser(new FacilityManager(loaded.getRecords()));
-            for (String warning : loaded.getWarnings()) {
+            LoadResult<Facility> facilities = new FacilityStorage().load();
+            for (String warning : facilities.getWarnings()) {
                 ui.showMessage("Facility dataset warning: " + warning);
             }
-            return parser;
+
+            ConnectionManager connectionManager = null;
+            try {
+                LoadResult<Connection> connections = new ConnectionStorage(facilities.getRecords()).load();
+                for (String warning : connections.getWarnings()) {
+                    ui.showMessage("Connection dataset warning: " + warning);
+                }
+                connectionManager = new ConnectionManager(connections.getRecords());
+            } catch (UniEnableException exception) {
+                ui.showMessage("Connection dataset unavailable: " + exception.getMessage());
+            }
+
+            return new Parser(new FacilityManager(facilities.getRecords()), connectionManager);
         } catch (UniEnableException exception) {
             ui.showMessage("Facility dataset unavailable: " + exception.getMessage());
             return new Parser();

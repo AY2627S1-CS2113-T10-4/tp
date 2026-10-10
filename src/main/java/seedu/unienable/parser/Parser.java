@@ -5,10 +5,11 @@ import java.util.Locale;
 import seedu.unienable.command.ByeCommand;
 import seedu.unienable.command.Command;
 import seedu.unienable.exception.ParseException;
+import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
 
 /**
- * Recognizes Branch 1 add/help plus existing facility and bye commands.
+ * Recognizes add, facility, route and bye commands.
  */
 public class Parser {
     /**
@@ -16,11 +17,18 @@ public class Parser {
      */
     private static final String WARNING_MESSAGE = "[WARNING]";
 
-    /** Handles facility commands using the available reference data. */
+    /**
+     * Handles facility commands using the available reference data.
+     */
     private final FacilityCommandParser facilityCommandParser;
 
     /** Handles list, list demand, and delete commands. */
     private final ListDeleteCommandParser listDeleteCommandParser = new ListDeleteCommandParser();
+
+    /**
+     * Handles route commands using the available connection reference data.
+     */
+    private final RouteParser routeParser;
 
     /**
      * Creates a parser without loaded facility reference data.
@@ -32,16 +40,27 @@ public class Parser {
     /**
      * Creates a parser with the available facility reference data.
      *
-     * @param facilityManager manager used by facility commands
+     * @param facilityManager manager used by facility commands.
      */
     public Parser(FacilityManager facilityManager) {
+        this(facilityManager, null);
+    }
+
+    /**
+     * Creates a parser with the available facility and connection reference data.
+     *
+     * @param facilityManager manager used by facility commands, or null when unavailable.
+     * @param connectionManager manager used by route commands, or null when unavailable.
+     */
+    public Parser(FacilityManager facilityManager, ConnectionManager connectionManager) {
         this.facilityCommandParser = new FacilityCommandParser(facilityManager);
+        this.routeParser = new RouteParser(connectionManager);
     }
 
     /**
      * Dispatches supported user commands to their handlers.
      *
-     * @param input command entered by the user
+     * @param input command entered by the user.
      * @return the command to execute
      * @throws ParseException if the command is invalid or unavailable
      */
@@ -58,6 +77,8 @@ public class Parser {
             return new ByeCommand();
         case "facility":
             return facilityCommandParser.parseFacility(words);
+        case "route":
+            return routeParser.parseRoute(words);
         case "add":
             return new AddCommandParser().parse(trimmedInput.substring(words[0].length()).trim());
         case "list":
