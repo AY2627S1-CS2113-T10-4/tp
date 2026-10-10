@@ -8,22 +8,41 @@ import java.util.Scanner;
  * Owns console reading and message output without closing caller-owned streams.
  */
 public class Ui {
-    /** Length of the response borders, matching the shared UI example. */
+    /**
+     * Length of the response borders, matching the shared UI example.
+     */
     private static final int HORIZONTAL_LINE_LENGTH = 60;
     private static final String HORIZONTAL_LINE = "_".repeat(HORIZONTAL_LINE_LENGTH);
 
     private final Scanner input;
     private final PrintStream output;
 
+    /**
+     * Creates a console UI using streams owned by the caller.
+     *
+     * @param input stream supplying console commands.
+     * @param output stream receiving console messages.
+     */
     public Ui(InputStream input, PrintStream output) {
         this.input = new Scanner(input);
         this.output = output;
     }
 
+    /**
+     * Checks whether another line is available, waiting for input when necessary.
+     *
+     * @return true if another command line can be read, or false at end of input
+     */
     public boolean hasNextLine() {
         return input.hasNextLine();
     }
 
+    /**
+     * Reads the next command line without its line separator.
+     *
+     * @return the next input line
+     * @throws java.util.NoSuchElementException if the input has ended
+     */
     public String readLine() {
         return input.nextLine();
     }
@@ -52,7 +71,7 @@ public class Ui {
      * Displays one complete response between horizontal lines.
      * Multiline responses keep their contents together inside a single pair of borders.
      *
-     * @param message complete response to display
+     * @param message complete response to display.
      */
     public void showMessage(String message) {
         output.println(HORIZONTAL_LINE);

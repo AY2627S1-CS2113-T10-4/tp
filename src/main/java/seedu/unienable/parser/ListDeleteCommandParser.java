@@ -10,12 +10,14 @@ import seedu.unienable.exception.ParseException;
 
 /**
  * Parses the list, list demand, and delete commands.
- * Only syntax is validated here: whether an index is a plain positive integer.
+ * Only syntax is validated here: whether an index is a plain ASCII integer without a sign.
  * Whether the index refers to an existing activity is decided by the model at
  * execution time, because the parser has no access to activity state.
  */
 public class ListDeleteCommandParser {
-    /** Shared prefix for warnings reported by this parser. */
+    /**
+     * Shared prefix for warnings reported by this parser.
+     */
     private static final String WARNING_MESSAGE = "[WARNING]";
 
     /**
@@ -27,7 +29,7 @@ public class ListDeleteCommandParser {
     /**
      * Recognizes list and list demand, case-insensitively.
      *
-     * @param words command words, beginning with list
+     * @param words command words, beginning with list.
      * @return the list command to execute
      * @throws ParseException for unknown variants or unexpected arguments
      */
@@ -47,11 +49,12 @@ public class ListDeleteCommandParser {
     }
 
     /**
-     * Recognizes delete INDEX, where INDEX is a plain positive integer.
+     * Recognizes delete INDEX, where INDEX contains only ASCII digits and fits in an int.
+     * Zero is accepted by the parser and rejected by the model's range check.
      * The index is forwarded unvalidated for range; the model resolves it
      * against the canonical view and reports out-of-range values.
      *
-     * @param words command words, beginning with delete
+     * @param words command words, beginning with delete.
      * @return the delete command to execute
      * @throws ParseException for a missing, extra, or non-integer index
      */

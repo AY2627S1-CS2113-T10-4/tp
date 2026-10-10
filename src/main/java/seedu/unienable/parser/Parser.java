@@ -9,7 +9,7 @@ import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
 
 /**
- * Recognizes add, facility, route and bye commands.
+ * Recognizes add, list, list demand, delete, facility, route and bye commands.
  */
 public class Parser {
     /**
@@ -22,7 +22,9 @@ public class Parser {
      */
     private final FacilityCommandParser facilityCommandParser;
 
-    /** Handles list, list demand, and delete commands. */
+    /**
+     * Handles list, list demand, and delete commands.
+     */
     private final ListDeleteCommandParser listDeleteCommandParser = new ListDeleteCommandParser();
 
     /**
