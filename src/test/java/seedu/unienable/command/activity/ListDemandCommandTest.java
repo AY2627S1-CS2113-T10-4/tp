@@ -3,9 +3,14 @@ package seedu.unienable.command.activity;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import org.junit.jupiter.api.Test;
 
+import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
+import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
@@ -52,9 +57,9 @@ class ListDemandCommandTest {
         assertTrue(message.indexOf("2. Late") < message.indexOf("3. Run"));
     }
 
-    private void add(String name, String date, String start, String end, String demand)
-            throws Exception {
-        parser.parse("add n/" + name + " d/" + date + " s/" + start + " e/" + end
-                + " dem/" + demand).execute(activities, noWrites);
+    /** Seeds existing activities without applying the add parser's current-time restriction. */
+    private void add(String name, String date, String start, String end, String demand) {
+        activities.addActivity(new Activity(name, LocalDate.parse(date), LocalTime.parse(start),
+                LocalTime.parse(end), DemandLevel.valueOf(demand), false));
     }
 }
