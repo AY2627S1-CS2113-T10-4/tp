@@ -4,6 +4,7 @@ import java.util.Locale;
 
 import seedu.unienable.command.ByeCommand;
 import seedu.unienable.command.Command;
+import seedu.unienable.command.HelpCommand;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
@@ -97,7 +98,8 @@ public class Parser {
             return markCommandParser.parseUnmark(words);
         case "help":
             if (words.length != 1) {
-                throw new ParseException(WARNING_MESSAGE + " help does not take arguments.");
+                throw new ParseException(
+                        WARNING_MESSAGE + " help does not take arguments.");
             }
             return new HelpCommand();
         default:
