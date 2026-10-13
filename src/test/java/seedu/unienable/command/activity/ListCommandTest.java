@@ -3,13 +3,14 @@ package seedu.unienable.command.activity;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
+import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
@@ -17,10 +18,7 @@ import seedu.unienable.storage.Storage;
  * Checks canonical-order display and read-only behaviour for the list command.
  */
 class ListCommandTest {
-    /** Fixed clock before every fixture date so add validation never depends on wall-clock time. */
-    private static final Clock FIXED_CLOCK =
-            Clock.fixed(Instant.parse("2026-10-11T16:00:00Z"), ZoneOffset.UTC);
-    private final Parser parser = new Parser(FIXED_CLOCK);
+    private final Parser parser = new Parser();
     private final ActivityList activities = new ActivityList();
     private final Storage noWrites = new Storage() {
         @Override
@@ -65,9 +63,9 @@ class ListCommandTest {
         assertTrue(message.contains("1. Solo (2026-10-12, 08:00-09:00) [LOW]"));
     }
 
-    private void add(String name, String date, String start, String end, String demand)
-            throws Exception {
-        parser.parse("add n/" + name + " d/" + date + " s/" + start + " e/" + end
-                + " dem/" + demand).execute(activities, noWrites);
+    /** Seeds existing activities without applying the add parser's current-time restriction. */
+    private void add(String name, String date, String start, String end, String demand) {
+        activities.addActivity(new Activity(name, LocalDate.parse(date), LocalTime.parse(start),
+                LocalTime.parse(end), DemandLevel.valueOf(demand), false));
     }
 }

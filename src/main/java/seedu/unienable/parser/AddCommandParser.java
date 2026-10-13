@@ -10,6 +10,7 @@ import java.time.format.ResolverStyle;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,24 +33,21 @@ public class AddCommandParser {
     private static final String USAGE = "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm "
             + "[dem/LOW|MEDIUM|HIGH]";
 
-    /** Time source used to reject activities whose end date-time is not in the future. */
+    /** Supplies the current time and local zone for activity end-time validation. */
     private final Clock clock;
 
-    /**
-     * Creates a parser that validates end times against the system clock.
-     */
+    /** Creates a parser using the system clock and local time zone. */
     public AddCommandParser() {
         this(Clock.systemDefaultZone());
     }
 
     /**
-     * Creates a parser that validates end times against the supplied clock.
-     * Injecting a clock keeps the date-aware future check deterministic in tests.
+     * Creates a parser with a supplied clock so tests can fix the current date and time.
      *
-     * @param clock time source used by the end-time validation
+     * @param clock clock used to validate whether the activity has ended
      */
-    public AddCommandParser(Clock clock) {
-        this.clock = clock;
+    AddCommandParser(Clock clock) {
+        this.clock = Objects.requireNonNull(clock, "clock");
     }
 
     /**
@@ -94,7 +92,8 @@ public class AddCommandParser {
             throw invalid("End time must be later than start time on the same day.");
         }
 
-        if (!LocalDateTime.of(date, endTime).isAfter(LocalDateTime.now(clock))) {
+        LocalDateTime endDateTime = LocalDateTime.of(date, endTime);
+        if (!endDateTime.isAfter(LocalDateTime.now(clock))) {
             throw invalid("End time must be later than current time.");
         }
 

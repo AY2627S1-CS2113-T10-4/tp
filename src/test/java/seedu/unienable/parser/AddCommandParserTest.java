@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import org.junit.jupiter.api.Test;
@@ -23,15 +23,15 @@ import seedu.unienable.storage.Storage;
 
 /** Tests Branch 1's order-independent add parser and validation. */
 class AddCommandParserTest {
-    /** Fixed afternoon clock so fixture dates (2026-10-20) are always in the future. */
-    private static final Clock FIXED_CLOCK =
-            Clock.fixed(Instant.parse("2026-10-14T16:00:00Z"), ZoneOffset.UTC);
+    /** Fixes now at 16:00 on 14 October 2026 in Singapore for repeatable validation. */
+    private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-10-14T08:00:00Z"),
+            ZoneId.of("Asia/Singapore"));
+    private final AddCommandParser parser = new AddCommandParser(FIXED_CLOCK);
 
     @Test
     void parse_outOfOrderFieldsAndMultiWordName_addsActivity() throws Exception {
         ActivityList activities = new ActivityList();
-        Command command = new AddCommandParser(FIXED_CLOCK)
-                .parse("dem/high e/11:45 n/Group Meeting d/2026-10-20 s/09:30");
+        Command command = parser.parse("dem/high e/11:45 n/Group Meeting d/2026-10-20 s/09:30");
         command.execute(activities, new Storage());
 
         Activity result = activities.getActivities().get(0);
@@ -45,7 +45,7 @@ class AddCommandParserTest {
     @Test
     void parse_demandOmitted_defaultsToMedium() throws Exception {
         ActivityList activities = new ActivityList();
-        new AddCommandParser(FIXED_CLOCK).parse("n/Study d/2026-10-20 s/10:00 e/11:00")
+        parser.parse("n/Study d/2026-10-20 s/10:00 e/11:00")
                 .execute(activities, new Storage());
         assertEquals(DemandLevel.MEDIUM, activities.getActivities().get(0).getDemand());
     }
@@ -53,7 +53,7 @@ class AddCommandParserTest {
     @Test
     void parse_andSlashInName_preservesFullName() throws Exception {
         ActivityList activities = new ActivityList();
-        new AddCommandParser(FIXED_CLOCK).parse("n/Planning and/or review d/2026-10-20 s/09:00 e/10:00")
+        parser.parse("n/Planning and/or review d/2026-10-20 s/09:00 e/10:00")
                 .execute(activities, new Storage());
         assertEquals("Planning and/or review", activities.getActivities().get(0).getName());
     }
@@ -61,7 +61,7 @@ class AddCommandParserTest {
     @Test
     void parse_withoutSlashInName_preservesFullName() throws Exception {
         ActivityList activities = new ActivityList();
-        new AddCommandParser(FIXED_CLOCK).parse("n/Lunch w/o friends d/2026-10-20 s/09:00 e/10:00")
+        parser.parse("n/Lunch w/o friends d/2026-10-20 s/09:00 e/10:00")
                 .execute(activities, new Storage());
         assertEquals("Lunch w/o friends", activities.getActivities().get(0).getName());
     }
@@ -80,49 +80,54 @@ class AddCommandParserTest {
             "unexpected n/Meeting d/2026-10-20 s/09:00 e/10:00"
         };
         for (String input : invalid) {
-            assertThrows(ParseException.class, () -> new AddCommandParser(FIXED_CLOCK).parse(input), input);
+            assertThrows(ParseException.class, () -> parser.parse(input), input);
         }
     }
 
     @Test
-    void parse_sameDayFutureEndTime_isAccepted() throws Exception {
+    void parse_futureDateWithEarlierEndTime_addsActivity() throws Exception {
         ActivityList activities = new ActivityList();
-        new AddCommandParser(FIXED_CLOCK).parse("n/Same Day d/2026-10-14 s/15:00 e/17:00")
+        parser.parse("n/Early meeting d/2026-10-15 s/08:00 e/09:00")
                 .execute(activities, new Storage());
-        assertEquals(LocalTime.of(17, 0), activities.getActivities().get(0).getEndTime());
+        Activity result = activities.getActivities().getFirst();
+        assertEquals("2026-10-15", result.getDate().toString());
+        assertEquals("09:00", result.getEndTime().toString());
     }
 
     @Test
-    void parse_sameDayPastEndTime_isRejected() {
-        ParseException exception = assertThrows(ParseException.class, () -> new AddCommandParser(FIXED_CLOCK)
-                .parse("n/Past d/2026-10-14 s/08:00 e/15:00"));
-        assertTrue(exception.getMessage().startsWith("[WARNING] End time must be later than current time."));
-        assertTrue(exception.getMessage().contains("Usage: add"));
-    }
-
-    @Test
-    void parse_sameDayEndTimeEqualToNow_isRejected() {
-        assertThrows(ParseException.class, () -> new AddCommandParser(FIXED_CLOCK)
-                .parse("n/Now d/2026-10-14 s/08:00 e/16:00"));
-    }
-
-    @Test
-    void parse_futureDateWithEarlierTimeOfDay_isAccepted() throws Exception {
+    void parse_nextDayJustAfterMidnight_addsActivity() throws Exception {
         ActivityList activities = new ActivityList();
-        new AddCommandParser(FIXED_CLOCK).parse("n/Tomorrow d/2026-10-15 s/06:00 e/08:00")
+        parser.parse("n/Midnight meeting d/2026-10-15 s/00:00 e/00:01")
                 .execute(activities, new Storage());
-        assertEquals(LocalDate.of(2026, 10, 15), activities.getActivities().get(0).getDate());
+        assertEquals("00:01", activities.getActivities().getFirst().getEndTime().toString());
     }
 
     @Test
-    void parse_pastDateWithLaterTimeOfDay_isRejected() {
-        assertThrows(ParseException.class, () -> new AddCommandParser(FIXED_CLOCK)
-                .parse("n/Yesterday d/2026-10-13 s/20:00 e/23:00"));
+    void parse_todayEndingAfterNow_addsActivity() throws Exception {
+        ActivityList activities = new ActivityList();
+        parser.parse("n/Later meeting d/2026-10-14 s/15:00 e/17:00")
+                .execute(activities, new Storage());
+        assertEquals("17:00", activities.getActivities().getFirst().getEndTime().toString());
+    }
+
+    @Test
+    void parse_endDateTimeAtOrBeforeNow_throwsCurrentTimeWarning() {
+        String[] invalid = {
+            "n/Past meeting d/2026-10-13 s/22:00 e/23:00",
+            "n/Earlier today d/2026-10-14 s/14:00 e/15:00",
+            "n/Ending now d/2026-10-14 s/15:00 e/16:00"
+        };
+        for (String input : invalid) {
+            ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input), input);
+            assertEquals("[WARNING] End time must be later than current time.\n"
+                    + "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH]",
+                    exception.getMessage());
+        }
     }
 
     @Test
     void parse_invalidRangeTakesPrecedenceOverCurrentTimeCheck() {
-        ParseException exception = assertThrows(ParseException.class, () -> new AddCommandParser(FIXED_CLOCK)
+        ParseException exception = assertThrows(ParseException.class, () -> parser
                 .parse("n/Bad Range d/2026-10-14 s/15:00 e/14:00"));
         assertTrue(exception.getMessage().contains("End time must be later than start time"));
         assertTrue(exception.getMessage().startsWith("[WARNING]"));
