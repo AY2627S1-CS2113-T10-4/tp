@@ -8,6 +8,7 @@ import seedu.unienable.command.HelpCommand;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
+import seedu.unienable.command.HelpCommand;
 
 /**
  * Recognizes add, list, list demand, delete, facility, route and bye commands.
@@ -95,14 +96,12 @@ public class Parser {
             return markCommandParser.parseMark(words);
         case "unmark":
             return markCommandParser.parseUnmark(words);
-
         case "help":
             if (words.length != 1) {
                 throw new ParseException(
                         WARNING_MESSAGE + " help does not take arguments.");
             }
             return new HelpCommand();
-
         default:
             throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");
         }

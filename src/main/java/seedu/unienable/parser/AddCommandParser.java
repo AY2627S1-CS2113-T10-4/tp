@@ -1,6 +1,7 @@
 package seedu.unienable.parser;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -67,10 +68,13 @@ public class AddCommandParser {
         } catch (DateTimeParseException exception) {
             throw invalid("Invalid time. Use 24-hour HH:mm (for example, 09:30).");
         }
-        // Demo decision: activities must end on the same day after their start time.
-        // Agree with the team before supporting overnight activities.
+
         if (!endTime.isAfter(startTime)) {
             throw invalid("End time must be later than start time on the same day.");
+        }
+
+        if (!endTime.isAfter(LocalTime.from(LocalDateTime.now()))) {
+            throw invalid("End time must be later than current time.");
         }
 
         DemandLevel demand = DemandLevel.MEDIUM;
