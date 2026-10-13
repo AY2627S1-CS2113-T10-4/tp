@@ -21,7 +21,7 @@ import seedu.unienable.model.enums.DemandLevel;
  */
 public class AddCommandParser {
     // Owner: Atharva
-    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)([a-z]+)/");
+    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)(dem|n|d|s|e)/");
     private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern TIME_PATTERN = Pattern.compile("\\d{2}:\\d{2}");
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd")
@@ -90,6 +90,10 @@ public class AddCommandParser {
 
     /**
      * Collects prefix/value pairs while allowing whitespace inside the activity name.
+     * Only the five known prefixes (dem, n, d, s, e) delimit values; any other
+     * slash-containing text such as "and/or" or "w/o" is kept as value content.
+     * A known prefix like d/ that appears inside free text is still parsed as a
+     * prefix, an unavoidable ambiguity of prefix-based grammars.
      */
     private Map<String, String> readFields(String arguments) throws ParseException {
         Map<String, String> fields = new HashMap<>();
@@ -106,10 +110,6 @@ public class AddCommandParser {
                 store(fields, previousKey, arguments.substring(previousValueStart, matcher.start()).trim());
             }
             previousKey = matcher.group(1).toLowerCase(Locale.ROOT);
-            if (!previousKey.equals("n") && !previousKey.equals("d")
-                    && !previousKey.equals("s") && !previousKey.equals("e") && !previousKey.equals("dem")) {
-                throw invalid("Unknown parameter: " + previousKey + "/.");
-            }
             previousValueStart = matcher.end();
         }
         if (previousKey == null) {

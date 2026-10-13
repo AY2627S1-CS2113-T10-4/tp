@@ -37,6 +37,22 @@ class AddCommandParserTest {
     }
 
     @Test
+    void parse_andSlashInName_preservesFullName() throws Exception {
+        ActivityList activities = new ActivityList();
+        new AddCommandParser().parse("n/Planning and/or review d/2026-10-20 s/09:00 e/10:00")
+                .execute(activities, new Storage());
+        assertEquals("Planning and/or review", activities.getActivities().get(0).getName());
+    }
+
+    @Test
+    void parse_withoutSlashInName_preservesFullName() throws Exception {
+        ActivityList activities = new ActivityList();
+        new AddCommandParser().parse("n/Lunch w/o friends d/2026-10-20 s/09:00 e/10:00")
+                .execute(activities, new Storage());
+        assertEquals("Lunch w/o friends", activities.getActivities().get(0).getName());
+    }
+
+    @Test
     void parse_invalidArguments_throwParseException() {
         String[] invalid = {
             "", "n/Meeting d/2026-10-20 s/09:00",
