@@ -24,9 +24,9 @@ import seedu.unienable.model.enums.DemandLevel;
 /**
  * Reads and writes user activities using the agreed six-column text format.
  *
- * <p>Malformed rows are skipped with line-numbered warnings. If a later save is
- * needed after such a load, the original file is copied to a {@code .corrupt.bak}
- * file before the repaired valid subset is written.</p>
+ * <p>Malformed rows are skipped with line-numbered warnings. After malformed rows
+ * or a fatal read failure, a later save preserves and verifies the original bytes
+ * in a {@code .corrupt.bak} file before replacing the activity file.</p>
  */
 public class Storage {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd")
@@ -73,6 +73,8 @@ public class Storage {
         try {
             lines = Files.readAllLines(activityFile, StandardCharsets.UTF_8);
         } catch (IOException exception) {
+            // A decoding or I/O failure must not bypass recovery protection on a later save.
+            loadedCorruptData = true;
             throw new UniEnableException("Unable to load activities: " + exception.getMessage());
         }
 
@@ -176,6 +178,9 @@ public class Storage {
     private void backupCorruptFile() throws IOException {
         Path backup = activityFile.resolveSibling(activityFile.getFileName() + ".corrupt.bak");
         Files.copy(activityFile, backup, StandardCopyOption.REPLACE_EXISTING);
+        if (Files.mismatch(activityFile, backup) != -1) {
+            throw new IOException("Activity recovery backup does not match the original file.");
+        }
     }
 
     private void moveIntoPlace(Path temporaryFile) throws IOException {

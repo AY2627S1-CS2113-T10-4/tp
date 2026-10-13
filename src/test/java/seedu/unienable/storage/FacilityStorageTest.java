@@ -9,13 +9,17 @@ import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import seedu.unienable.exception.UniEnableException;
+import seedu.unienable.logic.FacilityManager;
 import seedu.unienable.model.Facility;
+import seedu.unienable.model.FacilityFeature;
+import seedu.unienable.model.enums.AccessibilityStatus;
 
 /**
  * Checks facility reference loading, malformed-record recovery, and I/O ownership.
@@ -52,6 +56,61 @@ class FacilityStorageTest {
         assertFalse(hubs.hasWarnings());
         assertEquals(List.of("AS1", "AS2", "AS3", "AS4", "AS5", "AS6", "AS7", "AS8", "CLB"),
                 hubs.getRecords().stream().map(Facility::getName).toList());
+    }
+
+    /**
+     * Reproduces contradictory feature searches for every ordered pair of distinct statuses.
+     */
+    @TestFactory
+    Stream<DynamicTest> conflictingFeatureStatuses_keepFirstStatusAndWarn() {
+        return Arrays.stream(AccessibilityStatus.values()).flatMap(firstStatus ->
+                Arrays.stream(AccessibilityStatus.values()).filter(laterStatus -> laterStatus != firstStatus)
+                        .map(laterStatus -> DynamicTest.dynamicTest(firstStatus + " then " + laterStatus, () -> {
+                            String data = "FACILITY|F01|AS1|Sample building\n"
+                                    + "FEATURE|F01|LIFT|" + firstStatus + "\n"
+                                    + "FEATURE|F01|LIFT|" + laterStatus;
+                            LoadResult<Facility> result = facilities.load(new StringReader(data));
+                            assertEquals(List.of("Line 3: Conflicting accessibility status for LIFT at facility F01: "
+                                    + "already recorded as " + firstStatus + ", rejected " + laterStatus + "."),
+                                    result.getWarnings());
+                            Facility facility = result.getRecords().getFirst();
+                            assertEquals(1, facility.getFeatures().size());
+                            assertEquals(firstStatus, facility.getFeatures().getFirst().getStatus());
+                            FacilityManager manager = new FacilityManager(result.getRecords());
+                            assertEquals(List.of(facility),
+                                    manager.findByFeature(FacilityFeature.Type.LIFT, firstStatus));
+                            assertTrue(manager.findByFeature(FacilityFeature.Type.LIFT, laterStatus).isEmpty());
+                        })));
+    }
+
+    @Test
+    void featuresBeforeFacility_reportConflictsAtPhysicalLineNumbers() throws Exception {
+        String data = "FEATURE|F01|LIFT|YES|First note\n"
+                + "# Comment\n\n"
+                + "FEATURE|F01|LIFT|NO|Conflicting note\n"
+                + "FACILITY|F01|AS1|\n"
+                + "FEATURE|F01|LIFT|UNKNOWN";
+        LoadResult<Facility> result = facilities.load(new StringReader(data));
+        assertEquals(List.of(
+                "Line 4: Conflicting accessibility status for LIFT at facility F01: "
+                        + "already recorded as YES, rejected NO.",
+                "Line 6: Conflicting accessibility status for LIFT at facility F01: "
+                        + "already recorded as YES, rejected UNKNOWN."), result.getWarnings());
+        assertEquals("F01|AS1|null|LIFT|YES|First note", describe(result.getRecords().getFirst()));
+    }
+
+    @Test
+    void matchingStatuses_preserveNotesAndIndependentFeaturesAndFacilities() throws Exception {
+        String data = "FACILITY|F01|AS1|\n"
+                + "FACILITY|F02|AS2|\n"
+                + "FEATURE|F01|LIFT|YES|First note\n"
+                + "FEATURE|F01|RAMP|NO\n"
+                + "FEATURE|F02|LIFT|NO\n"
+                + "FEATURE|F01|LIFT|YES|Second note";
+        LoadResult<Facility> result = facilities.load(new StringReader(data));
+        assertFalse(result.hasWarnings());
+        assertEquals(List.of("F01|AS1|null|LIFT|YES|First note;RAMP|NO|null;LIFT|YES|Second note",
+                "F02|AS2|null|LIFT|NO|null"), result.getRecords().stream().map(this::describe).toList());
     }
 
     @Test

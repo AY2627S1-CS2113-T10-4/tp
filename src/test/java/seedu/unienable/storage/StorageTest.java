@@ -1,7 +1,9 @@
 package seedu.unienable.storage;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
@@ -12,6 +14,7 @@ import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
@@ -86,5 +89,36 @@ class StorageTest {
                 Files.readString(file, StandardCharsets.UTF_8));
         assertTrue(Files.readString(tempDir.resolve("activities.txt.corrupt.bak"),
                 StandardCharsets.UTF_8).contains("invalid"));
+    }
+
+    @Test
+    void save_afterFatalUtf8LoadFailure_preservesOriginalBytesInBackup() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        byte[] original = {0x4F, 0x6C, 0x64, (byte) 0xFF, 0x0A};
+        Files.write(file, original);
+        Storage storage = new Storage(file);
+        assertThrows(UniEnableException.class, storage::load);
+        Activity added = new Activity("New meeting", LocalDate.of(2026, 10, 20), LocalTime.of(9, 0),
+                LocalTime.of(10, 0), DemandLevel.MEDIUM, false);
+
+        storage.save(new ActivityList(List.of(added)));
+
+        assertArrayEquals(original, Files.readAllBytes(tempDir.resolve("activities.txt.corrupt.bak")));
+        assertEquals("New meeting|2026-10-20|09:00|10:00|MEDIUM|false\n", Files.readString(file));
+    }
+
+    @Test
+    void save_whenRecoveryBackupCannotBeCreated_preservesOriginalFile() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        byte[] original = {0x4F, 0x6C, 0x64, (byte) 0xFF, 0x0A};
+        Files.write(file, original);
+        Storage storage = new Storage(file);
+        assertThrows(UniEnableException.class, storage::load);
+        Path blockedBackup = Files.createDirectory(tempDir.resolve("activities.txt.corrupt.bak"));
+        Files.writeString(blockedBackup.resolve("keep.txt"), "Backup destination is occupied.");
+
+        assertThrows(UniEnableException.class, () -> storage.save(new ActivityList()));
+
+        assertArrayEquals(original, Files.readAllBytes(file));
     }
 }
