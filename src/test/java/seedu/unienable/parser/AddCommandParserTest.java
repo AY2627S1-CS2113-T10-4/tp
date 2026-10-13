@@ -39,15 +39,15 @@ class AddCommandParserTest {
     @Test
     void parse_invalidArguments_throwParseException() {
         String[] invalid = {
-                "", "n/Meeting d/2026-10-20 s/09:00",
-                "n/Meeting d/2026-02-30 s/09:00 e/10:00",
-                "n/Meeting d/2026-10-20 s/9:00 e/10:00",
-                "n/Meeting d/2026-10-20 s/11:00 e/10:00",
-                "n/Meeting d/2026-10-20 s/09:00 e/10:00 dem/urgent",
-                "n/Meeting n/Duplicate d/2026-10-20 s/09:00 e/10:00",
-                "n/Meeting d/2026-10-20 s/09:00 e/10:00 foo/bar",
-                "n/Meeting | note d/2026-10-20 s/09:00 e/10:00",
-                "unexpected n/Meeting d/2026-10-20 s/09:00 e/10:00"
+            "", "n/Meeting d/2026-10-20 s/09:00",
+            "n/Meeting d/2026-02-30 s/09:00 e/10:00",
+            "n/Meeting d/2026-10-20 s/9:00 e/10:00",
+            "n/Meeting d/2026-10-20 s/11:00 e/10:00",
+            "n/Meeting d/2026-10-20 s/09:00 e/10:00 dem/urgent",
+            "n/Meeting n/Duplicate d/2026-10-20 s/09:00 e/10:00",
+            "n/Meeting d/2026-10-20 s/09:00 e/10:00 foo/bar",
+            "n/Meeting | note d/2026-10-20 s/09:00 e/10:00",
+            "unexpected n/Meeting d/2026-10-20 s/09:00 e/10:00"
         };
         for (String input : invalid) {
             assertThrows(ParseException.class, () -> new AddCommandParser().parse(input), input);
