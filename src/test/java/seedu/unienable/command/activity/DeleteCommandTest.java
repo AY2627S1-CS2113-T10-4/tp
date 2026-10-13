@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.unienable.exception.UniEnableException;
@@ -17,7 +21,10 @@ import seedu.unienable.storage.Storage;
  * renumbering, and model-reported range errors.
  */
 class DeleteCommandTest {
-    private final Parser parser = new Parser();
+    /** Fixed clock before every fixture date so add validation never depends on wall-clock time. */
+    private static final Clock FIXED_CLOCK =
+            Clock.fixed(Instant.parse("2026-10-11T16:00:00Z"), ZoneOffset.UTC);
+    private final Parser parser = new Parser(FIXED_CLOCK);
     private final ActivityList activities = new ActivityList();
 
     // Baseline Storage.save() always throws UniEnableException, so any accidental

@@ -10,6 +10,9 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
@@ -22,6 +25,10 @@ import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
  * Exercises the console entry point and the user's full command sequence.
  */
 class UniEnableTest {
+    /** Fixed afternoon clock before every console fixture date (2026-10-15 onward). */
+    private static final Clock FIXED_CLOCK =
+            Clock.fixed(Instant.parse("2026-10-14T16:00:00Z"), ZoneOffset.UTC);
+
     @TestFactory
     Stream<DynamicTest> commands() throws Exception {
         return consoleCases().stream().map(row -> DynamicTest.dynamicTest(row[0], () -> {
@@ -217,7 +224,7 @@ class UniEnableTest {
         try (var captured = new PrintStream(output, true, StandardCharsets.UTF_8)) {
             System.setIn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
             System.setOut(captured);
-            UniEnable.run(System.in, System.out, activityFile);
+            UniEnable.run(System.in, System.out, activityFile, FIXED_CLOCK);
         } finally {
             System.setIn(originalInput);
             System.setOut(originalOutput);

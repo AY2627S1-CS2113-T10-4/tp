@@ -1,5 +1,6 @@
 package seedu.unienable.parser;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -30,6 +31,26 @@ public class AddCommandParser {
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String USAGE = "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm "
             + "[dem/LOW|MEDIUM|HIGH]";
+
+    /** Time source used to reject activities whose end date-time is not in the future. */
+    private final Clock clock;
+
+    /**
+     * Creates a parser that validates end times against the system clock.
+     */
+    public AddCommandParser() {
+        this(Clock.systemDefaultZone());
+    }
+
+    /**
+     * Creates a parser that validates end times against the supplied clock.
+     * Injecting a clock keeps the date-aware future check deterministic in tests.
+     *
+     * @param clock time source used by the end-time validation
+     */
+    public AddCommandParser(Clock clock) {
+        this.clock = clock;
+    }
 
     /**
      * Validates add arguments and constructs an AddCommand without modifying activity state.
@@ -73,7 +94,7 @@ public class AddCommandParser {
             throw invalid("End time must be later than start time on the same day.");
         }
 
-        if (!endTime.isAfter(LocalTime.from(LocalDateTime.now()))) {
+        if (!LocalDateTime.of(date, endTime).isAfter(LocalDateTime.now(clock))) {
             throw invalid("End time must be later than current time.");
         }
 
