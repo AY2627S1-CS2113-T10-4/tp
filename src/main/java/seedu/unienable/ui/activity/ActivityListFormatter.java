@@ -75,6 +75,7 @@ public final class ActivityListFormatter {
                 + " (" + activity.getDate()
                 + ", " + activity.getStartTime()
                 + "-" + activity.getEndTime()
-                + ") [" + activity.getDemand() + "]";
+                + ") [" + activity.getDemand() + "] "
+                + (activity.isDone() ? "[X]" : "[ ]");
     }
 }

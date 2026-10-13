@@ -36,6 +36,6 @@ public class DeleteCommand extends Command {
                 + "Time: " + activity.getStartTime() + " - " + activity.getEndTime() + "\n"
                 + "Demand: " + activity.getDemand() + "\n"
                 + "Activities in this session: " + activities.getActivities().size();
-        return new CommandResult(message, false);
+        return new CommandResult(message, false, true);
     }
 }

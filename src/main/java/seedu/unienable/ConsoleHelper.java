@@ -68,8 +68,9 @@ final class ConsoleHelper {
     static boolean processNextCommand(Ui ui, Parser parser, ActivityList activities, Storage storage) {
         try {
             CommandResult result = parser.parse(ui.readLine()).execute(activities, storage);
-            // TODO [Branch 3]: Add automatic persistence at the agreed point after activity changes.
-            // Coordinate with Branches 1 and 2 so failed or read-only commands do not save activity data.
+            if (result.didChangeActivities()) {
+                storage.save(activities);
+            }
             ui.showMessage(result.getMessage());
             return result.isExit();
         } catch (UniEnableException exception) {

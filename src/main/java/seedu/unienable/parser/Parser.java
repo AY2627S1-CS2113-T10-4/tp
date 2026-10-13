@@ -27,6 +27,9 @@ public class Parser {
      */
     private final ListDeleteCommandParser listDeleteCommandParser = new ListDeleteCommandParser();
 
+    /** Handles mark and unmark commands. */
+    private final MarkCommandParser markCommandParser = new MarkCommandParser();
+
     /**
      * Handles route commands using the available connection reference data.
      */
@@ -87,6 +90,10 @@ public class Parser {
             return listDeleteCommandParser.parseList(words);
         case "delete":
             return listDeleteCommandParser.parseDelete(words);
+        case "mark":
+            return markCommandParser.parseMark(words);
+        case "unmark":
+            return markCommandParser.parseUnmark(words);
         /*
         case "help":
             if (words.length != 1) {
@@ -94,8 +101,6 @@ public class Parser {
             }
             return new HelpCommand();
         */
-        // TODO [Branch 3]: Add mark/unmark dispatch here; keep parsing in MarkCommandParser.
-        // One team integrator should coordinate these shared switch edits.
         default:
             throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");
         }

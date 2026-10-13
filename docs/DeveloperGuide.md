@@ -19,10 +19,12 @@ code, documentation, and libraries alongside the relevant contributions.
 
 ## Design & implementation
 
-The baseline uses `seedu.unienable.UniEnable`, `Ui`, and `Parser` to run a console
-loop. `bye` produces an exit result; other input receives an unimplemented-command
-message. Shared command, activity, exception, and storage API skeletons are
-listed in [V1_SPEC.md](V1_SPEC.md). Storage is not connected to the bootstrap.
+The application uses `seedu.unienable.UniEnable`, `Ui`, and `Parser` to run a
+console loop. Activity commands resolve indexes through `ActivityList`'s
+chronological view. `CommandResult` records whether activity state changed, so
+`ConsoleHelper` saves only after successful mutating commands. `Storage` reads
+and writes UTF-8 six-column activity records and reports malformed rows without
+discarding the original file.
 
 ### Future feature design
 
@@ -46,6 +48,6 @@ and GitHub Actions CI. Further product requirements remain to be agreed.
 ## Instructions for manual testing
 
 Build with `./gradlew clean check` and `./gradlew shadowJar`.
-Run `java -jar build/libs/unienable.jar`; verify the greeting, an unimplemented
-input message, and clean exit with `bye`. Feature owners will add their own
-manual testing instructions when those features are implemented.
+Run `java -jar build/libs/unienable.jar` and verify add, list, mark, unmark,
+delete, restart persistence, malformed-file warnings, facility lookup, and
+clean exit with `bye`.
