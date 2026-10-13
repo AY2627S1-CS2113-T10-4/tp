@@ -8,7 +8,6 @@ import seedu.unienable.command.HelpCommand;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
-import seedu.unienable.command.HelpCommand;
 
 /**
  * Recognizes add, list, list demand, delete, facility, route and bye commands.

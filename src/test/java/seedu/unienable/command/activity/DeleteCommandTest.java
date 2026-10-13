@@ -5,10 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.unienable.exception.UniEnableException;
+import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
+import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
@@ -78,9 +83,9 @@ class DeleteCommandTest {
         assertTrue(exception.getMessage().contains("There are no activities to delete."));
     }
 
-    private void add(String name, String date, String start, String end, String demand)
-            throws Exception {
-        parser.parse("add n/" + name + " d/" + date + " s/" + start + " e/" + end
-                + " dem/" + demand).execute(activities, storage);
+    /** Seeds existing activities without applying the add parser's current-time restriction. */
+    private void add(String name, String date, String start, String end, String demand) {
+        activities.addActivity(new Activity(name, LocalDate.parse(date), LocalTime.parse(start),
+                LocalTime.parse(end), DemandLevel.valueOf(demand), false));
     }
 }
