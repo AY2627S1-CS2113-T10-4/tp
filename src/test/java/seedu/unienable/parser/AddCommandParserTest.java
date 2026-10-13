@@ -1,11 +1,16 @@
 package seedu.unienable.parser;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +48,22 @@ class AddCommandParserTest {
         parser.parse("n/Study d/2026-10-20 s/10:00 e/11:00")
                 .execute(activities, new Storage());
         assertEquals(DemandLevel.MEDIUM, activities.getActivities().get(0).getDemand());
+    }
+
+    @Test
+    void parse_andSlashInName_preservesFullName() throws Exception {
+        ActivityList activities = new ActivityList();
+        parser.parse("n/Planning and/or review d/2026-10-20 s/09:00 e/10:00")
+                .execute(activities, new Storage());
+        assertEquals("Planning and/or review", activities.getActivities().get(0).getName());
+    }
+
+    @Test
+    void parse_withoutSlashInName_preservesFullName() throws Exception {
+        ActivityList activities = new ActivityList();
+        parser.parse("n/Lunch w/o friends d/2026-10-20 s/09:00 e/10:00")
+                .execute(activities, new Storage());
+        assertEquals("Lunch w/o friends", activities.getActivities().get(0).getName());
     }
 
     @Test
@@ -101,6 +122,32 @@ class AddCommandParserTest {
             assertEquals("[WARNING] End time must be later than current time.\n"
                     + "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH]",
                     exception.getMessage());
+        }
+    }
+
+    @Test
+    void parse_invalidRangeTakesPrecedenceOverCurrentTimeCheck() {
+        ParseException exception = assertThrows(ParseException.class, () -> parser
+                .parse("n/Bad Range d/2026-10-14 s/15:00 e/14:00"));
+        assertTrue(exception.getMessage().contains("End time must be later than start time"));
+        assertTrue(exception.getMessage().startsWith("[WARNING]"));
+    }
+
+    @Test
+    void parse_boundariesRemainCorrectAcrossClockTimes() {
+        for (String instant : new String[] {
+            "2026-10-14T06:00:00Z", "2026-10-14T16:00:00Z", "2026-10-14T22:00:00Z"}) {
+            Clock clock = Clock.fixed(Instant.parse(instant), ZoneOffset.UTC);
+            LocalDateTime now = LocalDateTime.now(clock);
+            LocalTime past = now.toLocalTime().minusHours(1);
+            LocalTime future = now.toLocalTime().plusHours(1);
+
+            assertDoesNotThrow(() -> new AddCommandParser(clock).parse(
+                    "n/Future d/" + now.toLocalDate() + " s/" + past + " e/" + future),
+                    "future end must be accepted at " + instant);
+            assertThrows(ParseException.class, () -> new AddCommandParser(clock).parse(
+                    "n/NotFuture d/" + now.toLocalDate() + " s/" + past + " e/" + now.toLocalTime()),
+                    "end equal to now must be rejected at " + instant);
         }
     }
 }

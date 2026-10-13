@@ -1,5 +1,7 @@
 package seedu.unienable;
 
+import java.time.Clock;
+
 import seedu.unienable.command.CommandResult;
 import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.logic.ConnectionManager;
@@ -31,6 +33,17 @@ final class ConsoleHelper {
      * @return parser with available reference data, or a fallback when facilities cannot load
      */
     static Parser createParser(Ui ui) {
+        return createParser(ui, Clock.systemDefaultZone());
+    }
+
+    /**
+     * Loads reference data and builds a parser that validates add commands against the clock.
+     *
+     * @param ui user interface for dataset warnings and loading errors
+     * @param clock time source used by add-command validation
+     * @return parser with available reference data, or a fallback when facilities cannot load
+     */
+    static Parser createParser(Ui ui, Clock clock) {
         try {
             LoadResult<Facility> facilities = new FacilityStorage().load();
             for (String warning : facilities.getWarnings()) {
@@ -48,10 +61,10 @@ final class ConsoleHelper {
                 ui.showMessage("Connection dataset unavailable: " + exception.getMessage());
             }
 
-            return new Parser(new FacilityManager(facilities.getRecords()), connectionManager);
+            return new Parser(new FacilityManager(facilities.getRecords()), connectionManager, clock);
         } catch (UniEnableException exception) {
             ui.showMessage("Facility dataset unavailable: " + exception.getMessage());
-            return new Parser();
+            return new Parser(clock);
         }
     }
 
