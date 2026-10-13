@@ -60,6 +60,7 @@ checkstyle {
 
 run {
     standardInput = System.in
+    enableAssertions = true
 }
 
 // Measure facility commands and the connection foundations for accessible routing.

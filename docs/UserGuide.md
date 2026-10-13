@@ -38,6 +38,7 @@ are saved automatically; a missing file starts an empty list.
 Malformed rows are skipped with line-numbered warnings. Before a later save,
 the original malformed file is copied to `data/activities.txt.corrupt.bak`.
 Facility and connection reference data are bundled and read-only.
+Fatal read failures also require a verified backup of the original bytes before a later save.
 
 ## Features
 
@@ -46,7 +47,7 @@ Facility and connection reference data are bundled and read-only.
 Format: `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH]`
 
 `n/`, `d/`, `s/`, and `e/` are required and must each appear once with a value.
-Demand defaults to MEDIUM; the end time must be later on the same day.
+Demand defaults to MEDIUM; end must be after start on the same day and after the current date/time.
 Names cannot contain `|`. Duplicate or overlapping activities are currently allowed.
 
 Input:
@@ -206,9 +207,8 @@ Verify with current campus information before you rely on it.
 
 Input: `help`
 
-Output begins with `UniEnable commands (Branch 1 sample):` and lists commands.
-The current help text contains older wording about pending activity commands
-and saving; these functions are available as described above.
+Output begins with `UniEnable commands (v1.0):` and lists all available commands
+along with the activity index rules and automatic saving location.
 
 Input: `bye`
 
