@@ -24,11 +24,14 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 - Command words, prefixes, demand levels, feature types, statuses, and hub codes
   are case-insensitive. Activity names preserve their capitalization.
 - For `add`, fields can appear in any order. Names can contain spaces.
+- Separate fields with whitespace (for example, `n/Meeting d/2026-10-20`).
+  Do not put text before the first field.
 - Dates use `YYYY-MM-DD`, such as `2026-10-20`; times use 24-hour `HH:mm`.
 - Activity indexes start at 1 and always refer to the chronological `list` order.
   Run `list` before `delete`, `mark`, or `unmark`; demand-view indexes can differ.
 - Sample outputs below omit the application's horizontal borders.
   Activity examples assume an initially empty activity list and run in order.
+  If you try them after the example dates, replace the dates with future dates.
 
 ## Data Storage
 
@@ -38,7 +41,12 @@ are saved automatically; a missing file starts an empty list.
 Malformed rows are skipped with line-numbered warnings. Before a later save,
 the original malformed file is copied to `data/activities.txt.corrupt.bak`.
 Facility and connection reference data are bundled and read-only.
-Fatal read failures also require a verified backup of the original bytes before a later save.
+If the activity file cannot be read, the app reports `Activity data unavailable:`
+and starts the session with an empty activity list. Before a later save, it must
+copy and verify the original file in the same `.corrupt.bak` location. If this
+backup fails, the save fails and the original activity file is not replaced.
+Keep a separate copy of the backup before attempting recovery: a later recovery
+backup can overwrite an existing `.corrupt.bak` file.
 
 ## Features
 
@@ -47,8 +55,18 @@ Fatal read failures also require a verified backup of the original bytes before 
 Format: `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH]`
 
 `n/`, `d/`, `s/`, and `e/` are required and must each appear once with a value.
-Demand defaults to MEDIUM; end must be after start on the same day and after the current date/time.
-Names cannot contain `|`. Duplicate or overlapping activities are currently allowed.
+`dem/` is optional, but must also have a value and appear at most once.
+Demand defaults to MEDIUM. The end time must be strictly after the start time on
+the same day; overnight activities are not supported. The activity's date and end
+time together must also be strictly after the current date/time in your computer's
+local time zone. An activity that has already started can still be added if it
+has not ended; an activity ending exactly now is rejected.
+
+Names cannot contain `|` or line breaks. Slash-containing text such as `and/or`
+and `w/o` is allowed. However, a known prefix (`n/`, `d/`, `s/`, `e/`, or `dem/`)
+at the start of a whitespace-separated part of the name is treated as another
+field, so avoid these prefixes in names. Duplicate or overlapping activities are
+currently allowed.
 
 Input:
 ```text
@@ -68,6 +86,12 @@ For the following examples, also enter:
 add n/Project meeting d/2026-10-21 s/14:00 e/15:00 dem/HIGH
 ```
 The app confirms Project meeting, its date/time, HIGH demand, and a total of 2 activities.
+
+Fields may also be reordered, and names may include ordinary slashes. For example
+(independent of the numbered examples below):
+```text
+add dem/LOW e/11:00 n/Planning and/or review d/2026-10-22 s/10:00
+```
 
 ### Listing activities: `list` and `list demand`
 
@@ -219,6 +243,8 @@ Output: `Goodbye from UniEnable!`
 Invalid input usually produces `[WARNING]` and the app waits for another command.
 Common causes include missing/duplicate fields, invalid dates or times, unknown
 facilities, or an activity index outside the current list.
+For `add`, use real calendar dates and two-digit hours and minutes (for example,
+`09:30`, not `9:30`). An invalid add command also displays the expected format.
 
 Example input: `help extra`
 
