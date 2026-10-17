@@ -1,6 +1,7 @@
 package seedu.unienable.command.activity;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import seedu.unienable.command.Command;
 import seedu.unienable.command.CommandResult;
@@ -14,6 +15,7 @@ import seedu.unienable.ui.activity.ActivityListFormatter;
  */
 public class ListDemandCommand extends Command {
     // Owner: Asyraf
+    private static final Logger LOGGER = Logger.getLogger(ListDemandCommand.class.getName());
 
     /**
      * Returns the demand-ordered activity list for Ui.showMessage() without
@@ -22,6 +24,7 @@ public class ListDemandCommand extends Command {
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) {
         List<Activity> view = activities.getDemandView();
+        LOGGER.fine(() -> "Displayed " + view.size() + " activities grouped by demand.");
         String message = ActivityListFormatter.formatDemandList(view);
         return new CommandResult(message, false);
     }

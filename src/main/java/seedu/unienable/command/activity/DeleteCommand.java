@@ -1,5 +1,7 @@
 package seedu.unienable.command.activity;
 
+import java.util.logging.Logger;
+
 import seedu.unienable.command.Command;
 import seedu.unienable.command.CommandResult;
 import seedu.unienable.exception.UniEnableException;
@@ -12,6 +14,7 @@ import seedu.unienable.storage.Storage;
  */
 public class DeleteCommand extends Command {
     // Owner: Asyraf
+    private static final Logger LOGGER = Logger.getLogger(DeleteCommand.class.getName());
     private final int displayedIndex;
 
     /**
@@ -31,11 +34,14 @@ public class DeleteCommand extends Command {
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {
         Activity activity = activities.deleteByDisplayedIndex(displayedIndex);
+        int remainingSize = activities.getActivities().size();
+        LOGGER.fine(() -> "Deleted displayed index " + displayedIndex + "; "
+                + remainingSize + " activities remain.");
         String message = "Deleted activity: " + activity.getName() + "\n"
                 + "Date: " + activity.getDate() + "\n"
                 + "Time: " + activity.getStartTime() + " - " + activity.getEndTime() + "\n"
                 + "Demand: " + activity.getDemand() + "\n"
-                + "Activities in this session: " + activities.getActivities().size();
+                + "Activities in this session: " + remainingSize;
         return new CommandResult(message, false, true);
     }
 }
