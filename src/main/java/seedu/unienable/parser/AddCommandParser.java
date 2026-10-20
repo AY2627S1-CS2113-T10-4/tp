@@ -37,7 +37,9 @@ public class AddCommandParser {
     /** Supplies the current time and local zone for activity end-time validation. */
     private final Clock clock;
 
-    /** Creates a parser using the system clock and local time zone. */
+    /**
+     * Creates a parser using the system clock and local time zone.
+     */
     public AddCommandParser() {
         this(Clock.systemDefaultZone());
     }
@@ -45,7 +47,7 @@ public class AddCommandParser {
     /**
      * Creates a parser with a supplied clock so tests can fix the current date and time.
      *
-     * @param clock clock used to validate whether the activity has ended
+     * @param clock clock used to validate whether the activity has ended.
      */
     AddCommandParser(Clock clock) {
         this.clock = Objects.requireNonNull(clock, "clock");
@@ -54,9 +56,9 @@ public class AddCommandParser {
     /**
      * Validates add arguments and constructs an AddCommand without modifying activity state.
      *
-     * @param arguments everything after the leading add command word
-     * @return fully validated add command
-     * @throws ParseException for absent, duplicate, unknown, or malformed arguments
+     * @param arguments everything after the leading add command word.
+     * @return fully validated add command.
+     * @throws ParseException for absent, duplicate, unknown, or malformed arguments.
      */
     public AddCommand parse(String arguments) throws ParseException {
         Map<String, String> fields = readFields(arguments);
@@ -156,10 +158,10 @@ public class AddCommandParser {
      * Parses a supplied whole-number rating using the model's shared range rule.
      * Missing fields remain unset; empty supplied fields are rejected by the field reader.
      *
-     * @param value rating text, or null when the field was omitted
-     * @param prefix field prefix used to identify invalid input
-     * @return rating from 1 to 5, or null when omitted
-     * @throws ParseException if a supplied value is not a whole number from 1 to 5
+     * @param value rating text, or null when the field was omitted.
+     * @param prefix field prefix used to identify invalid input.
+     * @return rating from 1 to 5, or null when omitted.
+     * @throws ParseException if a supplied value is not a whole number from 1 to 5.
      */
     private Integer parseRating(String value, String prefix) throws ParseException {
         if (value == null) {

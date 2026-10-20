@@ -51,7 +51,7 @@ public class Storage {
     /**
      * Creates storage at a caller-supplied path, which also makes tests isolated.
      *
-     * @param activityFile file containing activity records
+     * @param activityFile file containing activity records.
      */
     public Storage(Path activityFile) {
         this.activityFile = Objects.requireNonNull(activityFile);
@@ -60,8 +60,8 @@ public class Storage {
     /**
      * Loads valid activity records from disk.
      *
-     * @return loaded activities, or an empty list when the file does not exist
-     * @throws UniEnableException when the file cannot be read
+     * @return loaded activities, or an empty list when the file does not exist.
+     * @throws UniEnableException when the file cannot be read.
      */
     public ActivityList load() throws UniEnableException {
         warnings = new ArrayList<>();
@@ -95,7 +95,7 @@ public class Storage {
     /**
      * Returns warnings produced by the most recent load operation.
      *
-     * @return immutable line-numbered load warnings
+     * @return immutable line-numbered load warnings.
      */
     public List<String> getWarnings() {
         return List.copyOf(warnings);
@@ -104,8 +104,8 @@ public class Storage {
     /**
      * Saves all activities in insertion order using UTF-8 and the nine-column format.
      *
-     * @param activities activities to persist
-     * @throws UniEnableException when the file cannot be safely written
+     * @param activities activities to persist.
+     * @throws UniEnableException when the file cannot be safely written.
      */
     public void save(ActivityList activities) throws UniEnableException {
         Objects.requireNonNull(activities);
@@ -139,9 +139,9 @@ public class Storage {
     /**
      * Parses either row format without applying add-time restrictions to saved history.
      *
-     * @param line saved activity record
-     * @return restored activity
-     * @throws IllegalArgumentException if the record has malformed fields
+     * @param line saved activity record.
+     * @return restored activity.
+     * @throws IllegalArgumentException if the record has malformed fields.
      */
     private Activity parseLine(String line) {
         String[] fields = line.split("\\|", -1);
@@ -172,9 +172,9 @@ public class Storage {
     /**
      * Converts the stored unset marker to null and validates recorded numeric ratings.
      *
-     * @param value stored rating text
-     * @return rating from 1 to 5, or null when unset
-     * @throws IllegalArgumentException if the value is neither a valid rating nor a dash
+     * @param value stored rating text.
+     * @return rating from 1 to 5, or null when unset.
+     * @throws IllegalArgumentException if the value is neither a valid rating nor a dash.
      */
     private Integer parseStoredRating(String value) {
         if ("-".equals(value)) {
@@ -212,7 +212,9 @@ public class Storage {
                 formatStoredRating(activity.getCommitment()));
     }
 
-    /** Converts an in-memory unset rating to its stored dash marker. */
+    /**
+     * Converts an in-memory unset rating to its stored dash marker.
+     */
     private static String formatStoredRating(Integer rating) {
         return rating == null ? "-" : rating.toString();
     }
