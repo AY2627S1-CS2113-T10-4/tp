@@ -1,9 +1,11 @@
 package seedu.unienable.parser;
 
+import java.time.Clock;
 import java.util.Locale;
 
 import seedu.unienable.command.ByeCommand;
 import seedu.unienable.command.Command;
+import seedu.unienable.command.HelpCommand;
 import seedu.unienable.command.activity.FindCommand;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.logic.ConnectionManager;
@@ -37,10 +39,15 @@ public class Parser {
     private final RouteParser routeParser;
 
     /**
+     * Time source shared with the add command parser for deterministic validation.
+     */
+    private final Clock clock;
+
+    /**
      * Creates a parser without loaded facility reference data.
      */
     public Parser() {
-        this(null);
+        this(null, null, Clock.systemDefaultZone());
     }
 
     /**
@@ -49,7 +56,7 @@ public class Parser {
      * @param facilityManager manager used by facility commands.
      */
     public Parser(FacilityManager facilityManager) {
-        this(facilityManager, null);
+        this(facilityManager, null, Clock.systemDefaultZone());
     }
 
     /**
@@ -59,8 +66,30 @@ public class Parser {
      * @param connectionManager manager used by route commands, or null when unavailable.
      */
     public Parser(FacilityManager facilityManager, ConnectionManager connectionManager) {
+        this(facilityManager, connectionManager, Clock.systemDefaultZone());
+    }
+
+    /**
+     * Creates a parser with the supplied clock and no reference data.
+     * Injecting a clock keeps add-command validation deterministic in tests.
+     *
+     * @param clock time source used by add-command validation.
+     */
+    public Parser(Clock clock) {
+        this(null, null, clock);
+    }
+
+    /**
+     * Creates a parser with the available reference data and the supplied clock.
+     *
+     * @param facilityManager manager used by facility commands, or null when unavailable.
+     * @param connectionManager manager used by route commands, or null when unavailable.
+     * @param clock time source used by add-command validation.
+     */
+    public Parser(FacilityManager facilityManager, ConnectionManager connectionManager, Clock clock) {
         this.facilityCommandParser = new FacilityCommandParser(facilityManager);
         this.routeParser = new RouteParser(connectionManager);
+        this.clock = clock;
     }
 
     /**
@@ -86,9 +115,9 @@ public class Parser {
         case "route":
             return routeParser.parseRoute(words);
         case "add":
-            return new AddCommandParser().parse(trimmedInput.substring(words[0].length()).trim());
+            return new AddCommandParser(clock).parse(trimmedInput.substring(words[0].length()).trim());
         case "edit":
-            return new EditCommandParser().parse(trimmedInput.substring(words[0].length()).trim());
+            return new EditCommandParser(clock).parse(trimmedInput.substring(words[0].length()).trim());
         case "find":
             String keyword = trimmedInput.substring(words[0].length()).trim();
             if (keyword.isBlank()) {
@@ -104,13 +133,12 @@ public class Parser {
             return markCommandParser.parseMark(words);
         case "unmark":
             return markCommandParser.parseUnmark(words);
-        /*
         case "help":
             if (words.length != 1) {
-                throw new ParseException(WARNING_MESSAGE + " help does not take arguments.");
+                throw new ParseException(
+                        WARNING_MESSAGE + " help does not take arguments.");
             }
             return new HelpCommand();
-        */
         default:
             throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");
         }

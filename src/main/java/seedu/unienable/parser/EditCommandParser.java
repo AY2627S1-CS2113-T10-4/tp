@@ -1,5 +1,6 @@
 package seedu.unienable.parser;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -8,19 +9,21 @@ import java.time.format.ResolverStyle;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import seedu.unienable.command.activity.EditCommand;
 import seedu.unienable.exception.ParseException;
+import seedu.unienable.model.Activity;
 import seedu.unienable.model.enums.DemandLevel;
 
 /**
- * Parses the V2.0 edit command for the V1 activity fields.
+ * Parses the V2.0 edit command using optional activity and rating fields.
  */
 public class EditCommandParser {
     private static final Pattern INDEX_PATTERN = Pattern.compile("\\d+");
-    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)([a-z]+)/");
+    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)(dem|imp|urg|com|n|d|s|e)/");
     private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern TIME_PATTERN = Pattern.compile("\\d{2}:\\d{2}");
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd")
@@ -28,7 +31,19 @@ public class EditCommandParser {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String USAGE = "Usage: edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] "
-            + "[e/HH:mm] [dem/LOW|MEDIUM|HIGH]";
+            + "[e/HH:mm] [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]";
+
+    private final Clock clock;
+
+    /** Creates a parser using the system clock. */
+    public EditCommandParser() {
+        this(Clock.systemDefaultZone());
+    }
+
+    /** Creates a parser with a supplied clock for deterministic validation. */
+    EditCommandParser(Clock clock) {
+        this.clock = Objects.requireNonNull(clock);
+    }
 
     /**
      * Parses an edit command after the leading {@code edit} word.
@@ -58,9 +73,13 @@ public class EditCommandParser {
         LocalTime start = fields.containsKey("s") ? parseTime(fields.get("s")) : null;
         LocalTime end = fields.containsKey("e") ? parseTime(fields.get("e")) : null;
         DemandLevel demand = fields.containsKey("dem") ? parseDemand(fields.get("dem")) : null;
+        Integer importance = parseRating(fields.get("imp"), "imp");
+        Integer urgency = parseRating(fields.get("urg"), "urg");
+        Integer commitment = parseRating(fields.get("com"), "com");
         return new EditCommand(index, name, date, start, end, demand,
                 fields.containsKey("n"), fields.containsKey("d"), fields.containsKey("s"),
-                fields.containsKey("e"), fields.containsKey("dem"));
+                fields.containsKey("e"), fields.containsKey("dem"), importance, urgency, commitment,
+                fields.containsKey("imp"), fields.containsKey("urg"), fields.containsKey("com"), clock);
     }
 
     private int parseIndex(String token) throws ParseException {
@@ -95,10 +114,6 @@ public class EditCommandParser {
                 throw invalid("Unexpected text before the first parameter.");
             }
             previousKey = matcher.group(1).toLowerCase(Locale.ROOT);
-            if (!previousKey.equals("n") && !previousKey.equals("d") && !previousKey.equals("s")
-                    && !previousKey.equals("e") && !previousKey.equals("dem")) {
-                throw invalid("Unknown parameter: " + previousKey + "/.");
-            }
             previousValueStart = matcher.end();
         }
         if (previousKey == null) {
@@ -144,6 +159,19 @@ public class EditCommandParser {
             return DemandLevel.valueOf(value.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
             throw invalid("Demand must be LOW, MEDIUM, or HIGH.");
+        }
+    }
+
+    private Integer parseRating(String value, String prefix) throws ParseException {
+        if (value == null) {
+            return null;
+        }
+        try {
+            Integer rating = Integer.valueOf(value);
+            Activity.validateRating(rating);
+            return rating;
+        } catch (IllegalArgumentException exception) {
+            throw invalid("The " + prefix + "/ rating must be a whole number from 1 to 5.");
         }
     }
 

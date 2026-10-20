@@ -61,7 +61,10 @@ public class ActivityList {
      * displays and {@code delete INDEX} resolves its index against.
      */
     public List<Activity> getCanonicalView() {
-        return activities.stream().sorted(CANONICAL_ORDER).toList();
+        List<Activity> view = activities.stream().sorted(CANONICAL_ORDER).toList();
+        assert view.size() == activities.size() : "Canonical view must contain every activity.";
+        assert isSorted(view, CANONICAL_ORDER) : "Canonical view must be in date and start-time order.";
+        return view;
     }
 
     /**
@@ -83,7 +86,10 @@ public class ActivityList {
      * Returns an immutable snapshot grouped by demand (HIGH to LOW); ties keep canonical order.
      */
     public List<Activity> getDemandView() {
-        return activities.stream().sorted(DEMAND_ORDER).toList();
+        List<Activity> view = activities.stream().sorted(DEMAND_ORDER).toList();
+        assert view.size() == activities.size() : "Demand view must contain every activity.";
+        assert isSorted(view, DEMAND_ORDER) : "Demand view must be in demand and canonical order.";
+        return view;
     }
 
     /**
@@ -107,7 +113,9 @@ public class ActivityList {
                     + ". Valid range: 1 to " + canonical.size() + ".");
         }
         Activity removed = canonical.get(displayedIndex - 1);
-        activities.remove(removed);
+        boolean removedFromBackingList = activities.remove(removed);
+        assert removedFromBackingList : "The selected displayed activity must belong to the backing list.";
+        assert activities.size() == canonical.size() - 1 : "Deleting one activity must reduce the list size by one.";
         return removed;
     }
 
@@ -128,6 +136,22 @@ public class ActivityList {
                     + ". Valid range: 1 to " + canonical.size() + ".");
         }
         return canonical.get(displayedIndex - 1);
+    }
+
+    /**
+     * Replaces an activity selected by its chronological index while preserving
+     * its insertion position for stable tie ordering.
+     *
+     * @param displayedIndex index shown by the chronological list command
+     * @param replacement replacement activity
+     * @throws InvalidIndexException when the index is outside the current view
+     */
+    public void replaceByDisplayedIndex(int displayedIndex, Activity replacement)
+            throws InvalidIndexException {
+        Objects.requireNonNull(replacement);
+        Activity current = getByDisplayedIndex(displayedIndex);
+        int backingIndex = activities.indexOf(current);
+        activities.set(backingIndex, replacement);
     }
 
     /**
@@ -154,5 +178,21 @@ public class ActivityList {
      */
     public List<Activity> getActivities() {
         return List.copyOf(activities);
+    }
+
+    /**
+     * Checks the ordering invariant for a sorted view when assertions are enabled.
+     *
+     * @param view activities to check
+     * @param order comparator defining the required order
+     * @return true if every adjacent pair is in comparator order
+     */
+    private static boolean isSorted(List<Activity> view, Comparator<Activity> order) {
+        for (int index = 1; index < view.size(); index++) {
+            if (order.compare(view.get(index - 1), view.get(index)) > 0) {
+                return false;
+            }
+        }
+        return true;
     }
 }

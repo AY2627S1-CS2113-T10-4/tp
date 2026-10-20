@@ -1,6 +1,7 @@
 package seedu.unienable.command.activity;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import seedu.unienable.command.Command;
 import seedu.unienable.command.CommandResult;
@@ -14,6 +15,7 @@ import seedu.unienable.ui.activity.ActivityListFormatter;
  */
 public class ListCommand extends Command {
     // Owner: Asyraf
+    private static final Logger LOGGER = Logger.getLogger(ListCommand.class.getName());
 
     /**
      * Returns the canonical activity list for Ui.showMessage() without changing
@@ -22,6 +24,7 @@ public class ListCommand extends Command {
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) {
         List<Activity> view = activities.getCanonicalView();
+        LOGGER.fine(() -> "Displayed " + view.size() + " activities in chronological order.");
         String message = ActivityListFormatter.formatList(view);
         return new CommandResult(message, false);
     }

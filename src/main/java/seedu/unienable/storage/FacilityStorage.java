@@ -37,6 +37,8 @@ public class FacilityStorage {
      * Features may precede their facility declaration; association occurs after reading all lines.
      * Record tags and enums are exact matches. IDs and names retain their spelling and must be unpadded.
      * Duplicate IDs and names use the same case-insensitive comparison as facility lookup.
+     * For each facility and feature type, the first valid status is retained. Later conflicting
+     * records are skipped with warnings; matching statuses may retain separate notes.
      *
      * @param source reader containing facility and feature records
      * @return valid facilities and warnings carrying physical source line numbers
@@ -156,6 +158,7 @@ public class FacilityStorage {
 
     /**
      * Attaches a valid feature in source order to its stable facility ID.
+     * Rejects a conflicting status before changing the facility's accepted features.
      */
     private void addFeature(String[] fields, Map<String, FacilityBuilder> facilities) {
         if (fields.length < 4 || fields.length > 5) {
@@ -176,6 +179,13 @@ public class FacilityStorage {
             status = AccessibilityStatus.valueOf(fields[3]);
         } catch (IllegalArgumentException exception) {
             throw new IllegalArgumentException("Invalid accessibility status: " + fields[3]);
+        }
+        for (FacilityFeature feature : facility.features) {
+            if (feature.getType() == type && feature.getStatus() != status) {
+                throw new IllegalArgumentException("Conflicting accessibility status for " + type
+                        + " at facility " + facility.id + ": already recorded as " + feature.getStatus()
+                        + ", rejected " + status + ".");
+            }
         }
         String notes = fields.length == 5 ? optionalText(fields[4]) : null;
         facility.features.add(new FacilityFeature(type, status, notes));

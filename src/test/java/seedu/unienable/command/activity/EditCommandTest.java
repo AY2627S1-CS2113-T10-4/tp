@@ -1,6 +1,7 @@
 package seedu.unienable.command.activity;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -44,6 +45,19 @@ class EditCommandTest {
 
         assertTrue(parser.parse("list").execute(activities, noWrites).getMessage()
                 .contains("1. Meeting (2099-01-03, 14:00-15:00) [MEDIUM]"));
+    }
+
+    @Test
+    void execute_changesOneRatingAndPreservesOtherRatings() throws Exception {
+        parser.parse("add n/Meeting d/2099-01-02 s/09:00 e/10:00 imp/5 urg/4 com/2")
+                .execute(activities, noWrites);
+
+        parser.parse("edit 1 com/3").execute(activities, noWrites);
+
+        var activity = activities.getByDisplayedIndex(1);
+        assertEquals(5, activity.getImportance());
+        assertEquals(4, activity.getUrgency());
+        assertEquals(3, activity.getCommitment());
     }
 
     @Test
