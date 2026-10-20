@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import seedu.unienable.command.activity.AddCommand;
 import seedu.unienable.exception.ParseException;
+import seedu.unienable.model.Activity;
 import seedu.unienable.model.enums.DemandLevel;
 
 /**
@@ -23,7 +24,7 @@ import seedu.unienable.model.enums.DemandLevel;
  */
 public class AddCommandParser {
     // Owner: Atharva
-    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)(dem|n|d|s|e)/");
+    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)(dem|imp|urg|com|n|d|s|e)/");
     private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern TIME_PATTERN = Pattern.compile("\\d{2}:\\d{2}");
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd")
@@ -31,7 +32,7 @@ public class AddCommandParser {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String USAGE = "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm "
-            + "[dem/LOW|MEDIUM|HIGH]";
+            + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]";
 
     /** Supplies the current time and local zone for activity end-time validation. */
     private final Clock clock;
@@ -105,12 +106,15 @@ public class AddCommandParser {
                 throw invalid("Demand must be LOW, MEDIUM, or HIGH.");
             }
         }
-        return new AddCommand(name, date, startTime, endTime, demand);
+        Integer importance = parseRating(fields.get("imp"), "imp");
+        Integer urgency = parseRating(fields.get("urg"), "urg");
+        Integer commitment = parseRating(fields.get("com"), "com");
+        return new AddCommand(name, date, startTime, endTime, demand, importance, urgency, commitment);
     }
 
     /**
      * Collects prefix/value pairs while allowing whitespace inside the activity name.
-     * Only the five known prefixes (dem, n, d, s, e) delimit values; any other
+     * Only known prefixes (dem, imp, urg, com, n, d, s, e) delimit values; any other
      * slash-containing text such as "and/or" or "w/o" is kept as value content.
      * A known prefix like d/ that appears inside free text is still parsed as a
      * prefix, an unavoidable ambiguity of prefix-based grammars.
@@ -145,6 +149,28 @@ public class AddCommandParser {
         }
         if (fields.putIfAbsent(key, value) != null) {
             throw invalid("Duplicate " + key + "/ parameter.");
+        }
+    }
+
+    /**
+     * Parses a supplied whole-number rating using the model's shared range rule.
+     * Missing fields remain unset; empty supplied fields are rejected by the field reader.
+     *
+     * @param value rating text, or null when the field was omitted
+     * @param prefix field prefix used to identify invalid input
+     * @return rating from 1 to 5, or null when omitted
+     * @throws ParseException if a supplied value is not a whole number from 1 to 5
+     */
+    private Integer parseRating(String value, String prefix) throws ParseException {
+        if (value == null) {
+            return null;
+        }
+        try {
+            Integer rating = Integer.valueOf(value);
+            Activity.validateRating(rating);
+            return rating;
+        } catch (IllegalArgumentException exception) {
+            throw invalid("The " + prefix + "/ rating must be a whole number from 1 to 5.");
         }
     }
 

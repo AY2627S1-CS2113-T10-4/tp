@@ -2,6 +2,7 @@ package seedu.unienable.parser;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +23,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
 
-/** Tests Branch 1's order-independent add parser and validation. */
+/** Tests order-independent add parsing, optional ratings and existing input validation. */
 class AddCommandParserTest {
     /** Fixes now at 16:00 on 14 October 2026 in Singapore for repeatable validation. */
     private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-10-14T08:00:00Z"),
@@ -31,7 +33,8 @@ class AddCommandParserTest {
     @Test
     void parse_outOfOrderFieldsAndMultiWordName_addsActivity() throws Exception {
         ActivityList activities = new ActivityList();
-        Command command = parser.parse("dem/high e/11:45 n/Group Meeting d/2026-10-20 s/09:30");
+        Command command = parser.parse("CoM/3 dEm/hIgH E/11:45 iMp/5 N/Group Meeting "
+                + "D/2026-10-20 UrG/4 S/09:30");
         command.execute(activities, new Storage());
 
         Activity result = activities.getActivities().get(0);
@@ -40,6 +43,9 @@ class AddCommandParserTest {
         assertEquals("09:30", result.getStartTime().toString());
         assertEquals("11:45", result.getEndTime().toString());
         assertEquals(DemandLevel.HIGH, result.getDemand());
+        assertEquals(Integer.valueOf(5), result.getImportance());
+        assertEquals(Integer.valueOf(4), result.getUrgency());
+        assertEquals(Integer.valueOf(3), result.getCommitment());
     }
 
     @Test
@@ -47,7 +53,52 @@ class AddCommandParserTest {
         ActivityList activities = new ActivityList();
         parser.parse("n/Study d/2026-10-20 s/10:00 e/11:00")
                 .execute(activities, new Storage());
-        assertEquals(DemandLevel.MEDIUM, activities.getActivities().get(0).getDemand());
+        Activity result = activities.getActivities().getFirst();
+        assertEquals(DemandLevel.MEDIUM, result.getDemand());
+        assertNull(result.getImportance());
+        assertNull(result.getUrgency());
+        assertNull(result.getCommitment());
+    }
+
+    @Test
+    void parse_partialRatings_keepsEachOmittedRatingUnset() throws Exception {
+        String[] suffixes = {"imp/1 com/5", "urg/2"};
+        Integer[][] expected = {{1, null, 5}, {null, 2, null}};
+        ActivityList activities = new ActivityList();
+        for (int i = 0; i < suffixes.length; i++) {
+            parser.parse("n/Planning and/or review w/o slides d/2026-10-20 s/09:00 e/10:00 " + suffixes[i])
+                    .execute(activities, new Storage());
+
+            Activity result = activities.getActivities().getLast();
+            assertEquals("Planning and/or review w/o slides", result.getName());
+            assertEquals(expected[i][0], result.getImportance());
+            assertEquals(expected[i][1], result.getUrgency());
+            assertEquals(expected[i][2], result.getCommitment());
+        }
+    }
+
+    @Test
+    void parse_invalidRatings_rejectsEachPrefix() {
+        for (String prefix : new String[] {"imp", "urg", "com"}) {
+            for (String value : new String[] {"0", "6", "-1", "1.5", "text", "-", "2147483648"}) {
+                String input = "n/Meeting d/2026-10-20 s/09:00 e/10:00 " + prefix + "/" + value;
+                ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input), input);
+                assertTrue(exception.getMessage().contains(prefix + "/ rating must be a whole number from 1 to 5."));
+            }
+        }
+    }
+
+    @Test
+    void parse_emptyOrDuplicateFields_rejectsEveryKnownPrefix() {
+        String base = "n/Meeting d/2026-10-20 s/09:00 e/10:00";
+        for (String prefix : new String[] {"n", "d", "s", "e", "dem", "imp", "urg", "com"}) {
+            ParseException empty = assertThrows(ParseException.class, () -> parser.parse(base + " " + prefix + "/"));
+            assertTrue(empty.getMessage().contains("Empty " + prefix + "/ parameter."));
+
+            ParseException duplicate = assertThrows(ParseException.class, () -> parser.parse(
+                    base + " " + prefix + "/1 " + prefix.toUpperCase(Locale.ROOT) + "/2"));
+            assertTrue(duplicate.getMessage().contains("Duplicate " + prefix + "/ parameter."));
+        }
     }
 
     @Test
@@ -77,10 +128,13 @@ class AddCommandParserTest {
             "n/Meeting n/Duplicate d/2026-10-20 s/09:00 e/10:00",
             "n/Meeting d/2026-10-20 s/09:00 e/10:00 foo/bar",
             "n/Meeting | note d/2026-10-20 s/09:00 e/10:00",
+            "n/Meeting\nnote d/2026-10-20 s/09:00 e/10:00",
+            "n/Meeting\rnote d/2026-10-20 s/09:00 e/10:00",
             "unexpected n/Meeting d/2026-10-20 s/09:00 e/10:00"
         };
         for (String input : invalid) {
             assertThrows(ParseException.class, () -> parser.parse(input), input);
+            assertThrows(ParseException.class, () -> parser.parse(input + " imp/5 urg/4 com/3"), input);
         }
     }
 
@@ -120,7 +174,8 @@ class AddCommandParserTest {
         for (String input : invalid) {
             ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input), input);
             assertEquals("[WARNING] End time must be later than current time.\n"
-                    + "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH]",
+                    + "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] "
+                    + "[imp/IMP] [urg/URG] [com/COM]",
                     exception.getMessage());
         }
     }

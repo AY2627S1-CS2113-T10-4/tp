@@ -82,22 +82,23 @@ class UniEnableTest {
      * Retains the original console cases directly in Java so fresh checkouts can run them.
      */
     private static List<String[]> consoleCases() {
+        String unratedDetails = "\nImportance: -\nUrgency: -\nCommitment: -\nActivities in this session: 1";
         return List.of(
                 new String[]{"ADD01", "add n/Lecture d/2026-10-15 s/09:00 e/11:00",
                     "Added activity: Lecture\nDate: 2026-10-15\nTime: 09:00 - 11:00\nDemand: MEDIUM"
-                        + "\nActivities in this session: 1", "[WARNING]"},
+                        + unratedDetails, "[WARNING]"},
                 new String[]{"ADD02", "add n/Exam d/2026-10-16 s/14:00 e/16:00 dem/HIGH",
-                    "Added activity: Exam\nDate: 2026-10-16\nTime: 14:00 - 16:00\nDemand: HIGH\nActi"
-                        + "vities in this session: 1", "[WARNING]"},
+                    "Added activity: Exam\nDate: 2026-10-16\nTime: 14:00 - 16:00\nDemand: HIGH"
+                        + unratedDetails, "[WARNING]"},
                 new String[]{"ADD03", "add n/Gym d/2026-10-17 s/18:00 e/19:00 dem/low",
-                    "Added activity: Gym\nDate: 2026-10-17\nTime: 18:00 - 19:00\nDemand: LOW\nActivi"
-                        + "ties in this session: 1", "[WARNING]"},
+                    "Added activity: Gym\nDate: 2026-10-17\nTime: 18:00 - 19:00\nDemand: LOW"
+                        + unratedDetails, "[WARNING]"},
                 new String[]{"ADD04", "add e/12:00 n/Tutorial s/10:00 d/2026-10-18",
-                    "Added activity: Tutorial\nDate: 2026-10-18\nTime: 10:00 - 12:00\nDemand: MEDIU"
-                        + "M\nActivities in this session: 1", "[WARNING]"},
+                    "Added activity: Tutorial\nDate: 2026-10-18\nTime: 10:00 - 12:00\nDemand: MEDIUM"
+                        + unratedDetails, "[WARNING]"},
                 new String[]{"ADD05", "add n/CS2113 Meeting d/2026-10-20 s/14:00 e/16:00 dem/HIGH",
-                    "Added activity: CS2113 Meeting\nDate: 2026-10-20\nTime: 14:00 - 16:00\nDemand:"
-                        + " HIGH\nActivities in this session: 1", "[WARNING]"},
+                    "Added activity: CS2113 Meeting\nDate: 2026-10-20\nTime: 14:00 - 16:00\nDemand: HIGH"
+                        + unratedDetails, "[WARNING]"},
                 new String[]{"ADD06", "add", "No add parameters supplied.", "Added activity:"},
                 new String[]{"ADD07", "add n/Event", "Missing d/ parameter.", "Added activity:"},
                 new String[]{"ADD08", "add n/Event d/2026-10-21", "Missing s/ parameter.", "Added activity:"},
