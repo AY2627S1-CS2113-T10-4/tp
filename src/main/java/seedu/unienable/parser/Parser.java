@@ -4,12 +4,13 @@ import java.util.Locale;
 
 import seedu.unienable.command.ByeCommand;
 import seedu.unienable.command.Command;
+import seedu.unienable.command.activity.FindCommand;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
 
 /**
- * Recognizes add, list, list demand, delete, facility, route and bye commands.
+ * Recognizes add, edit, find, list, list demand, delete, facility, route and bye commands.
  */
 public class Parser {
     /**
@@ -86,6 +87,15 @@ public class Parser {
             return routeParser.parseRoute(words);
         case "add":
             return new AddCommandParser().parse(trimmedInput.substring(words[0].length()).trim());
+        case "edit":
+            return new EditCommandParser().parse(trimmedInput.substring(words[0].length()).trim());
+        case "find":
+            String keyword = trimmedInput.substring(words[0].length()).trim();
+            if (keyword.isBlank()) {
+                throw new ParseException(WARNING_MESSAGE
+                        + " find needs a non-blank activity name keyword.\nUsage: find KEYWORD");
+            }
+            return new FindCommand(keyword);
         case "list":
             return listDeleteCommandParser.parseList(words);
         case "delete":

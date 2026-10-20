@@ -3,6 +3,7 @@ package seedu.unienable.model;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import seedu.unienable.exception.InvalidIndexException;
@@ -61,6 +62,21 @@ public class ActivityList {
      */
     public List<Activity> getCanonicalView() {
         return activities.stream().sorted(CANONICAL_ORDER).toList();
+    }
+
+    /**
+     * Returns activities whose names contain the supplied phrase, ignoring case.
+     * Results retain chronological order so their indexes can be mapped to the
+     * full list shown by {@code list}.
+     *
+     * @param keyword case-insensitive name substring
+     * @return matching activities in chronological order
+     */
+    public List<Activity> findByName(String keyword) {
+        String normalizedKeyword = Objects.requireNonNull(keyword).strip().toLowerCase(Locale.ROOT);
+        return getCanonicalView().stream()
+                .filter(activity -> activity.getName().toLowerCase(Locale.ROOT).contains(normalizedKeyword))
+                .toList();
     }
 
     /**

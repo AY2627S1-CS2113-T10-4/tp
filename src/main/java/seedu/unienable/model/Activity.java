@@ -9,11 +9,11 @@ import seedu.unienable.model.enums.DemandLevel;
  * Holds the agreed activity state; validation and feature behavior belong to later PRs.
  */
 public class Activity {
-    private final String name;
-    private final LocalDate date;
-    private final LocalTime startTime;
-    private final LocalTime endTime;
-    private final DemandLevel demand;
+    private String name;
+    private LocalDate date;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private DemandLevel demand;
     private boolean isDone;
 
     // TODO [Branch 1]: Coordinate any model validation here with Branch 3.
@@ -64,5 +64,24 @@ public class Activity {
      */
     public boolean isDone() {
         return isDone;
+    }
+
+    /**
+     * Replaces the editable details while preserving the completion state.
+     * Validation of the proposed values belongs to the command parser and command.
+     *
+     * @param name replacement activity name
+     * @param date replacement activity date
+     * @param startTime replacement start time
+     * @param endTime replacement end time
+     * @param demand replacement demand level
+     */
+    public void updateDetails(String name, LocalDate date, LocalTime startTime, LocalTime endTime,
+                              DemandLevel demand) {
+        this.name = name;
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.demand = demand;
     }
 }
