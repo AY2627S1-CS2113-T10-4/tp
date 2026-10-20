@@ -22,7 +22,9 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 
 /**
- * Reads and writes user activities using the agreed six-column text format.
+ * Reads six-column V1.0 records and nine-column rated records; saves nine columns.
+ * The saved format is {@code NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM}.
+ * A stored dash means an unset rating; V1.0 records load with all ratings unset.
  *
  * <p>Malformed rows are skipped with line-numbered warnings. After malformed rows
  * or a fatal read failure, a later save preserves and verifies the original bytes
@@ -100,7 +102,7 @@ public class Storage {
     }
 
     /**
-     * Saves all activities in insertion order using UTF-8.
+     * Saves all activities in insertion order using UTF-8 and the nine-column format.
      *
      * @param activities activities to persist
      * @throws UniEnableException when the file cannot be safely written
@@ -134,14 +136,25 @@ public class Storage {
         }
     }
 
+    /**
+     * Parses either row format without applying add-time restrictions to saved history.
+     *
+     * @param line saved activity record
+     * @return restored activity
+     * @throws IllegalArgumentException if the record has malformed fields
+     */
     private Activity parseLine(String line) {
         String[] fields = line.split("\\|", -1);
-        if (fields.length != 6) {
-            throw new IllegalArgumentException("expected 6 fields separated by '|'.");
+        if (fields.length != 6 && fields.length != 9) {
+            throw new IllegalArgumentException("expected 6 or 9 fields separated by '|'.");
         }
         if (fields[0].isBlank()) {
             throw new IllegalArgumentException("activity name must not be empty.");
         }
+
+        Integer importance = fields.length == 9 ? parseStoredRating(fields[6]) : null;
+        Integer urgency = fields.length == 9 ? parseStoredRating(fields[7]) : null;
+        Integer commitment = fields.length == 9 ? parseStoredRating(fields[8]) : null;
 
         try {
             LocalDate date = LocalDate.parse(fields[1], DATE_FORMAT);
@@ -149,9 +162,30 @@ public class Storage {
             LocalTime endTime = LocalTime.parse(fields[3], TIME_FORMAT);
             DemandLevel demand = DemandLevel.valueOf(fields[4].toUpperCase(Locale.ROOT));
             boolean done = parseDone(fields[5]);
-            return new Activity(fields[0], date, startTime, endTime, demand, done);
+            return new Activity(fields[0], date, startTime, endTime, demand, done,
+                    importance, urgency, commitment);
         } catch (RuntimeException exception) {
             throw new IllegalArgumentException("invalid date, time, demand, or completion value.");
+        }
+    }
+
+    /**
+     * Converts the stored unset marker to null and validates recorded numeric ratings.
+     *
+     * @param value stored rating text
+     * @return rating from 1 to 5, or null when unset
+     * @throws IllegalArgumentException if the value is neither a valid rating nor a dash
+     */
+    private Integer parseStoredRating(String value) {
+        if ("-".equals(value)) {
+            return null;
+        }
+        try {
+            Integer rating = Integer.valueOf(value);
+            Activity.validateRating(rating);
+            return rating;
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("rating must be a whole number from 1 to 5 or '-' when unset.");
         }
     }
 
@@ -172,7 +206,15 @@ public class Storage {
                 activity.getStartTime().toString(),
                 activity.getEndTime().toString(),
                 activity.getDemand().name(),
-                Boolean.toString(activity.isDone()));
+                Boolean.toString(activity.isDone()),
+                formatStoredRating(activity.getImportance()),
+                formatStoredRating(activity.getUrgency()),
+                formatStoredRating(activity.getCommitment()));
+    }
+
+    /** Converts an in-memory unset rating to its stored dash marker. */
+    private static String formatStoredRating(Integer rating) {
+        return rating == null ? "-" : rating.toString();
     }
 
     private void backupCorruptFile() throws IOException {
