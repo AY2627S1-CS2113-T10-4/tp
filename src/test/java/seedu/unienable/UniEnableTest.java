@@ -1,5 +1,6 @@
 package seedu.unienable;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,11 +14,13 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.io.TempDir;
 import seedu.unienable.ui.Ui;
 import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
 
@@ -76,6 +79,58 @@ class UniEnableTest {
             Files.deleteIfExists(activityFile);
             Files.deleteIfExists(tempDir);
         }
+    }
+
+    @Test
+    void activityRatings_surviveRestartAndCompletionChanges(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        String partial = "add n/Planning and/or review d/2030-10-25 s/09:00 e/10:00 imp/5 com/3";
+        String firstSession = consoleAtPath(String.join("\n",
+                "add n/Study d/2030-10-25 s/09:00 e/10:00",
+                partial,
+                "ADD CoM/3 n/Project UrG/4 d/2030-10-25 iMp/5 e/10:00 DeM/hIgH s/09:00",
+                partial, "mark 2", "mark 3", "bye", ""), activityFile);
+        String partialRow = "Planning and/or review|2030-10-25|09:00|10:00|MEDIUM|";
+        List<String> expectedRows = new ArrayList<>(List.of(
+                "Study|2030-10-25|09:00|10:00|MEDIUM|false|-|-|-",
+                partialRow + "true|5|-|3",
+                "Project|2030-10-25|09:00|10:00|HIGH|true|5|4|3",
+                partialRow + "false|5|-|3"));
+
+        assertFalse(firstSession.contains("[WARNING]"), firstSession);
+        assertEquals(4, firstSession.split("Added activity:", -1).length - 1);
+        assertEquals(expectedRows, Files.readAllLines(activityFile, StandardCharsets.UTF_8));
+
+        String secondSession = consoleAtPath("list\nunmark 2\nbye\n", activityFile);
+
+        assertTrue(secondSession.contains("2. Planning and/or review (2030-10-25, 09:00-10:00) [MEDIUM] [X]"));
+        assertTrue(secondSession.contains("Unmarked activity: Planning and/or review"));
+        expectedRows.set(1, partialRow + "false|5|-|3");
+        assertEquals(expectedRows, Files.readAllLines(activityFile, StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void invalidRatingCommands_preserveActivityListAndStoredBytes(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        byte[] original = "Existing|2000-01-01|09:00|10:00|LOW|true\n".getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+        String[] invalidRatings = {
+            "imp/0", "urg/6", "com/-1", "imp/1.5", "urg/text", "com/-", "imp/", "urg/1 URG/2"
+        };
+        List<String> commands = new ArrayList<>();
+        for (String ratings : invalidRatings) {
+            commands.add("add n/Rejected d/2030-10-26 s/09:00 e/10:00 " + ratings);
+        }
+        commands.add("list");
+        commands.add("bye");
+
+        String output = consoleAtPath(String.join("\n", commands) + "\n", activityFile);
+
+        assertEquals(invalidRatings.length, output.split("\\[WARNING\\]", -1).length - 1);
+        assertFalse(output.contains("Added activity:"), output);
+        assertTrue(output.contains("1. Existing (2000-01-01, 09:00-10:00) [LOW] [X]"));
+        assertFalse(output.contains("Rejected ("), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
     }
 
     /**
