@@ -1,10 +1,18 @@
-# UniEnable User Guide (v1.0)
+# UniEnable User Guide
 
 ## Introduction
 
 UniEnable is a command-line application for managing dated activities and checking
-campus accessibility information. v1.0 supports activity demand and completion,
-automatic saving, facility searches, and shortest recorded accessible routes.
+campus accessibility information. Add activities with optional importance, urgency
+and commitment ratings, track completion, search facilities, and find shortest
+recorded accessible routes. Activity changes save automatically.
+
+Activity editing, activity-name searching, priority ordering, overdue/next queries,
+and calendar dashboards are planned features, unavailable in this build.
+
+[Quick Start](#quick-start) · [Command Format](#command-format) ·
+[Data Storage](#data-storage) · [Features](#features) ·
+[Error Handling](#error-handling) · [FAQ](#faq) · [Command Summary](#command-summary)
 
 ## Quick Start
 
@@ -24,74 +32,111 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 - Command words, prefixes, demand levels, feature types, statuses, and hub codes
   are case-insensitive. Activity names preserve their capitalization.
 - For `add`, fields can appear in any order. Names can contain spaces.
-- Separate fields with whitespace (for example, `n/Meeting d/2026-10-20`).
+- Separate fields with whitespace (for example, `n/Meeting d/2026-12-01`).
   Do not put text before the first field.
-- Dates use `YYYY-MM-DD`, such as `2026-10-20`; times use 24-hour `HH:mm`.
-- Activity indexes start at 1 and always refer to the chronological `list` order.
-  Run `list` before `delete`, `mark`, or `unmark`; demand-view indexes can differ.
+- Enter each command on one line, including all optional fields.
+- Dates use `YYYY-MM-DD`, such as `2026-12-01`; times use 24-hour `HH:mm`.
+- Activity indexes start at 1. Change commands (`delete`, `mark`, and `unmark`)
+  use indexes from chronological `list` output; `list demand` numbers can differ.
+  Run `list` before changing an activity.
 - Sample outputs below omit the application's horizontal borders.
-  Activity examples assume an initially empty activity list and run in order.
+  The activity walkthrough, from `add` through `delete`, starts with an empty list
+  and runs in order. Additional rating examples follow the walkthrough.
   If you try them after the example dates, replace the dates with future dates.
 
 ## Data Storage
 
 Activities load at startup from `data/activities.txt`, relative to the folder
-where you launch the application. Successful add, delete, and completion changes
-are saved automatically; a missing file starts an empty list.
-Malformed rows are skipped with line-numbered warnings. Before a later save,
-the original malformed file is copied to `data/activities.txt.corrupt.bak`.
+where you launch the application. A missing file starts an empty list. Successful
+add, delete, and completion changes save the entire activity list automatically.
+Commands that leave activities unchanged, including `list`, `help`, repeated
+`mark`/`unmark`, and `bye`, do not save or retry a failed save.
+
+Saved activity rows use nine fields:
+```text
+NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM
+```
+`DONE` is `true` or `false`. Each rating is a whole number from 1 to 5, or `-`
+when unset. Ratings and completion state survive saving and restarting.
+Existing six-field V1.0 rows still load, with all three ratings unset. Historical
+activities can load; the end-after-now rule applies to adding an activity.
+Loading alone does not rewrite the file. The next successful activity-changing
+save writes every row in the nine-field format. V1.0 cannot load nine-field rows;
+keep a separate copy of a V1.0 file if you need to return to that version.
+
+Malformed rows are skipped with line-numbered warnings. If the file cannot be
+read, the app reports `Activity data unavailable:` and starts with an empty list.
+In either case, before a later save, the original file must be copied and verified
+at `data/activities.txt.corrupt.bak`. If the backup fails, the save fails without
+replacing the activity file. Copy this backup elsewhere before recovery; a later
+recovery backup can overwrite it.
+
+After a save failure, keep the app open and follow the
+[recovery steps](#error-handling) before exiting.
 Facility and connection reference data are bundled and read-only.
-If the activity file cannot be read, the app reports `Activity data unavailable:`
-and starts the session with an empty activity list. Before a later save, it must
-copy and verify the original file in the same `.corrupt.bak` location. If this
-backup fails, the save fails and the original activity file is not replaced.
-Keep a separate copy of the backup before attempting recovery: a later recovery
-backup can overwrite an existing `.corrupt.bak` file.
 
 ## Features
 
 ### Adding an activity: `add`
 
-Format: `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH]`
+Add an incomplete activity with a date, time, and optional demand and ratings.
+
+Format:
+
+```text
+add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]
+```
 
 `n/`, `d/`, `s/`, and `e/` are required and must each appear once with a value.
-`dem/` is optional, but must also have a value and appear at most once.
-Demand defaults to MEDIUM. The end time must be strictly after the start time on
+Every supplied known prefix must appear once and contain a value.
+
+| Optional field | Meaning | Accepted values | When omitted |
+| --- | --- | --- | --- |
+| `dem/` | Activity demand, separate from ratings | LOW, MEDIUM, HIGH | MEDIUM |
+| `imp/` | Importance | Whole number from 1 to 5 | Unset (`-`) |
+| `urg/` | Urgency | Whole number from 1 to 5 | Unset (`-`) |
+| `com/` | Commitment | Whole number from 1 to 5 | Unset (`-`) |
+
+Supply all, some, or none of the ratings. To leave one unset, omit its prefix;
+do not enter a literal `-`. Empty values, duplicate prefixes, ratings outside
+1 to 5, decimals, and text are rejected.
+
+The end time must be strictly after the start time on
 the same day; overnight activities are not supported. The activity's date and end
 time together must also be strictly after the current date/time in your computer's
 local time zone. An activity that has already started can still be added if it
-has not ended; an activity ending exactly now is rejected.
+has not ended; an activity ending exactly now is rejected. New activities start
+incomplete.
 
 Names cannot contain `|` or line breaks. Slash-containing text such as `and/or`
-and `w/o` is allowed. However, a known prefix (`n/`, `d/`, `s/`, `e/`, or `dem/`)
+and `w/o` is allowed. However, a known prefix (`n/`, `d/`, `s/`, `e/`, `dem/`,
+`imp/`, `urg/`, or `com/`)
 at the start of a whitespace-separated part of the name is treated as another
 field, so avoid these prefixes in names. Duplicate or overlapping activities are
 currently allowed.
 
 Input:
 ```text
-add n/CS2113 tutorial d/2026-10-20 s/10:00 e/11:00
+add n/CS2113 tutorial d/2026-12-01 s/10:00 e/11:00
 ```
 Output:
 ```text
 Added activity: CS2113 tutorial
-Date: 2026-10-20
+Date: 2026-12-01
 Time: 10:00 - 11:00
 Demand: MEDIUM
+Importance: -
+Urgency: -
+Commitment: -
 Activities in this session: 1
 ```
 
 For the following examples, also enter:
 ```text
-add n/Project meeting d/2026-10-21 s/14:00 e/15:00 dem/HIGH
+add n/Project meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH
 ```
-The app confirms Project meeting, its date/time, HIGH demand, and a total of 2 activities.
-
-Fields may also be reordered, and names may include ordinary slashes. For example
-(independent of the numbered examples below):
-```text
-add dem/LOW e/11:00 n/Planning and/or review d/2026-10-22 s/10:00
-```
+The app confirms Project meeting, its date/time, HIGH demand, three unset ratings,
+and a total of 2 activities.
 
 ### Listing activities: `list` and `list demand`
 
@@ -103,8 +148,8 @@ Input: `list`
 Output:
 ```text
 Activities (by date, start time):
-1. CS2113 tutorial (2026-10-20, 10:00-11:00) [MEDIUM] [ ]
-2. Project meeting (2026-10-21, 14:00-15:00) [HIGH] [ ]
+1. CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
+2. Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
 ```
 
 Input: `list demand`
@@ -114,8 +159,8 @@ Output:
 Activities by demand (HIGH to LOW):
 Note: Do not use indexes from 'list demand' for deletion.
 Run 'list' to find the correct index for 'delete INDEX'.
-1. Project meeting (2026-10-21, 14:00-15:00) [HIGH] [ ]
-2. CS2113 tutorial (2026-10-20, 10:00-11:00) [MEDIUM] [ ]
+1. Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
+2. CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
 ```
 
 An empty list shows `No activities yet.` beneath the heading (and demand-view notice).
@@ -143,13 +188,37 @@ Input: `delete 2` (index from `list`, not `list demand`)
 Output:
 ```text
 Deleted activity: Project meeting
-Date: 2026-10-21
+Date: 2026-12-02
 Time: 14:00 - 15:00
 Demand: HIGH
 Activities in this session: 1
 ```
 
 The activity is removed immediately; subsequent indexes may change.
+
+### Trying optional add ratings
+
+Try these after the activity walkthrough above. They add to your current list
+and are not included in its sample outputs. Enter each command on its own line:
+
+```text
+add CoM/3 dem/low e/11:00 n/Planning and/or review d/2026-12-03 s/10:00 iMp/5
+add n/CS2113 project d/2026-12-04 s/14:00 e/15:00 imp/5 urg/5 com/4
+add n/Team stand-up d/2026-12-04 s/16:00 e/17:00 imp/5 urg/4
+```
+
+The first command also demonstrates reordered fields, mixed-case prefixes, and
+ordinary slashes in a name. Its demand is LOW; the others default to MEDIUM.
+
+| Activity | Importance | Urgency | Commitment |
+| --- | --- | --- | --- |
+| Planning and/or review | 5 | - | 3 |
+| CS2113 project | 5 | 5 | 4 |
+| Team stand-up | 5 | 4 | - |
+
+The add confirmation displays the ratings, and saving preserves them across
+restarts. `list` and `list demand` show date, time, demand and completion, without
+ratings.
 
 ### Listing and viewing facilities: `facility`
 
@@ -231,8 +300,9 @@ Verify with current campus information before you rely on it.
 
 Input: `help`
 
-Output begins with `UniEnable commands (v1.0):` and lists all available commands
-along with the activity index rules and automatic saving location.
+Output begins with `UniEnable commands:` and lists all available commands,
+including the optional add ratings, activity index rules and automatic saving
+location.
 
 Input: `bye`
 
@@ -245,28 +315,44 @@ Common causes include missing/duplicate fields, invalid dates or times, unknown
 facilities, or an activity index outside the current list.
 For `add`, use real calendar dates and two-digit hours and minutes (for example,
 `09:30`, not `9:30`). An invalid add command also displays the expected format.
+Invalid add input, including an invalid rating, leaves the activity list and
+stored data unchanged.
 
 Example input: `help extra`
 
 Output: `[WARNING] help does not take arguments.`
 
-If loading or saving fails, the app reports the problem. After a save failure,
-activity changes may remain in memory without being saved to disk.
+If saving fails, the change may already be in memory. Repeating the same `add`
+can create a duplicate; exiting with `bye` does not retry the save.
+
+To recover before exiting:
+
+1. Run `list` and record the activities you need to keep.
+2. Fix the reported file or backup-path problem, keeping a separate copy of any
+   existing data or recovery backup.
+3. Run `list` again and choose an activity. If it is incomplete, run `mark INDEX`
+   followed by `unmark INDEX`; if completed, reverse the commands. Each actual
+   change retries saving the entire list. If the list is empty, add a temporary
+   activity with a future end time, then delete it.
+4. Check that both changes succeed without a save error before exiting. Restart
+   and run `list` to confirm the saved result.
 
 ## FAQ
 
 **Where is my data?** In `data/activities.txt` under the launch folder; use the same
 folder on each run. To transfer activities, copy this file before starting the app.
 
-**Can I edit an activity or facility?** v1.0 has no activity edit command
-(delete and add instead) and no facility editing commands.
+**Can I edit an activity or facility?** This build has no activity edit command
+or facility editing commands. To replace an activity, delete it and add the
+replacement; its end date/time must still be in the future. Keep historical
+activities if they cannot be re-added under this rule.
 
 ## Command Summary
 
 | Command | Purpose |
 | --- | --- |
 | `help` / `bye` | Show built-in help / exit |
-| `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH]` | Add an activity |
+| `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Add an activity with optional ratings |
 | `list` / `list demand` | View activities by time / demand |
 | `mark INDEX` / `unmark INDEX` / `delete INDEX` | Change completion / delete |
 | `facility list` / `facility LOCATION` | View all facilities / one facility |

@@ -3,6 +3,7 @@ package seedu.unienable.storage;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -11,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -20,7 +22,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 
 /**
- * Tests activity persistence, missing files, and recoverable malformed rows.
+ * Tests legacy compatibility, rated activity persistence and protection of existing files.
  */
 class StorageTest {
     @TempDir
@@ -40,55 +42,123 @@ class StorageTest {
     void saveAndLoad_roundTripsAllActivityFields() throws Exception {
         Path file = tempDir.resolve("nested").resolve("activities.txt");
         Storage storage = new Storage(file);
-        Activity done = new Activity("Exam", LocalDate.of(2026, 10, 18), LocalTime.of(9, 0),
-                LocalTime.of(11, 0), DemandLevel.HIGH, true);
-        Activity pending = new Activity("Gym", LocalDate.of(2026, 10, 20), LocalTime.of(17, 0),
-                LocalTime.of(18, 0), DemandLevel.LOW, false);
+        Integer[][] ratings = {
+            {null, null, null}, {5, null, null}, {null, 4, null}, {null, null, 3},
+            {5, 4, null}, {5, null, 3}, {null, 4, 3}, {5, 4, 3}
+        };
+        List<Activity> originals = new ArrayList<>();
+        for (int i = 0; i < ratings.length; i++) {
+            originals.add(new Activity("Review and/or study " + i, LocalDate.of(2000, 1, 1),
+                    LocalTime.of(9, 0), LocalTime.of(10, 0), DemandLevel.HIGH, i % 2 == 0,
+                    ratings[i][0], ratings[i][1], ratings[i][2]));
+        }
 
-        storage.save(new ActivityList(List.of(done, pending)));
+        storage.save(new ActivityList(originals));
+        Storage restarted = new Storage(file);
+        List<Activity> loaded = restarted.load().getActivities();
+
+        List<String> rows = Files.readAllLines(file, StandardCharsets.UTF_8);
+        assertEquals("Review and/or study 0|2000-01-01|09:00|10:00|HIGH|true|-|-|-", rows.getFirst());
+        assertEquals("Review and/or study 1|2000-01-01|09:00|10:00|HIGH|false|5|-|-", rows.get(1));
+        assertEquals("Review and/or study 7|2000-01-01|09:00|10:00|HIGH|false|5|4|3", rows.getLast());
+        assertEquals(originals.size(), loaded.size());
+        for (int i = 0; i < originals.size(); i++) {
+            Activity expected = originals.get(i);
+            Activity actual = loaded.get(i);
+            assertEquals(expected.getName(), actual.getName());
+            assertEquals(expected.getDate(), actual.getDate());
+            assertEquals(expected.getStartTime(), actual.getStartTime());
+            assertEquals(expected.getEndTime(), actual.getEndTime());
+            assertEquals(expected.getDemand(), actual.getDemand());
+            assertEquals(expected.isDone(), actual.isDone());
+            assertEquals(expected.getImportance(), actual.getImportance());
+            assertEquals(expected.getUrgency(), actual.getUrgency());
+            assertEquals(expected.getCommitment(), actual.getCommitment());
+        }
+        assertTrue(restarted.getWarnings().isEmpty());
+        assertFalse(Files.exists(file.resolveSibling("activities.txt.tmp")));
+    }
+
+    @Test
+    void load_legacyAndRatedRows_migratesOnlyOnSave() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        String legacyDone = "Legacy done|2000-01-01|09:00|10:00|HIGH|true";
+        String legacyPending = "Legacy pending|2001-01-01|10:00|11:00|LOW|false";
+        String rated = "Rated|2002-01-01|11:00|12:00|MEDIUM|false|2|-|5";
+        String original = String.join("\n", legacyDone, legacyPending, rated);
+        Files.writeString(file, original, StandardCharsets.UTF_8);
+        Storage storage = new Storage(file);
+
         ActivityList loaded = storage.load();
 
-        assertEquals(List.of("Exam|2026-10-18|09:00|11:00|HIGH|true",
-                "Gym|2026-10-20|17:00|18:00|LOW|false"),
-                Files.readAllLines(file, StandardCharsets.UTF_8));
-        assertEquals(2, loaded.getActivities().size());
+        assertEquals(List.of("Legacy done", "Legacy pending", "Rated"),
+                loaded.getActivities().stream().map(Activity::getName).toList());
+        for (Activity legacy : loaded.getActivities().subList(0, 2)) {
+            assertNull(legacy.getImportance());
+            assertNull(legacy.getUrgency());
+            assertNull(legacy.getCommitment());
+        }
         assertTrue(loaded.getActivities().get(0).isDone());
         assertFalse(loaded.getActivities().get(1).isDone());
         assertTrue(storage.getWarnings().isEmpty());
+        assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
+
+        storage.save(loaded);
+
+        assertEquals(List.of(legacyDone + "|-|-|-", legacyPending + "|-|-|-", rated),
+                Files.readAllLines(file, StandardCharsets.UTF_8));
+        assertFalse(Files.exists(tempDir.resolve("activities.txt.corrupt.bak")));
     }
 
     @Test
     void load_skipsMalformedRowsAndReportsLineNumbers() throws Exception {
         Path file = tempDir.resolve("activities.txt");
-        Files.writeString(file, String.join("\n",
-                "Valid|2026-10-18|09:00|11:00|HIGH|false",
+        String valid = "Valid|2000-01-01|09:00|10:00|HIGH|false";
+        List<String> invalid = new ArrayList<>(List.of(
                 "broken row",
-                "BadDate|2026-02-30|09:00|10:00|LOW|false"), StandardCharsets.UTF_8);
+                "BadDate|2000-02-30|09:00|10:00|LOW|false",
+                "BadTime|2000-01-01|25:00|10:00|LOW|false",
+                "BadDemand|2000-01-01|09:00|10:00|URGENT|false",
+                "BadDone|2000-01-01|09:00|10:00|LOW|maybe",
+                valid + "|1", valid + "|1|2", valid + "|1|2|3|4"));
+        for (String value : new String[] {"", "0", "6", "-1", "1.5", "text", "2147483648"}) {
+            for (int field = 0; field < 3; field++) {
+                String[] ratings = {"1", "2", "3"};
+                ratings[field] = value;
+                invalid.add(valid + "|" + String.join("|", ratings));
+            }
+        }
+        List<String> rows = new ArrayList<>();
+        rows.add(valid);
+        rows.addAll(invalid);
+        rows.add(valid + "|1|-|5");
+        Files.writeString(file, String.join("\n", rows), StandardCharsets.UTF_8);
         Storage storage = new Storage(file);
 
         ActivityList loaded = storage.load();
 
-        assertEquals(1, loaded.getActivities().size());
-        assertEquals(2, storage.getWarnings().size());
-        assertTrue(storage.getWarnings().get(0).startsWith("Line 2:"));
-        assertTrue(storage.getWarnings().get(1).startsWith("Line 3:"));
+        assertEquals(2, loaded.getActivities().size());
+        assertEquals(invalid.size(), storage.getWarnings().size());
+        for (int i = 0; i < invalid.size(); i++) {
+            assertTrue(storage.getWarnings().get(i).startsWith("Line " + (i + 2) + ":"));
+        }
     }
 
     @Test
     void save_afterMalformedLoad_preservesOriginalInBackupBeforeRepairingFile() throws Exception {
         Path file = tempDir.resolve("activities.txt");
-        Files.writeString(file, "Valid|2026-10-18|09:00|11:00|HIGH|false\ninvalid",
-                StandardCharsets.UTF_8);
+        String original = "Valid|2026-10-18|09:00|11:00|HIGH|false\n"
+                + "BadRating|2026-10-18|09:00|11:00|HIGH|false|6|-|-\ninvalid";
+        Files.writeString(file, original, StandardCharsets.UTF_8);
         Storage storage = new Storage(file);
         ActivityList loaded = storage.load();
 
         storage.save(loaded);
 
-        assertTrue(Files.exists(tempDir.resolve("activities.txt.corrupt.bak")));
-        assertEquals("Valid|2026-10-18|09:00|11:00|HIGH|false\n",
+        assertEquals("Valid|2026-10-18|09:00|11:00|HIGH|false|-|-|-\n",
                 Files.readString(file, StandardCharsets.UTF_8));
-        assertTrue(Files.readString(tempDir.resolve("activities.txt.corrupt.bak"),
-                StandardCharsets.UTF_8).contains("invalid"));
+        assertArrayEquals(original.getBytes(StandardCharsets.UTF_8),
+                Files.readAllBytes(tempDir.resolve("activities.txt.corrupt.bak")));
     }
 
     @Test
@@ -104,21 +174,38 @@ class StorageTest {
         storage.save(new ActivityList(List.of(added)));
 
         assertArrayEquals(original, Files.readAllBytes(tempDir.resolve("activities.txt.corrupt.bak")));
-        assertEquals("New meeting|2026-10-20|09:00|10:00|MEDIUM|false\n", Files.readString(file));
+        assertEquals("New meeting|2026-10-20|09:00|10:00|MEDIUM|false|-|-|-\n", Files.readString(file));
     }
 
     @Test
     void save_whenRecoveryBackupCannotBeCreated_preservesOriginalFile() throws Exception {
         Path file = tempDir.resolve("activities.txt");
-        byte[] original = {0x4F, 0x6C, 0x64, (byte) 0xFF, 0x0A};
+        byte[] original = "BadRating|2000-01-01|09:00|10:00|HIGH|false|6|-|-\n"
+                .getBytes(StandardCharsets.UTF_8);
         Files.write(file, original);
         Storage storage = new Storage(file);
-        assertThrows(UniEnableException.class, storage::load);
+        ActivityList loaded = storage.load();
         Path blockedBackup = Files.createDirectory(tempDir.resolve("activities.txt.corrupt.bak"));
         Files.writeString(blockedBackup.resolve("keep.txt"), "Backup destination is occupied.");
 
-        assertThrows(UniEnableException.class, () -> storage.save(new ActivityList()));
+        assertTrue(loaded.getActivities().isEmpty());
+        assertEquals(1, storage.getWarnings().size());
+        assertThrows(UniEnableException.class, () -> storage.save(loaded));
 
         assertArrayEquals(original, Files.readAllBytes(file));
+    }
+
+    @Test
+    void save_whenTemporaryWriteFails_preservesOriginalFile() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        String original = "Valid|2000-01-01|09:00|10:00|HIGH|true\n";
+        Files.writeString(file, original, StandardCharsets.UTF_8);
+        Storage storage = new Storage(file);
+        ActivityList loaded = storage.load();
+        Files.createDirectory(tempDir.resolve("activities.txt.tmp"));
+
+        assertThrows(UniEnableException.class, () -> storage.save(loaded));
+
+        assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
     }
 }

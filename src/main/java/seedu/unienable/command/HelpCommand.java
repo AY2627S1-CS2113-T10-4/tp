@@ -4,7 +4,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
 /**
- * Displays the commands available in UniEnable v1.0.
+ * Displays the commands currently available in UniEnable, including optional add ratings.
  */
 public class HelpCommand extends Command {
     // Owner: Atharva
@@ -13,10 +13,13 @@ public class HelpCommand extends Command {
      */
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) {
-        String message = "UniEnable commands (v1.0):\n"
+        String message = "UniEnable commands:\n"
                 + "help - Show this message\n"
-                + "add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH]\n"
+                + "add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] "
+                + "[imp/IMP] [urg/URG] [com/COM]\n"
                 + "    Add an activity (demand defaults to MEDIUM; end must be after now)\n"
+                + "    IMP = importance; URG = urgency; COM = commitment\n"
+                + "    Ratings are optional whole numbers from 1 to 5; omitted ratings display -.\n"
                 + "list - View activities by date and start time\n"
                 + "list demand - View activities by demand, HIGH to LOW\n"
                 + "mark INDEX - Mark an activity as done\n"

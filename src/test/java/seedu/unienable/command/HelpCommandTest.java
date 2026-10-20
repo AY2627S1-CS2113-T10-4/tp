@@ -8,12 +8,16 @@ import org.junit.jupiter.api.Test;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
-/** Verifies help describes the available v1.0 commands and automatic saving. */
+/** Verifies help describes available commands, optional ratings and automatic saving. */
 class HelpCommandTest {
     @Test
     void execute_showsAvailableCommandsAndAutomaticSaving() {
         CommandResult result = new HelpCommand().execute(new ActivityList(), new Storage());
-        assertTrue(result.getMessage().contains("add n/NAME"));
+        assertTrue(result.getMessage().startsWith("UniEnable commands:\n"));
+        assertTrue(result.getMessage().contains("add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm "
+                + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]"));
+        assertTrue(result.getMessage().contains("IMP = importance; URG = urgency; COM = commitment"));
+        assertTrue(result.getMessage().contains("optional whole numbers from 1 to 5; omitted ratings display -."));
         assertTrue(result.getMessage().contains("facility find"));
         assertTrue(result.getMessage().contains("delete INDEX"));
         assertTrue(result.getMessage().contains("incomplete\n" + "delete INDEX"));
