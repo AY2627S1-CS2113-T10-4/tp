@@ -26,7 +26,7 @@ chronological view. `CommandResult` records whether activity state changed, so
 and writes UTF-8 six-column activity records and reports malformed rows without
 discarding the original file.
 
-### Future feature design   
+### Future feature design
 
 Feature owners will document their implemented designs and diagrams here.
 

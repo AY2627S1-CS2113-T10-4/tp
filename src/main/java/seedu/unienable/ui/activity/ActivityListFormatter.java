@@ -54,6 +54,29 @@ public final class ActivityListFormatter {
         return format(DEMAND_LIST_HEADING + "\n" + DEMAND_LIST_INDEX_NOTICE, activities);
     }
 
+    /**
+     * Formats name-search results using the indexes from the full chronological list.
+     *
+     * @param keyword searched name phrase
+     * @param matches matching activities in chronological order
+     * @param canonicalView full chronological activity view
+     * @return formatted search result
+     */
+    public static String formatFindResults(String keyword, List<Activity> matches,
+                                           List<Activity> canonicalView) {
+        if (matches.isEmpty()) {
+            return "No activities matched keyword \"" + keyword + "\".";
+        }
+        String activityLabel = matches.size() == 1 ? "activity" : "activities";
+        StringBuilder output = new StringBuilder("Found ")
+                .append(matches.size()).append(" matching ").append(activityLabel).append(":");
+        for (Activity activity : matches) {
+            output.append("\n").append(canonicalView.indexOf(activity) + 1)
+                    .append(". ").append(describe(activity));
+        }
+        return output.toString();
+    }
+
     private static String format(String heading, List<Activity> activities) {
         StringBuilder output = new StringBuilder(heading);
         if (activities.isEmpty()) {
