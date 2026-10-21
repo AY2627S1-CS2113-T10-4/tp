@@ -6,10 +6,11 @@ import seedu.unienable.command.Command;
 import seedu.unienable.command.activity.DeleteCommand;
 import seedu.unienable.command.activity.ListCommand;
 import seedu.unienable.command.activity.ListDemandCommand;
+import seedu.unienable.command.activity.ListPriorityCommand;
 import seedu.unienable.exception.ParseException;
 
 /**
- * Parses the list, list demand, and delete commands.
+ * Parses the list, list demand, list priority, and delete commands.
  * Only syntax is validated here: whether an index is a plain ASCII integer without a sign.
  * Whether the index refers to an existing activity is decided by the model at
  * execution time, because the parser has no access to activity state.
@@ -27,7 +28,7 @@ public class ListDeleteCommandParser {
     private static final Pattern INDEX_PATTERN = Pattern.compile("\\d+");
 
     /**
-     * Recognizes list and list demand, case-insensitively.
+     * Recognizes list, list demand, and list priority, case-insensitively.
      *
      * @param words command words, beginning with list.
      * @return the list command to execute
@@ -44,8 +45,15 @@ public class ListDeleteCommandParser {
             }
             return new ListDemandCommand();
         }
+        if ("priority".equalsIgnoreCase(words[1])) {
+            if (words.length != 2) {
+                throw new ParseException(WARNING_MESSAGE
+                        + " list priority does not accept arguments.\nUsage: list priority");
+            }
+            return new ListPriorityCommand();
+        }
         throw new ParseException(WARNING_MESSAGE + " Unknown list variant '" + words[1] + "'.\n"
-                + "Usage: list\n       list demand");
+                + "Usage: list\n       list demand\n       list priority");
     }
 
     /**

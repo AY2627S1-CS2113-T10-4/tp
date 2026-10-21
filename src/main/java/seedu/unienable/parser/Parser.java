@@ -7,12 +7,15 @@ import seedu.unienable.command.ByeCommand;
 import seedu.unienable.command.Command;
 import seedu.unienable.command.HelpCommand;
 import seedu.unienable.command.activity.FindCommand;
+import seedu.unienable.command.activity.NextCommand;
+import seedu.unienable.command.activity.OverdueCommand;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
 
 /**
- * Recognizes add, edit, find, list, list demand, delete, facility, route and bye commands.
+ * Recognizes add, edit, find, list, list demand, list priority, overdue, next,
+ * delete, facility, route and bye commands.
  */
 public class Parser {
     /**
@@ -127,6 +130,18 @@ public class Parser {
             return new FindCommand(keyword);
         case "list":
             return listDeleteCommandParser.parseList(words);
+        case "overdue":
+            if (words.length != 1) {
+                throw new ParseException(WARNING_MESSAGE
+                        + " overdue does not take arguments.\nUsage: overdue");
+            }
+            return new OverdueCommand(clock);
+        case "next":
+            if (words.length != 1) {
+                throw new ParseException(WARNING_MESSAGE
+                        + " next does not take arguments.\nUsage: next");
+            }
+            return new NextCommand(clock);
         case "delete":
             return listDeleteCommandParser.parseDelete(words);
         case "mark":

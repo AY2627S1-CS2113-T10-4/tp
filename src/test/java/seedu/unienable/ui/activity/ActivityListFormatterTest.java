@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -47,5 +49,47 @@ class ActivityListFormatterTest {
         assertEquals(headingAndNotice + "1. Gym session (2026-10-12, 07:00-09:00) [HIGH] [ ]",
                 ActivityListFormatter.formatDemandList(List.of(mondayGym)));
         assertEquals(headingAndNotice + "No activities yet.", ActivityListFormatter.formatDemandList(List.of()));
+    }
+
+    @Test
+    void formatPriorityList_usesChronologicalIndexesAndShowsScoreComponents() {
+        Activity scored = new Activity("Scored", LocalDate.parse("2026-10-11"), LocalTime.parse("10:00"),
+                LocalTime.parse("11:00"), DemandLevel.LOW, true, 5, 4, 3);
+        String message = ActivityListFormatter.formatPriorityList(List.of(scored, tuesdayLab),
+                List.of(scored, mondayGym, tuesdayLab));
+
+        assertEquals("Activities by priority (highest first):\n"
+                + "Indexes refer to the chronological 'list' order.\n"
+                + "1. Scored (2026-10-11, 10:00-11:00) [LOW] [X] | Priority 128 (IMP 5, URG 4, COM 3)\n"
+                + "3. Lab (2026-10-13, 14:00-16:00) [LOW] [ ] | Priority NA (IMP -, URG -, COM -)",
+                message);
+    }
+
+    @Test
+    void formatOverdueList_labelsTodayWeekAndEarlierAndKeepsFullIndexes() {
+        Activity earlier = new Activity("Earlier", LocalDate.parse("2026-10-05"), LocalTime.parse("09:00"),
+                LocalTime.parse("10:00"), DemandLevel.LOW, false);
+        Activity today = new Activity("Today", LocalDate.parse("2026-10-13"), LocalTime.parse("09:00"),
+                LocalTime.parse("10:00"), DemandLevel.LOW, false);
+        List<Activity> canonicalView = List.of(earlier, mondayGym, today);
+        String message = ActivityListFormatter.formatOverdueList(List.of(earlier, mondayGym, today),
+                canonicalView, LocalDateTime.parse("2026-10-13T12:00:00"));
+
+        assertEquals("Overdue activities (started before now):\n"
+                + "1. [OVERDUE EARLIER] Earlier (2026-10-05, 09:00-10:00) [LOW] [ ]\n"
+                + "2. [OVERDUE WEEK] Gym session (2026-10-12, 07:00-09:00) [HIGH] [ ]\n"
+                + "3. [OVERDUE TODAY] Today (2026-10-13, 09:00-10:00) [LOW] [ ]",
+                message);
+        assertEquals("Overdue activities (started before now):\nNo overdue activities.",
+                ActivityListFormatter.formatOverdueList(List.of(), canonicalView,
+                        LocalDateTime.parse("2026-10-13T12:00:00")));
+    }
+
+    @Test
+    void formatNext_showsOneIndexedActivityOrEmptyMessage() {
+        assertEquals("Next activity (earliest upcoming):\n2. Lab (2026-10-13, 14:00-16:00) [LOW] [ ]",
+                ActivityListFormatter.formatNext(Optional.of(tuesdayLab), List.of(mondayGym, tuesdayLab)));
+        assertEquals("Next activity (earliest upcoming):\nNo upcoming incomplete activities.",
+                ActivityListFormatter.formatNext(Optional.empty(), List.of(mondayGym, tuesdayLab)));
     }
 }

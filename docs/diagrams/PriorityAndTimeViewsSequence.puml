@@ -1,0 +1,31 @@
+@startuml
+!pragma layout smetana
+title Overdue query with a strict local-time boundary
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #526477
+participant "User" as User
+participant "Parser" as Parser
+participant "OverdueCommand" as Overdue
+participant "ActivityList" as List
+participant "ActivityListFormatter" as Formatter
+
+User -> Parser : overdue
+create Overdue
+Parser -> Overdue : new OverdueCommand(clock)
+Parser --> User : command ready
+User -> Overdue : execute(activities, storage)
+Overdue -> Overdue : now = LocalDateTime.now(clock)
+Overdue -> List : getCanonicalView()
+Overdue -> List : getOverdueView(now)
+List --> Overdue : incomplete starts before now
+Overdue -> Formatter : formatOverdueList(view, canonical, now)
+Formatter --> Overdue : labels and full chronological indexes
+Overdue --> User : CommandResult(message, false)
+note right of Overdue
+  No activity is changed.
+  The console does not save.
+end note
+@enduml

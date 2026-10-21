@@ -8,6 +8,7 @@
   - [Architecture](#architecture)
   - [Activity creation and ratings](#activity-creation-and-ratings)
   - [Ordering and displayed indexes](#ordering-and-displayed-indexes)
+  - [Priority, overdue, and next views](#priority-overdue-and-next-views)
   - [Completion and persistence](#completion-and-persistence)
   - [Facility Accessibility Data (`facilities.txt`)](#facility-accessibility-data-facilitiestxt)
   - [Facility lookup](#facility-lookup)
@@ -104,9 +105,9 @@ displayed by the console so the user can continue.
 | --- | --- |
 | Startup and console loop | `UniEnable` restores activity data and reads commands until `bye` or end of input. `ConsoleHelper` loads reference data, constructs the parser, executes commands, and saves activity changes. |
 | User interface | `Ui` reads lines and displays messages between borders. `ActivityListFormatter`, `FacilityOutputFormatter`, and `FacilityDetailsFormatter` build messages without reading input or printing. `RouteCommand` formats its own route result. |
-| Parsing | `Parser` identifies the command word. `AddCommandParser`, `ListDeleteCommandParser`, `MarkCommandParser`, `FacilityCommandParser`, and `RouteParser` validate their arguments and create commands. An injected `Clock` makes add-time validation repeatable in tests. |
+| Parsing | `Parser` identifies the command word. `AddCommandParser`, `ListDeleteCommandParser`, `MarkCommandParser`, `FacilityCommandParser`, and `RouteParser` validate their arguments and create commands. An injected `Clock` makes add-time and time-view validation repeatable in tests. |
 | Command execution | Concrete subclasses implement `Command.execute(ActivityList, Storage)`. Each returns a `CommandResult`; the activity-change flag lets the console decide when to save. |
-| Activity model | `Activity` stores activity details and completion. `ActivityList` owns the collection, creates chronological and demand views, and resolves displayed indexes against the chronological view. |
+| Activity model | `Activity` stores activity details, completion, ratings, and the combined priority score. `ActivityList` owns the collection, creates chronological, demand, priority, overdue, and next views, and resolves displayed indexes against the chronological view. |
 | Accessibility logic | `FacilityManager` provides facility lookup and feature filtering. `ConnectionManager` provides connection queries and delegates route searches to `DijkstraShortestPath`, which uses a fresh `DijkstraSolver` per search. |
 | Reference models | `Facility` contains `FacilityFeature` records. `Connection` stores two facility names, a distance, accessibility and shelter statuses, a traversal type, and optional barrier information and notes. These objects are immutable. |
 | Storage | `Storage` loads six- or nine-field activity rows and saves nine-field rows, with recovery backups when needed. `FacilityStorage` and `ConnectionStorage` load bundled reference records and return records plus warnings in `LoadResult<T>`. |
@@ -137,8 +138,8 @@ layout engine, so a separate Graphviz installation is unnecessary for this diagr
 
 The `add` feature records an incomplete activity with a date, start and end times,
 demand, and independently optional importance, urgency, and commitment ratings.
-Ratings capture user input; the current application does not calculate a combined
-priority score or use ratings to order activities.
+Ratings capture user input; the priority view calculates a combined score only when
+all three are present.
 
 #### High-level design
 
@@ -249,6 +250,106 @@ by `ActivityList`, which also handles empty lists and out-of-range indexes throu
 `InvalidIndexException`. Assertions check view ordering and deletion invariants;
 `FINE` log messages record list and delete operations. These support debugging,
 while checked exceptions handle invalid user input.
+
+### Priority, overdue, and next views
+
+#### Overview
+
+`list priority` ranks every activity, including completed ones, by the revised
+V2.0 guide's combined score. `overdue` and `next` answer time-sensitive questions
+for incomplete activities. All three views are read-only and display the full
+chronological index used by `mark`, `unmark`, and `delete`.
+
+`Activity.getPriorityScore()` returns:
+
+```text
+URG * URG * (IMP + COM)
+```
+
+The score is available only when importance, urgency, and commitment are all set.
+The possible range is 2 to 250. Completion and demand do not affect the score.
+
+#### High-level design
+
+`Activity` owns the score formula so every view uses one definition. `ActivityList`
+owns the ordering and filtering rules. `ListPriorityCommand`, `OverdueCommand`, and
+`NextCommand` select views, while `ActivityListFormatter` renders them without
+sorting or printing. The class diagram shows these relationships.
+
+![Class diagram for priority, overdue, and next views](images/PriorityAndTimeViewsClassDiagram.png)
+
+Source: [PriorityAndTimeViewsClassDiagram.puml](diagrams/PriorityAndTimeViewsClassDiagram.puml).
+
+#### Implementation and sequence diagram
+
+1. `ListDeleteCommandParser` recognises `list priority`; `Parser` recognises
+   `overdue` and `next`. The time commands receive the session's injected `Clock`.
+2. `OverdueCommand` and `NextCommand` call `LocalDateTime.now(clock)` once per
+   execution, so filtering, labels, and logging use the same instant.
+3. `getPriorityView()` sorts by available score descending, then canonical order.
+   Missing scores use a nulls-last comparator and therefore follow all scored rows.
+   Completed activities are not filtered out.
+4. `getOverdueView(now)` keeps incomplete activities whose start is strictly
+   before `now`. `getNext(now)` returns the first incomplete activity whose start
+   is strictly after `now` in canonical order. Equal starts retain add order.
+5. `ActivityListFormatter` maps each selected activity to its index in
+   `getCanonicalView()`. Priority rows also show the score and the three ratings;
+   overdue rows add `OVERDUE TODAY`, `OVERDUE WEEK`, or `OVERDUE EARLIER`.
+6. Each command returns a `CommandResult` with the activity-change flag left
+   false, so the console does not save.
+
+The sequence shows the overdue query; `next` uses the same clock and index flow,
+and `list priority` omits the time boundary.
+
+![Sequence diagram for the overdue view](images/PriorityAndTimeViewsSequence.png)
+
+Source: [PriorityAndTimeViewsSequence.puml](diagrams/PriorityAndTimeViewsSequence.puml).
+
+#### Time-boundary rules
+
+All comparisons use the computer's local time zone. They are strict, so an
+activity starting exactly at the current instant appears in neither `overdue`
+nor `next`.
+
+| Label or view | Rule |
+| --- | --- |
+| `OVERDUE TODAY` | Start date equals today and start is before now. |
+| `OVERDUE WEEK` | Start date is before today but not before the current week's Monday. |
+| `OVERDUE EARLIER` | Start date is before the current week's Monday. |
+| `next` | Earliest incomplete start strictly after now. |
+
+The Monday boundary is calculated with `TemporalAdjusters.previousOrSame(MONDAY)`.
+This handles Sunday-to-Monday and year rollover without special cases. An activity
+that started in the past but has not ended remains overdue because the boundary is
+its start, not its end.
+
+#### Design considerations
+
+The PDF includes completed activities in priority, while the earlier team note
+proposed pending activities only. This implementation follows the approved PDF
+behaviour. Excluding completed rows would also be defensible for a to-do view, but
+it would hide finished high-effort work and make the displayed score set smaller
+than the guide specifies.
+
+A nullable score keeps the formula in one place and avoids a sentinel number.
+Using `nullsLast` after reversing the score comparator gives descending available
+scores and a deterministic unavailable group. The shared canonical comparator
+handles score ties and equal starts, preserving insertion order because Java's
+stream sort is stable.
+
+Filtering into immutable lists keeps these views read-only and avoids changing the
+backing insertion order used by storage. Resolving indexes from the full canonical
+view, rather than numbering the filtered view, prevents users from passing a
+sub-view index to a change command. Passing `now` as a parameter also keeps the
+model testable without a global clock.
+
+#### Error handling
+
+The parser rejects arguments after `overdue` and `next`, and after `list priority`.
+The model rejects a null `now` and asserts priority and overdue ordering. Commands
+write `FINE` logs with view sizes and the captured instant. Time views have no
+exceptional user-input path beyond command syntax; empty results produce explicit
+messages instead of warnings.
 
 ### Completion and persistence
 
@@ -663,9 +764,10 @@ storage. Using the current interface requires entering text commands in a termin
 ### Current boundaries
 
 The current build supports dated, same-day activities, optional ratings,
-chronological and demand views, completion, deletion, persistence, facility
-queries, and shortest recorded accessible routes. Reference information covers
-the nine bundled hubs; it is sample data without live campus updates.
+chronological, demand, and priority views, overdue and next queries, completion,
+deletion, persistence, facility queries, and shortest recorded accessible routes.
+Reference information covers the nine bundled hubs; it is sample data without
+live campus updates.
 
 The [user stories](#user-stories) distinguish available features from proposals.
 Four supplied Must-Have stories remain unimplemented: keyword search (US03),
@@ -683,30 +785,28 @@ maintain the descriptions and diagrams for their enhancements.
 | --- | --- | --- |
 | [Lou Yu Luke (@lukelouyu)](https://github.com/lukelouyu) | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#activity-creation-and-ratings): `add n/Project d/2099-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
 | [Atharva Rege (@Atharva005)](https://github.com/Atharva005) | Help: `help`. [Adding an activity with name, date, times, and optional demand](#activity-creation-and-ratings): `add n/Tutorial d/2099-12-01 s/09:00 e/10:00 dem/HIGH`. | `view today`, `view tomorrow`, and `view week`. |
-| [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#ordering-and-displayed-indexes): `list`, `list demand`, and `delete 1`. | `overdue` and `next`. |
+| [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#ordering-and-displayed-indexes): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#priority-overdue-and-next-views): `list priority`, `overdue`, and `next`. |
 | [Oliver (@Oliver-koh)](https://github.com/Oliver-koh) | [Saving, backups, and recovery](#completion-and-persistence), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | `edit` and activity-name `find`. |
 
 The version columns describe the team's work allocation. Luke's V2.0 routes
-and add ratings are already implemented in this checkout. The other V2.0
-commands listed above remain planned. Index examples require an existing
-activity; use chronological `list` before selecting it.
-
-Ownership of the proposed `list priority` command has not been specified.
+and add ratings are already implemented in this checkout. Asyraf's priority,
+overdue, and next views are also implemented. The remaining V2.0 commands listed
+above, `view today`, `view tomorrow`, and `view week`, remain planned. Index
+examples require an existing activity; use chronological `list` before selecting
+it.
 
 ### V2.0 planning reference
 
 The supplied `UniEnable_User_Guide_V2.0_Revised.pdf` (revised 20 October 2026)
 separates verified V1.0 behaviour from proposed V2.0 additions. This checkout
-already supports optional add ratings and nine-field persistence, which that
-PDF still labels as planned. The following commands remain unimplemented here;
-their draft behaviour is a reference for future work, not a description of
-existing classes or a set of executable manual tests.
+already supports optional add ratings, nine-field persistence, and the priority,
+overdue, and next views described above. The following commands remain
+unimplemented here; their draft behaviour is a reference for future work, not a
+description of existing classes or a set of executable manual tests.
 
 | Proposed feature | Planning reference and intended behaviour |
 | --- | --- |
 | `edit INDEX ...` and `find KEYWORD` | PDF page 8: update supplied fields while preserving omitted fields and completion; search activity names by case-insensitive substring and retain chronological indexes. |
-| `list priority` | PDF page 9 supplies the formula `URG * URG * (IMP + COM)`, requiring all three ratings. **The team's confirmed scope is pending activities only, following US18.** This supersedes the PDF's inclusion of completed activities. Sort available scores descending, then unavailable scores, with chronological ties and full-list indexes. |
-| `overdue` and `next` | PDF page 10: incomplete activities with starts strictly before now, and the earliest incomplete activity with a start strictly after now. Exact start-time boundaries need tests. |
 | `view today`, `view tomorrow`, and `view week` | PDF pages 11-14: local calendar periods, chronological indexes, and summaries of activities, completion, demand, and recorded ratings. The weekly period is Monday to Sunday; the draft includes empty days and counts both completion states in demand and rating totals. |
 
 When implementing these features, update the design sections, diagrams, tests,
@@ -753,7 +853,7 @@ it does not implement the editing or rescheduling stories.
 | US10 | Must-Have | student who benefits from predictable routines | view all of today's activities in one summary | I can prepare for the day ahead | Not implemented |
 | US11 | Nice-to-Have | student preparing in advance | view tomorrow's activity summary | I can plan before the next morning | Not implemented |
 | US12 | Nice-to-Have | student who struggles to track a full timetable | view a week's activities grouped by day | I have an overview of my upcoming week | Not implemented |
-| US13 | Nice-to-Have | student who forgets tasks easily | see my overdue and next-upcoming activities highlighted | I know what needs attention first | Not implemented |
+| US13 | Nice-to-Have | student who forgets tasks easily | see my overdue and next-upcoming activities highlighted | I know what needs attention first | Implemented |
 | US14 | Future | student who finds it difficult to keep track of time | get an alert 10 minutes before an activity starts | I can mentally prepare for the transition | Not implemented |
 
 ### Energy and priority
@@ -763,7 +863,7 @@ it does not implement the editing or rescheduling stories.
 | US15 | Must-Have | student with sensory or attention limits | assign a demand level to an activity | I can record how demanding I expect it to be | Implemented |
 | US16 | Must-Have | student with sensory limits | see the count of high-demand activities scheduled today | I can anticipate a potentially stressful day | Not implemented |
 | US17 | Nice-to-Have | student managing my energy | set importance, commitment, and urgency levels on an activity | I can capture how much each one matters | Implemented |
-| US18 | Nice-to-Have | student unsure what to do first | view my pending activities ordered by combined priority score | I can decide what to tackle next | Not implemented |
+| US18 | Nice-to-Have | student unsure what to do first | view my pending activities ordered by combined priority score | I can decide what to tackle next | Implemented |
 | US19 | Nice-to-Have | student aware of my workload | view the commitment level of a specific activity | I can decide whether to take it on | Partial |
 | US20 | Nice-to-Have | student aware of my sensory limits | get a warning when the total demand of a day exceeds my personal daily limit | I can avoid overloading myself | Not implemented |
 | US21 | Future | student with a short gap between classes | see pending activities whose estimated duration fits a given gap | I can use the available time realistically | Not implemented |
@@ -772,11 +872,10 @@ it does not implement the editing or rescheduling stories.
 US15 and US17 are supported when adding an activity. For US19, the commitment
 rating is stored and shown in the add confirmation, but there is no command to
 retrieve an existing activity's ratings; `list` does not show them. `list demand`
-orders demand levels and does not implement combined priority scoring or a
-daily high-demand count.
-
-US18 remains a pending-only priority view by the team's confirmed decision.
-This overrides the revised V2.0 PDF's proposal to include completed activities.
+orders demand levels and does not implement combined priority scoring. US18 is
+implemented by `list priority`, which follows the revised V2.0 PDF and includes
+completed activities; the row's "pending" wording comes from the supplied
+workbook.
 
 ### Accessible navigation
 
@@ -892,8 +991,9 @@ with the team before making those guarantees.
 | Activity | A named commitment with a date, start/end times, demand, completion state, and optional ratings. |
 | Demand | The activity's `LOW`, `MEDIUM`, or `HIGH` level; separate from its numeric ratings. |
 | Ratings | Independent importance, urgency, and commitment values from 1 to 5. An omitted value is unset, stored as `-`. |
+| Priority score | `URG * URG * (IMP + COM)`, available only when all three ratings are set. |
 | Canonical view | Activities sorted by date and start time, retaining insertion order for ties. |
-| Displayed index | A one-based position in chronological `list`, used by delete, mark, and unmark. |
+| Displayed index | A one-based position in chronological `list`, used by delete, mark, and unmark and shown by priority, overdue, and next. |
 | Hub | A supported facility name: AS1 to AS8 or CLB in the bundled dataset. |
 | Facility ID | A stable lookup identifier, F01 to F09. Route endpoints use hub names instead. |
 | Connection | A bidirectional recorded link with distance, accessibility, traversal type, shelter, and optional barrier information or notes. |
@@ -927,6 +1027,9 @@ Run these steps in order, starting with no activity file.
 | 6 | `bye`, relaunch from the same folder, then `list` | The app exits cleanly; CS2113 tutorial class reloads as `[X]` and CCA EXCO meeting as `[ ]`. |
 | 7 | `unmark 1`, then `list` | CS2113 tutorial class is incomplete again. |
 | 8 | `delete 1`, then `list` | CS2113 tutorial class is removed; CCA EXCO meeting is now chronological index 1. |
+| 9 | `list priority` | CCA EXCO meeting appears with `Priority 128 (IMP 5, URG 4, COM 3)`; if it was skipped, no scored rows appear. |
+| 10 | `overdue`, then `next` | No overdue activities are listed because 2099 is still in the future; `next` shows the earliest future incomplete activity with its chronological index. |
+| 11 | `list priority extra`, `overdue extra`, and `next extra` | Each command produces a warning and leaves activities unchanged. |
 
 At step 6, inspect `data/activities.txt`. It should retain insertion order and
 all ratings, even though `list` shows chronological order:

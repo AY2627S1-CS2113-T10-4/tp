@@ -1,18 +1,21 @@
 package seedu.unienable.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 import seedu.unienable.exception.InvalidIndexException;
 
 /**
  * Owns activity collection state without exposing its mutable backing list.
  * The backing list stays in insertion (add) order; the display orderings used by
- * {@code list} and {@code list demand} are applied on demand by the view methods,
- * so Branch 1's append contract is untouched.
+ * {@code list}, {@code list demand}, {@code list priority}, {@code overdue}, and
+ * {@code next} are applied on demand by the view methods, so Branch 1's append
+ * contract is untouched.
  */
 public class ActivityList {
     /**
@@ -26,6 +29,15 @@ public class ActivityList {
      */
     private static final Comparator<Activity> DEMAND_ORDER =
             Comparator.comparing(Activity::getDemand).reversed().thenComparing(CANONICAL_ORDER);
+
+    /**
+     * Highest available score first; activities with missing ratings follow,
+     * and ties keep canonical order. Completed activities remain included.
+     */
+    private static final Comparator<Activity> PRIORITY_ORDER =
+            Comparator.comparing(Activity::getPriorityScore,
+                    Comparator.nullsLast(Comparator.<Integer>reverseOrder()))
+                    .thenComparing(CANONICAL_ORDER);
 
     private final List<Activity> activities;
 
@@ -90,6 +102,54 @@ public class ActivityList {
         assert view.size() == activities.size() : "Demand view must contain every activity.";
         assert isSorted(view, DEMAND_ORDER) : "Demand view must be in demand and canonical order.";
         return view;
+    }
+
+    /**
+     * Returns every activity ordered by descending priority score, with activities
+     * whose ratings are incomplete last. Ties keep canonical order, and completed
+     * activities remain included as specified by the revised V2.0 guide.
+     *
+     * @return immutable priority view
+     */
+    public List<Activity> getPriorityView() {
+        List<Activity> view = activities.stream().sorted(PRIORITY_ORDER).toList();
+        assert view.size() == activities.size() : "Priority view must contain every activity.";
+        assert isSorted(view, PRIORITY_ORDER) : "Priority view must be in priority and canonical order.";
+        return view;
+    }
+
+    /**
+     * Returns incomplete activities whose start is strictly before the supplied
+     * local time. The result keeps canonical order for stable chronological ties.
+     *
+     * @param now local date and time used for the strict start boundary
+     * @return immutable overdue view
+     */
+    public List<Activity> getOverdueView(LocalDateTime now) {
+        Objects.requireNonNull(now);
+        List<Activity> view = activities.stream()
+                .filter(activity -> !activity.isDone())
+                .filter(activity -> LocalDateTime.of(activity.getDate(), activity.getStartTime()).isBefore(now))
+                .sorted(CANONICAL_ORDER)
+                .toList();
+        assert isSorted(view, CANONICAL_ORDER) : "Overdue view must stay in canonical order.";
+        return view;
+    }
+
+    /**
+     * Returns the earliest incomplete activity whose start is strictly after the
+     * supplied local time. Canonical order decides ties between equal starts.
+     *
+     * @param now local date and time used for the strict start boundary
+     * @return the next activity, or empty when none starts later
+     */
+    public Optional<Activity> getNext(LocalDateTime now) {
+        Objects.requireNonNull(now);
+        return activities.stream()
+                .filter(activity -> !activity.isDone())
+                .filter(activity -> LocalDateTime.of(activity.getDate(), activity.getStartTime()).isAfter(now))
+                .sorted(CANONICAL_ORDER)
+                .findFirst();
     }
 
     /**
