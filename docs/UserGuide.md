@@ -9,6 +9,7 @@ search facilities, and find shortest
 recorded accessible routes. Activity changes save automatically.
 
 Priority ordering, overdue/next queries, and calendar dashboards are planned
+Activity editing, activity-name searching, and calendar dashboards are planned
 features, unavailable in this build.
 
 [Quick Start](#quick-start) · [Command Format](#command-format) ·
@@ -42,6 +43,10 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
   use indexes from chronological `list` output; `list demand` numbers can differ.
   Run `list` before changing an activity. Activity `find` results retain those
   same chronological indexes, even when some indexes are missing from the results.
+- Activity indexes start at 1. Change commands (`delete`, `mark`, and `unmark`)
+  use indexes from chronological `list` output. `list demand` numbers can differ,
+  while `list priority`, `overdue`, and `next` show the full chronological index.
+  Run `list` before changing an activity.
 - Sample outputs below omit the application's horizontal borders.
   The activity walkthrough, from `add` through `delete`, starts with an empty list
   and runs in order. Additional rating examples follow the walkthrough.
@@ -55,6 +60,10 @@ add, edit, delete, and completion changes save the entire activity list automati
 Every successful `edit` requests a save, even if the supplied values match the
 existing values. `find`, `list`, `help`, and `bye` do not save or retry a failed
 save. Repeated `mark`/`unmark` commands that leave completion unchanged also do not save.
+add, delete, and completion changes save the entire activity list automatically.
+Commands that leave activities unchanged, including `list`, `list demand`,
+`list priority`, `overdue`, `next`, `help`, repeated `mark`/`unmark`, and `bye`,
+do not save or retry a failed save.
 
 Saved activity rows use nine fields:
 ```text
@@ -312,6 +321,71 @@ Found 1 matching activity:
 `find exco PLANNING` returns the same activity. `find exam` reports
 `No activities matched keyword "exam".`; a valid search on an empty list has
 the same no-match form. `find` without a keyword reports a warning and usage.
+### Viewing priority: `list priority`
+
+`list priority` includes completed and incomplete activities. An activity receives
+a score only when importance, urgency, and commitment are all set:
+
+```text
+Priority = URG x URG x (IMP + COM)
+```
+
+Higher scores appear first. Activities with missing ratings show `Priority NA` and
+appear after every scored activity. Equal scores keep date and start-time order,
+and equal date/time keep add order. Indexes refer to chronological `list` output.
+
+Using the rating examples above:
+
+```text
+Activities by priority (highest first):
+Indexes refer to the chronological 'list' order.
+4. CS2113 project (2026-12-04, 14:00-15:00) [MEDIUM] [ ] | Priority 225 (IMP 5, URG 5, COM 4)
+1. CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ] | Priority NA (IMP -, URG -, COM -)
+2. Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ] | Priority NA (IMP -, URG -, COM -)
+3. Planning and/or review (2026-12-03, 10:00-11:00) [LOW] [ ] | Priority NA (IMP 5, URG -, COM 3)
+5. Team stand-up (2026-12-04, 16:00-17:00) [MEDIUM] [ ] | Priority NA (IMP 5, URG 4, COM -)
+```
+
+### Viewing overdue activities: `overdue`
+
+`overdue` shows incomplete activities whose start is strictly before the current
+local time. An activity that has started but not ended is included. Completed
+activities and activities starting exactly now or later are excluded.
+
+Each row keeps its chronological `list` index and adds one label:
+
+| Label | Meaning |
+| --- | --- |
+| `OVERDUE TODAY` | Starts earlier today. |
+| `OVERDUE WEEK` | Starts on an earlier day in the current Monday-to-Sunday week. |
+| `OVERDUE EARLIER` | Starts before the current week's Monday. |
+
+For example, when run on 2026-12-04 at 15:00:
+
+```text
+Overdue activities (started before now):
+1. [OVERDUE EARLIER] CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
+2. [OVERDUE WEEK] Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
+3. [OVERDUE WEEK] Planning and/or review (2026-12-03, 10:00-11:00) [LOW] [ ]
+4. [OVERDUE TODAY] CS2113 project (2026-12-04, 14:00-15:00) [MEDIUM] [ ]
+```
+
+If nothing is overdue, the command shows `No overdue activities.`
+
+### Viewing the next activity: `next`
+
+`next` shows the single earliest incomplete activity whose start is strictly after
+the current local time. Activities starting exactly now and completed activities
+are skipped. Equal starts keep add order, and the row keeps its chronological
+`list` index.
+
+```text
+Next activity (earliest upcoming):
+5. Team stand-up (2026-12-04, 16:00-17:00) [MEDIUM] [ ]
+```
+
+If no incomplete activity starts later, the command shows
+`No upcoming incomplete activities.`
 
 ### Listing and viewing facilities: `facility`
 
@@ -456,6 +530,8 @@ from the full chronological list. Use the displayed index directly for `edit`,
 | `list` / `list demand` | View activities by time / demand |
 | `edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Update supplied activity fields; preserve omitted fields and completion |
 | `find KEYWORD` | Search activity names and retain chronological list indexes |
+| `list priority` | View all activities by combined priority score |
+| `overdue` / `next` | View incomplete activities that started before now / the earliest upcoming incomplete activity |
 | `mark INDEX` / `unmark INDEX` / `delete INDEX` | Change completion / delete |
 | `facility list` / `facility LOCATION` | View all facilities / one facility |
 | `facility find type/FEATURE [status/YES\|NO\|UNKNOWN]` | Search recorded features |

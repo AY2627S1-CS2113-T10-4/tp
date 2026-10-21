@@ -134,6 +134,21 @@ public class Activity {
     }
 
     /**
+     * Calculates the combined priority score used by {@code list priority}.
+     * The score is {@code urgency * urgency * (importance + commitment)}.
+     * Completion state does not affect the score, but all three ratings must
+     * be present to calculate it.
+     *
+     * @return priority score from 2 to 250, or null when any rating is unset.
+     */
+    public Integer getPriorityScore() {
+        if (importance == null || urgency == null || commitment == null) {
+            return null;
+        }
+        return urgency * urgency * (importance + commitment);
+    }
+
+    /**
      * Sets whether this activity is completed.
      *
      * @param isDone true when the activity has been completed.
