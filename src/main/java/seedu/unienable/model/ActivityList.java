@@ -3,6 +3,7 @@ package seedu.unienable.model;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import seedu.unienable.exception.InvalidIndexException;
@@ -67,6 +68,21 @@ public class ActivityList {
     }
 
     /**
+     * Returns activities whose names contain the supplied phrase, ignoring case.
+     * Results retain chronological order so their indexes can be mapped to the
+     * full list shown by {@code list}.
+     *
+     * @param keyword case-insensitive name substring
+     * @return matching activities in chronological order
+     */
+    public List<Activity> findByName(String keyword) {
+        String normalizedKeyword = Objects.requireNonNull(keyword).strip().toLowerCase(Locale.ROOT);
+        return getCanonicalView().stream()
+                .filter(activity -> activity.getName().toLowerCase(Locale.ROOT).contains(normalizedKeyword))
+                .toList();
+    }
+
+    /**
      * Returns an immutable snapshot grouped by demand (HIGH to LOW); ties keep canonical order.
      */
     public List<Activity> getDemandView() {
@@ -120,6 +136,22 @@ public class ActivityList {
                     + ". Valid range: 1 to " + canonical.size() + ".");
         }
         return canonical.get(displayedIndex - 1);
+    }
+
+    /**
+     * Replaces an activity selected by its chronological index while preserving
+     * its insertion position for stable tie ordering.
+     *
+     * @param displayedIndex index shown by the chronological list command
+     * @param replacement replacement activity
+     * @throws InvalidIndexException when the index is outside the current view
+     */
+    public void replaceByDisplayedIndex(int displayedIndex, Activity replacement)
+            throws InvalidIndexException {
+        Objects.requireNonNull(replacement);
+        Activity current = getByDisplayedIndex(displayedIndex);
+        int backingIndex = activities.indexOf(current);
+        activities.set(backingIndex, replacement);
     }
 
     /**

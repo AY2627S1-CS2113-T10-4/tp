@@ -25,7 +25,6 @@ public class Activity {
 
     /** Recorded commitment from 1 to 5, or null when unset. */
     private final Integer commitment;
-
     private boolean isDone;
 
     /**
@@ -151,4 +150,5 @@ public class Activity {
     public boolean isDone() {
         return isDone;
     }
+
 }
