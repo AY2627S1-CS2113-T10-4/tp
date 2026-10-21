@@ -1,0 +1,54 @@
+@startuml
+!pragma layout smetana
+title Accessible route search
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide empty members
+
+class RouteCommand {
+  +execute(...): CommandResult
+}
+class ConnectionManager {
+  +findRoute(...): Optional<Route>
+}
+class DijkstraShortestPath {
+  -adjacency: List<List<Node>>
+  +findRoute(...): Optional<Route>
+}
+class DijkstraSolver {
+  -dist: long[]
+  -previous: int[]
+  -previousConnection: Connection[]
+  ~dijkstra(...): void
+  ~getDistance(vertex: int): long
+  ~getPrevious(vertex: int): int
+  ~getPreviousConnection(vertex: int): Connection
+}
+class Route <<record>> {
+  -stops: List<String>
+  -distanceInMetres: long
+}
+class Connection {
+  -from: String
+  -to: String
+  -distanceInMetres: int
+  -accessibility: AccessibilityStatus
+}
+
+RouteCommand --> ConnectionManager : connectionManager
+ConnectionManager --> DijkstraShortestPath : shortestPath
+ConnectionManager --> "0..*" Connection : connections
+DijkstraShortestPath ..> DijkstraSolver : creates
+DijkstraShortestPath ..> Route : returns
+Route --> "0..*" Connection : segments
+
+note bottom of Route
+  Nested record: DijkstraShortestPath.Route
+end note
+@enduml

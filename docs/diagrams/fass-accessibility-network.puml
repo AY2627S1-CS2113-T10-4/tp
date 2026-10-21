@@ -1,0 +1,45 @@
+@startuml
+!pragma layout smetana
+
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam interfaceBackgroundColor #EDF3F8
+skinparam interfaceBorderColor #526477
+skinparam ArrowColor #526477
+skinparam nodesep 45
+skinparam ranksep 65
+
+' Nodes and links correspond to src/main/resources/connections.txt.
+' The from/to order identifies endpoints, not a permitted travel direction.
+circle "AS1" as AS1
+circle "AS2" as AS2
+circle "AS3" as AS3
+circle "AS4" as AS4
+circle "AS5" as AS5
+circle "AS6" as AS6
+circle "AS7" as AS7
+circle "AS8" as AS8
+circle "CLB" as CLB
+
+CLB -- AS6 : 70 m
+AS6 -- AS8 : 45 m
+AS6 -- AS1 : 90 m
+AS1 -- AS4 : 60 m
+AS4 -- AS7 : 50 m
+AS4 -- AS5 : 55 m
+AS1 -[#B45309,dashed,thickness=2]- AS2 : 130 m\nRAMP
+AS2 -- AS3 : 35 m
+AS8 -- CLB : 55 m
+AS5 -- AS7 : 65 m
+
+legend bottom
+  <color:#526477>Sheltered (YES): solid grey line.</color>
+  <color:#B45309>Unsheltered ramp (NO): dashed orange line.</color>
+  Weights: recorded distance in metres.
+  All links: accessibility YES.
+endlegend
+
+@enduml

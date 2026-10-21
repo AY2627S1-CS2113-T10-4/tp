@@ -1,0 +1,50 @@
+@startuml
+!pragma layout smetana
+title Facility reference data and queries
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide empty members
+
+class FacilityStorage {
+  +load(): LoadResult<Facility>
+  +load(source: Reader): LoadResult<Facility>
+}
+class LoadResult<T> {
+  -records: List<T>
+  -warnings: List<String>
+  +getRecords(): List<T>
+  +getWarnings(): List<String>
+}
+class FacilityManager {
+  +getFacilities(): List<Facility>
+  +findFacility(...): Optional<Facility>
+  +findByFeature(...): List<Facility>
+}
+class Facility {
+  -id: String
+  -name: String
+  -description: String
+  +getFeatures(): List<FacilityFeature>
+}
+class FacilityFeature {
+  -type: Type
+  -status: AccessibilityStatus
+  -notes: String
+}
+
+FacilityStorage ..> LoadResult : creates
+FacilityStorage ..> Facility : constructs
+FacilityManager --> "0..*" Facility : facilities
+Facility --> "0..*" FacilityFeature : features
+
+note bottom of FacilityManager
+  Queries a loaded snapshot;
+  performs no file I/O.
+end note
+@enduml
