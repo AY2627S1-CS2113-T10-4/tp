@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -62,6 +63,44 @@ class UniEnableTest {
         String border = "_".repeat(60) + "\n";
         assertEquals(border + "Welcome to UniEnable! Type bye to exit.\n" + Ui.getLogo() + "\n" + border,
                 console(""));
+    }
+
+    @Test
+    void sameRouteEndpoints_warnWithoutChangingActivities(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        byte[] original = "Project meeting|2030-10-25|16:00|17:00|HIGH|false|-|-|-\n"
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+
+        String output = consoleAtPath(String.join("\n", "route from/clb to/clb",
+                "route from/CLB to/cLb", "route from/as6 to/AS6", "list", "bye", ""), activityFile);
+
+        String warning = "[WARNING] Sorry, the source and destination are the same.";
+        assertEquals(3, output.split(Pattern.quote(warning), -1).length - 1);
+        assertFalse(output.contains("Shortest recorded accessible route:"));
+        assertFalse(output.contains("Total distance: 0 metres"));
+        assertTrue(output.contains("1. Project meeting (2030-10-25, 16:00-17:00) [HIGH] [ ]"));
+        assertTrue(output.contains("Goodbye from UniEnable!"));
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+    }
+
+    @Test
+    void deletingFinalActivity_reportsEmptyStateAndPersistsDeletion(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        String output = consoleAtPath(String.join("\n",
+                "add n/Project meeting d/2030-10-25 s/16:00 e/17:00 dem/HIGH",
+                "delete 1", "list", "delete 1", "bye", ""), activityFile);
+
+        assertTrue(output.contains("Deleted activity: Project meeting\nDate: 2030-10-25\n"
+                + "Time: 16:00 - 17:00\nDemand: HIGH\nThere is no activity recorded\n"));
+        assertFalse(output.contains("Activities in this session: 0"));
+        assertTrue(output.contains("Activities (by date, start time):\nNo activities yet."));
+        assertTrue(output.contains("[WARNING] There are no activities to delete."));
+        assertEquals("", Files.readString(activityFile));
+
+        String restartedOutput = consoleAtPath("list\nbye\n", activityFile);
+        assertTrue(restartedOutput.contains("Activities (by date, start time):\nNo activities yet."));
+        assertFalse(restartedOutput.contains("Project meeting"));
     }
 
     @Test
