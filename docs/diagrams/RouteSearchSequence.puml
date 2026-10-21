@@ -1,0 +1,67 @@
+@startuml
+title Find a shortest recorded accessible route
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ParticipantBackgroundColor #EDF3F8
+skinparam ParticipantBorderColor #526477
+skinparam ArrowColor #526477
+skinparam sequenceMessageAlign center
+hide footbox
+
+participant "ConsoleHelper" as Console
+participant ":RouteCommand" as Command
+participant "manager:ConnectionManager" as Manager
+participant "graph:DijkstraShortestPath" as Graph
+
+note over Console, Command
+  RouteParser has already created a valid RouteCommand.
+  This example has a reachable destination.
+end note
+Console -> Command : execute(activities, storage)
+activate Command
+Command -> Manager : findRoute(from, to)
+activate Manager
+Manager -> Graph : findRoute(from, to)
+activate Graph
+create participant "solver:DijkstraSolver" as Solver
+Graph -> Solver : DijkstraSolver(names.size())
+Graph -> Solver : dijkstra(adjacency, source)
+activate Solver
+note over Graph, Solver
+  Use a priority queue and settle vertices.
+  Record shorter distances and predecessors.
+end note
+Solver --> Graph
+deactivate Solver
+Graph -> Solver : getDistance(destination)
+activate Solver
+Solver --> Graph : distance
+deactivate Solver
+loop current vertex differs from source
+  Graph -> Solver : getPreviousConnection(current)
+  activate Solver
+  Solver --> Graph : connection
+  deactivate Solver
+  Graph -> Solver : getPrevious(current)
+  activate Solver
+  Solver --> Graph : predecessor index
+  deactivate Solver
+end
+note over Graph, Solver
+  Reverse collected stops and connections;
+  construct Route(stops, segments, distance).
+end note
+Graph --> Manager : Optional.of(route)
+deactivate Graph
+Manager --> Command : Optional.of(route)
+deactivate Manager
+Command -> Command : formatRoute(route)
+Command -> Command : appendDisclaimer(message)
+Command --> Console : result (didChangeActivities = false)
+deactivate Command
+note over Console, Command
+  Display the result through Ui; no activity save.
+end note
+@enduml

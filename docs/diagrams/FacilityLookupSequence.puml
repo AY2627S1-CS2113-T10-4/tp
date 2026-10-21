@@ -1,0 +1,44 @@
+@startuml
+title Search facilities by recorded feature status
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ParticipantBackgroundColor #EDF3F8
+skinparam ParticipantBorderColor #526477
+skinparam ArrowColor #526477
+skinparam sequenceMessageAlign center
+hide footbox
+
+participant "ConsoleHelper" as Console
+participant ":FacilityFindCommand" as Find
+participant "manager:FacilityManager" as Manager
+participant "FacilityOutputFormatter" as Formatter
+
+note over Console, Find
+  After parsing: facility find type/LIFT status/NO
+end note
+Console -> Find : execute(activities, storage)
+activate Find
+Find -> Manager : findByFeature(LIFT, NO)
+activate Manager
+note over Manager
+  Check recorded feature types and statuses.
+  Add each matching facility once.
+end note
+Manager --> Find : matches [AS1, AS2]
+deactivate Manager
+Find -> Formatter : formatFindResults(matches, LIFT, NO)
+activate Formatter
+note over Formatter
+  Build IDs and names in dataset order.
+  Append the accessibility disclaimer.
+end note
+Formatter --> Find : message
+deactivate Formatter
+Find --> Console : result (didChangeActivities = false)
+deactivate Find
+note over Console, Find
+  Display the result through Ui; no activity save.
+end note
+@enduml
