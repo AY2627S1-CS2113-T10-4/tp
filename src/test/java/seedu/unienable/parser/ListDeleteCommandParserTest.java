@@ -10,6 +10,7 @@ import seedu.unienable.command.Command;
 import seedu.unienable.command.activity.DeleteCommand;
 import seedu.unienable.command.activity.ListCommand;
 import seedu.unienable.command.activity.ListDemandCommand;
+import seedu.unienable.command.activity.ListPriorityCommand;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
@@ -36,6 +37,8 @@ class ListDeleteCommandParserTest {
         assertInstanceOf(ListCommand.class, parser.parse("  LIST  "));
         assertInstanceOf(ListDemandCommand.class, parser.parse("list demand"));
         assertInstanceOf(ListDemandCommand.class, parser.parse("List DEMAND"));
+        assertInstanceOf(ListPriorityCommand.class, parser.parse("list priority"));
+        assertInstanceOf(ListPriorityCommand.class, parser.parse("LIST PRIORITY"));
     }
 
     @Test
@@ -44,6 +47,7 @@ class ListDeleteCommandParserTest {
         assertTrue(unknown.getMessage().startsWith("[WARNING]"), "warnings must carry the [WARNING] prefix");
         assertTrue(unknown.getMessage().contains("Usage: list"), "warnings must show usage");
         assertThrows(ParseException.class, () -> parser.parse("list demand extra"));
+        assertThrows(ParseException.class, () -> parser.parse("list priority extra"));
     }
 
     @Test

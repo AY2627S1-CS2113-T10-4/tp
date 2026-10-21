@@ -1,0 +1,54 @@
+@startuml
+!pragma layout smetana
+title Priority, overdue and next views
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide empty members
+
+abstract class Command
+class ListPriorityCommand
+class OverdueCommand {
+  -clock: Clock
+}
+class NextCommand {
+  -clock: Clock
+}
+class Activity {
+  +getPriorityScore(): Integer
+}
+class ActivityList {
+  {static} -PRIORITY_ORDER: Comparator<Activity>
+  +getPriorityView(): List<Activity>
+  +getOverdueView(now: LocalDateTime): List<Activity>
+  +getNext(now: LocalDateTime): Optional<Activity>
+}
+class ActivityListFormatter <<utility>> {
+  {static} +formatPriorityList(...): String
+  {static} +formatOverdueList(...): String
+  {static} +formatNext(...): String
+}
+
+Command <|-- ListPriorityCommand
+Command <|-- OverdueCommand
+Command <|-- NextCommand
+ListPriorityCommand ..> ActivityList : priority view
+OverdueCommand ..> ActivityList : overdue view
+NextCommand ..> ActivityList : next activity
+ListPriorityCommand ..> ActivityListFormatter : formatPriorityList(...)
+OverdueCommand ..> ActivityListFormatter : formatOverdueList(...)
+NextCommand ..> ActivityListFormatter : formatNext(...)
+ActivityList --> "0..*" Activity : activities
+ActivityList ..> Activity : score
+
+note bottom of ActivityList
+  Priority includes completed activities.
+  Time views include incomplete activities only.
+  All views resolve indexes against the canonical list.
+end note
+@enduml

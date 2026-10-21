@@ -82,6 +82,29 @@ class ActivityTest {
     }
 
     @Test
+    void getPriorityScore_allRatingsPresent_usesUrgencySquaredTimesRatingSum() {
+        Activity incomplete = new Activity("Meeting", DATE, START, END, DemandLevel.MEDIUM, false, 5, 4, 3);
+        Activity completed = new Activity("Meeting", DATE, START, END, DemandLevel.HIGH, true, 5, 4, 3);
+
+        assertEquals(Integer.valueOf(128), incomplete.getPriorityScore());
+        assertEquals(Integer.valueOf(128), completed.getPriorityScore(),
+                "completion must not change the score");
+        assertEquals(Integer.valueOf(2), new Activity("Low", DATE, START, END, DemandLevel.LOW, false, 1, 1, 1)
+                .getPriorityScore());
+        assertEquals(Integer.valueOf(250), new Activity("High", DATE, START, END, DemandLevel.HIGH, false, 5, 5, 5)
+                .getPriorityScore());
+    }
+
+    @Test
+    void getPriorityScore_anyRatingMissing_returnsNull() {
+        assertNull(new Activity("A", DATE, START, END, DemandLevel.LOW, false, null, 4, 3).getPriorityScore());
+        assertNull(new Activity("B", DATE, START, END, DemandLevel.LOW, false, 5, null, 3).getPriorityScore());
+        assertNull(new Activity("C", DATE, START, END, DemandLevel.LOW, false, 5, 4, null).getPriorityScore());
+        assertNull(new Activity("D", DATE, START, END, DemandLevel.LOW, false, null, null, null)
+                .getPriorityScore());
+    }
+
+    @Test
     void setDone_changesCompletionAndPreservesRatings() {
         Activity activity = new Activity("Meeting", DATE, START, END, DemandLevel.MEDIUM, false, 5, null, 3);
         assertFalse(activity.isDone());
