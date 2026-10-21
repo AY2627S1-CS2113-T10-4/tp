@@ -6,26 +6,38 @@ skinparam shadowing false
 skinparam defaultFontName SansSerif
 skinparam defaultFontSize 14
 skinparam ArrowColor #526477
-participant "User" as User
+actor "User" as User
+participant "Ui" as Ui
+participant "ConsoleHelper" as Console
 participant "Parser" as Parser
 participant "OverdueCommand" as Overdue
 participant "ActivityList" as List
 participant "ActivityListFormatter" as Formatter
 
-User -> Parser : overdue
+User -> Ui : enter overdue
+Console -> Ui : readLine()
+Ui --> Console : "overdue"
+Console -> Parser : parse("overdue")
 create Overdue
 Parser -> Overdue : new OverdueCommand(clock)
-Parser --> User : command ready
-User -> Overdue : execute(activities, storage)
+Parser --> Console : command
+Console -> Overdue : execute(activities, storage)
 Overdue -> Overdue : now = LocalDateTime.now(clock)
 Overdue -> List : getCanonicalView()
+List --> Overdue : canonical view
 Overdue -> List : getOverdueView(now)
 List --> Overdue : incomplete starts before now
 Overdue -> Formatter : formatOverdueList(view, canonical, now)
 Formatter --> Overdue : labels and full chronological indexes
-Overdue --> User : CommandResult(message, false)
-note right of Overdue
-  No activity is changed.
-  The console does not save.
+Overdue --> Console : CommandResult(message, false)
+note right of Console
+  didChangeActivities() is false.
+  No Storage.save() call.
+end note
+Console -> Ui : showMessage(result.getMessage())
+Ui --> User : bordered overdue result
+note over Parser, Overdue
+  The session clock is injected at startup.
+  One captured local now drives filtering and labels.
 end note
 @enduml
