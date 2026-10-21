@@ -18,6 +18,12 @@ class HelpCommandTest {
                 + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]"));
         assertTrue(result.getMessage().contains("IMP = importance; URG = urgency; COM = commitment"));
         assertTrue(result.getMessage().contains("optional whole numbers from 1 to 5; omitted ratings display -."));
+        assertTrue(result.getMessage().contains("edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] "
+                + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]"));
+        assertTrue(result.getMessage().contains("omitted fields and completion are preserved"));
+        assertTrue(result.getMessage().contains("find KEYWORD - Search activity names by case-insensitive substring"));
+        assertTrue(result.getMessage().contains("results keep chronological list indexes"));
+        assertTrue(result.getMessage().contains("Use indexes from list for mark, unmark, edit, and delete"));
         assertTrue(result.getMessage().contains("facility find"));
         assertTrue(result.getMessage().contains("delete INDEX"));
         assertTrue(result.getMessage().contains("incomplete\n" + "delete INDEX"));

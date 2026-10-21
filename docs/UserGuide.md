@@ -4,11 +4,12 @@
 
 UniEnable is a command-line application for managing dated activities and checking
 campus accessibility information. Add activities with optional importance, urgency
-and commitment ratings, track completion, search facilities, and find shortest
+and commitment ratings, edit activities, search their names, track completion,
+search facilities, and find shortest
 recorded accessible routes. Activity changes save automatically.
 
-Activity editing, activity-name searching, priority ordering, overdue/next queries,
-and calendar dashboards are planned features, unavailable in this build.
+Priority ordering, overdue/next queries, and calendar dashboards are planned
+features, unavailable in this build.
 
 [Quick Start](#quick-start) · [Command Format](#command-format) ·
 [Data Storage](#data-storage) · [Features](#features) ·
@@ -31,14 +32,16 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 - Square brackets in command formats indicate optional fields; do not type them.
 - Command words, prefixes, demand levels, feature types, statuses, and hub codes
   are case-insensitive. Activity names preserve their capitalization.
-- For `add`, fields can appear in any order. Names can contain spaces.
+- For `add` and `edit`, fields can appear in any order. Names can contain spaces.
+  For `edit`, put the activity index before the fields.
 - Separate fields with whitespace (for example, `n/Meeting d/2026-12-01`).
   Do not put text before the first field.
 - Enter each command on one line, including all optional fields.
 - Dates use `YYYY-MM-DD`, such as `2026-12-01`; times use 24-hour `HH:mm`.
-- Activity indexes start at 1. Change commands (`delete`, `mark`, and `unmark`)
+- Activity indexes start at 1. Change commands (`delete`, `edit`, `mark`, and `unmark`)
   use indexes from chronological `list` output; `list demand` numbers can differ.
-  Run `list` before changing an activity.
+  Run `list` before changing an activity. Activity `find` results retain those
+  same chronological indexes, even when some indexes are missing from the results.
 - Sample outputs below omit the application's horizontal borders.
   The activity walkthrough, from `add` through `delete`, starts with an empty list
   and runs in order. Additional rating examples follow the walkthrough.
@@ -48,9 +51,10 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 
 Activities load at startup from `data/activities.txt`, relative to the folder
 where you launch the application. A missing file starts an empty list. Successful
-add, delete, and completion changes save the entire activity list automatically.
-Commands that leave activities unchanged, including `list`, `help`, repeated
-`mark`/`unmark`, and `bye`, do not save or retry a failed save.
+add, edit, delete, and completion changes save the entire activity list automatically.
+Every successful `edit` requests a save, even if the supplied values match the
+existing values. `find`, `list`, `help`, and `bye` do not save or retry a failed
+save. Repeated `mark`/`unmark` commands that leave completion unchanged also do not save.
 
 Saved activity rows use nine fields:
 ```text
@@ -59,7 +63,9 @@ NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM
 `DONE` is `true` or `false`. Each rating is a whole number from 1 to 5, or `-`
 when unset. Ratings and completion state survive saving and restarting.
 Existing six-field V1.0 rows still load, with all three ratings unset. Historical
-activities can load; the end-after-now rule applies to adding an activity.
+activities can load; the end-after-now rule applies to adding an activity and
+to edits that supply a date, start time, or end time. Metadata-only edits can
+update historical activities without changing their date or times.
 Loading alone does not rewrite the file. The next successful activity-changing
 save writes every row in the nine-field format. V1.0 cannot load nine-field rows;
 keep a separate copy of a V1.0 file if you need to return to that version.
@@ -222,6 +228,91 @@ The add confirmation displays the ratings, and saving preserves them across
 restarts. `list` and `list demand` show date, time, demand and completion, without
 ratings.
 
+### Editing an activity: `edit`
+
+Change selected fields while preserving omitted fields and completion status.
+
+Format:
+
+```text
+edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]
+```
+
+- Use an index from chronological `list` or activity `find` output and supply
+  at least one field. The command updates one activity at a time.
+- Each supplied field must have a value and appear once. Names follow the same
+  prefix, pipe and line-break restrictions as `add`.
+- Omitted fields, including ratings, keep their existing values. An omitted
+  demand does not reset to MEDIUM. Ratings accept 1 to 5; `-` cannot clear a rating.
+- If any date/time field is supplied, the combined old and new values must form
+  a same-day activity with its end strictly after its start and the current local
+  time. A change only to name, demand, or ratings can update historical activities.
+- Validation failures leave the activity unchanged. Successful edits save
+  automatically and display all resulting fields, including ratings.
+- Rescheduling can change chronological indexes. Run `list` or `find` again
+  before selecting another activity.
+
+Try these editing and searching examples in a **separate empty test folder**;
+they are independent of the earlier activity walkthrough:
+
+```text
+add n/CCA EXCO meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH imp/5 urg/4 com/3
+mark 1
+edit 1 n/CCA EXCO planning meeting com/4
+```
+
+The edit output is:
+
+```text
+Edited activity: CCA EXCO planning meeting
+Date: 2026-12-02
+Time: 14:00 - 15:00
+Demand: HIGH
+Importance: 5
+Urgency: 4
+Commitment: 4
+```
+
+Completion stays `[X]`; omitted date, times, demand, importance and urgency remain
+unchanged. For a timing change, supply the date, start or end fields as needed;
+the resulting start must still be earlier than the resulting end.
+
+**Known limitation:** a name made only of Unicode space characters such as
+U+2003 can currently pass edit validation and then be skipped when saved data
+reloads. Avoid whitespace-only names. This validation defect is still open.
+
+### Searching activity names: `find`
+
+Find activities by a case-insensitive substring of their names.
+
+Format: `find KEYWORD`
+
+- Supply a non-blank name substring. Multiple words form one literal phrase;
+  do not add quotation marks unless the quotes are part of the name.
+- Searches include completed and incomplete activities. They search names,
+  rather than dates, demand levels or ratings, and do not interpret regular expressions.
+- Matches appear chronologically with indexes from the **full** chronological
+  list. For example, a single match can still be numbered 2.
+- Searching does not change activities or save the activity file.
+
+Continuing the editing example, add an earlier tutorial and search:
+
+```text
+add n/CS2113 tutorial class d/2026-12-01 s/09:00 e/10:00
+find EXCO planning
+```
+
+Output:
+
+```text
+Found 1 matching activity:
+2. CCA EXCO planning meeting (2026-12-02, 14:00-15:00) [HIGH] [X]
+```
+
+`find exco PLANNING` returns the same activity. `find exam` reports
+`No activities matched keyword "exam".`; a valid search on an empty list has
+the same no-match form. `find` without a keyword reports a warning and usage.
+
 ### Listing and viewing facilities: `facility`
 
 Formats: `facility list` and `facility LOCATION`
@@ -276,6 +367,9 @@ Use hub names (AS1-AS8 or CLB), rather than IDs such as F01.
 Keep `from/` before `to/`. Routes minimize recorded distance using only connections
 marked YES for accessibility. Shelter, barriers, and notes are displayed;
 a shortest route may include unsheltered sections or recorded barriers.
+If the source and destination are the same hub, including names that differ only
+in letter case, the command shows
+`[WARNING] Sorry, the source and destination are the same.`
 
 Input: `route from/as6 to/as7`
 
@@ -303,7 +397,7 @@ Verify with current campus information before you rely on it.
 Input: `help`
 
 Output begins with `UniEnable commands:` and lists all available commands,
-including the optional add ratings, activity index rules and automatic saving
+including activity `edit` and `find`, optional ratings, activity index rules and automatic saving
 location.
 
 Input: `bye`
@@ -315,9 +409,9 @@ Output: `Goodbye from UniEnable!`
 Invalid input usually produces `[WARNING]` and the app waits for another command.
 Common causes include missing/duplicate fields, invalid dates or times, unknown
 facilities, or an activity index outside the current list.
-For `add`, use real calendar dates and two-digit hours and minutes (for example,
+For `add` and `edit`, use real calendar dates and two-digit hours and minutes (for example,
 `09:30`, not `9:30`). An invalid add command also displays the expected format.
-Invalid add input, including an invalid rating, leaves the activity list and
+Rejected add or edit input, including an invalid rating, leaves the activity list and
 stored data unchanged.
 
 Example input: `help extra`
@@ -344,10 +438,14 @@ To recover before exiting:
 **Where is my data?** In `data/activities.txt` under the launch folder; use the same
 folder on each run. To transfer activities, copy this file before starting the app.
 
-**Can I edit an activity or facility?** This build has no activity edit command
-or facility editing commands. To replace an activity, delete it and add the
-replacement; its end date/time must still be in the future. Keep historical
-activities if they cannot be re-added under this rule.
+**Can I edit an activity or facility?** Use `edit INDEX` with at least one field
+to update an activity while keeping omitted values and completion status.
+Date/time edits must leave an end after now; metadata-only edits can update
+historical activities. Facility records are read-only.
+
+**Why does a search result start at index 2?** Activity `find` preserves indexes
+from the full chronological list. Use the displayed index directly for `edit`,
+`mark`, `unmark`, or `delete`; indexes can change after editing dates or times.
 
 ## Command Summary
 
@@ -356,6 +454,8 @@ activities if they cannot be re-added under this rule.
 | `help` / `bye` | Show built-in help / exit |
 | `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Add an activity with optional ratings |
 | `list` / `list demand` | View activities by time / demand |
+| `edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Update supplied activity fields; preserve omitted fields and completion |
+| `find KEYWORD` | Search activity names and retain chronological list indexes |
 | `mark INDEX` / `unmark INDEX` / `delete INDEX` | Change completion / delete |
 | `facility list` / `facility LOCATION` | View all facilities / one facility |
 | `facility find type/FEATURE [status/YES\|NO\|UNKNOWN]` | Search recorded features |

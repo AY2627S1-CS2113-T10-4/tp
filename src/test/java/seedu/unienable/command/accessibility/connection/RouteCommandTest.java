@@ -116,16 +116,16 @@ class RouteCommandTest {
     }
 
     @Test
-    void execute_sameStartAndEndHasZeroDistance() throws UniEnableException {
+    void execute_sameStartAndEndReportsWarning() {
         var manager = new ConnectionManager(List.of(
                 connection(1, "A", "B", 10, AccessibilityStatus.YES, TraversalType.PATH,
                         ShelterStatus.YES, null, null)));
 
-        CommandResult result = new RouteCommand(manager, " a ", "A").execute(activities, noStorageAccess);
+        var exception = assertThrows(UniEnableException.class,
+                () -> new RouteCommand(manager, " a ", "A").execute(activities, noStorageAccess));
 
-        assertTrue(result.getMessage().contains("Shortest recorded accessible route:\nA\n"));
-        assertTrue(result.getMessage().contains("Total distance: 0 metres"));
-        assertTrue(result.getMessage().contains("No travel needed"));
+        assertEquals("[WARNING] Sorry, the source and destination are the same.", exception.getMessage());
+        assertTrue(activities.getActivities().isEmpty());
     }
 
     @Test
@@ -137,6 +137,9 @@ class RouteCommandTest {
         assertTrue(assertThrows(UniEnableException.class,
                 () -> new RouteCommand(manager, "F01", "A").execute(activities, noStorageAccess))
                 .getMessage().contains("Unknown connection startpoint: F01"));
+        assertTrue(assertThrows(UniEnableException.class,
+                () -> new RouteCommand(manager, "UNKNOWN", "unknown").execute(activities, noStorageAccess))
+                .getMessage().contains("Unknown connection startpoint: UNKNOWN"));
         assertTrue(assertThrows(UniEnableException.class,
                 () -> new RouteCommand(manager, "A", " ").execute(activities, noStorageAccess))
                 .getMessage().contains("Usage: route from/START to/END"));

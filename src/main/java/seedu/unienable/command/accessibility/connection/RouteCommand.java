@@ -49,7 +49,7 @@ public final class RouteCommand extends Command {
      * @param activities existing activities, not modified.
      * @param storage activity persistence service, not used.
      * @return a non-exiting result containing route details or a no-route explanation
-     * @throws UniEnableException if an endpoint is blank or unknown to the connection network
+     * @throws UniEnableException if an endpoint is blank or unknown, or both endpoints are the same
      */
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {
@@ -66,7 +66,11 @@ public final class RouteCommand extends Command {
             return new CommandResult(appendDisclaimer(message), false);
         }
 
-        return new CommandResult(appendDisclaimer(formatRoute(route.orElseThrow())), false);
+        Route foundRoute = route.orElseThrow();
+        if (foundRoute.stops().size() == 1) {
+            throw new UniEnableException("[WARNING] Sorry, the source and destination are the same.");
+        }
+        return new CommandResult(appendDisclaimer(formatRoute(foundRoute)), false);
     }
 
     /**
@@ -79,9 +83,6 @@ public final class RouteCommand extends Command {
         output.append("\n\nConnections:");
 
         List<Connection> segments = route.segments();
-        if (segments.isEmpty()) {
-            output.append("\nNo travel needed (start and destination are the same).");
-        }
         for (int i = 0; i < segments.size(); i++) {
             Connection connection = segments.get(i);
             output.append("\n").append(i + 1).append(". ")
