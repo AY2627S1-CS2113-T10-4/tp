@@ -19,7 +19,6 @@
 - [Testing and defensive programming](#testing-and-defensive-programming)
 - [Product scope](#product-scope)
   - [Team contributions](#team-contributions)
-  - [V2.0 planning reference](#v20-planning-reference)
 - [User stories](#user-stories)
   - [Core schedule](#core-schedule)
   - [Views and reminders](#views-and-reminders)
@@ -949,31 +948,6 @@ maintain the descriptions and diagrams for their enhancements.
 | [Atharva Rege (@Atharva005)](https://github.com/Atharva005) | Help: `help`. [Adding an activity with name, date, times, and optional demand](#activity-creation-and-ratings): `add n/Tutorial d/2099-12-01 s/09:00 e/10:00 dem/HIGH`. | Planned: `view today`, `view tomorrow`, and `view week`. |
 | [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#ordering-and-displayed-indexes): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#priority-overdue-and-next-views): `list priority`, `overdue`, and `next`. |
 | [Oliver (@Oliver-koh)](https://github.com/Oliver-koh) | [Saving, backups, and recovery](#completion-and-persistence), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#activity-editing-and-name-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
-
-### V2.0 planning reference
-
-The supplied `UniEnable_User_Guide_V2.0_Revised.pdf` (revised 20 October 2026)
-separates verified V1.0 behaviour from proposed V2.0 additions. This checkout
-already supports optional ratings, nine-field persistence,
-[activity editing and name search](#activity-editing-and-name-search), and
-[priority, overdue and next views](#priority-overdue-and-next-views), which that
-PDF labels as planned. Calendar dashboards remain unimplemented; their draft
-behaviour is a reference for future work, not a description of existing classes
-or a set of executable manual tests.
-
-| Proposed feature | Planning reference and intended behaviour |
-| --- | --- |
-| `view today`, `view tomorrow`, and `view week` | PDF pages 11-14: local calendar periods, chronological indexes, and summaries of activities, completion, demand, and recorded ratings. The weekly period is Monday to Sunday; the draft includes empty days and counts both completion states in demand and rating totals. |
-
-The current parser rejects these `view` commands as unrecognised. Their
-implementation must also provide high-demand counts, demand distributions,
-rating totals and rating-coverage counts, plus the proposed rating charts.
-Dashboard priority uses `N` for unavailable, while implemented `list priority`
-uses `NA`. Missing ratings remain distinct from recorded numeric values.
-
-When implementing these features, update the design sections, diagrams, tests,
-and story statuses together. Continue using the injected clock for time-dependent
-behaviour and the existing change flag to control saving.
 
 ## User stories
 
