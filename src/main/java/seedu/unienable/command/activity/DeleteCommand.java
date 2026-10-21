@@ -37,11 +37,14 @@ public class DeleteCommand extends Command {
         int remainingSize = activities.getActivities().size();
         LOGGER.fine(() -> "Deleted displayed index " + displayedIndex + "; "
                 + remainingSize + " activities remain.");
+        String remainingMessage = remainingSize == 0
+                ? "There is no activity recorded"
+                : "Activities in this session: " + remainingSize;
         String message = "Deleted activity: " + activity.getName() + "\n"
                 + "Date: " + activity.getDate() + "\n"
                 + "Time: " + activity.getStartTime() + " - " + activity.getEndTime() + "\n"
                 + "Demand: " + activity.getDemand() + "\n"
-                + "Activities in this session: " + remainingSize;
+                + remainingMessage;
         return new CommandResult(message, false, true);
     }
 }

@@ -225,7 +225,9 @@ The shared `Activity` fields are shown in the creation diagram above.
    the index, and selects element 0. It removes that activity object from the
    backing list rather than removing backing-list element 0.
 5. `DeleteCommand` returns the removed activity's details and the new count with
-   the activity-change flag set. The console then follows the common save flow.
+   the activity-change flag set. If no activities remain, it shows
+   `There is no activity recorded` instead of a count. The console then follows
+   the common save flow.
 
 The sequence starts after `DeleteCommand` has been parsed. It highlights why
 deletion follows chronological display order even when insertion order differs.

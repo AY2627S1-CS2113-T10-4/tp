@@ -65,6 +65,25 @@ class UniEnableTest {
     }
 
     @Test
+    void deletingFinalActivity_reportsEmptyStateAndPersistsDeletion(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        String output = consoleAtPath(String.join("\n",
+                "add n/Project meeting d/2030-10-25 s/16:00 e/17:00 dem/HIGH",
+                "delete 1", "list", "delete 1", "bye", ""), activityFile);
+
+        assertTrue(output.contains("Deleted activity: Project meeting\nDate: 2030-10-25\n"
+                + "Time: 16:00 - 17:00\nDemand: HIGH\nThere is no activity recorded\n"));
+        assertFalse(output.contains("Activities in this session: 0"));
+        assertTrue(output.contains("Activities (by date, start time):\nNo activities yet."));
+        assertTrue(output.contains("[WARNING] There are no activities to delete."));
+        assertEquals("", Files.readString(activityFile));
+
+        String restartedOutput = consoleAtPath("list\nbye\n", activityFile);
+        assertTrue(restartedOutput.contains("Activities (by date, start time):\nNo activities yet."));
+        assertFalse(restartedOutput.contains("Project meeting"));
+    }
+
+    @Test
     void activityCompletion_survivesAnApplicationRestart() throws Exception {
         Path tempDir = Files.createTempDirectory("unienable-restart-test");
         Path activityFile = tempDir.resolve("activities.txt");

@@ -195,6 +195,8 @@ Activities in this session: 1
 ```
 
 The activity is removed immediately; subsequent indexes may change.
+When the last activity is deleted, the confirmation ends with
+`There is no activity recorded` instead of a remaining count.
 
 ### Trying optional add ratings
 
