@@ -790,15 +790,9 @@ maintain the descriptions and diagrams for their enhancements.
 | --- | --- | --- |
 | [Lou Yu Luke (@lukelouyu)](https://github.com/lukelouyu) | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#activity-creation-and-ratings): `add n/Project d/2099-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
 | [Atharva Rege (@Atharva005)](https://github.com/Atharva005) | Help: `help`. [Adding an activity with name, date, times, and optional demand](#activity-creation-and-ratings): `add n/Tutorial d/2099-12-01 s/09:00 e/10:00 dem/HIGH`. | `view today`, `view tomorrow`, and `view week`. |
-| [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#ordering-and-displayed-indexes): `list`, `list demand`, and `delete 1`. | `overdue` and `next`. |
+| [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#ordering-and-displayed-indexes): `list`, `list demand`, and `delete 1`. | `overdue` and `next`. Add `list priority`, including completed activities, using `URG x URG x (IMP + COM)`; missing ratings show `NA` and sort last. |
 | [Oliver (@Oliver-koh)](https://github.com/Oliver-koh) | [Saving, backups, and recovery](#completion-and-persistence), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#activity-editing-and-name-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
 
-The version columns describe the team's work allocation. Luke's V2.0 routes
-and add ratings, and Oliver's V2.0 edit/find commands, are already implemented
-in this checkout. The remaining V2.0 commands listed above are planned. Index examples require an existing
-activity; use chronological `list` before selecting it.
-
-Ownership of the proposed `list priority` command has not been specified.
 
 ### V2.0 planning reference
 
@@ -813,7 +807,7 @@ existing classes or a set of executable manual tests.
 
 | Proposed feature | Planning reference and intended behaviour |
 | --- | --- |
-| `list priority` | PDF page 9 supplies the formula `URG * URG * (IMP + COM)`, requiring all three ratings. **The team's confirmed scope is pending activities only, following US18.** This supersedes the PDF's inclusion of completed activities. Sort available scores descending, then unavailable scores, with chronological ties and full-list indexes. |
+| `list priority` | Assigned to Asyraf for V2.0. Include completed and incomplete activities, using `URG x URG x (IMP + COM)` from PDF page 9. If any rating is missing, display the score as `NA` and sort it last. Sort available scores descending, with chronological ties and full-list indexes. |
 | `overdue` and `next` | PDF page 10: incomplete activities with starts strictly before now, and the earliest incomplete activity with a start strictly after now. Exact start-time boundaries need tests. |
 | `view today`, `view tomorrow`, and `view week` | PDF pages 11-14: local calendar periods, chronological indexes, and summaries of activities, completion, demand, and recorded ratings. The weekly period is Monday to Sunday; the draft includes empty days and counts both completion states in demand and rating totals. |
 
@@ -872,7 +866,7 @@ reschedule command is required. It also preserves completion and omitted fields.
 | US15 | Must-Have | student with sensory or attention limits | assign a demand level to an activity | I can record how demanding I expect it to be | Implemented |
 | US16 | Must-Have | student with sensory limits | see the count of high-demand activities scheduled today | I can anticipate a potentially stressful day | Not implemented |
 | US17 | Nice-to-Have | student managing my energy | set importance, commitment, and urgency levels on an activity | I can capture how much each one matters | Implemented |
-| US18 | Nice-to-Have | student unsure what to do first | view my pending activities ordered by combined priority score | I can decide what to tackle next | Not implemented |
+| US18 | Nice-to-Have | student unsure what to do first | view my activities, including completed ones, ordered by combined priority score | I can decide what to tackle next | Not implemented |
 | US19 | Nice-to-Have | student aware of my workload | view the commitment level of a specific activity | I can decide whether to take it on | Partial |
 | US20 | Nice-to-Have | student aware of my sensory limits | get a warning when the total demand of a day exceeds my personal daily limit | I can avoid overloading myself | Not implemented |
 | US21 | Future | student with a short gap between classes | see pending activities whose estimated duration fits a given gap | I can use the available time realistically | Not implemented |
@@ -885,8 +879,10 @@ is no read-only activity-details command; `list` and `find` do not show ratings.
 orders demand levels and does not implement combined priority scoring or a
 daily high-demand count.
 
-US18 remains a pending-only priority view by the team's confirmed decision.
-This overrides the revised V2.0 PDF's proposal to include completed activities.
+US18 adapts the workbook's pending-only wording to the team's revised scope:
+`list priority` includes completed and incomplete activities. It uses
+`URG x URG x (IMP + COM)` when all three ratings are recorded; otherwise, its
+score is `NA` and sorts after available scores. Asyraf owns this planned V2.0 work.
 
 ### Accessible navigation
 
