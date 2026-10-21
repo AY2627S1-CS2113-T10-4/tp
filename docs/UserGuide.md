@@ -5,12 +5,13 @@
 UniEnable is a command-line application for managing dated activities and checking
 campus accessibility information. Add activities with optional importance, urgency
 and commitment ratings, edit activities, search their names, track completion,
-search facilities, and find shortest
-recorded accessible routes. Activity changes save automatically.
+rank activities by priority, identify overdue and upcoming activities, search
+facilities, and find shortest recorded accessible routes. Activity changes save
+automatically.
 
-Priority ordering, overdue/next queries, and calendar dashboards are planned
-Activity editing, activity-name searching, and calendar dashboards are planned
-features, unavailable in this build.
+Calendar dashboards (`view today`, `view tomorrow`, and `view week`) from the
+V2.0 proposal remain planned and are unavailable in this build. The commands
+documented under [Features](#features) are implemented.
 
 [Quick Start](#quick-start) · [Command Format](#command-format) ·
 [Data Storage](#data-storage) · [Features](#features) ·
@@ -40,13 +41,10 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 - Enter each command on one line, including all optional fields.
 - Dates use `YYYY-MM-DD`, such as `2026-12-01`; times use 24-hour `HH:mm`.
 - Activity indexes start at 1. Change commands (`delete`, `edit`, `mark`, and `unmark`)
-  use indexes from chronological `list` output; `list demand` numbers can differ.
-  Run `list` before changing an activity. Activity `find` results retain those
-  same chronological indexes, even when some indexes are missing from the results.
-- Activity indexes start at 1. Change commands (`delete`, `mark`, and `unmark`)
   use indexes from chronological `list` output. `list demand` numbers can differ,
-  while `list priority`, `overdue`, and `next` show the full chronological index.
-  Run `list` before changing an activity.
+  while `find`, `list priority`, `overdue`, and `next` retain full chronological
+  indexes, even when some indexes are missing from the results. Run `list` before
+  changing an activity; adding, deleting, or rescheduling can change indexes.
 - Sample outputs below omit the application's horizontal borders.
   The activity walkthrough, from `add` through `delete`, starts with an empty list
   and runs in order. Additional rating examples follow the walkthrough.
@@ -58,12 +56,10 @@ Activities load at startup from `data/activities.txt`, relative to the folder
 where you launch the application. A missing file starts an empty list. Successful
 add, edit, delete, and completion changes save the entire activity list automatically.
 Every successful `edit` requests a save, even if the supplied values match the
-existing values. `find`, `list`, `help`, and `bye` do not save or retry a failed
-save. Repeated `mark`/`unmark` commands that leave completion unchanged also do not save.
-add, delete, and completion changes save the entire activity list automatically.
-Commands that leave activities unchanged, including `list`, `list demand`,
-`list priority`, `overdue`, `next`, `help`, repeated `mark`/`unmark`, and `bye`,
-do not save or retry a failed save.
+existing values. Read-only commands (`find`, `list`, `list demand`, `list priority`,
+`overdue`, `next`, facility queries, routes, and `help`) and `bye` do not save or
+retry a failed save. Repeated `mark`/`unmark` commands that leave completion
+unchanged also do not save.
 
 Saved activity rows use nine fields:
 ```text
@@ -78,6 +74,8 @@ update historical activities without changing their date or times.
 Loading alone does not rewrite the file. The next successful activity-changing
 save writes every row in the nine-field format. V1.0 cannot load nine-field rows;
 keep a separate copy of a V1.0 file if you need to return to that version.
+The loader does not check whether a stored end follows its start. Do not treat
+loading without warnings as validation of manually edited activity times.
 
 Malformed rows are skipped with line-numbered warnings. If the file cannot be
 read, the app reports `Activity data unavailable:` and starts with an empty list.
@@ -216,9 +214,13 @@ When the last activity is deleted, the confirmation ends with
 ### Trying optional add ratings
 
 Try these after the activity walkthrough above. They add to your current list
-and are not included in its sample outputs. Enter each command on its own line:
+and are not included in its earlier sample outputs. First re-add the Project
+meeting removed by `delete 2`, then add the three rating examples. This creates
+the five-activity schedule used by the priority, overdue, and next examples.
+Enter each command on its own line:
 
 ```text
+add n/Project meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH
 add CoM/3 dem/low e/11:00 n/Planning and/or review d/2026-12-03 s/10:00 iMp/5
 add n/CS2113 project d/2026-12-04 s/14:00 e/15:00 imp/5 urg/5 com/4
 add n/Team stand-up d/2026-12-04 s/16:00 e/17:00 imp/5 urg/4
@@ -287,8 +289,8 @@ unchanged. For a timing change, supply the date, start or end fields as needed;
 the resulting start must still be earlier than the resulting end.
 
 **Known limitation:** a name made only of Unicode space characters such as
-U+2003 can currently pass edit validation and then be skipped when saved data
-reloads. Avoid whitespace-only names. This validation defect is still open.
+U+2003 can currently pass add or edit validation and then be skipped when saved
+data reloads. Avoid whitespace-only names. This validation defect is still open.
 
 ### Searching activity names: `find`
 
@@ -321,6 +323,7 @@ Found 1 matching activity:
 `find exco PLANNING` returns the same activity. `find exam` reports
 `No activities matched keyword "exam".`; a valid search on an empty list has
 the same no-match form. `find` without a keyword reports a warning and usage.
+
 ### Viewing priority: `list priority`
 
 `list priority` includes completed and incomplete activities. An activity receives
@@ -330,11 +333,15 @@ a score only when importance, urgency, and commitment are all set:
 Priority = URG x URG x (IMP + COM)
 ```
 
-Higher scores appear first. Activities with missing ratings show `Priority NA` and
-appear after every scored activity. Equal scores keep date and start-time order,
-and equal date/time keep add order. Indexes refer to chronological `list` output.
+Available scores range from 2 to 250. Demand and completion do not affect the
+formula. Higher scores appear first. Activities with missing ratings show
+`Priority NA` and appear after every scored activity. Equal scores keep date and
+start-time order, and equal date/time keep add order. Indexes refer to chronological
+`list` output.
 
-Using the rating examples above:
+Return to the original activity-walkthrough folder, after restoring Project
+meeting and adding the rating examples. The separate edit/find examples do not
+change this five-activity schedule. With those five activities still incomplete:
 
 ```text
 Activities by priority (highest first):
@@ -360,11 +367,12 @@ Each row keeps its chronological `list` index and adds one label:
 | `OVERDUE WEEK` | Starts on an earlier day in the current Monday-to-Sunday week. |
 | `OVERDUE EARLIER` | Starts before the current week's Monday. |
 
-For example, when run on 2026-12-04 at 15:00:
+Using the same five-activity schedule, assume the current local time is
+2026-12-04 at 15:00. The containing week starts on Monday, 2026-11-30:
 
 ```text
 Overdue activities (started before now):
-1. [OVERDUE EARLIER] CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
+1. [OVERDUE WEEK] CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
 2. [OVERDUE WEEK] Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
 3. [OVERDUE WEEK] Planning and/or review (2026-12-03, 10:00-11:00) [LOW] [ ]
 4. [OVERDUE TODAY] CS2113 project (2026-12-04, 14:00-15:00) [MEDIUM] [ ]
@@ -379,6 +387,8 @@ the current local time. Activities starting exactly now and completed activities
 are skipped. Equal starts keep add order, and the row keeps its chronological
 `list` index.
 
+At the same assumed local time, 2026-12-04 at 15:00, with the same five activities:
+
 ```text
 Next activity (earliest upcoming):
 5. Team stand-up (2026-12-04, 16:00-17:00) [MEDIUM] [ ]
@@ -386,6 +396,18 @@ Next activity (earliest upcoming):
 
 If no incomplete activity starts later, the command shows
 `No upcoming incomplete activities.`
+
+For an incomplete activity scheduled 09:00-09:30 on the current date:
+
+| Current local time | In `overdue`? | Eligible for `next`? |
+| --- | --- | --- |
+| 08:59 | No | Yes, if it is the earliest future incomplete activity. |
+| Exactly 09:00 | No | No. |
+| 09:15 | Yes, even though it is still in progress. | No. |
+
+A completed activity appears in neither time query. At its exact start, an
+incomplete activity appears in neither query; it remains visible in `list`.
+These strict boundaries also apply when the current clock includes seconds.
 
 ### Listing and viewing facilities: `facility`
 
@@ -487,6 +509,9 @@ For `add` and `edit`, use real calendar dates and two-digit hours and minutes (f
 `09:30`, not `9:30`). An invalid add command also displays the expected format.
 Rejected add or edit input, including an invalid rating, leaves the activity list and
 stored data unchanged.
+
+`list priority`, `overdue`, and `next` accept no arguments. Extra arguments and
+unsupported list variants produce a warning; they do not change activities.
 
 Example input: `help extra`
 

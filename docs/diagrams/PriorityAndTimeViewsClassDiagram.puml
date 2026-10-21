@@ -12,6 +12,13 @@ skinparam ArrowColor #526477
 hide empty members
 
 abstract class Command
+class Parser {
+  -clock: Clock
+  +parse(input: String): Command
+}
+class ListDeleteCommandParser {
+  +parseList(words: String[]): Command
+}
 class ListPriorityCommand
 class OverdueCommand {
   -clock: Clock
@@ -24,6 +31,7 @@ class Activity {
 }
 class ActivityList {
   {static} -PRIORITY_ORDER: Comparator<Activity>
+  +getCanonicalView(): List<Activity>
   +getPriorityView(): List<Activity>
   +getOverdueView(now: LocalDateTime): List<Activity>
   +getNext(now: LocalDateTime): Optional<Activity>
@@ -37,18 +45,21 @@ class ActivityListFormatter <<utility>> {
 Command <|-- ListPriorityCommand
 Command <|-- OverdueCommand
 Command <|-- NextCommand
+Parser ..> ListDeleteCommandParser : delegates list
+ListDeleteCommandParser ..> ListPriorityCommand : creates
+Parser ..> OverdueCommand : creates with clock
+Parser ..> NextCommand : creates with clock
 ListPriorityCommand ..> ActivityList : priority view
 OverdueCommand ..> ActivityList : overdue view
 NextCommand ..> ActivityList : next activity
-ListPriorityCommand ..> ActivityListFormatter : formatPriorityList(...)
-OverdueCommand ..> ActivityListFormatter : formatOverdueList(...)
-NextCommand ..> ActivityListFormatter : formatNext(...)
-ActivityList --> "0..*" Activity : activities
-ActivityList ..> Activity : score
+ListPriorityCommand ..> ActivityListFormatter
+OverdueCommand ..> ActivityListFormatter
+NextCommand ..> ActivityListFormatter
+ActivityList --> "0..*" Activity : activities / scores
 
 note bottom of ActivityList
   Priority includes completed activities.
   Time views include incomplete activities only.
-  All views resolve indexes against the canonical list.
+  Commands obtain the full canonical view for row indexes.
 end note
 @enduml
