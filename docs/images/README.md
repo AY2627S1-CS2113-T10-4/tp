@@ -7,12 +7,11 @@ section, and regeneration commands.
 | Folder | Responsibility |
 | --- | --- |
 | [shared](shared) | Shared architecture and the combined activity-creation/rating model. |
-| [atharva](atharva) | Activity creation sequence. |
-| [asyraf](asyraf) | Activity ordering/deletion and priority/time queries. |
-| [oliver](oliver) | Completion, persistence, editing and name search. |
+| `atharva` (not yet populated) | Atharva's images. |
+| `asyraf` (not yet populated) | Asyraf's images. |
+| `oliver` (not yet populated) | Oliver's images. |
 | [luke](luke) | Facilities, campus connectivity and route search. |
 
-Luke's rating fields are also shown in the shared creation diagram; the add
-sequence remains with Atharva's base command. Help and exit currently have no
-separate diagrams. Images retain the source's base filename: class/sequence
-diagrams use `.png`, and the campus connectivity graph uses `.svg`.
+Luke's rating fields also appear in the shared creation diagram. Other members
+can add their image folders with their contributions. Class/sequence diagrams
+use `.png`, and the campus connectivity graph uses `.svg`.
