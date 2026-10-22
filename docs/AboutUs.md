@@ -1,9 +1,11 @@
 # About us
 
-Display | Name | Github Profile | Portfolio 
+Display | Name | GitHub Profile | Portfolio
 --------|:----:|:--------------:|:---------:
-![](https://via.placeholder.com/100.png?text=Photo) | Muhammad Asyraf Bin Abdul Rahim | [Github](https://github.com/officialasyrafrahim) | [Portfolio](docs/team/asyrafrahim.md)
-![](https://via.placeholder.com/100.png?text=Photo) | Atharva Rege | [Github](https://github.com/Atharva005) | [Portfolio](docs/team/Atharva.md)
-![](https://via.placeholder.com/100.png?text=Photo)| Luke Lou Yu   |  [Github](https://github.com/lukelouyu)  | [Portfolio] [Portfolio](docs/team/johndoe.md)
-![](https://via.placeholder.com/100.png?text=Photo) | Oliver | [Github](https://github.com/) | [Portfolio](docs/team/johndoe.md)
+![](https://via.placeholder.com/100.png?text=Photo) | Muhammad Asyraf Bin Abdul Rahim | [GitHub](https://github.com/officialasyrafrahim) | [Portfolio](team/officialasyrafrahim.md)
+![](https://via.placeholder.com/100.png?text=Photo) | Atharva Rege | [GitHub](https://github.com/Atharva005) | [Portfolio](team/atharva005.md)
+![](https://via.placeholder.com/100.png?text=Photo) | Lou Yu Luke | [GitHub](https://github.com/lukelouyu) | [Portfolio](team/lukelouyu.md)
+![](https://via.placeholder.com/100.png?text=Photo) | Oliver | [GitHub](https://github.com/Oliver-koh) | [Portfolio](team/oliver-koh.md)
+
+[Team portfolio index](team/README.md)
 
