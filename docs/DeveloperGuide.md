@@ -94,6 +94,9 @@ Facility and connection data come from `src/main/resources/facilities.txt` and
 
 ## Design and implementation
 
+Luke's and shared implementation write-ups are populated. The other members'
+sections retain headings as placeholders for their own documentation.
+
 Implementation sections and diagram folders follow the responsibility assignments
 in [Team contributions](#team-contributions). Feature anchors remain available
 for links from the User Guide, user stories and manual testing instructions.
@@ -101,9 +104,9 @@ for links from the User Guide, user stories and manual testing instructions.
 | Maintainer | Implementation sections | PlantUML sources | Rendered images |
 | --- | --- | --- | --- |
 | Shared | [Shared design](#shared-design) | [shared/](diagrams/shared) | [shared/](images/shared) |
-| [Atharva](team/atharva005.md) | [Atharva: Activity creation and help](#atharva-activity-creation-and-help) | [atharva/](diagrams/atharva) | [atharva/](images/atharva) |
-| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion) | [asyraf/](diagrams/asyraf) | [asyraf/](images/asyraf) |
-| [Oliver](team/oliver-koh.md) | [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search) | [oliver/](diagrams/oliver) | [oliver/](images/oliver) |
+| [Atharva](team/atharva005.md) | [Atharva: Activity creation and help](#atharva-activity-creation-and-help) | Awaiting contribution | Awaiting contribution |
+| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion) | Awaiting contribution | Awaiting contribution |
+| [Oliver](team/oliver-koh.md) | [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search) | Awaiting contribution | Awaiting contribution |
 | [Luke](team/lukelouyu.md) | [Luke: Ratings and accessibility](#luke-ratings-and-accessibility) | [luke/](diagrams/luke) | [luke/](images/luke) |
 
 The combined activity-creation class diagram belongs to `shared` because it
@@ -165,481 +168,83 @@ layout engine, so a separate Graphviz installation is unnecessary for this diagr
 
 ### Atharva: Activity creation and help
 
-Atharva maintains the base `add` command and `help`. Luke maintains the optional
-ratings enhancement to `add`; the combined creation-and-ratings class diagram
-is shared, while the add sequence is grouped with Atharva's command flow.
+Documentation to be completed by Atharva.
 
 #### Activity creation and ratings
 
 ##### Overview
 
-The `add` feature records an incomplete activity with a date, start and end times,
-demand, and independently optional importance, urgency, and commitment ratings.
-Ratings capture user input; the priority view calculates a combined score only when
-all three are present.
-
 ##### High-level design
-
-`AddCommandParser` checks the input and creates an `AddCommand`, whose constructor
-creates the `Activity`. Executing the command appends that activity to
-`ActivityList`. The class diagram shows these relationships; only the members
-needed to explain creation and validation are included.
-
-![Class diagram for activity creation and optional ratings](images/shared/ActivityCreationClassDiagram.png)
-
-Source: [ActivityCreationClassDiagram.puml](diagrams/shared/ActivityCreationClassDiagram.puml).
 
 ##### Implementation and sequence diagram
 
-For example, `add n/Tutorial d/2026-12-01 s/10:00 e/11:00 imp/5` follows these steps:
-
-1. `Parser.parse()` recognises `add` and passes the arguments to a new
-   `AddCommandParser` with the session's `Clock`.
-2. `readFields()` collects known prefixes in any order. `n/`, `d/`, `s/`, and `e/`
-   are required; supplied fields must have non-empty values and appear once.
-3. The parser checks date/time formats, that the end follows the start on the
-   same day, and that the activity's end date/time is strictly after now.
-4. Omitted demand becomes `MEDIUM`. `parseRating()` uses `Activity.validateRating()`
-   to check each supplied integer is between 1 and 5; omitted ratings become `null`.
-5. The parser constructs `AddCommand`, which creates an `Activity` with
-   `isDone = false`. `execute()` calls `ActivityList.addActivity()` and returns a
-   `CommandResult` with the activity-change flag set to `true`.
-
-The sequence shows that object creation happens during parsing, while insertion
-happens during execution. The common save-and-display flow is explained under
-[Completion and persistence](#completion-and-persistence).
-
-![Sequence diagram showing parsing, activity construction, and insertion](images/atharva/AddActivitySequence.png)
-
-Source: [AddActivitySequence.puml](diagrams/atharva/AddActivitySequence.puml).
-
 ##### Design considerations
-
-The parser handles input formats and the current-time check, while the model
-provides the shared rating-range rule. Keeping the current-time restriction out
-of the `Activity` constructor lets storage restore historical activities.
-Using nullable `Integer` ratings distinguishes an unset value from the valid
-range; a primitive `int` would need an extra marker. The three ratings remain
-independent, so users can supply only the values they need.
 
 ##### Error handling
 
-Invalid fields produce a `ParseException` with a warning and usage message before
-anything is added. Names cannot contain `|` or line breaks, since these would
-break the saved record format. Ordinary slash text such as `and/or` is preserved,
-but a known prefix at the start of a whitespace-separated name token starts
-another field. Duplicate and overlapping activities are currently allowed.
-
 #### Help command
-
-`HelpCommand.execute()` returns the current command formats and usage notes
-through `CommandResult` without changing activities or requesting exit.
-`ConsoleHelper` displays that result without saving. When a feature changes
-its public syntax, its maintainer should update this shared help text and
-`HelpCommandTest` together with Atharva.
 
 ### Asyraf: Activity views and deletion
 
-Asyraf maintains chronological and demand listing, deletion, priority ordering,
-and the overdue/next queries, including their displayed-index rules.
+Documentation to be completed by Asyraf.
 
 #### Ordering and displayed indexes
 
 ##### Overview
 
-`list` displays activities by date and start time. `list demand` groups them from
-`HIGH` to `LOW`, then by date and start time. Delete, edit, mark, and unmark always
-use the one-based indexes from chronological `list`, even after a demand-ordered
-list has been displayed.
-
 ##### High-level design
-
-`ActivityList` keeps its backing list in insertion order and creates separate,
-unmodifiable sorted lists for display. The activity objects in those lists are
-shared with the backing list. Commands choose the view, while
-`ActivityListFormatter` renders its supplied order without sorting or printing.
-
-![Class diagram showing activity views, list formatting, and deletion](images/asyraf/ActivityOrderingClassDiagram.png)
-
-Source: [ActivityOrderingClassDiagram.puml](diagrams/asyraf/ActivityOrderingClassDiagram.puml).
-The shared `Activity` fields are shown in the creation diagram above.
 
 ##### Implementation and sequence diagram
 
-1. `Parser` delegates `list` and `delete` syntax to `ListDeleteCommandParser`.
-   It creates `ListCommand`, `ListDemandCommand`, or `DeleteCommand` as appropriate.
-   The same parser also creates `ListPriorityCommand`, covered in the next section.
-2. Listing calls `getCanonicalView()` or `getDemandView()`. Sorting is stable:
-   activities tied on all ordering fields retain their insertion order.
-3. `ActivityListFormatter` numbers the selected view from 1. The demand view
-   includes a notice telling users to run `list` before choosing a deletion index.
-4. For `delete 1`, `deleteByDisplayedIndex(1)` creates the canonical view, checks
-   the index, and selects element 0. It removes that activity object from the
-   backing list rather than removing backing-list element 0.
-5. `DeleteCommand` returns the removed activity's details and the new count with
-   the activity-change flag set. If no activities remain, it shows
-   `There is no activity recorded` instead of a count. The console then follows
-   the common save flow.
-
-The sequence starts after `DeleteCommand` has been parsed. It highlights why
-deletion follows chronological display order even when insertion order differs.
-
-![Sequence diagram showing deletion through the canonical displayed index](images/asyraf/DeleteActivitySequence.png)
-
-Source: [DeleteActivitySequence.puml](diagrams/asyraf/DeleteActivitySequence.puml).
-
 ##### Design considerations
 
-Sorting copies keeps listing read-only and preserves insertion order for storage.
-Sorting the backing list in place would make a display command change that order.
-Using one canonical index rule also avoids keeping a separate "last displayed
-list" state, though users must check `list` when switching from the demand view.
-
 ##### Error handling
-
-The parser rejects missing or extra arguments, signed or non-numeric indexes,
-and integers too large for `int`. Zero passes syntax checking but is rejected
-by `ActivityList`, which also handles empty lists and out-of-range indexes through
-`InvalidIndexException`. Assertions check view ordering and deletion invariants;
-`FINE` log messages record list and delete operations. These support debugging,
-while checked exceptions handle invalid user input.
 
 #### Priority, overdue, and next views
 
 ##### Overview
 
-`list priority` ranks every activity, including completed ones, by the revised
-V2.0 guide's combined score. `overdue` and `next` answer time-sensitive questions
-for incomplete activities. All three views are read-only and display the full
-chronological index used by `edit`, `mark`, `unmark`, and `delete`.
-
-`Activity.getPriorityScore()` returns:
-
-```text
-URG * URG * (IMP + COM)
-```
-
-The score is available only when importance, urgency, and commitment are all set.
-The possible range is 2 to 250. Completion and demand do not affect the score.
-
 ##### High-level design
-
-`Activity` owns the score formula so every view uses one definition. `ActivityList`
-owns the ordering and filtering rules. `ListPriorityCommand`, `OverdueCommand`, and
-`NextCommand` select views, while `ActivityListFormatter` renders them without
-sorting or printing. The class diagram shows these relationships.
-
-![Class diagram for priority, overdue, and next views](images/asyraf/PriorityAndTimeViewsClassDiagram.png)
-
-Source: [PriorityAndTimeViewsClassDiagram.puml](diagrams/asyraf/PriorityAndTimeViewsClassDiagram.puml).
 
 ##### Implementation and sequence diagram
 
-1. `ListDeleteCommandParser` recognises `list priority`; `Parser` recognises
-   `overdue` and `next`. The time commands receive the session's injected `Clock`.
-2. `OverdueCommand` and `NextCommand` call `LocalDateTime.now(clock)` once per
-   execution, so filtering, labels, and logging use the same instant.
-3. `getPriorityView()` sorts by available score descending, then canonical order.
-   Missing scores use a nulls-last comparator and therefore follow all scored rows.
-   Completed activities are not filtered out.
-4. `getOverdueView(now)` keeps incomplete activities whose start is strictly
-   before `now`. `getNext(now)` returns the first incomplete activity whose start
-   is strictly after `now` in canonical order. Equal starts retain add order.
-5. `ActivityListFormatter` maps each selected activity to its index in
-   `getCanonicalView()`. Priority rows also show the score and the three ratings;
-   overdue rows add `OVERDUE TODAY`, `OVERDUE WEEK`, or `OVERDUE EARLIER`.
-6. Each command returns a `CommandResult` with the activity-change flag left
-   false, so the console does not save.
-
-`UniEnable.run(input, output, activityFile, clock)` passes the supplied clock
-through `ConsoleHelper.createParser(ui, clock)` to `Parser`. Production uses
-`Clock.systemDefaultZone()`; integration tests can supply `Clock.fixed()` with
-an explicit zone and a disposable activity file. The same clock reaches add,
-edit, overdue, and next, keeping their local-time decisions consistent.
-
-The sequence shows the console parsing and executing the overdue query, then
-displaying its result without saving. `next` uses the same clock and index flow,
-and `list priority` omits the time boundary.
-
-![Sequence diagram for the overdue view](images/asyraf/PriorityAndTimeViewsSequence.png)
-
-Source: [PriorityAndTimeViewsSequence.puml](diagrams/asyraf/PriorityAndTimeViewsSequence.puml).
-
 ##### Time-boundary rules
-
-All comparisons use the computer's local time zone. They are strict, so an
-activity starting exactly at the current instant appears in neither `overdue`
-nor `next`.
-
-| Label or view | Rule |
-| --- | --- |
-| `OVERDUE TODAY` | Start date equals today and start is before now. |
-| `OVERDUE WEEK` | Start date is before today but not before the current week's Monday. |
-| `OVERDUE EARLIER` | Start date is before the current week's Monday. |
-| `next` | Earliest incomplete start strictly after now. |
-
-The Monday boundary is calculated with `TemporalAdjusters.previousOrSame(MONDAY)`.
-This handles Sunday-to-Monday and year rollover without special cases. An activity
-that started in the past but has not ended remains overdue because the boundary is
-its start, not its end.
 
 ##### Design considerations
 
-The approved revised V2.0 PDF includes both completed and incomplete activities
-in priority. Completion affects only the time-query filters, so marking an
-activity changes overdue/next eligibility without changing its score or removing
-it from the priority view.
-
-A nullable score keeps the formula in one place and avoids a sentinel number.
-Using `nullsLast` after reversing the score comparator gives descending available
-scores and a deterministic unavailable group. The shared canonical comparator
-handles score ties and equal starts, preserving insertion order because Java's
-stream sort is stable.
-
-Filtering into immutable lists keeps these views read-only and avoids changing the
-backing insertion order used by storage. Resolving indexes from the full canonical
-view, rather than numbering the filtered view, prevents users from passing a
-sub-view index to a change command. Passing `now` as a parameter also keeps the
-model testable without a global clock.
-
 ##### Mathematical rationale and theoretical grounding
-
-The team's prioritization appendix motivates treating importance, urgency and
-commitment as separate inputs. Each recorded input is an integer from 1 to 5;
-an unset input is a nullable `Integer`. `getPriorityScore()` returns `null` when
-any input is unset, and the formatter displays `NA`. There is no floating-point
-`NaN` in the implementation. The proposed calendar dashboards use the separate
-display marker `N` and are still unimplemented.
-
-Keeping urgency and importance separate can be understood through the two axes
-of the [FranklinCovey Time Matrix](https://www.franklincovey.com/courses/the-7-habits/habit-3/).
-This is a conceptual comparison; the three-input formula and its weights are
-UniEnable's own heuristic. Commitment adds the user's rating of obligation to
-the importance contribution. The team's Agile and FMEA comparisons are design
-analogies, rather than a derivation or validation of this scoring rule.
-
-These illustrative examples compare UniEnable's score with a simple `URG × IMP`
-formula.
-
-| Scenario | URG | IMP | COM | UniEnable: `URG * URG * (IMP + COM)` | Comparison: `URG * IMP` |
-| --- | --- | --- | --- | --- | --- |
-| A: Critical deadline | 5 | 4 | 4 | 200 | 20 |
-| B: Important, less urgent preparation | 2 | 5 | 4 | 36 | 10 |
-| C: Strong obligation, low importance | 4 | 1 | 5 | 96 | 4 |
-
-These examples sort A, C, B. High urgency alone does not guarantee first place:
-`URG 5, IMP 1, COM 1` scores 50, below the 160 for `URG 4, IMP 5, COM 5`.
-Chronological tie-breaking applies when the final scores are equal.
-
-Implementation checks following from this rationale are:
-
-- Rating-only edits may change priority order while preserving chronological
-  indexes. Adding, deleting or rescheduling activities can change those indexes.
-- Equal scores sort by date, then start time, then original insertion order.
-  Replacement during edit preserves the insertion position.
-- Missing inputs produce an unavailable score, never a partial score or numeric
-  zero. Demand and completion have no effect on the calculated score.
 
 ##### Error handling
 
-The parser rejects arguments after `overdue` and `next`, and after `list priority`.
-The model rejects a null `now` and asserts priority and overdue ordering. Commands
-write `FINE` logs with view sizes and the captured instant. Time views have no
-exceptional user-input path beyond command syntax; empty results produce explicit
-messages instead of warnings.
-
-The formatter shows unset ratings as `-` and an unavailable score as `NA`.
-Empty priority output uses `No activities yet.`; time queries use
-`No overdue activities.` and `No upcoming incomplete activities.` respectively.
-The headings and full row layout are documented in the User Guide.
-
 ### Oliver: Completion, storage, editing and search
 
-Oliver maintains completion changes, activity persistence and recovery, editing,
-and activity-name search. The shared console applies the save contract described here.
+Documentation to be completed by Oliver.
 
 #### Completion and persistence
 
 ##### Overview
 
-`mark` and `unmark` update completion using the same chronological indexes as
-deletion. `ConsoleHelper` saves successful activity changes through `Storage`.
-The file is loaded at startup, so completion state and optional ratings survive
-between sessions.
-
 ##### High-level design
-
-`MarkCommand` and `UnmarkCommand` call `ActivityList.setDoneAtDisplayedIndex()`.
-Its boolean result becomes the activity-change flag in `CommandResult`.
-The diagram focuses on how that result controls persistence; activity fields
-and index resolution are covered by the earlier diagrams.
-
-![Class diagram showing the conditional saving contract and storage state](images/oliver/ActivityPersistenceClassDiagram.png)
-
-Source: [ActivityPersistenceClassDiagram.puml](diagrams/oliver/ActivityPersistenceClassDiagram.puml).
 
 ##### Implementation and sequence diagram
 
-1. At startup, `UniEnable` calls `Storage.load()` and displays its warnings.
-   A missing file gives an empty list; valid rows are restored in file order.
-   Loading does not rewrite the file or apply the add-time "after now" rule.
-2. `MarkCommandParser` creates a mark or unmark command. During execution, the
-   command gets the selected activity for its message, then asks
-   `setDoneAtDisplayedIndex()` to resolve the index again and change its state.
-3. The model returns `false` if the state already matches. The command returns
-   that change flag, and `ConsoleHelper` calls `save()` only when it is `true`.
-   Read-only commands, repeated mark/unmark, and `bye` do not save.
-4. If an earlier load detected malformed rows or a read failure and the original
-   file still exists, `save()` first calls `backupCorruptFile()`. It copies the
-   original bytes to `activities.txt.corrupt.bak` and verifies them with
-   `Files.mismatch()` before writing the replacement.
-5. Storage serialises `getActivities()` in insertion order as UTF-8, writes
-   `activities.txt.tmp`, and calls `moveIntoPlace()`. It attempts an atomic
-   replacement, falling back to a normal replacement on `FileSystemException`.
-6. After a successful save, storage clears its recovery flag and the console
-   displays the command result. The sequence below shows `mark 1`; add, delete,
-   edit, and unmark use the same save steps. A valid edit always requests a save,
-   even when the supplied values equal their existing values.
-
-Saved rows have this format:
-
-```text
-NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM
-```
-
-`DONE` is `true` or `false`; each unset rating is stored as `-`. Six-field legacy
-rows still load with all ratings unset. The next successful activity-changing
-save writes all rows in the nine-field format, which the original V1.0 loader
-cannot read.
-
-![Sequence diagram showing marking an activity and conditionally saving it](images/oliver/CompletionAndSaveSequence.png)
-
-Source: [CompletionAndSaveSequence.puml](diagrams/oliver/CompletionAndSaveSequence.puml).
-The sequence assumes a valid index and successful I/O; optional blocks show the
-conditions for saving and making a recovery backup. Minor getter and file calls
-are omitted.
-
 ##### Design considerations
 
-The change flag keeps save decisions in one place and avoids rewriting data
-after read-only commands or repeated completion commands. A separate "dirty" flag
-could support automatic retries after a failed save, but the current implementation retries
-after a command reports an activity change, including a successful no-op edit.
-Writing a temporary file first avoids truncating the activity file while
-serialising; the fallback replacement itself is not atomic.
-
 ##### Error handling
-
-Malformed rows are skipped with physical line numbers in the warnings. Invalid
-UTF-8 or other read failures are reported as `UniEnableException`; the console
-starts with an empty list, and storage retains the recovery flag. A failed
-backup stops saving before the activity file is replaced. A later recovery
-backup can overwrite the previous `.corrupt.bak`, so it is not a backup history.
-
-Save failures are displayed and leave the console running. The command's change
-has already happened in memory and is not rolled back; its normal confirmation
-is skipped. Repeating the same `add` may create a duplicate, and `bye` does not
-retry saving. The [User Guide's recovery steps](UserGuide.md#error-handling)
-explain how to preserve and save the in-memory state before exiting.
 
 #### Activity editing and name search
 
 ##### Overview and command contract
 
-`edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]`
-updates at least one supplied field of an existing activity. Omitted fields and
-completion remain unchanged; the command can also reschedule an activity.
-`find KEYWORD` searches activity names by a case-insensitive literal substring,
-including completed activities. Both features are implemented.
-
-Editing uses the index from chronological `list`; `find` results preserve these
-same full-list indexes rather than renumbering the matches. Date/time edits can
-change indexes, so a later command must use the refreshed chronological view.
-
 ##### Class relationships
-
-The class diagram shows how parsing creates the two commands and how they use
-the shared activity model. It omits edit constructor arguments and unrelated
-model members so the command responsibilities remain readable.
-
-![Class diagram for activity editing and name search](images/oliver/EditFindClassDiagram.png)
-
-Source: [EditFindClassDiagram.puml](diagrams/oliver/EditFindClassDiagram.puml).
 
 ##### Implementation
 
-1. `Parser` delegates edit arguments to `EditCommandParser`, passing its injected
-   `Clock`. The parser reads the index first, then known prefixes in any order, rejects
-   duplicate or empty values, and validates dates, times, demand and ratings.
-   It creates `EditCommand` with each optional value and its supplied-field flag.
-2. `EditCommand.execute()` selects the activity through
-   `ActivityList.getByDisplayedIndex()`, combines supplied values with retained
-   values, and validates the resulting activity before replacing it. When any
-   date/time field is supplied, the resulting end must be strictly after both
-   the start on the same day and the current local time. Metadata-only edits do
-   not apply that current-time check to an existing historical activity.
-3. The command creates a replacement `Activity`, preserving `isDone()` and
-   omitted ratings. `replaceByDisplayedIndex()` keeps its backing-list insertion
-   position, so ties remain stable. Its successful `CommandResult` requests
-   saving through `ConsoleHelper`, including when supplied values equal the
-   existing values. The confirmation displays all resulting fields and ratings.
-4. For `find`, `Parser` requires a non-blank keyword and creates `FindCommand`.
-   `ActivityList.findByName()` normalizes the keyword and names with
-   `Locale.ROOT`, then filters a chronological view using `String.contains()`.
-   Spaces inside a multiword keyword form a literal phrase; quotes and regular
-   expression characters are literal too. Other activity fields are not searched.
-5. `ActivityListFormatter.formatFindResults()` maps each matching activity to
-   its full chronological index. A single result can therefore be numbered 2.
-   No match reports `No activities matched keyword "KEYWORD".`. `FindCommand`
-   returns a result without the activity-change flag, so searching never saves.
-
 ##### Editing sequence
-
-The sequence follows a valid `edit 2 n/CCA EXCO planning meeting com/4` request.
-The parser records supplied fields; the command validates the combined activity
-before replacement. Saving remains in `ConsoleHelper`, after command execution
-and before the confirmation is shown. The diagram assumes successful I/O;
-storage internals and minor getters are omitted.
-
-![Sequence diagram for editing an activity and saving the replacement](images/oliver/EditActivitySequence.png)
-
-Source: [EditActivitySequence.puml](diagrams/oliver/EditActivitySequence.puml).
 
 ##### Searching sequence
 
-The sequence follows `find EXCO` after activities have loaded. It shows both
-chronological-view calls in the current implementation and how the formatter
-preserves full-list indexes. No-match handling changes the message, while the
-activity-change flag remains false for every successful search.
-
-![Sequence diagram for name searching with chronological list indexes](images/oliver/FindActivitySequence.png)
-
-Source: [FindActivitySequence.puml](diagrams/oliver/FindActivitySequence.puml).
-
-Regenerate these images from the repository root using Java 25 and PlantUML:
-
-```text
-java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tpng -o ../../images/oliver docs/diagrams/oliver/EditFindClassDiagram.puml docs/diagrams/oliver/EditActivitySequence.puml docs/diagrams/oliver/FindActivitySequence.puml
-```
-
 ##### Validation, persistence and known limitation
-
-Rejected edits do not replace the activity or request a save. Empty lists and
-invalid indexes use `InvalidIndexException`; syntax failures use `ParseException`;
-invalid resulting time ranges use `UniEnableException`. The console displays the
-warning and accepts the next command. If saving a successful edit fails, the
-updated activity may already be in memory; use the existing recovery procedure.
-
-Each rating can be updated independently to 1–5, but the command has no syntax
-for clearing a rating to unset. Known-prefix ambiguity in names is the same as
-for `add`; slash-containing text such as `and/or` is allowed as name content.
-
-**Open validation defect:** `AddCommandParser` and `EditCommandParser` trim field
-values with `trim()` and check `isEmpty()`. A name containing only Unicode
-whitespace such as U+2003 can pass this check, but `Storage` rejects it as blank
-on reload, skipping the activity. Use non-blank activity names; a future fix
-should align parser and storage blank-name checks and add restart regression
-coverage.
 
 ### Luke: Ratings and accessibility
 

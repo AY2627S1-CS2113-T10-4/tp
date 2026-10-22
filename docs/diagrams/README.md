@@ -3,21 +3,20 @@
 PlantUML sources are grouped by the primary feature responsibility recorded in
 the [Developer Guide](../DeveloperGuide.md#team-contributions). Rendered files use
 the same owner folder and base filename under [images](../images/README.md).
-These groups identify maintenance responsibility; shared classes can appear in
-several members' diagrams.
+Luke's and shared diagrams are populated. Other members can add their owner
+folders when contributing diagrams; empty directories are not tracked.
 
 | Folder | Responsibility |
 | --- | --- |
 | [shared](shared) | Application architecture and the combined activity-creation/rating model. |
-| [atharva](atharva) | Base activity creation and help. The add sequence also includes Luke's rating enhancement. |
-| [asyraf](asyraf) | Chronological/demand listing, deletion, priority, overdue and next. |
-| [oliver](oliver) | Completion, activity storage/recovery, editing and name search. |
+| `atharva` (not yet populated) | Activity creation and help documentation. |
+| `asyraf` (not yet populated) | Listing, deletion and priority/time queries. |
+| `oliver` (not yet populated) | Completion, storage/recovery, editing and search. |
 | [luke](luke) | Optional add ratings, facility data/queries, route connections/search and exit. |
 
-Help and exit are described in the guide and do not have separate diagrams.
-The combined creation class diagram is shared by Atharva and Luke; Asyraf's
-priority diagrams describe scoring the stored ratings, and Oliver's diagrams
-describe updating and persisting them.
+The combined creation class diagram remains shared by Atharva and Luke
+because it covers the base activity model and optional ratings. Luke's exit
+command is described in the guide and has no separate diagram.
 
 ## Shared
 
@@ -28,28 +27,15 @@ describe updating and persisting them.
 
 ## Atharva
 
-| Source | Rendered image | Developer Guide section |
-| --- | --- | --- |
-| [AddActivitySequence.puml](atharva/AddActivitySequence.puml) | [PNG](../images/atharva/AddActivitySequence.png) | [Activity creation and ratings](../DeveloperGuide.md#activity-creation-and-ratings) |
+Awaiting member-provided diagrams.
 
 ## Asyraf
 
-| Source | Rendered image | Developer Guide section |
-| --- | --- | --- |
-| [ActivityOrderingClassDiagram.puml](asyraf/ActivityOrderingClassDiagram.puml) | [PNG](../images/asyraf/ActivityOrderingClassDiagram.png) | [Ordering and displayed indexes](../DeveloperGuide.md#ordering-and-displayed-indexes) |
-| [DeleteActivitySequence.puml](asyraf/DeleteActivitySequence.puml) | [PNG](../images/asyraf/DeleteActivitySequence.png) | [Ordering and displayed indexes](../DeveloperGuide.md#ordering-and-displayed-indexes) |
-| [PriorityAndTimeViewsClassDiagram.puml](asyraf/PriorityAndTimeViewsClassDiagram.puml) | [PNG](../images/asyraf/PriorityAndTimeViewsClassDiagram.png) | [Priority, overdue and next](../DeveloperGuide.md#priority-overdue-and-next-views) |
-| [PriorityAndTimeViewsSequence.puml](asyraf/PriorityAndTimeViewsSequence.puml) | [PNG](../images/asyraf/PriorityAndTimeViewsSequence.png) | [Priority, overdue and next](../DeveloperGuide.md#priority-overdue-and-next-views) |
+Awaiting member-provided diagrams.
 
 ## Oliver
 
-| Source | Rendered image | Developer Guide section |
-| --- | --- | --- |
-| [ActivityPersistenceClassDiagram.puml](oliver/ActivityPersistenceClassDiagram.puml) | [PNG](../images/oliver/ActivityPersistenceClassDiagram.png) | [Completion and persistence](../DeveloperGuide.md#completion-and-persistence) |
-| [CompletionAndSaveSequence.puml](oliver/CompletionAndSaveSequence.puml) | [PNG](../images/oliver/CompletionAndSaveSequence.png) | [Completion and persistence](../DeveloperGuide.md#completion-and-persistence) |
-| [EditFindClassDiagram.puml](oliver/EditFindClassDiagram.puml) | [PNG](../images/oliver/EditFindClassDiagram.png) | [Activity editing and name search](../DeveloperGuide.md#activity-editing-and-name-search) |
-| [EditActivitySequence.puml](oliver/EditActivitySequence.puml) | [PNG](../images/oliver/EditActivitySequence.png) | [Activity editing and name search](../DeveloperGuide.md#activity-editing-and-name-search) |
-| [FindActivitySequence.puml](oliver/FindActivitySequence.puml) | [PNG](../images/oliver/FindActivitySequence.png) | [Activity editing and name search](../DeveloperGuide.md#activity-editing-and-name-search) |
+Awaiting member-provided diagrams.
 
 ## Luke
 
@@ -68,10 +54,10 @@ sources are now one owner directory deeper, `-o` must point to
 `../../images/OWNER`, relative to the source file's directory. For example:
 
 ```text
-java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tpng -o ../../images/asyraf docs/diagrams/asyraf/PriorityAndTimeViewsClassDiagram.puml
+java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tpng -o ../../images/luke docs/diagrams/luke/FacilityClassDiagram.puml
 ```
 
-This writes `docs/images/asyraf/PriorityAndTimeViewsClassDiagram.png`. All class
+This writes `docs/images/luke/FacilityClassDiagram.png`. All class
 and sequence diagrams use PNG. The campus connectivity graph uses SVG:
 
 ```text
