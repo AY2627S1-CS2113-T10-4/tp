@@ -1,5 +1,7 @@
 # UniEnable Developer Guide
 
+<!-- SHARED: All members maintain the contents, introduction and setup instructions. -->
+
 ## Table of contents
 
 - [Introduction](#introduction)
@@ -8,15 +10,8 @@
   - [Shared design](#shared-design)
     - [Architecture](#architecture)
   - [Atharva: Activity creation and help](#atharva-activity-creation-and-help)
-    - [Activity creation and ratings](#activity-creation-and-ratings)
-    - [Help command](#help-command)
   - [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion)
-    - [Ordering and displayed indexes](#ordering-and-displayed-indexes)
-    - [Priority, overdue, and next views](#priority-overdue-and-next-views)
-      - [Mathematical rationale and theoretical grounding](#mathematical-rationale-and-theoretical-grounding)
   - [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search)
-    - [Completion and persistence](#completion-and-persistence)
-    - [Activity editing and name search](#activity-editing-and-name-search)
   - [Luke: Ratings and accessibility](#luke-ratings-and-accessibility)
     - [Optional ratings integration](#optional-ratings-integration)
     - [Facility Accessibility Data (`facilities.txt`)](#facility-accessibility-data-facilitiestxt)
@@ -94,12 +89,15 @@ Facility and connection data come from `src/main/resources/facilities.txt` and
 
 ## Design and implementation
 
+<!-- SHARED: All members maintain this ownership overview and the diagram index. -->
+
 Luke's and shared implementation write-ups are populated. The other members'
-sections retain headings as placeholders for their own documentation.
+main headings mark where they should add their documentation.
 
 Implementation sections and diagram folders follow the responsibility assignments
-in [Team contributions](#team-contributions). Feature anchors remain available
-for links from the User Guide, user stories and manual testing instructions.
+in [Team contributions](#team-contributions). In the Markdown source, `BEGIN OWNER`
+and `END OWNER` comments mark each member's editing block. Add implementation
+details inside your block; maintain sections marked `SHARED` jointly.
 
 | Maintainer | Implementation sections | PlantUML sources | Rendered images |
 | --- | --- | --- | --- |
@@ -113,6 +111,8 @@ The combined activity-creation class diagram belongs to `shared` because it
 covers Atharva's add command and Luke's rating fields. Other diagrams are
 grouped by the primary feature maintainer. See the [diagram ownership index](diagrams/README.md)
 for every source/image pair and regeneration instructions.
+
+<!-- BEGIN SHARED: All members maintain the architecture and shared models jointly. -->
 
 ### Shared design
 
@@ -166,85 +166,33 @@ PlantUML resolves `../../images/shared` relative to the diagram source directory
 `docs/images/shared/ArchitectureDiagram.png`. The source selects the bundled Smetana
 layout engine, so a separate Graphviz installation is unnecessary for this diagram.
 
+<!-- END SHARED -->
+
+<!-- BEGIN OWNER: Atharva Rege (@Atharva005). Add activity-creation and help documentation here. -->
+
 ### Atharva: Activity creation and help
 
 Documentation to be completed by Atharva.
 
-#### Activity creation and ratings
+<!-- END OWNER: Atharva Rege (@Atharva005) -->
 
-##### Overview
-
-##### High-level design
-
-##### Implementation and sequence diagram
-
-##### Design considerations
-
-##### Error handling
-
-#### Help command
+<!-- BEGIN OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim). Add listing, deletion, priority, overdue and next documentation here. -->
 
 ### Asyraf: Activity views and deletion
 
 Documentation to be completed by Asyraf.
 
-#### Ordering and displayed indexes
+<!-- END OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim) -->
 
-##### Overview
-
-##### High-level design
-
-##### Implementation and sequence diagram
-
-##### Design considerations
-
-##### Error handling
-
-#### Priority, overdue, and next views
-
-##### Overview
-
-##### High-level design
-
-##### Implementation and sequence diagram
-
-##### Time-boundary rules
-
-##### Design considerations
-
-##### Mathematical rationale and theoretical grounding
-
-##### Error handling
+<!-- BEGIN OWNER: Oliver (@Oliver-koh). Add completion, storage/recovery, editing and search documentation here. -->
 
 ### Oliver: Completion, storage, editing and search
 
 Documentation to be completed by Oliver.
 
-#### Completion and persistence
+<!-- END OWNER: Oliver (@Oliver-koh) -->
 
-##### Overview
-
-##### High-level design
-
-##### Implementation and sequence diagram
-
-##### Design considerations
-
-##### Error handling
-
-#### Activity editing and name search
-
-##### Overview and command contract
-
-##### Class relationships
-
-##### Implementation
-
-##### Editing sequence
-
-##### Searching sequence
-
-##### Validation, persistence and known limitation
+<!-- BEGIN OWNER: Lou Yu Luke (@lukelouyu). Maintain optional add ratings, facilities, routes and exit documentation here. -->
 
 ### Luke: Ratings and accessibility
 
@@ -255,14 +203,12 @@ these enhancements with the other members' commands.
 #### Optional ratings integration
 
 Luke owns the optional `imp/`, `urg/`, and `com/` enhancement to `add`.
-The nullable rating fields, shared 1-to-5 validation and add-time parsing are
-described in [Activity creation and ratings](#activity-creation-and-ratings).
+`AddCommandParser` parses each rating independently into a nullable `Integer`;
+omitting a field leaves it unset. `Activity.validateRating()` accepts `null` or
+an integer from 1 to 5, so add, edit and storage use the same validation rule.
 The [shared class diagram](diagrams/shared/ActivityCreationClassDiagram.puml)
-shows how they fit into activity creation. Asyraf's
-[priority view](#priority-overdue-and-next-views) consumes these ratings;
-Oliver's [edit and persistence flows](#completion-and-persistence) preserve
-and update them. Keeping one validation rule in `Activity.validateRating()`
-lets all three features accept the same range and unset state.
+shows how ratings fit into activity creation. Asyraf's priority view consumes
+them; Oliver's editing and persistence flows update and preserve them.
 
 #### Facility Accessibility Data (`facilities.txt`)
 
@@ -541,6 +487,10 @@ set and the activity-change flag unset. `ConsoleHelper` displays the message,
 then `UniEnable` stops the console loop. Exit does not save or retry a failed
 save; recovery must finish before the user enters `bye`.
 
+<!-- END OWNER: Lou Yu Luke (@lukelouyu) -->
+
+<!-- SHARED: All members maintain testing guidance and cross-feature validation notes. -->
+
 ## Testing and defensive programming
 
 ### Automated testing
@@ -582,17 +532,25 @@ Java 25 on Windows, macOS, and Ubuntu, as configured in
 
 ### Defensive programming
 
-Parsers report invalid user input through checked exceptions before executing a
-command. The model checks displayed-index bounds and rating ranges, while
-defensive collection copies protect activity views and reference data. Assertions
-check internal ordering and deletion invariants; enable them as described in
-the setup section. They support debugging rather than input validation.
+Parsers reject malformed command syntax; commands and models validate resulting
+values, displayed-index bounds and rating ranges. Recoverable failures use checked
+exceptions. Defensive collection copies protect activity views and reference
+data. Assertions check internal ordering and deletion invariants; enable them
+as described in the setup section. They support debugging rather than input validation.
 
 Storage distinguishes rejected records from failures to read the file. The
 console reports recoverable exceptions and continues accepting commands.
-Recovery backups, temporary writes, and the limits of retrying a failed save
-are explained under [Completion and persistence](#completion-and-persistence).
+Storage protects recovery writes with backups and uses temporary files when
+saving. A failed save can leave changes in memory; follow the
+[User Guide's recovery steps](UserGuide.md#error-handling) before exiting.
 Reference-data failures use the fallback described in [Architecture](#architecture).
+
+Known limitation: add and edit trim names with `String.trim()` and reject empty
+strings, while storage rejects `String.isBlank()` names on reload. A name made
+only of Unicode spaces such as U+2003 can therefore be accepted and saved, then
+skipped on restart. Keep reproductions in disposable data until validation is aligned.
+
+<!-- SHARED: All members maintain product scope and the team responsibility table. -->
 
 ## Product scope
 
@@ -629,10 +587,12 @@ in the [team portfolio pages](team/README.md).
 
 | Team member | V1.0 work | V2.0 work |
 | --- | --- | --- |
-| [Lou Yu Luke (@lukelouyu)](https://github.com/lukelouyu) | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#activity-creation-and-ratings): `add n/Project d/2099-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
-| [Atharva Rege (@Atharva005)](https://github.com/Atharva005) | Help: `help`. [Adding an activity with name, date, times, and optional demand](#activity-creation-and-ratings): `add n/Tutorial d/2099-12-01 s/09:00 e/10:00 dem/HIGH`. | Planned: `view today`, `view tomorrow`, and `view week`. |
-| [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#ordering-and-displayed-indexes): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#priority-overdue-and-next-views): `list priority`, `overdue`, and `next`. |
-| [Oliver (@Oliver-koh)](https://github.com/Oliver-koh) | [Saving, backups, and recovery](#completion-and-persistence), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#activity-editing-and-name-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
+| [Lou Yu Luke (@lukelouyu)](https://github.com/lukelouyu) | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2099-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
+| [Atharva Rege (@Atharva005)](https://github.com/Atharva005) | Help: `help`. [Adding an activity with name, date, times, and optional demand](#atharva-activity-creation-and-help): `add n/Tutorial d/2099-12-01 s/09:00 e/10:00 dem/HIGH`. | Planned: `view today`, `view tomorrow`, and `view week`. |
+| [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#asyraf-activity-views-and-deletion): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#asyraf-activity-views-and-deletion): `list priority`, `overdue`, and `next`. |
+| [Oliver (@Oliver-koh)](https://github.com/Oliver-koh) | [Saving, backups, and recovery](#oliver-completion-storage-editing-and-search), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#oliver-completion-storage-editing-and-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
+
+<!-- SHARED: All members maintain user stories and current implementation statuses. -->
 
 ## User stories
 
@@ -735,9 +695,11 @@ to individual lifts or ramps. All accessibility results use bundled sample data.
 | US33 | Must-Have | new user | see a list of available commands and their formats | I can learn to use the product without external documentation | Implemented |
 
 US31's benefit is phrased around successfully saved data, since a failed save
-requires recovery as described under [Completion and persistence](#completion-and-persistence).
+requires the [User Guide's recovery steps](UserGuide.md#error-handling).
 US32 concerns a separate estimated-duration value; start and end times alone do
 not provide that feature. US33 is supported by `help`.
+
+<!-- SHARED: All members maintain cross-feature use cases. -->
 
 ## Use cases
 
@@ -828,6 +790,8 @@ Supports US13, US18 and US19.
 Extra arguments produce a warning. An activity starting exactly now is excluded
 from both time queries, and completed activities remain eligible only for priority.
 
+<!-- SHARED: All members maintain non-functional requirements. -->
+
 ## Non-functional requirements
 
 These constraints describe the current design and how to check it. They do not
@@ -846,6 +810,8 @@ Response-time targets, maximum activity counts, and compatibility with specific
 assistive technologies have not been agreed or measured. Set concrete targets
 with the team before making those guarantees.
 
+<!-- SHARED: All members maintain terminology used throughout the guides. -->
+
 ## Glossary
 
 | Term | Meaning in UniEnable |
@@ -862,6 +828,8 @@ with the team before making those guarantees.
 | Accessibility status | A recorded `YES`, `NO`, or `UNKNOWN` value. A missing feature is distinct from an explicit `UNKNOWN`. |
 | Route | Ordered stops and their connecting segments, with total recorded distance. |
 | Recovery backup | The original activity-file bytes copied to `.corrupt.bak` before a save following detected corruption; not a backup history. |
+
+<!-- SHARED: All members maintain manual regression scenarios and expected results. -->
 
 ## Instructions for manual testing
 
@@ -911,9 +879,18 @@ For deterministic time checks, use the fixed-clock integration entry point
 `seedu.unienable` package. Supply `Clock.fixed()` with `ZoneId.of("Asia/Singapore")`
 and disposable storage. Do not change the computer's clock or personal activity file.
 
-At 2030-10-22 12:00 local time, the revised PDF's four stored records produce
-priority indexes 3, 4, 1, 2 with scores 200, 54, 28, NA. Overdue returns index 1
-as `OVERDUE WEEK` and index 2 as `OVERDUE TODAY`; next selects index 3. Marking
+Use these rows in the disposable `data/activities.txt` before starting the app:
+
+```text
+Planning meeting|2030-10-21|10:00|11:00|MEDIUM|false|3|2|4
+Team stand-up|2030-10-22|09:00|09:30|HIGH|false|5|4|-
+Submit project report|2030-10-22|14:00|15:00|HIGH|false|4|5|4
+Dentist appointment|2030-10-24|15:00|16:00|LOW|false|4|3|2
+```
+
+At 2030-10-22 12:00 local time, priority indexes are 3, 4, 1, 2 with scores
+200, 54, 28, NA. Overdue returns index 1 as `OVERDUE WEEK` and index 2 as
+`OVERDUE TODAY`; next selects index 3. Marking
 index 3 removes it from next but leaves it in priority at score 200.
 
 For one incomplete activity on the same date at 09:00-09:30, check these clocks:
@@ -973,7 +950,7 @@ before and after searches and rejected edits; they must remain unchanged.
 | 13 | `bye`, relaunch, then `list` | Empty activity file reloads successfully with no remaining activities. |
 
 The known Unicode-blank-name validation defect is described under
-[Activity editing and name search](#activity-editing-and-name-search). Keep
+[Defensive programming](#defensive-programming). Keep
 any deliberate reproduction of that defect in disposable test data.
 
 ### Facility queries and routes
@@ -1027,6 +1004,8 @@ activity file. The new activity remains in memory and the console keeps running.
 Move the blocking directory aside and follow the
 [User Guide's recovery steps](UserGuide.md#error-handling) to trigger a new save.
 Restart only after successful recovery and confirm both activities reload.
+
+<!-- SHARED: All members maintain attribution for shared resources and tools. -->
 
 ## Acknowledgements
 

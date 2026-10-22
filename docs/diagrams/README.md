@@ -23,7 +23,7 @@ command is described in the guide and has no separate diagram.
 | Source | Rendered image | Developer Guide section |
 | --- | --- | --- |
 | [ArchitectureDiagram.puml](shared/ArchitectureDiagram.puml) | [PNG](../images/shared/ArchitectureDiagram.png) | [Architecture](../DeveloperGuide.md#architecture) |
-| [ActivityCreationClassDiagram.puml](shared/ActivityCreationClassDiagram.puml) | [PNG](../images/shared/ActivityCreationClassDiagram.png) | [Activity creation and ratings](../DeveloperGuide.md#activity-creation-and-ratings) |
+| [ActivityCreationClassDiagram.puml](shared/ActivityCreationClassDiagram.puml) | [PNG](../images/shared/ActivityCreationClassDiagram.png) | [Optional ratings integration](../DeveloperGuide.md#optional-ratings-integration) |
 
 ## Atharva
 
