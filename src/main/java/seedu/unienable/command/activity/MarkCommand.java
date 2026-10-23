@@ -36,7 +36,7 @@ public class MarkCommand extends Command {
         boolean changed = activities.setDoneAtDisplayedIndex(displayedIndex, true);
         String message = changed
                 ? "Marked activity as done: " + activity.getName()
-                : "Activity is already marked as done: " + activity.getName();
+                : "[WARNING] Activity is already marked as done: " + activity.getName();
         return new CommandResult(message, false, changed);
     }
 }

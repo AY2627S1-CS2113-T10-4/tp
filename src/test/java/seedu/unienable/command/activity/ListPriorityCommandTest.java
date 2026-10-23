@@ -34,7 +34,7 @@ class ListPriorityCommandTest {
         assertFalse(result.isExit());
         assertFalse(result.didChangeActivities());
         assertTrue(result.getMessage().startsWith("Activities by priority (highest first):"));
-        assertTrue(result.getMessage().endsWith("No activities yet."));
+        assertTrue(result.getMessage().endsWith("[WARNING] No activities yet."));
     }
 
     @Test

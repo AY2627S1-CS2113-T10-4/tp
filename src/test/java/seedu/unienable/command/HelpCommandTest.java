@@ -28,6 +28,8 @@ class HelpCommandTest {
         assertTrue(result.getMessage().contains("delete INDEX"));
         assertTrue(result.getMessage().contains("incomplete\n" + "delete INDEX"));
         assertTrue(result.getMessage().contains("list priority"));
+        assertTrue(result.getMessage().contains(
+                "demand today - Count today's HIGH-demand activities, including completed ones"));
         assertTrue(result.getMessage().contains("URG x URG x (IMP + COM)"));
         assertTrue(result.getMessage().contains("overdue - View incomplete activities"));
         assertTrue(result.getMessage().contains("next - View the earliest incomplete activity"));

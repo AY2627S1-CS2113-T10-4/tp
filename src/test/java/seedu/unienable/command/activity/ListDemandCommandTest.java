@@ -32,7 +32,7 @@ class ListDemandCommandTest {
         var result = parser.parse("list demand").execute(activities, noWrites);
         assertFalse(result.isExit());
         assertTrue(result.getMessage().startsWith("Activities by demand (HIGH to LOW):"));
-        assertTrue(result.getMessage().endsWith("No activities yet."));
+        assertTrue(result.getMessage().endsWith("[WARNING] No activities yet."));
     }
 
     @Test

@@ -85,6 +85,30 @@ class UniEnableTest {
     }
 
     @Test
+    void demandToday_countsLoadedActivitiesWithoutRewritingLegacyStorage(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        byte[] original = String.join("\n",
+                "Past high|2026-10-13|09:00|10:00|HIGH|false",
+                "Today done|2026-10-14|08:00|09:00|HIGH|true",
+                "Today late|2026-10-14|23:00|23:30|HIGH|false",
+                "Today medium|2026-10-14|12:00|13:00|MEDIUM|false",
+                "Tomorrow high|2026-10-15|09:00|10:00|HIGH|false", "")
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+        var originalModifiedTime = Files.getLastModifiedTime(activityFile);
+
+        String output = consoleAtPath("demand today extra\nDeMaNd ToDaY\nlist\nbye\n", activityFile);
+
+        assertTrue(output.contains("Usage: demand today"), output);
+        assertTrue(output.contains("High-demand activities scheduled today (2026-10-14): 2"), output);
+        assertTrue(output.contains("Today done (2026-10-14, 08:00-09:00) [HIGH] [X]"), output);
+        assertTrue(output.contains("Today late (2026-10-14, 23:00-23:30) [HIGH] [ ]"), output);
+        assertTrue(output.contains("Goodbye from UniEnable!"), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+        assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
+    }
+
+    @Test
     void deletingFinalActivity_reportsEmptyStateAndPersistsDeletion(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
         String output = consoleAtPath(String.join("\n",
@@ -94,12 +118,12 @@ class UniEnableTest {
         assertTrue(output.contains("Deleted activity: Project meeting\nDate: 2030-10-25\n"
                 + "Time: 16:00 - 17:00\nDemand: HIGH\nThere is no activity recorded\n"));
         assertFalse(output.contains("Activities in this session: 0"));
-        assertTrue(output.contains("Activities (by date, start time):\nNo activities yet."));
+        assertTrue(output.contains("Activities (by date, start time):\n[WARNING] No activities yet."));
         assertTrue(output.contains("[WARNING] There are no activities to delete."));
         assertEquals("", Files.readString(activityFile));
 
         String restartedOutput = consoleAtPath("list\nbye\n", activityFile);
-        assertTrue(restartedOutput.contains("Activities (by date, start time):\nNo activities yet."));
+        assertTrue(restartedOutput.contains("Activities (by date, start time):\n[WARNING] No activities yet."));
         assertFalse(restartedOutput.contains("Project meeting"));
     }
 
@@ -146,6 +170,71 @@ class UniEnableTest {
         assertTrue(secondSession.contains("Unmarked activity: Planning and/or review"));
         expectedRows.set(1, partialRow + "false|5|-|3");
         assertEquals(expectedRows, Files.readAllLines(activityFile, StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void emptyQueries_showOneWarningWithoutCreatingAnActivityFile(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        String[][] cases = {
+            {"list", "[WARNING] No activities yet."},
+            {"list demand", "[WARNING] No activities yet."},
+            {"list priority", "[WARNING] No activities yet."},
+            {"overdue", "[WARNING] No overdue activities."},
+            {"next", "[WARNING] No upcoming incomplete activities."},
+            {"find missing", "[WARNING] No activities matched keyword \"missing\"."},
+            {"demand today", "[WARNING] High-demand activities scheduled today (2026-10-14): 0"},
+            {"facility find type/AUTOMATIC_DOOR", "[WARNING] No matching facilities found."}
+        };
+
+        for (String[] scenario : cases) {
+            String output = consoleAtPath(scenario[0] + "\nbye\n", activityFile);
+
+            assertTrue(output.contains(scenario[1]), scenario[0] + "\n" + output);
+            assertEquals(1, output.split(Pattern.quote("[WARNING]"), -1).length - 1, scenario[0]);
+            assertTrue(output.contains("Goodbye from UniEnable!"), scenario[0]);
+            assertFalse(Files.exists(activityFile), scenario[0]);
+        }
+    }
+
+    @Test
+    void repeatedCompletion_warnsWithoutSavingOrChangingState(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        byte[] original = String.join("\n",
+                "Done|2099-12-01|09:00|10:00|HIGH|true|-|-|-",
+                "Pending|2099-12-02|09:00|10:00|LOW|false|-|-|-", "")
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+        var originalModifiedTime = Files.getLastModifiedTime(activityFile);
+
+        String output = consoleAtPath("mark 1\nunmark 2\nlist\nbye\n", activityFile);
+
+        assertTrue(output.contains("[WARNING] Activity is already marked as done: Done"), output);
+        assertTrue(output.contains("[WARNING] Activity is already unmarked: Pending"), output);
+        assertEquals(2, output.split(Pattern.quote("[WARNING]"), -1).length - 1);
+        assertTrue(output.contains("Done (2099-12-01, 09:00-10:00) [HIGH] [X]"), output);
+        assertTrue(output.contains("Pending (2099-12-02, 09:00-10:00) [LOW] [ ]"), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+        assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
+    }
+
+    @Test
+    void populatedQueries_keepNormalMessagesAndDoNotSave(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        byte[] original = String.join("\n",
+                "Past|2000-01-01|09:00|10:00|LOW|false|1|1|1",
+                "Today|2026-10-14|09:00|10:00|HIGH|false|1|1|1",
+                "Future|2099-12-01|09:00|10:00|HIGH|false|5|5|5", "")
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+
+        String output = consoleAtPath(String.join("\n", "list", "list demand", "list priority", "overdue",
+                "next", "find Today", "demand today", "facility list", "facility find type/LIFT status/YES",
+                "route from/AS6 to/AS7", "bye", ""), activityFile);
+
+        assertFalse(output.contains("[WARNING]"), output);
+        assertTrue(output.contains("High-demand activities scheduled today (2026-10-14): 1"), output);
+        assertTrue(output.contains("Total distance: 200 metres"), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
     }
 
     @Test
@@ -226,8 +315,8 @@ class UniEnableTest {
                 new String[]{"CASE", " FaCiLiTy FiNd TyPe/lift StAtUs/unknown ", "UNKNOWN means the local dataset",
                     "[F03] AS3"},
                 new String[]{"DEFAULT", "facility find type/LIFT", "Facilities with LIFT (status: YES)", "[F01] AS1"},
-                new String[]{"NONE", "facility find type/AUTOMATIC_DOOR", "No matching facilities found.",
-                    "[WARNING]"},
+                new String[]{"NONE", "facility find type/AUTOMATIC_DOOR", "[WARNING] No matching facilities found.",
+                    "[F01] AS1"},
                 new String[]{"ID", "facility f04", "[F04] AS4", "[WARNING]"},
                 new String[]{"LIST_CASE", "FACILITY LIST", "[F01] AS1", "[WARNING]"},
                 new String[]{"LIST_ARGS", "facility list extra", "facility list does not accept arguments.",

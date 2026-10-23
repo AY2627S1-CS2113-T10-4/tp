@@ -28,6 +28,7 @@ public class HelpCommand extends Command {
                 + "    Multiword keywords are literal phrases; results keep chronological list indexes\n"
                 + "list - View activities by date and start time\n"
                 + "list demand - View activities by demand, HIGH to LOW\n"
+                + "demand today - Count today's HIGH-demand activities, including completed ones\n"
                 + "list priority - View all activities by combined priority score\n"
                 + "    Score = URG x URG x (IMP + COM); missing ratings display NA\n"
                 + "overdue - View incomplete activities that started before now\n"

@@ -72,7 +72,7 @@ class OverdueCommandTest {
     @Test
     void execute_onEmptyList_showsNoOverdueMessage() throws Exception {
         String message = parser.parse("overdue").execute(activities, noWrites).getMessage();
-        assertTrue(message.endsWith("No overdue activities."), message);
+        assertTrue(message.endsWith("[WARNING] No overdue activities."), message);
     }
 
     @Test

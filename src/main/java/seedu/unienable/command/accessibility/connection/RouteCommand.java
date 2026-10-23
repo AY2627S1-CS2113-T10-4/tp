@@ -61,7 +61,8 @@ public final class RouteCommand extends Command {
         }
 
         if (route.isEmpty()) {
-            String message = "No confirmed accessible route recorded from " + from.strip() + " to " + to.strip()
+            String message = "[WARNING] No confirmed accessible route recorded from " + from.strip()
+                    + " to " + to.strip()
                     + ".\nOnly connections marked YES for accessibility are used.";
             return new CommandResult(appendDisclaimer(message), false);
         }

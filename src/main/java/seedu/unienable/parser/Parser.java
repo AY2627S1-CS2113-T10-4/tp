@@ -6,6 +6,7 @@ import java.util.Locale;
 import seedu.unienable.command.ByeCommand;
 import seedu.unienable.command.Command;
 import seedu.unienable.command.HelpCommand;
+import seedu.unienable.command.activity.DemandTodayCommand;
 import seedu.unienable.command.activity.FindCommand;
 import seedu.unienable.command.activity.NextCommand;
 import seedu.unienable.command.activity.OverdueCommand;
@@ -14,7 +15,7 @@ import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
 
 /**
- * Recognizes add, edit, find, list, list demand, list priority, overdue, next,
+ * Recognizes add, edit, find, list, list demand, list priority, demand today, overdue, next,
  * delete, facility, route and bye commands.
  */
 public class Parser {
@@ -42,7 +43,7 @@ public class Parser {
     private final RouteParser routeParser;
 
     /**
-     * Time source shared with the add command parser for deterministic validation.
+     * Time source shared by add/edit validation and date/time queries for deterministic tests.
      */
     private final Clock clock;
 
@@ -74,9 +75,9 @@ public class Parser {
 
     /**
      * Creates a parser with the supplied clock and no reference data.
-     * Injecting a clock keeps add-command validation deterministic in tests.
+     * Injecting a clock keeps add/edit validation and date/time queries deterministic in tests.
      *
-     * @param clock time source used by add-command validation.
+     * @param clock time source used by add/edit validation and date/time queries.
      */
     public Parser(Clock clock) {
         this(null, null, clock);
@@ -87,7 +88,7 @@ public class Parser {
      *
      * @param facilityManager manager used by facility commands, or null when unavailable.
      * @param connectionManager manager used by route commands, or null when unavailable.
-     * @param clock time source used by add-command validation.
+     * @param clock time source used by add/edit validation and date/time queries.
      */
     public Parser(FacilityManager facilityManager, ConnectionManager connectionManager, Clock clock) {
         this.facilityCommandParser = new FacilityCommandParser(facilityManager);
@@ -130,6 +131,12 @@ public class Parser {
             return new FindCommand(keyword);
         case "list":
             return listDeleteCommandParser.parseList(words);
+        case "demand":
+            if (words.length != 2 || !"today".equalsIgnoreCase(words[1])) {
+                throw new ParseException(WARNING_MESSAGE
+                        + " Expected demand today without extra arguments.\nUsage: demand today");
+            }
+            return new DemandTodayCommand(clock);
         case "overdue":
             if (words.length != 1) {
                 throw new ParseException(WARNING_MESSAGE

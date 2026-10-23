@@ -27,6 +27,9 @@ public final class FacilityOutputFormatter {
      */
     public static String formatList(List<Facility> facilities) {
         StringBuilder output = new StringBuilder("Known facilities in the local reference:");
+        if (facilities.isEmpty()) {
+            output.append("\n[WARNING] No facilities recorded.");
+        }
         for (Facility facility : facilities) {
             output.append("\n\n").append(FacilityDetailsFormatter.format(facility));
         }
@@ -58,7 +61,7 @@ public final class FacilityOutputFormatter {
         output.append(type).append(" (status: ").append(status).append("):");
 
         if (matches.isEmpty()) {
-            output.append("\nNo matching facilities found.");
+            output.append("\n[WARNING] No matching facilities found.");
         } else {
             for (Facility facility : matches) {
                 output.append("\n[").append(facility.getId()).append("] ")
