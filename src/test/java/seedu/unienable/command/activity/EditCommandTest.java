@@ -1,7 +1,7 @@
 package seedu.unienable.command.activity;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,6 +12,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
+//@@author Oliver-koh
 /**
  * Checks partial edits, completion preservation, rescheduling and atomic validation.
  */
@@ -78,3 +79,4 @@ class EditCommandTest {
                 + " dem/" + demand).execute(activities, noWrites);
     }
 }
+//@@author

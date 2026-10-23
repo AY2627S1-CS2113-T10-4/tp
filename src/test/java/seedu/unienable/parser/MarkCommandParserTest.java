@@ -8,6 +8,7 @@ import seedu.unienable.command.activity.MarkCommand;
 import seedu.unienable.command.activity.UnmarkCommand;
 import seedu.unienable.exception.ParseException;
 
+//@@author Oliver-koh
 /**
  * Tests syntax validation and top-level routing for mark commands.
  */
@@ -28,3 +29,4 @@ class MarkCommandParserTest {
         assertThrows(ParseException.class, () -> parser.parse("unmark -1"));
     }
 }
+//@@author

@@ -6,6 +6,7 @@ import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+//@@author lukelouyu
 /**
  * Builds user-facing Facility HUB messages from data supplied by commands.
  * Formatting preserves record order and does not read input or print to the console.
@@ -22,7 +23,7 @@ public final class FacilityOutputFormatter {
     /**
      * Formats the complete list of facilities with one disclaimer at the end.
      *
-     * @param facilities facilities in the order they should be displayed
+     * @param facilities facilities in the order they should be displayed.
      * @return list heading, facility details, and accessibility disclaimer
      */
     public static String formatList(List<Facility> facilities) {
@@ -39,7 +40,7 @@ public final class FacilityOutputFormatter {
     /**
      * Formats one facility's recorded details and the accessibility disclaimer.
      *
-     * @param facility facility to display
+     * @param facility facility to display.
      * @return facility details and accessibility disclaimer
      */
     public static String formatFacility(Facility facility) {
@@ -50,9 +51,9 @@ public final class FacilityOutputFormatter {
      * Formats results already filtered by the facility manager.
      * UNKNOWN is explained even when the search returns no matches.
      *
-     * @param matches matching facilities in the order they should be displayed
-     * @param type feature used in the search
-     * @param status recorded status used in the search
+     * @param matches matching facilities in the order they should be displayed.
+     * @param type feature used in the search.
+     * @param status recorded status used in the search.
      * @return search heading, matching IDs and names, and accessibility disclaimer
      */
     public static String formatFindResults(List<Facility> matches,
@@ -78,8 +79,8 @@ public final class FacilityOutputFormatter {
     /**
      * Formats an unknown-facility warning with supported names and lookup usage.
      *
-     * @param identifier facility identifier entered by the user
-     * @param facilities supported facilities in dataset order
+     * @param identifier facility identifier entered by the user.
+     * @param facilities supported facilities in dataset order.
      * @return warning message with supported names and a lookup example
      */
     public static String formatUnknownFacility(String identifier, List<Facility> facilities) {
@@ -102,10 +103,11 @@ public final class FacilityOutputFormatter {
     /**
      * Adds the shared accessibility disclaimer after the formatted message.
      *
-     * @param message content to display before the disclaimer
+     * @param message content to display before the disclaimer.
      * @return complete message with the disclaimer
      */
     private static String withDisclaimer(String message) {
         return message + "\n\n" + AccessibilityDisclaimer.TEXT;
     }
 }
+//@@author

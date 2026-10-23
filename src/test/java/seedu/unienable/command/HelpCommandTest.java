@@ -8,7 +8,10 @@ import org.junit.jupiter.api.Test;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
-/** Verifies help describes available commands, optional ratings and automatic saving. */
+//@@author Atharva005
+/**
+ * Verifies help describes available commands, optional ratings and automatic saving.
+ */
 class HelpCommandTest {
     @Test
     void execute_showsAvailableCommandsAndAutomaticSaving() {
@@ -40,3 +43,4 @@ class HelpCommandTest {
         assertFalse(result.didChangeActivities());
     }
 }
+//@@author

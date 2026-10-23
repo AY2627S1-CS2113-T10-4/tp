@@ -20,6 +20,7 @@ import seedu.unienable.model.enums.DemandLevel;
  * contract is untouched.
  */
 public class ActivityList {
+    //@@author officialasyrafrahim
     /**
      * Canonical {@code list} order: date, then start time; stable ties keep add order.
      */
@@ -40,6 +41,7 @@ public class ActivityList {
             Comparator.comparing(Activity::getPriorityScore,
                     Comparator.nullsLast(Comparator.<Integer>reverseOrder()))
                     .thenComparing(CANONICAL_ORDER);
+    //@@author
 
     private final List<Activity> activities;
 
@@ -59,6 +61,7 @@ public class ActivityList {
         this.activities = new ArrayList<>(activities);
     }
 
+    //@@author Atharva005
     /**
      * Appends without ordering; the views apply display order, so Branch 1's
      * append contract is untouched.
@@ -69,7 +72,9 @@ public class ActivityList {
     public void addActivity(Activity activity) {
         activities.add(Objects.requireNonNull(activity));
     }
+    //@@author
 
+    //@@author officialasyrafrahim
     /**
      * Returns an immutable snapshot sorted by date, then start time, the order {@code list}
      * displays and {@code delete INDEX} resolves its index against.
@@ -80,13 +85,15 @@ public class ActivityList {
         assert isSorted(view, CANONICAL_ORDER) : "Canonical view must be in date and start-time order.";
         return view;
     }
+    //@@author
 
+    //@@author Oliver-koh
     /**
      * Returns activities whose names contain the supplied phrase, ignoring case.
      * Results retain chronological order so their indexes can be mapped to the
      * full list shown by {@code list}.
      *
-     * @param keyword case-insensitive name substring
+     * @param keyword case-insensitive name substring.
      * @return matching activities in chronological order
      */
     public List<Activity> findByName(String keyword) {
@@ -95,7 +102,9 @@ public class ActivityList {
                 .filter(activity -> activity.getName().toLowerCase(Locale.ROOT).contains(normalizedKeyword))
                 .toList();
     }
+    //@@author
 
+    //@@author officialasyrafrahim
     /**
      * Returns an immutable snapshot grouped by demand (HIGH to LOW); ties keep canonical order.
      */
@@ -105,12 +114,14 @@ public class ActivityList {
         assert isSorted(view, DEMAND_ORDER) : "Demand view must be in demand and canonical order.";
         return view;
     }
+    //@@author
 
+    //@@author lukelouyu
     /**
      * Counts HIGH-demand activities scheduled on the supplied date, including completed
      * activities. Start and end times do not affect the full-day scheduled count.
      *
-     * @param date date whose scheduled demand is counted
+     * @param date date whose scheduled demand is counted.
      * @return number of HIGH-demand activities on that date
      * @throws NullPointerException if the date is null
      */
@@ -121,7 +132,9 @@ public class ActivityList {
                 .filter(activity -> activity.getDemand() == DemandLevel.HIGH)
                 .count();
     }
+    //@@author
 
+    //@@author officialasyrafrahim
     /**
      * Returns every activity ordered by descending priority score, with activities
      * whose ratings are incomplete last. Ties keep canonical order, and completed
@@ -135,12 +148,14 @@ public class ActivityList {
         assert isSorted(view, PRIORITY_ORDER) : "Priority view must be in priority and canonical order.";
         return view;
     }
+    //@@author
 
+    //@@author officialasyrafrahim
     /**
      * Returns incomplete activities whose start is strictly before the supplied
      * local time. The result keeps canonical order for stable chronological ties.
      *
-     * @param now local date and time used for the strict start boundary
+     * @param now local date and time used for the strict start boundary.
      * @return immutable overdue view
      */
     public List<Activity> getOverdueView(LocalDateTime now) {
@@ -153,12 +168,14 @@ public class ActivityList {
         assert isSorted(view, CANONICAL_ORDER) : "Overdue view must stay in canonical order.";
         return view;
     }
+    //@@author
 
+    //@@author officialasyrafrahim
     /**
      * Returns the earliest incomplete activity whose start is strictly after the
      * supplied local time. Canonical order decides ties between equal starts.
      *
-     * @param now local date and time used for the strict start boundary
+     * @param now local date and time used for the strict start boundary.
      * @return the next activity, or empty when none starts later
      */
     public Optional<Activity> getNext(LocalDateTime now) {
@@ -169,7 +186,9 @@ public class ActivityList {
                 .sorted(CANONICAL_ORDER)
                 .findFirst();
     }
+    //@@author
 
+    //@@author officialasyrafrahim
     /**
      * Resolves a 1-based displayed index against the canonical view, removes that
      * activity, and returns it. Removal is by object rather than by raw backing-list
@@ -196,11 +215,13 @@ public class ActivityList {
         assert activities.size() == canonical.size() - 1 : "Deleting one activity must reduce the list size by one.";
         return removed;
     }
+    //@@author
 
+    //@@author officialasyrafrahim
     /**
      * Resolves a user-visible one-based index against the canonical chronological view.
      *
-     * @param displayedIndex index shown by the chronological list command
+     * @param displayedIndex index shown by the chronological list command.
      * @return the activity at that index
      * @throws InvalidIndexException when the index is outside the current canonical view
      */
@@ -215,13 +236,15 @@ public class ActivityList {
         }
         return canonical.get(displayedIndex - 1);
     }
+    //@@author
 
+    //@@author Oliver-koh
     /**
      * Replaces an activity selected by its chronological index while preserving
      * its insertion position for stable tie ordering.
      *
-     * @param displayedIndex index shown by the chronological list command
-     * @param replacement replacement activity
+     * @param displayedIndex index shown by the chronological list command.
+     * @param replacement replacement activity.
      * @throws InvalidIndexException when the index is outside the current view
      */
     public void replaceByDisplayedIndex(int displayedIndex, Activity replacement)
@@ -231,12 +254,14 @@ public class ActivityList {
         int backingIndex = activities.indexOf(current);
         activities.set(backingIndex, replacement);
     }
+    //@@author
 
+    //@@author Oliver-koh
     /**
      * Updates completion state using the same canonical displayed index as list and delete.
      *
-     * @param displayedIndex index shown by the chronological list command
-     * @param done desired completion state
+     * @param displayedIndex index shown by the chronological list command.
+     * @param done desired completion state.
      * @return true when the activity state changed, false when it already had that state
      * @throws InvalidIndexException when the index is outside the current canonical view
      */
@@ -249,6 +274,7 @@ public class ActivityList {
         activity.setDone(done);
         return true;
     }
+    //@@author
 
     /**
      * Returns an immutable snapshot in insertion (add) order, the storage order rather than display order;
@@ -258,11 +284,12 @@ public class ActivityList {
         return List.copyOf(activities);
     }
 
+    //@@author officialasyrafrahim
     /**
      * Checks the ordering invariant for a sorted view when assertions are enabled.
      *
-     * @param view activities to check
-     * @param order comparator defining the required order
+     * @param view activities to check.
+     * @param order comparator defining the required order.
      * @return true if every adjacent pair is in comparator order
      */
     private static boolean isSorted(List<Activity> view, Comparator<Activity> order) {
@@ -273,4 +300,5 @@ public class ActivityList {
         }
         return true;
     }
+    //@@author
 }

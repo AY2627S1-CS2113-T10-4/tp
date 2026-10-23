@@ -9,11 +9,11 @@
 - [Design and implementation](#design-and-implementation)
   - [Shared design](#shared-design)
     - [Architecture](#architecture)
-  - [Atharva: Activity creation and help](#atharva-activity-creation-and-help)
-  - [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion)
+  - [Atharva: Activity creation and help](#activity-creation-and-help)
+  - [Asyraf: Activity views and deletion](#activity-views-and-deletion)
     - [Ordering and displayed indexes](#ordering-and-displayed-indexes)
     - [Priority, overdue and next views](#priority-overdue-and-next-views)
-  - [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search)
+  - [Oliver: Completion, storage, editing and search](#completion-storage-editing-and-search)
   - [Ratings and accessibility](#ratings-and-accessibility)
     - [Optional ratings integration](#optional-ratings-integration)
     - [Today's high-demand count](#todays-high-demand-count)
@@ -97,9 +97,9 @@ details inside your block; maintain sections marked `SHARED` jointly.
 | Maintainer | Implementation sections | PlantUML sources | Rendered images |
 | --- | --- | --- | --- |
 | Shared | [Shared design](#shared-design) | [shared/](diagrams/shared) | [shared/](images/shared) |
-| [Atharva](team/atharva005.md) | [Atharva: Activity creation and help](#atharva-activity-creation-and-help) | Awaiting contribution | Awaiting contribution |
-| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion) | [asyraf/](diagrams/asyraf) | [asyraf/](images/asyraf) |
-| [Oliver](team/oliver-koh.md) | [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search) | Awaiting contribution | Awaiting contribution |
+| [Atharva](team/atharva005.md) | [Atharva: Activity creation and help](#activity-creation-and-help) | Awaiting contribution | Awaiting contribution |
+| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#activity-views-and-deletion) | [asyraf/](diagrams/asyraf) | [asyraf/](images/asyraf) |
+| [Oliver](team/oliver-koh.md) | [Oliver: Completion, storage, editing and search](#completion-storage-editing-and-search) | Awaiting contribution | Awaiting contribution |
 | [Luke](team/lukelouyu.md) | [Ratings and accessibility](#ratings-and-accessibility) | [luke/](diagrams/luke) | [luke/](images/luke) |
 
 <!-- BEGIN SHARED: All members maintain the architecture and shared models jointly. -->
@@ -144,15 +144,24 @@ Update diagram sources and their images together. Use Java 25 and PlantUML:
 
 <!-- BEGIN OWNER: Atharva Rege (@Atharva005). Add activity-creation and help documentation here. -->
 
-### Atharva: Activity creation and help
+<!-- @@author Atharva005 -->
+
+
+### Activity creation and help
 
 Documentation to be completed by Atharva.
+
+
+<!-- @@author -->
 
 <!-- END OWNER: Atharva Rege (@Atharva005) -->
 
 <!-- BEGIN OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim). Add listing, deletion, priority, overdue and next documentation here. -->
 
-### Asyraf: Activity views and deletion
+<!-- @@author officialasyrafrahim -->
+
+
+### Activity views and deletion
 
 Asyraf maintains chronological and demand listing, deletion, priority ordering,
 and the overdue/next queries, including their displayed-index rules.
@@ -325,17 +334,29 @@ Empty priority output includes `[WARNING] No activities yet.`; time queries use
 `[WARNING] No upcoming incomplete activities.` respectively. Empty results do
 not change or save activity data.
 
+
+<!-- @@author -->
+
 <!-- END OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim) -->
 
 <!-- BEGIN OWNER: Oliver (@Oliver-koh). Add completion, storage/recovery, editing and search documentation here. -->
 
-### Oliver: Completion, storage, editing and search
+<!-- @@author Oliver-koh -->
+
+
+### Completion, storage, editing and search
 
 Documentation to be completed by Oliver.
+
+
+<!-- @@author -->
 
 <!-- END OWNER: Oliver (@Oliver-koh) -->
 
 <!-- BEGIN OWNER: Lou Yu Luke (@lukelouyu). Maintain optional add ratings, today's high-demand count, facilities, routes and exit documentation here. -->
+
+<!-- @@author lukelouyu -->
+
 
 <a id="luke-ratings-and-accessibility"></a>
 
@@ -639,6 +660,9 @@ set and the activity-change flag unset. `ConsoleHelper` displays the message,
 then `UniEnable` stops the console loop. Exit does not save or retry a failed
 save; recovery must finish before the user enters `bye`.
 
+
+<!-- @@author -->
+
 <!-- END OWNER: Lou Yu Luke (@lukelouyu) -->
 
 <!-- SHARED: All members maintain testing guidance and cross-feature validation notes. -->
@@ -694,7 +718,7 @@ recovery writes and temporary files for saves. Recoverable errors let the consol
 continue; failed saves may leave unsaved changes in memory, so follow the
 [recovery steps](UserGuide.md#error-handling) before exiting. Reference-data failures
 use the [architecture fallback](#architecture). Add and edit
-[reject blank or non-ASCII names](UserGuide.md#editing-an-activity-edit) with
+[reject blank names, including Unicode whitespace](UserGuide.md#editing-an-activity-edit) with
 `[WARNING]` and usage without changing data; loaders retain their handling of
 historical names. Parser tests and `UniEnableTest` check validation, unchanged
 file bytes and restarts.
@@ -730,12 +754,15 @@ The team supplied the ownership and version allocations below. Each member
 maintains their descriptions and diagrams; [portfolio pages](team/README.md)
 link their responsibilities, design, code and tests.
 
+RepoSense `@@author` tags preserve these responsibility assignments when bug fixes
+or formatting changes touch another member's feature.
+
 | Team member | V1.0 work | V2.0 work |
 | --- | --- | --- |
-| [Lou Yu Luke (@lukelouyu)](https://github.com/lukelouyu) | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Today's high-demand count (US16)](#todays-high-demand-count): `demand today`. [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2026-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
-| [Atharva Rege (@Atharva005)](https://github.com/Atharva005) | Help: `help`. [Adding an activity with name, date, times, and optional demand](#atharva-activity-creation-and-help): `add n/Tutorial d/2026-12-01 s/09:00 e/10:00 dem/HIGH`. | Planned: `view today`, `view tomorrow`, and `view week`. |
-| [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#asyraf-activity-views-and-deletion): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#asyraf-activity-views-and-deletion): `list priority`, `overdue`, and `next`. |
-| [Oliver (@Oliver-koh)](https://github.com/Oliver-koh) | [Saving, backups, and recovery](#oliver-completion-storage-editing-and-search), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#oliver-completion-storage-editing-and-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
+| [Lou Yu Luke (@lukelouyu)](https://github.com/lukelouyu) | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Today's high-demand count](#todays-high-demand-count): `demand today`. [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2026-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
+| [Atharva Rege (@Atharva005)](https://github.com/Atharva005) | Help: `help`. [Adding an activity with name, date, times, and optional demand](#activity-creation-and-help): `add n/Tutorial d/2026-12-01 s/09:00 e/10:00 dem/HIGH`. | Planned: `view today`, `view tomorrow`, and `view week`. |
+| [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#activity-views-and-deletion): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#activity-views-and-deletion): `list priority`, `overdue`, and `next`. |
+| [Oliver (@Oliver-koh)](https://github.com/Oliver-koh) | [Saving, backups, and recovery](#completion-storage-editing-and-search), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#completion-storage-editing-and-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
 
 ## User stories
 
@@ -988,9 +1015,10 @@ before and after searches and rejected edits; they must remain unchanged.
 | 13 | `bye`, relaunch, then `list` | Empty activity file reloads successfully with no remaining activities. |
 
 In a disposable test folder, also try `add` and `edit` with a name containing only
-U+2003 EM SPACE: both must show the blank-name warning. Chinese, accented or emoji
-names must show the English-only warning. Confirm that rejected edits leave the
-original activity and saved file unchanged, including after restarting.
+U+2003 EM SPACE or U+3000 IDEOGRAPHIC SPACE: both must show the blank-name warning.
+Chinese, accented and emoji names are supported and must survive adding, editing
+and restarting. Confirm that rejected commands leave the original activity and
+saved file unchanged, including after restarting.
 
 ### Facility queries and routes
 

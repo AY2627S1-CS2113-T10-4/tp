@@ -50,6 +50,9 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
   and runs in order. Additional rating examples follow the walkthrough.
   If you try them after the example dates, replace the dates with future dates.
 
+
+<!-- @@author Oliver-koh -->
+
 ## Data Storage
 
 Activities load at startup from `data/activities.txt`, relative to the folder
@@ -88,7 +91,13 @@ After a save failure, keep the app open and follow the
 [recovery steps](#error-handling) before exiting.
 Facility and connection reference data are bundled and read-only.
 
+
+<!-- @@author -->
+
 ## Features
+
+
+<!-- @@author Atharva005 -->
 
 ### Adding an activity: `add`
 
@@ -103,6 +112,9 @@ add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG
 `n/`, `d/`, `s/`, and `e/` are required and must each appear once with a value.
 Every supplied known prefix must appear once and contain a value.
 
+
+<!-- @@author -->
+
 | Optional field | Meaning | Accepted values | When omitted |
 | --- | --- | --- | --- |
 | `dem/` | Activity demand, separate from ratings | LOW, MEDIUM, HIGH | MEDIUM |
@@ -110,9 +122,24 @@ Every supplied known prefix must appear once and contain a value.
 | `urg/` | Urgency | Whole number from 1 to 5 | Unset (`-`) |
 | `com/` | Commitment | Whole number from 1 to 5 | Unset (`-`) |
 
+<!-- @@author Atharva005 -->
+
+
+
+<!-- @@author -->
+
+
+<!-- @@author lukelouyu -->
+
 Supply all, some, or none of the ratings. To leave one unset, omit its prefix;
 do not enter a literal `-`. Empty values, duplicate prefixes, ratings outside
 1 to 5, decimals, and text are rejected.
+
+<!-- @@author -->
+
+
+<!-- @@author Atharva005 -->
+
 
 The end time must be strictly after the start time on
 the same day; overnight activities are not supported. The activity's date and end
@@ -121,7 +148,9 @@ local time zone. An activity that has already started can still be added if it
 has not ended; an activity ending exactly now is rejected. New activities start
 incomplete.
 
-Names cannot contain `|` or line breaks. Slash-containing text such as `and/or`
+Names must contain at least one non-whitespace character. Chinese, accented and
+emoji names are supported. Names cannot contain `|` or line breaks.
+Slash-containing text such as `and/or`
 and `w/o` is allowed. However, a known prefix (`n/`, `d/`, `s/`, `e/`, `dem/`,
 `imp/`, `urg/`, or `com/`)
 at the start of a whitespace-separated part of the name is treated as another
@@ -151,6 +180,12 @@ add n/Project meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH
 The app confirms Project meeting, its date/time, HIGH demand, three unset ratings,
 and a total of 2 activities.
 
+
+<!-- @@author -->
+
+
+<!-- @@author officialasyrafrahim -->
+
 ### Listing activities: `list` and `list demand`
 
 `list` sorts by date, then start time. `list demand` sorts HIGH, MEDIUM, LOW,
@@ -178,6 +213,12 @@ Run 'list' to find the correct index for 'delete INDEX'.
 
 An empty list shows `[WARNING] No activities yet.` beneath the heading
 (and demand-view notice).
+
+
+<!-- @@author -->
+
+
+<!-- @@author lukelouyu -->
 
 ### Counting today's high-demand activities: `demand today`
 
@@ -217,6 +258,12 @@ On 2026-12-01, the same two activities instead produce:
 such as `demand`, `demand tomorrow`, or `demand today extra`, produce a warning
 ending with `Usage: demand today`.
 
+
+<!-- @@author -->
+
+
+<!-- @@author Oliver-koh -->
+
 ### Changing completion: `mark` and `unmark`
 
 Formats: `mark INDEX` and `unmark INDEX`
@@ -231,6 +278,12 @@ Output: `Unmarked activity: CS2113 tutorial`
 
 Repeating a command reports `[WARNING] Activity is already marked as done: NAME`
 or `[WARNING] Activity is already unmarked: NAME`, without changing or saving it.
+
+
+<!-- @@author -->
+
+
+<!-- @@author officialasyrafrahim -->
 
 ### Deleting an activity: `delete`
 
@@ -250,6 +303,12 @@ Activities in this session: 1
 The activity is removed immediately; subsequent indexes may change.
 When the last activity is deleted, the confirmation ends with
 `There is no activity recorded` instead of a remaining count.
+
+
+<!-- @@author -->
+
+
+<!-- @@author lukelouyu -->
 
 ### Trying optional add ratings
 
@@ -278,6 +337,12 @@ ordinary slashes in a name. Its demand is LOW; the others default to MEDIUM.
 The add confirmation displays the ratings, and saving preserves them across
 restarts. `list` and `list demand` show date, time, demand and completion, without
 ratings.
+
+
+<!-- @@author -->
+
+
+<!-- @@author Oliver-koh -->
 
 ### Editing an activity: `edit`
 
@@ -328,9 +393,9 @@ Completion stays `[X]`; omitted date, times, demand, importance and urgency rema
 unchanged. For a timing change, supply the date, start or end fields as needed;
 the resulting start must still be earlier than the resulting end.
 
-**Known limitation:** a name made only of Unicode space characters such as
-U+2003 can currently pass add or edit validation and then be skipped when saved
-data reloads. Avoid whitespace-only names. This validation defect is still open.
+Both `add` and `edit` reject whitespace-only names, including Unicode spaces such
+as U+2003 EM SPACE and U+3000 IDEOGRAPHIC SPACE. Rejected input leaves the activity
+list and saved data unchanged.
 
 ### Searching activity names: `find`
 
@@ -363,6 +428,12 @@ Found 1 matching activity:
 `find exco PLANNING` returns the same activity. `find exam` reports
 `[WARNING] No activities matched keyword "exam".`; a valid search on an empty list has
 the same no-match form. `find` without a keyword reports a warning and usage.
+
+
+<!-- @@author -->
+
+
+<!-- @@author officialasyrafrahim -->
 
 ### Viewing priority: `list priority`
 
@@ -449,6 +520,12 @@ A completed activity appears in neither time query. At its exact start, an
 incomplete activity appears in neither query; it remains visible in `list`.
 These strict boundaries also apply when the current clock includes seconds.
 
+
+<!-- @@author -->
+
+
+<!-- @@author lukelouyu -->
+
 ### Listing and viewing facilities: `facility`
 
 Formats: `facility list` and `facility LOCATION`
@@ -528,6 +605,9 @@ Connections:
 Sample reference data.
 Verify with current campus information before you rely on it.
 ```
+
+
+<!-- @@author -->
 
 ### Viewing help and exiting: `help` and `bye`
 

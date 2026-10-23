@@ -9,6 +9,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.activity.ActivityListFormatter;
 
+//@@author Oliver-koh
 /**
  * Finds activities by a case-insensitive substring of their names.
  */
@@ -18,7 +19,7 @@ public class FindCommand extends Command {
     /**
      * Creates a name-search command.
      *
-     * @param keyword trimmed, non-blank name substring
+     * @param keyword trimmed, non-blank name substring.
      */
     public FindCommand(String keyword) {
         this.keyword = keyword;
@@ -35,3 +36,4 @@ public class FindCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author

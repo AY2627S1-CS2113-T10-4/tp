@@ -2,6 +2,7 @@ package seedu.unienable.model;
 
 import java.util.List;
 
+//@@author lukelouyu
 /**
  * An immutable facility or campus hub with a stable ID and recorded features.
  */
@@ -14,10 +15,10 @@ public final class Facility {
     /**
      * Creates a reference-data object without parsing or normalizing the supplied values.
      *
-     * @param id stable facility ID, preserved as supplied
-     * @param name facility name, preserved as supplied
-     * @param description optional description, or null
-     * @param features non-null feature list with no null entries; copied defensively
+     * @param id stable facility ID, preserved as supplied.
+     * @param name facility name, preserved as supplied.
+     * @param description optional description, or null.
+     * @param features non-null feature list with no null entries; copied defensively.
      */
     public Facility(String id, String name, String description, List<FacilityFeature> features) {
         this.id = id;
@@ -63,3 +64,4 @@ public final class Facility {
         return features;
     }
 }
+//@@author

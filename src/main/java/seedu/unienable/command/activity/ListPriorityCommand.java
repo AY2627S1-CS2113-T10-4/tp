@@ -10,6 +10,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.activity.ActivityListFormatter;
 
+//@@author officialasyrafrahim
 /**
  * Lists every activity by descending combined priority score, including completed
  * activities. Rows with missing ratings appear last.
@@ -30,3 +31,4 @@ public class ListPriorityCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author

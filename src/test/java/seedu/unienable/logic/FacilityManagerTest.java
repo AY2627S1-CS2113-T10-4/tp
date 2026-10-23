@@ -12,6 +12,7 @@ import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+//@@author lukelouyu
 /**
  * Checks facility identity, exact statuses, deduplication, and immutable manager snapshots.
  */
@@ -45,3 +46,4 @@ class FacilityManagerTest {
         assertTrue(new FacilityManager(List.of()).findFacility("AS1").isEmpty());
     }
 }
+//@@author

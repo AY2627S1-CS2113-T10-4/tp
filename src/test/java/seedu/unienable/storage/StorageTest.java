@@ -21,6 +21,7 @@ import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 
+//@@author Oliver-koh
 /**
  * Tests legacy compatibility, rated activity persistence and protection of existing files.
  */
@@ -209,3 +210,4 @@ class StorageTest {
         assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
     }
 }
+//@@author

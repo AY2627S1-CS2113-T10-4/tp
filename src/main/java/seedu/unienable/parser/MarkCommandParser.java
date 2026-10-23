@@ -7,6 +7,7 @@ import seedu.unienable.command.activity.MarkCommand;
 import seedu.unienable.command.activity.UnmarkCommand;
 import seedu.unienable.exception.ParseException;
 
+//@@author Oliver-koh
 /**
  * Parses the mark and unmark activity commands.
  */
@@ -17,7 +18,7 @@ public class MarkCommandParser {
     /**
      * Parses {@code mark INDEX}.
      *
-     * @param words command words beginning with mark
+     * @param words command words beginning with mark.
      * @return a mark command
      * @throws ParseException when the syntax is invalid
      */
@@ -28,7 +29,7 @@ public class MarkCommandParser {
     /**
      * Parses {@code unmark INDEX}.
      *
-     * @param words command words beginning with unmark
+     * @param words command words beginning with unmark.
      * @return an unmark command
      * @throws ParseException when the syntax is invalid
      */
@@ -50,3 +51,4 @@ public class MarkCommandParser {
         }
     }
 }
+//@@author

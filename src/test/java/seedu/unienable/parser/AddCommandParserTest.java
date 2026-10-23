@@ -23,9 +23,14 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
 
-/** Tests order-independent add parsing, optional ratings and existing input validation. */
+//@@author Atharva005
+/**
+ * Tests order-independent add parsing, optional ratings and existing input validation.
+ */
 class AddCommandParserTest {
-    /** Fixes now at 16:00 on 14 October 2026 in Singapore for repeatable validation. */
+    /**
+     * Fixes now at 16:00 on 14 October 2026 in Singapore for repeatable validation.
+     */
     private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-10-14T08:00:00Z"),
             ZoneId.of("Asia/Singapore"));
     private final AddCommandParser parser = new AddCommandParser(FIXED_CLOCK);
@@ -60,6 +65,8 @@ class AddCommandParserTest {
         assertNull(result.getCommitment());
     }
 
+    //@@author
+    //@@author lukelouyu
     @Test
     void parse_partialRatings_keepsEachOmittedRatingUnset() throws Exception {
         String[] suffixes = {"imp/1 com/5", "urg/2"};
@@ -76,7 +83,11 @@ class AddCommandParserTest {
             assertEquals(expected[i][2], result.getCommitment());
         }
     }
+    //@@author
+    //@@author Atharva005
 
+    //@@author
+    //@@author lukelouyu
     @Test
     void parse_invalidRatings_rejectsEachPrefix() {
         for (String prefix : new String[] {"imp", "urg", "com"}) {
@@ -87,6 +98,8 @@ class AddCommandParserTest {
             }
         }
     }
+    //@@author
+    //@@author Atharva005
 
     @Test
     void parse_emptyOrDuplicateFields_rejectsEveryKnownPrefix() {
@@ -115,6 +128,15 @@ class AddCommandParserTest {
         parser.parse("n/Lunch w/o friends d/2026-10-20 s/09:00 e/10:00")
                 .execute(activities, new Storage());
         assertEquals("Lunch w/o friends", activities.getActivities().get(0).getName());
+    }
+
+    @Test
+    void parse_unicodeBlankName_throwsParseException() {
+        for (String name : new String[] {"\u2003", "\u3000", " \u2003\t\u3000 "}) {
+            ParseException exception = assertThrows(ParseException.class,
+                    () -> parser.parse("n/" + name + " d/2026-10-20 s/09:00 e/10:00"));
+            assertTrue(exception.getMessage().contains("Empty n/ parameter."));
+        }
     }
 
     @Test
@@ -206,3 +228,4 @@ class AddCommandParserTest {
         }
     }
 }
+//@@author

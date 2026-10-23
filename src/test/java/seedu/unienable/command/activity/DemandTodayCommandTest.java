@@ -24,6 +24,7 @@ import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
+//@@author lukelouyu
 /**
  * Verifies the full-day HIGH-demand count, read-only behaviour, command grammar,
  * and date changes in the clock's local zone.
@@ -118,7 +119,9 @@ class DemandTodayCommandTest {
                 LocalTime.parse(start).plusMinutes(30), demand, done));
     }
 
-    /** Creates a clock whose instant can advance while all zone views share the same time source. */
+    /**
+     * Creates a clock whose instant can advance while all zone views share the same time source.
+     */
     private static Clock mutableClock(AtomicReference<Instant> now, ZoneId zone) {
         return new Clock() {
             @Override
@@ -138,3 +141,4 @@ class DemandTodayCommandTest {
         };
     }
 }
+//@@author

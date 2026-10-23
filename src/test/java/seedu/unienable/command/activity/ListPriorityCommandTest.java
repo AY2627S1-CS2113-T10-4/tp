@@ -14,6 +14,7 @@ import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
+//@@author officialasyrafrahim
 /**
  * Checks priority scoring, ordering, completed activities, unavailable scores,
  * and full chronological indexes for the list priority command.
@@ -73,3 +74,4 @@ class ListPriorityCommandTest {
                 importance, urgency, commitment));
     }
 }
+//@@author

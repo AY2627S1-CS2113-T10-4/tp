@@ -3,6 +3,7 @@ package seedu.unienable.command;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
+//@@author lukelouyu
 /**
  * Displays the goodbye message and requests that the console loop exit.
  */
@@ -10,8 +11,8 @@ public class ByeCommand extends Command {
     /**
      * Returns the goodbye message without changing activities or stored data.
      *
-     * @param activities activity collection, not modified by this command
-     * @param storage activity storage, not used by this command
+     * @param activities activity collection, not modified by this command.
+     * @param storage activity storage, not used by this command.
      * @return command result requesting normal application exit
      */
     @Override
@@ -19,3 +20,4 @@ public class ByeCommand extends Command {
         return new CommandResult("Goodbye from UniEnable!", true);
     }
 }
+//@@author

@@ -18,6 +18,7 @@ import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+//@@author lukelouyu
 /**
  * Loads bundled facility reference data, preserving valid records and reporting invalid lines.
  */
@@ -40,7 +41,7 @@ public class FacilityStorage {
      * For each facility and feature type, the first valid status is retained. Later conflicting
      * records are skipped with warnings; matching statuses may retain separate notes.
      *
-     * @param source reader containing facility and feature records
+     * @param source reader containing facility and feature records.
      * @return valid facilities and warnings carrying physical source line numbers
      * @throws UniEnableException if reading fails; partial data is not returned as a successful load
      */
@@ -226,3 +227,4 @@ public class FacilityStorage {
         }
     }
 }
+//@@author
