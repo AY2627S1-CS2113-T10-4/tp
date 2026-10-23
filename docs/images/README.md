@@ -8,7 +8,7 @@ section, and regeneration commands.
 | --- | --- |
 | [shared](shared) | Shared architecture and the combined activity-creation/rating model. |
 | `atharva` (not yet populated) | Atharva's images. |
-| `asyraf` (not yet populated) | Asyraf's images. |
+| [asyraf](asyraf) | Activity ordering, deletion, priority, overdue and next. |
 | `oliver` (not yet populated) | Oliver's images. |
 | [luke](luke) | Facilities, campus connectivity and route search. |
 
