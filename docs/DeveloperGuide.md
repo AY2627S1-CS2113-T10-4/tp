@@ -11,6 +11,8 @@
     - [Architecture](#architecture)
   - [Atharva: Activity creation and help](#atharva-activity-creation-and-help)
   - [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion)
+    - [Ordering and displayed indexes](#ordering-and-displayed-indexes)
+    - [Priority, overdue and next views](#priority-overdue-and-next-views)
   - [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search)
   - [Ratings and accessibility](#ratings-and-accessibility)
     - [Optional ratings integration](#optional-ratings-integration)
@@ -84,11 +86,19 @@ Facility and connection data come from `src/main/resources/facilities.txt` and
 
 <!-- SHARED: All members maintain this ownership overview and the diagram index. -->
 
+Asyraf's, Luke's and shared implementation write-ups are populated. The other members'
+main headings mark where they should add their documentation.
+
+Implementation sections and diagram folders follow the responsibility assignments
+in [Team contributions](#team-contributions). In the Markdown source, `BEGIN OWNER`
+and `END OWNER` comments mark each member's editing block. Add implementation
+details inside your block; maintain sections marked `SHARED` jointly.
+
 | Maintainer | Implementation sections | PlantUML sources | Rendered images |
 | --- | --- | --- | --- |
 | Shared | [Shared design](#shared-design) | [shared/](diagrams/shared) | [shared/](images/shared) |
 | [Atharva](team/atharva005.md) | [Atharva: Activity creation and help](#atharva-activity-creation-and-help) | Awaiting contribution | Awaiting contribution |
-| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion) | Awaiting contribution | Awaiting contribution |
+| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion) | [asyraf/](diagrams/asyraf) | [asyraf/](images/asyraf) |
 | [Oliver](team/oliver-koh.md) | [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search) | Awaiting contribution | Awaiting contribution |
 | [Luke](team/lukelouyu.md) | [Ratings and accessibility](#ratings-and-accessibility) | [luke/](diagrams/luke) | [luke/](images/luke) |
 
@@ -144,7 +154,176 @@ Documentation to be completed by Atharva.
 
 ### Asyraf: Activity views and deletion
 
-Documentation to be completed by Asyraf.
+Asyraf maintains chronological and demand listing, deletion, priority ordering,
+and the overdue/next queries, including their displayed-index rules.
+
+#### Ordering and displayed indexes
+
+##### Overview
+
+`list` displays activities by date and start time. `list demand` groups them from
+`HIGH` to `LOW`, then by date and start time. Delete, edit, mark and unmark always
+use the one-based indexes from chronological `list`, even after a demand-ordered
+list has been displayed.
+
+##### High-level design
+
+`ActivityList` keeps its backing list in insertion order and creates separate,
+unmodifiable sorted lists for display. The activity objects in those lists are
+shared with the backing list. Commands select a view, while
+`ActivityListFormatter` renders its supplied order without sorting or printing.
+
+![Class diagram showing activity views, list formatting and deletion](images/asyraf/ActivityOrderingClassDiagram.png)
+
+Source: [ActivityOrderingClassDiagram.puml](diagrams/asyraf/ActivityOrderingClassDiagram.puml).
+The [shared activity-creation diagram](diagrams/shared/ActivityCreationClassDiagram.puml)
+shows the activity fields omitted here.
+
+##### Implementation and sequence diagram
+
+1. `Parser` delegates `list` and `delete` syntax to `ListDeleteCommandParser`.
+   It creates `ListCommand`, `ListDemandCommand` or `DeleteCommand` as appropriate.
+   The same parser creates `ListPriorityCommand` for `list priority`.
+2. Listing calls `getCanonicalView()` or `getDemandView()`. Sorting is stable:
+   activities tied on all ordering fields retain their insertion order.
+3. `ActivityListFormatter` numbers the selected view from 1. The demand view
+   includes a notice telling users to run `list` before choosing a deletion index.
+4. For `delete 1`, `deleteByDisplayedIndex(1)` builds the canonical view, checks
+   the index and selects element 0. It removes that activity object from the
+   backing list rather than removing backing-list element 0.
+5. `DeleteCommand` returns the removed activity's details and the new count with
+   the activity-change flag set. If no activities remain, it shows
+   `There is no activity recorded` instead of a count. `ConsoleHelper` then saves
+   the updated activities before displaying the result, as described in
+   [Architecture](#architecture).
+
+The sequence starts after `DeleteCommand(1)` has been parsed. It highlights why
+deletion follows chronological display order even when insertion order differs.
+It assumes a valid index and omits the subsequent save and display calls.
+
+![Sequence diagram showing deletion through the canonical displayed index](images/asyraf/DeleteActivitySequence.png)
+
+Source: [DeleteActivitySequence.puml](diagrams/asyraf/DeleteActivitySequence.puml).
+
+##### Design considerations
+
+Sorting copies keeps listing read-only and preserves insertion order for storage.
+Sorting the backing list in place would make a display command change that order.
+Using one canonical index rule also avoids maintaining a separate "last displayed
+list" state, though users must check `list` when switching from the demand view.
+Priority and time views instead display full chronological indexes directly,
+as explained below.
+
+##### Error handling
+
+The parser rejects missing or extra arguments, signed or non-numeric indexes,
+and integers too large for `int`. Zero passes syntax checking but is rejected
+by `ActivityList`, which also handles empty lists and out-of-range indexes through
+`InvalidIndexException`. Invalid deletion leaves activities unchanged.
+Assertions check view ordering and deletion invariants; `FINE` log messages record
+list and delete operations. These support debugging, while checked exceptions
+handle invalid user input. Empty list views show `[WARNING] No activities yet.`.
+
+#### Priority, overdue and next views
+
+##### Overview
+
+`list priority` ranks every activity, including completed ones, by its combined
+priority score. `overdue` and `next` query incomplete activities relative to the
+current local time. All three views are read-only and display the full
+chronological index used by `edit`, `mark`, `unmark` and `delete`.
+
+`Activity.getPriorityScore()` calculates:
+
+```text
+URG * URG * (IMP + COM)
+```
+
+Each rating is an integer from 1 to 5. The score ranges from 2 to 250 and is
+available only when importance, urgency and commitment are all set. Missing
+ratings produce `null`, displayed as `NA`; demand and completion do not affect
+the score. Squaring urgency gives it greater weight, while importance and
+commitment contribute equally within the sum.
+
+##### High-level design
+
+`Activity` owns the score formula so every view uses one definition. `ActivityList`
+owns ordering and filtering. `ListPriorityCommand`, `OverdueCommand` and
+`NextCommand` select views, while `ActivityListFormatter` renders their results.
+`Parser` supplies the session's injected `Clock` to the time-query commands.
+
+![Class diagram for priority, overdue and next views](images/asyraf/PriorityAndTimeViewsClassDiagram.png)
+
+Source: [PriorityAndTimeViewsClassDiagram.puml](diagrams/asyraf/PriorityAndTimeViewsClassDiagram.puml).
+
+##### Implementation and sequence diagram
+
+1. `ListDeleteCommandParser` recognises `list priority`; `Parser` recognises
+   `overdue` and `next` and creates their commands with the session's clock.
+2. `OverdueCommand` and `NextCommand` capture `LocalDateTime.now(clock)` once per
+   execution, so filtering, labels and logging use the same instant.
+3. `getPriorityView()` sorts available scores in descending order, with missing
+   scores last. Ties use date and start time, then retain insertion order.
+   Completed activities remain included.
+4. `getOverdueView(now)` keeps incomplete activities whose start is strictly
+   before `now`, in chronological order. `getNext(now)` returns the earliest
+   incomplete start strictly after `now`, with equal starts retaining add order.
+5. Each command also obtains `getCanonicalView()`. The formatter maps selected
+   activities to their indexes in that full view instead of renumbering them.
+   Priority rows show scores and ratings; overdue rows show time labels.
+6. Each command returns a `CommandResult` with the activity-change flag unset,
+   so `ConsoleHelper` displays its message without calling `Storage.save()`.
+
+The sequence follows a successful `overdue` query from input to output. `next`
+uses the same clock and index flow; `list priority` omits the time boundary.
+
+![Sequence diagram for an overdue query with chronological indexes and no save](images/asyraf/PriorityAndTimeViewsSequence.png)
+
+Source: [PriorityAndTimeViewsSequence.puml](diagrams/asyraf/PriorityAndTimeViewsSequence.puml).
+
+##### Time-boundary rules
+
+Production uses `Clock.systemDefaultZone()`. Comparisons are strict: an activity
+starting exactly at `now` appears in neither `overdue` nor `next`. An activity
+that has started but not yet ended is overdue because the boundary uses its start.
+
+| Label or view | Rule for an incomplete activity |
+| --- | --- |
+| `OVERDUE TODAY` | Start date equals today and start is before now. |
+| `OVERDUE WEEK` | Start date is before today but not before the current week's Monday. |
+| `OVERDUE EARLIER` | Start date is before the current week's Monday. |
+| `next` | Earliest start strictly after now. |
+
+The formatter calculates Monday with `TemporalAdjusters.previousOrSame(MONDAY)`,
+which also handles week and year rollovers.
+
+##### Design considerations
+
+Keeping completion out of scoring allows completed and incomplete activities to
+appear together in priority order. Marking an activity changes its eligibility
+for time queries without changing its score.
+
+Using `Comparator.nullsLast(Comparator.reverseOrder())` puts missing scores after
+all available scores. Canonical tie-breaking and stable sorting make results
+predictable. Read-only views preserve backing-list order, while full chronological
+indexes let users act on a result without translating a filtered-view index.
+Adding, deleting or rescheduling activities can change those indexes.
+
+Injecting `Clock` allows command and integration tests to use `Clock.fixed()`
+with an explicit zone. Passing the captured `now` into model methods keeps them
+independent of the system clock and makes exact-boundary cases repeatable.
+
+##### Error handling
+
+The parsers reject extra arguments after `list priority`, `overdue` and `next`.
+The model rejects a null `now` and asserts priority and overdue ordering.
+Commands write `FINE` logs with view sizes and, for time queries, the captured time.
+
+The formatter shows unset ratings as `-` and an unavailable score as `NA`.
+Empty priority output includes `[WARNING] No activities yet.`; time queries use
+`[WARNING] No overdue activities.` and
+`[WARNING] No upcoming incomplete activities.` respectively. Empty results do
+not change or save activity data.
 
 <!-- END OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim) -->
 
