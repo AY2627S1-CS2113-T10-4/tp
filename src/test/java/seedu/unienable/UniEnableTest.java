@@ -261,6 +261,32 @@ class UniEnableTest {
         assertArrayEquals(original, Files.readAllBytes(activityFile));
     }
 
+    @Test
+    void editWithUnicodeWhitespaceName_isRejectedAndPreservesActivityAndSavedBytes(@TempDir Path tempDir)
+            throws Exception {
+        String[] whitespaceNames = {"\u2003", "\u3000"};
+        for (int i = 0; i < whitespaceNames.length; i++) {
+            Path activityFile = tempDir.resolve("activities-" + i + ".txt");
+            String addOutput = consoleAtPath("add n/Unicode bug test d/2099-12-10 s/09:00 e/10:00\nbye\n",
+                    activityFile);
+            assertTrue(addOutput.contains("Added activity: Unicode bug test"), addOutput);
+            byte[] original = Files.readAllBytes(activityFile);
+
+            String editOutput = consoleAtPath("edit 1 n/" + whitespaceNames[i] + "\nlist\nbye\n", activityFile);
+
+            assertTrue(editOutput.contains("[WARNING] Empty n/ parameter."), editOutput);
+            assertTrue(editOutput.contains("1. Unicode bug test (2099-12-10, 09:00-10:00) [MEDIUM] [ ]"),
+                    editOutput);
+            assertArrayEquals(original, Files.readAllBytes(activityFile));
+
+            String restartOutput = consoleAtPath("list\nbye\n", activityFile);
+            assertFalse(restartOutput.contains("Activity data warning:"), restartOutput);
+            assertTrue(restartOutput.contains("1. Unicode bug test (2099-12-10, 09:00-10:00) [MEDIUM] [ ]"),
+                    restartOutput);
+            assertArrayEquals(original, Files.readAllBytes(activityFile));
+        }
+    }
+
     /**
      * Retains the original console cases directly in Java so fresh checkouts can run them.
      */

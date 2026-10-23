@@ -66,6 +66,9 @@ public class EditCommandParser {
 
         Map<String, String> fields = readFields(trimmed.substring(separator).trim());
         String name = fields.get("n");
+        if (name != null && name.isBlank()) {
+            throw invalid("Empty n/ parameter.");
+        }
         if (name != null && (name.contains("|") || name.indexOf('\n') >= 0 || name.indexOf('\r') >= 0)) {
             throw invalid("The activity name must not contain | or line breaks.");
         }
