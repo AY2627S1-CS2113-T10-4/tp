@@ -14,6 +14,7 @@ import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
+//@@author officialasyrafrahim
 /**
  * Checks canonical-order display and read-only behaviour for the list command.
  */
@@ -63,9 +64,12 @@ class ListCommandTest {
         assertTrue(message.contains("1. Solo (2026-10-12, 08:00-09:00) [LOW]"));
     }
 
-    /** Seeds existing activities without applying the add parser's current-time restriction. */
+    /**
+     * Seeds existing activities without applying the add parser's current-time restriction.
+     */
     private void add(String name, String date, String start, String end, String demand) {
         activities.addActivity(new Activity(name, LocalDate.parse(date), LocalTime.parse(start),
                 LocalTime.parse(end), DemandLevel.valueOf(demand), false));
     }
 }
+//@@author

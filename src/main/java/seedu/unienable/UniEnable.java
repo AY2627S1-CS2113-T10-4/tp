@@ -18,7 +18,7 @@ public class UniEnable {
     /**
      * Starts the application and loads saved activity and facility data.
      *
-     * @param args unused command-line arguments
+     * @param args unused command-line arguments.
      */
     public static void main(String[] args) {
         run(System.in, System.out, Path.of("data", "activities.txt"));
@@ -27,9 +27,9 @@ public class UniEnable {
     /**
      * Runs a session with an injectable activity file for isolated integration tests.
      *
-     * @param input console input
-     * @param output console output
-     * @param activityFile activity persistence file
+     * @param input console input.
+     * @param output console output.
+     * @param activityFile activity persistence file.
      */
     static void run(InputStream input, PrintStream output, Path activityFile) {
         run(input, output, activityFile, Clock.systemDefaultZone());
@@ -38,13 +38,14 @@ public class UniEnable {
     /**
      * Runs a session with an injectable activity file and clock for deterministic integration tests.
      *
-     * @param input console input
-     * @param output console output
-     * @param activityFile activity persistence file
-     * @param clock time source used by add-command validation
+     * @param input console input.
+     * @param output console output.
+     * @param activityFile activity persistence file.
+     * @param clock time source used by add/edit validation and date/time queries.
      */
     static void run(InputStream input, PrintStream output, Path activityFile, Clock clock) {
         Ui ui = new Ui(input, output);
+        //@@author Oliver-koh
         Storage storage = new Storage(activityFile);
         ActivityList activities;
         try {
@@ -56,6 +57,7 @@ public class UniEnable {
             ui.showMessage("Activity data unavailable: " + exception.getMessage());
             activities = new ActivityList();
         }
+        //@@author
         Parser parser = ConsoleHelper.createParser(ui, clock);
 
         ui.showWelcome();

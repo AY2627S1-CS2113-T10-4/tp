@@ -9,6 +9,7 @@ import java.util.Set;
 
 import seedu.unienable.model.Connection;
 
+//@@author lukelouyu
 /**
  * Runs one Dijkstra search for DijkstraShortestPath.
  * Each search has its own mutable state so subsequent queries are independent.
@@ -125,3 +126,4 @@ final class DijkstraSolver {
         }
     }
 }
+//@@author

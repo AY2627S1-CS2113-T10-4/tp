@@ -10,6 +10,7 @@ import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+//@@author lukelouyu
 /**
  * Checks defensive copies and immutable lists of records and dataset warnings.
  */
@@ -29,3 +30,4 @@ class LoadResultTest {
         assertThrows(UnsupportedOperationException.class, () -> loaded.getWarnings().clear());
     }
 }
+//@@author

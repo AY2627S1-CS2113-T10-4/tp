@@ -18,6 +18,7 @@ import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Connection;
 import seedu.unienable.model.Facility;
 
+//@@author lukelouyu
 /**
  * Checks connection reference loading, malformed-record recovery, and I/O ownership.
  */
@@ -292,3 +293,4 @@ class ConnectionStorageTest {
                         + "PATH|YES\nBROKEN", "1", "2", "9|AS1|AS2|10|YES|PATH|YES|null|null",
                     "Line 3: Unknown facility endpoint: AS1 / AS9\nLine 5: CONNECTION requires 8 " + "to 10 fields."});
     }}
+//@@author

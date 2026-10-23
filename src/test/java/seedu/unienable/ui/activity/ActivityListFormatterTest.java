@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.enums.DemandLevel;
 
+//@@author officialasyrafrahim
 /**
  * Checks pure formatting of activity views: preserved order, 1-based numbering,
  * and the empty-list placeholder.
@@ -94,3 +95,4 @@ class ActivityListFormatterTest {
                 ActivityListFormatter.formatNext(Optional.empty(), List.of(mondayGym, tuesdayLab)));
     }
 }
+//@@author

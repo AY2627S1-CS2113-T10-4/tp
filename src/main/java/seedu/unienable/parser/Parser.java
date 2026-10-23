@@ -15,8 +15,7 @@ import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
 
 /**
- * Recognizes add, edit, find, list, list demand, list priority, demand today, overdue, next,
- * delete, facility, route and bye commands.
+ * Recognizes activity, facility, route, help and exit commands.
  */
 public class Parser {
     /**
@@ -24,23 +23,33 @@ public class Parser {
      */
     private static final String WARNING_MESSAGE = "[WARNING]";
 
+    //@@author lukelouyu
     /**
      * Handles facility commands using the available reference data.
      */
     private final FacilityCommandParser facilityCommandParser;
+    //@@author
 
+    //@@author officialasyrafrahim
     /**
-     * Handles list, list demand, and delete commands.
+     * Handles list, list demand, list priority and delete commands.
      */
     private final ListDeleteCommandParser listDeleteCommandParser = new ListDeleteCommandParser();
+    //@@author
 
-    /** Handles mark and unmark commands. */
+    //@@author Oliver-koh
+    /**
+     * Handles mark and unmark commands.
+     */
     private final MarkCommandParser markCommandParser = new MarkCommandParser();
+    //@@author
 
+    //@@author lukelouyu
     /**
      * Handles route commands using the available connection reference data.
      */
     private final RouteParser routeParser;
+    //@@author
 
     /**
      * Time source shared by add/edit validation and date/time queries for deterministic tests.
@@ -109,6 +118,7 @@ public class Parser {
         String commandWord = words[0].toLowerCase(Locale.ROOT);
 
         switch (commandWord) {
+        //@@author lukelouyu
         case "bye":
             if (words.length != 1) {
                 throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");
@@ -118,8 +128,12 @@ public class Parser {
             return facilityCommandParser.parseFacility(words);
         case "route":
             return routeParser.parseRoute(words);
+        //@@author
+        //@@author Atharva005
         case "add":
             return new AddCommandParser(clock).parse(trimmedInput.substring(words[0].length()).trim());
+        //@@author
+        //@@author Oliver-koh
         case "edit":
             return new EditCommandParser(clock).parse(trimmedInput.substring(words[0].length()).trim());
         case "find":
@@ -129,14 +143,20 @@ public class Parser {
                         + " find needs a non-blank activity name keyword.\nUsage: find KEYWORD");
             }
             return new FindCommand(keyword);
+        //@@author
+        //@@author officialasyrafrahim
         case "list":
             return listDeleteCommandParser.parseList(words);
+        //@@author
+        //@@author lukelouyu
         case "demand":
             if (words.length != 2 || !"today".equalsIgnoreCase(words[1])) {
                 throw new ParseException(WARNING_MESSAGE
                         + " Expected demand today without extra arguments.\nUsage: demand today");
             }
             return new DemandTodayCommand(clock);
+        //@@author
+        //@@author officialasyrafrahim
         case "overdue":
             if (words.length != 1) {
                 throw new ParseException(WARNING_MESSAGE
@@ -151,16 +171,21 @@ public class Parser {
             return new NextCommand(clock);
         case "delete":
             return listDeleteCommandParser.parseDelete(words);
+        //@@author
+        //@@author Oliver-koh
         case "mark":
             return markCommandParser.parseMark(words);
         case "unmark":
             return markCommandParser.parseUnmark(words);
+        //@@author
+        //@@author Atharva005
         case "help":
             if (words.length != 1) {
                 throw new ParseException(
                         WARNING_MESSAGE + " help does not take arguments.");
             }
             return new HelpCommand();
+        //@@author
         default:
             throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");
         }

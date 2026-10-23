@@ -17,6 +17,7 @@ import seedu.unienable.model.enums.TraversalType;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
 
+//@@author lukelouyu
 /**
  * Displays the shortest recorded route using connections explicitly marked accessible.
  * The command only reads connection reference data; it never changes activities or storage.
@@ -132,3 +133,4 @@ public final class RouteCommand extends Command {
         return message + "\n\n" + AccessibilityDisclaimer.TEXT;
     }
 }
+//@@author

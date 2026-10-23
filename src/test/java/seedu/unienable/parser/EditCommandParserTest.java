@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.unienable.exception.ParseException;
 
+//@@author Oliver-koh
 /**
  * Checks edit syntax errors before any activity state can be changed.
  */
@@ -30,3 +31,4 @@ class EditCommandParserTest {
         parser.parse("edit\t1\tn/Updated");
     }
 }
+//@@author

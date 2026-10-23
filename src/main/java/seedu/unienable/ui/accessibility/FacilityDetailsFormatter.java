@@ -3,6 +3,7 @@ package seedu.unienable.ui.accessibility;
 import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 
+//@@author lukelouyu
 /**
  * Formats the recorded details shared by facility list and lookup commands.
  */
@@ -17,7 +18,7 @@ public final class FacilityDetailsFormatter {
      * Formats a facility's ID, name, description, features, statuses, and notes.
      * Missing optional text is omitted and feature order is preserved.
      *
-     * @param facility facility whose recorded details should be displayed
+     * @param facility facility whose recorded details should be displayed.
      * @return facility details without a heading or accessibility disclaimer
      */
     public static String format(Facility facility) {
@@ -39,3 +40,4 @@ public final class FacilityDetailsFormatter {
         return output.toString();
     }
 }
+//@@author

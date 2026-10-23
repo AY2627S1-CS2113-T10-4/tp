@@ -7,6 +7,7 @@ import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
+//@@author Oliver-koh
 /**
  * Marks one chronologically displayed activity as completed.
  */
@@ -16,7 +17,7 @@ public class MarkCommand extends Command {
     /**
      * Creates a mark command.
      *
-     * @param displayedIndex one-based index shown by {@code list}
+     * @param displayedIndex one-based index shown by {@code list}.
      */
     public MarkCommand(int displayedIndex) {
         this.displayedIndex = displayedIndex;
@@ -25,8 +26,8 @@ public class MarkCommand extends Command {
     /**
      * Marks the selected activity and reports whether its state changed.
      *
-     * @param activities shared activity collection
-     * @param storage activity storage, not used directly
+     * @param activities shared activity collection.
+     * @param storage activity storage, not used directly.
      * @return command result for the console
      * @throws UniEnableException when the displayed index is invalid
      */
@@ -40,3 +41,4 @@ public class MarkCommand extends Command {
         return new CommandResult(message, false, changed);
     }
 }
+//@@author

@@ -9,6 +9,7 @@ import seedu.unienable.command.CommandResult;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
+//@@author lukelouyu
 /**
  * Shows the number of HIGH-demand activities scheduled today, including completed ones.
  */
@@ -26,7 +27,7 @@ public class DemandTodayCommand extends Command {
     /**
      * Creates a demand query with an injectable clock for deterministic date tests.
      *
-     * @param clock time source and zone used to determine today's date
+     * @param clock time source and zone used to determine today's date.
      */
     public DemandTodayCommand(Clock clock) {
         this.clock = Objects.requireNonNull(clock);
@@ -46,3 +47,4 @@ public class DemandTodayCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author

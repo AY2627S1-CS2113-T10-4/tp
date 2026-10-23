@@ -15,7 +15,10 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
 
-/** Tests that AddCommand changes state before reporting success. */
+//@@author Atharva005
+/**
+ * Tests that AddCommand changes state before reporting success.
+ */
 class AddCommandTest {
     @Test
     void execute_twoAdds_updatesActivityListAndDisplaysCount() {
@@ -37,6 +40,8 @@ class AddCommandTest {
         assertTrue(firstResult.didChangeActivities());
     }
 
+    //@@author
+    //@@author lukelouyu
     @Test
     void execute_ratedActivity_preservesRatingsAndConfirmsTheirValues() {
         Integer[][] ratings = {{5, null, 3}, {1, 5, 2}};
@@ -62,4 +67,7 @@ class AddCommandTest {
             assertTrue(result.didChangeActivities());
         }
     }
+    //@@author
+    //@@author Atharva005
 }
+//@@author

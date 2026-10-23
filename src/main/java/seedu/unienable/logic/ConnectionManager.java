@@ -9,6 +9,7 @@ import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.model.enums.ShelterStatus;
 import seedu.unienable.model.enums.TraversalType;
 
+//@@author lukelouyu
 /**
  * Provides read-only lookups, filtering and shortest accessible routes over bidirectional connection data.
  * Endpoints are short facility names such as AS1 and CLB, not stable IDs such as F01.
@@ -23,7 +24,7 @@ public final class ConnectionManager {
     /**
      * Creates a manager using a snapshot of the supplied connections.
      *
-     * @param connections non-null list of connections without null entries
+     * @param connections non-null list of connections without null entries.
      */
     public ConnectionManager(List<Connection> connections) {
         this.connections = List.copyOf(connections);
@@ -44,8 +45,8 @@ public final class ConnectionManager {
      * Each query has independent search state. Names ignore case and surrounding spaces.
      * Shelter, traversal type and recorded barriers do not add further routing restrictions.
      *
-     * @param from origin facility name, such as AS2 (not a stable ID such as F02)
-     * @param to destination facility name, such as CLB
+     * @param from origin facility name, such as AS2 (not a stable ID such as F02).
+     * @param to destination facility name, such as CLB.
      * @return ordered stops, original connections and total metres, or empty if disconnected
      * @throws IllegalArgumentException if either name is null, blank or absent from the connections
      */
@@ -56,7 +57,7 @@ public final class ConnectionManager {
     /**
      * Finds a connection by its stable numeric ID.
      *
-     * @param id connection ID
+     * @param id connection ID.
      * @return matching connection, or empty if not found
      */
     public Optional<Connection> findConnection(int id) {
@@ -74,11 +75,11 @@ public final class ConnectionManager {
      * endpoints are supplied, they must match opposite endpoints of the same connection.
      * At least one filter must be supplied. String filters ignore surrounding spaces and case.
      *
-     * @param from optional first endpoint facility name
-     * @param to optional second endpoint facility name
-     * @param type optional traversal type
-     * @param status optional accessibility status
-     * @param shelter optional shelter status
+     * @param from optional first endpoint facility name.
+     * @param to optional second endpoint facility name.
+     * @param type optional traversal type.
+     * @param status optional accessibility status.
+     * @param shelter optional shelter status.
      * @return immutable matching connections in their original dataset order
      * @throws IllegalArgumentException if all filters are omitted or an endpoint is blank
      */
@@ -137,3 +138,4 @@ public final class ConnectionManager {
         return actual.equalsIgnoreCase(filter);
     }
 }
+//@@author

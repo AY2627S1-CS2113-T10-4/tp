@@ -11,20 +11,25 @@ import seedu.unienable.logic.FacilityManager;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+//@@author lukelouyu
 /**
  * Parses facility lookup, listing, and feature search commands.
  */
 public class FacilityCommandParser {
-    /** Shared prefix for warnings reported by this parser. */
+    /**
+     * Shared prefix for warnings reported by this parser.
+     */
     private static final String WARNING_MESSAGE = "[WARNING]";
 
-    /** Reference data used to construct facility commands; null when unavailable. */
+    /**
+     * Reference data used to construct facility commands; null when unavailable.
+     */
     private final FacilityManager facilityManager;
 
     /**
      * Creates a parser with the available facility reference data.
      *
-     * @param facilityManager manager used by facility commands, or null if unavailable
+     * @param facilityManager manager used by facility commands, or null if unavailable.
      */
     public FacilityCommandParser(FacilityManager facilityManager) {
         this.facilityManager = facilityManager;
@@ -33,7 +38,7 @@ public class FacilityCommandParser {
     /**
      * Recognizes facility LOCATION, facility list, and facility find.
      *
-     * @param words command words, beginning with facility
+     * @param words command words, beginning with facility.
      * @return the facility command to execute
      * @throws ParseException if the facility command is invalid or unavailable
      */
@@ -69,7 +74,7 @@ public class FacilityCommandParser {
     /**
      * Parses the required feature type and optional accessibility status.
      *
-     * @param words words in the command line
+     * @param words words in the command line.
      * @return the facility feature search command
      * @throws ParseException if the feature or status is invalid
      */
@@ -90,13 +95,13 @@ public class FacilityCommandParser {
             throw new ParseException(WARNING_MESSAGE
                     + " Unknown facility feature type '" + featureName + "'.\n"
                     + "Supported types: LIFT, RAMP, SHELTERED_RAMP, ACCESSIBLE_WASHROOM, "
-                    + "STEP_FREE_ENTRANCE, REST_POINT, AUTOMATIC_DOOR, OTHER\n"+ usage);
+                    + "STEP_FREE_ENTRANCE, REST_POINT, AUTOMATIC_DOOR, OTHER\n" + usage);
         }
 
         AccessibilityStatus status = AccessibilityStatus.YES;
         if (words.length == 4) {
-            if (!words[3].regionMatches(true, 0, "status/", 0, 7) ||
-                    words[3].length() == 7) {
+            if (!words[3].regionMatches(true, 0, "status/", 0, 7)
+                    || words[3].length() == 7) {
                 throw new ParseException(WARNING_MESSAGE
                         + " Invalid facility find filters.\n" + usage);
             }
@@ -123,3 +128,4 @@ public class FacilityCommandParser {
         }
     }
 }
+//@@author

@@ -14,6 +14,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.activity.ActivityListFormatter;
 
+//@@author officialasyrafrahim
 /**
  * Shows the earliest incomplete activity whose start is strictly after the
  * current local time.
@@ -34,7 +35,7 @@ public class NextCommand extends Command {
     /**
      * Creates a next command with an injectable clock for deterministic tests.
      *
-     * @param clock time source used for the next boundary
+     * @param clock time source used for the next boundary.
      */
     public NextCommand(Clock clock) {
         this.clock = Objects.requireNonNull(clock);
@@ -54,3 +55,4 @@ public class NextCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author

@@ -1,10 +1,9 @@
 # Team project portfolios
 
-Each member has a separate portfolio page named after their GitHub username.
-Luke's page is populated with responsibilities and links to implementation
-details, code, tests and diagrams. The other three pages contain only their
-titles, ready for each member's own portfolio. The table below retains the
-team's responsibility assignments.
+Each member has a separate portfolio page named after their GitHub username and
+maintains its content. The table below retains the team's responsibility
+assignments even while a portfolio page is empty or unfinished. The
+[code ownership index](../CodeOwnership.md) records file and section attribution.
 
 | Member | Portfolio | Main responsibilities |
 | --- | --- | --- |
@@ -13,8 +12,8 @@ team's responsibility assignments.
 | Muhammad Asyraf Bin Abdul Rahim | [officialasyrafrahim.md](officialasyrafrahim.md) | Activity listing, deletion, priority, overdue and next. |
 | Oliver | [oliver-koh.md](oliver-koh.md) | Completion, storage/recovery, activity editing and name search. |
 
-Technical design details remain in the [Developer Guide](../DeveloperGuide.md),
-whose other-member implementation sections currently contain placeholders.
+Technical design details remain in the [Developer Guide](../DeveloperGuide.md).
+Each member maintains the implementation section assigned to their features.
 
 The [diagram ownership index](../diagrams/README.md) lists every source/image pair.
 Architecture and the combined activity-creation/rating class model are kept in

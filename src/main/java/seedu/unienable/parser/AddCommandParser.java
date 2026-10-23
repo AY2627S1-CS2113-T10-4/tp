@@ -19,6 +19,7 @@ import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.enums.DemandLevel;
 
+//@@author Atharva005
 /**
  * Parses the add command using named prefixes that may appear in any order.
  */
@@ -34,7 +35,9 @@ public class AddCommandParser {
     private static final String USAGE = "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm "
             + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]";
 
-    /** Supplies the current time and local zone for activity end-time validation. */
+    /**
+     * Supplies the current time and local zone for activity end-time validation.
+     */
     private final Clock clock;
 
     /**
@@ -69,6 +72,9 @@ public class AddCommandParser {
         }
 
         String name = fields.get("n");
+        if (name.isBlank()) {
+            throw invalid("Empty n/ parameter.");
+        }
         if (name.contains("|") || name.indexOf('\n') >= 0 || name.indexOf('\r') >= 0) {
             throw invalid("The activity name must not contain | or line breaks.");
         }
@@ -108,10 +114,14 @@ public class AddCommandParser {
                 throw invalid("Demand must be LOW, MEDIUM, or HIGH.");
             }
         }
+        //@@author
+        //@@author lukelouyu
         Integer importance = parseRating(fields.get("imp"), "imp");
         Integer urgency = parseRating(fields.get("urg"), "urg");
         Integer commitment = parseRating(fields.get("com"), "com");
         return new AddCommand(name, date, startTime, endTime, demand, importance, urgency, commitment);
+        //@@author
+        //@@author Atharva005
     }
 
     /**
@@ -154,6 +164,8 @@ public class AddCommandParser {
         }
     }
 
+    //@@author
+    //@@author lukelouyu
     /**
      * Parses a supplied whole-number rating using the model's shared range rule.
      * Missing fields remain unset; empty supplied fields are rejected by the field reader.
@@ -175,6 +187,8 @@ public class AddCommandParser {
             throw invalid("The " + prefix + "/ rating must be a whole number from 1 to 5.");
         }
     }
+    //@@author
+    //@@author Atharva005
 
     private LocalTime parseTime(String value) {
         if (!TIME_PATTERN.matcher(value).matches()) {
@@ -187,3 +201,4 @@ public class AddCommandParser {
         return new ParseException("[WARNING] " + message + "\n" + USAGE);
     }
 }
+//@@author

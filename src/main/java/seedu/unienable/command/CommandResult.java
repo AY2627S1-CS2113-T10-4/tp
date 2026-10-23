@@ -15,9 +15,9 @@ public class CommandResult {
     /**
      * Creates a command result with an explicit activity-mutation flag.
      *
-     * @param message user-facing result message
-     * @param isExit whether the console loop should exit
-     * @param didChangeActivities whether activity data was changed successfully
+     * @param message user-facing result message.
+     * @param isExit whether the console loop should exit.
+     * @param didChangeActivities whether activity data was changed successfully.
      */
     public CommandResult(String message, boolean isExit, boolean didChangeActivities) {
         this.message = message;

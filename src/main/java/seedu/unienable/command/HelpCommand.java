@@ -3,6 +3,7 @@ package seedu.unienable.command;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
+//@@author Atharva005
 /**
  * Displays the commands currently available in UniEnable, including optional add ratings.
  */
@@ -46,3 +47,4 @@ public class HelpCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author

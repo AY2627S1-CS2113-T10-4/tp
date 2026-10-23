@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import seedu.unienable.model.Activity;
 
+//@@author officialasyrafrahim
 /**
  * Builds user-facing activity list messages from pre-sorted views supplied by commands.
  * Formatting is pure: it renders the given order as-is and never sorts, filters,
@@ -80,8 +81,8 @@ public final class ActivityListFormatter {
      * Formats the priority view, using each activity's index from the full
      * chronological list and showing the score and its rating components.
      *
-     * @param activities activities in priority display order
-     * @param canonicalView full chronological activity view
+     * @param activities activities in priority display order.
+     * @param canonicalView full chronological activity view.
      * @return the heading, index notice, and numbered activities
      */
     public static String formatPriorityList(List<Activity> activities, List<Activity> canonicalView) {
@@ -102,13 +103,13 @@ public final class ActivityListFormatter {
      * distinguishes today, earlier in the current Monday-to-Sunday week, and
      * earlier dates.
      *
-     * @param activities overdue activities in chronological order
-     * @param canonicalView full chronological activity view
-     * @param now local time used to classify the labels
+     * @param activities overdue activities in chronological order.
+     * @param canonicalView full chronological activity view.
+     * @param now local time used to classify the labels.
      * @return the heading and numbered overdue activities
      */
     public static String formatOverdueList(List<Activity> activities, List<Activity> canonicalView,
-                                           LocalDateTime now) {
+            LocalDateTime now) {
         StringBuilder output = new StringBuilder(OVERDUE_LIST_HEADING);
         if (activities.isEmpty()) {
             return output.append("\n").append(NO_OVERDUE_MESSAGE).toString();
@@ -123,8 +124,8 @@ public final class ActivityListFormatter {
     /**
      * Formats the single next activity, or an empty-state message when none remains.
      *
-     * @param next next activity, if one starts strictly after now
-     * @param canonicalView full chronological activity view
+     * @param next next activity, if one starts strictly after now.
+     * @param canonicalView full chronological activity view.
      * @return the heading and numbered next activity, or the empty-state message
      */
     public static String formatNext(Optional<Activity> next, List<Activity> canonicalView) {
@@ -169,16 +170,18 @@ public final class ActivityListFormatter {
         return index + 1;
     }
 
+    //@@author
+    //@@author Oliver-koh
     /**
      * Formats name-search results using the indexes from the full chronological list.
      *
-     * @param keyword searched name phrase
-     * @param matches matching activities in chronological order
-     * @param canonicalView full chronological activity view
+     * @param keyword searched name phrase.
+     * @param matches matching activities in chronological order.
+     * @param canonicalView full chronological activity view.
      * @return formatted search result
      */
     public static String formatFindResults(String keyword, List<Activity> matches,
-                                           List<Activity> canonicalView) {
+            List<Activity> canonicalView) {
         if (matches.isEmpty()) {
             return "[WARNING] No activities matched keyword \"" + keyword + "\".";
         }
@@ -191,6 +194,8 @@ public final class ActivityListFormatter {
         }
         return output.toString();
     }
+    //@@author
+    //@@author officialasyrafrahim
 
     private static String format(String heading, List<Activity> activities) {
         StringBuilder output = new StringBuilder(heading);
@@ -217,3 +222,4 @@ public final class ActivityListFormatter {
                 + (activity.isDone() ? "[X]" : "[ ]");
     }
 }
+//@@author

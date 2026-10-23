@@ -38,6 +38,7 @@ class ActivityTest {
         assertNull(activity.getCommitment());
     }
 
+    //@@author lukelouyu
     @Test
     void constructor_optionalRatings_preservesEverySetUnsetCombination() {
         Integer[][] combinations = {
@@ -61,7 +62,9 @@ class ActivityTest {
             assertTrue(activity.isDone());
         }
     }
+    //@@author
 
+    //@@author lukelouyu
     @Test
     void constructor_invalidRating_rejectsEachPosition() {
         for (int value : new int[] {-1, 0, 6}) {
@@ -73,14 +76,18 @@ class ActivityTest {
                     DemandLevel.MEDIUM, false, 3, 3, value), "commitment: " + value);
         }
     }
+    //@@author
 
+    //@@author lukelouyu
     @Test
     void validateRating_unsetOrOneToFive_acceptsValue() {
         for (Integer value : new Integer[] {null, 1, 2, 3, 4, 5}) {
             assertDoesNotThrow(() -> Activity.validateRating(value), "rating: " + value);
         }
     }
+    //@@author
 
+    //@@author officialasyrafrahim
     @Test
     void getPriorityScore_allRatingsPresent_usesUrgencySquaredTimesRatingSum() {
         Activity incomplete = new Activity("Meeting", DATE, START, END, DemandLevel.MEDIUM, false, 5, 4, 3);
@@ -94,7 +101,9 @@ class ActivityTest {
         assertEquals(Integer.valueOf(250), new Activity("High", DATE, START, END, DemandLevel.HIGH, false, 5, 5, 5)
                 .getPriorityScore());
     }
+    //@@author
 
+    //@@author officialasyrafrahim
     @Test
     void getPriorityScore_anyRatingMissing_returnsNull() {
         assertNull(new Activity("A", DATE, START, END, DemandLevel.LOW, false, null, 4, 3).getPriorityScore());
@@ -103,7 +112,9 @@ class ActivityTest {
         assertNull(new Activity("D", DATE, START, END, DemandLevel.LOW, false, null, null, null)
                 .getPriorityScore());
     }
+    //@@author
 
+    //@@author Oliver-koh
     @Test
     void setDone_changesCompletionAndPreservesRatings() {
         Activity activity = new Activity("Meeting", DATE, START, END, DemandLevel.MEDIUM, false, 5, null, 3);
@@ -118,4 +129,5 @@ class ActivityTest {
             assertEquals(Integer.valueOf(3), activity.getCommitment());
         }
     }
+    //@@author
 }

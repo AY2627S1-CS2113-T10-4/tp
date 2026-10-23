@@ -8,6 +8,7 @@ import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+//@@author lukelouyu
 /**
  * Checks omission of null, empty, and blank optional text from facility output.
  */
@@ -22,3 +23,4 @@ class FacilityDetailsFormatterTest {
         }
     }
 }
+//@@author

@@ -3,10 +3,11 @@ package seedu.unienable.storage;
 
 import java.util.List;
 
+//@@author lukelouyu
 /**
  * Represents the result of loading records from a dataset.
  *
- * @param <T> the type of record loaded
+ * @param <T> the type of record loaded.
  */
 public class LoadResult<T> {
     private final List<T> records;
@@ -15,8 +16,8 @@ public class LoadResult<T> {
     /**
      * Creates a load result with records and warnings.
      *
-     * @param records successfully loaded records
-     * @param warnings messages for skipped invalid records
+     * @param records successfully loaded records.
+     * @param warnings messages for skipped invalid records.
      */
     public LoadResult(List<T> records, List<String> warnings) {
         this.records = List.copyOf(records);
@@ -44,3 +45,4 @@ public class LoadResult<T> {
         return !warnings.isEmpty();
     }
 }
+//@@author

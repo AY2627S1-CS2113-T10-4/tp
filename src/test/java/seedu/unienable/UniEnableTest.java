@@ -29,7 +29,9 @@ import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
  * Exercises the console entry point and the user's full command sequence.
  */
 class UniEnableTest {
-    /** Fixed afternoon clock before every console fixture date (2026-10-15 onward). */
+    /**
+     * Fixed afternoon clock before every console fixture date (2026-10-15 onward).
+     */
     private static final Clock FIXED_CLOCK =
             Clock.fixed(Instant.parse("2026-10-14T16:00:00Z"), ZoneOffset.UTC);
 
@@ -65,6 +67,7 @@ class UniEnableTest {
                 console(""));
     }
 
+    //@@author lukelouyu
     @Test
     void sameRouteEndpoints_warnWithoutChangingActivities(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
@@ -83,7 +86,9 @@ class UniEnableTest {
         assertTrue(output.contains("Goodbye from UniEnable!"));
         assertArrayEquals(original, Files.readAllBytes(activityFile));
     }
+    //@@author
 
+    //@@author lukelouyu
     @Test
     void demandToday_countsLoadedActivitiesWithoutRewritingLegacyStorage(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
@@ -107,6 +112,7 @@ class UniEnableTest {
         assertArrayEquals(original, Files.readAllBytes(activityFile));
         assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
     }
+    //@@author
 
     @Test
     void deletingFinalActivity_reportsEmptyStateAndPersistsDeletion(@TempDir Path tempDir) throws Exception {
@@ -127,6 +133,7 @@ class UniEnableTest {
         assertFalse(restartedOutput.contains("Project meeting"));
     }
 
+    //@@author Oliver-koh
     @Test
     void activityCompletion_survivesAnApplicationRestart() throws Exception {
         Path tempDir = Files.createTempDirectory("unienable-restart-test");
@@ -143,7 +150,9 @@ class UniEnableTest {
             Files.deleteIfExists(tempDir);
         }
     }
+    //@@author
 
+    //@@author Oliver-koh
     @Test
     void activityRatings_surviveRestartAndCompletionChanges(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
@@ -171,6 +180,7 @@ class UniEnableTest {
         expectedRows.set(1, partialRow + "false|5|-|3");
         assertEquals(expectedRows, Files.readAllLines(activityFile, StandardCharsets.UTF_8));
     }
+    //@@author
 
     @Test
     void emptyQueries_showOneWarningWithoutCreatingAnActivityFile(@TempDir Path tempDir) throws Exception {
@@ -196,6 +206,7 @@ class UniEnableTest {
         }
     }
 
+    //@@author Oliver-koh
     @Test
     void repeatedCompletion_warnsWithoutSavingOrChangingState(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
@@ -216,6 +227,7 @@ class UniEnableTest {
         assertArrayEquals(original, Files.readAllBytes(activityFile));
         assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
     }
+    //@@author
 
     @Test
     void populatedQueries_keepNormalMessagesAndDoNotSave(@TempDir Path tempDir) throws Exception {
@@ -237,6 +249,7 @@ class UniEnableTest {
         assertArrayEquals(original, Files.readAllBytes(activityFile));
     }
 
+    //@@author lukelouyu
     @Test
     void invalidRatingCommands_preserveActivityListAndStoredBytes(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
@@ -260,17 +273,71 @@ class UniEnableTest {
         assertFalse(output.contains("Rejected ("), output);
         assertArrayEquals(original, Files.readAllBytes(activityFile));
     }
+    //@@author
 
+    //@@author Atharva005
+    @Test
+    void addWithUnicodeWhitespaceName_isRejectedAndPreservesSavedData(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n"
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+        var originalModifiedTime = Files.getLastModifiedTime(activityFile);
+
+        for (String name : new String[] {"\u2003", "\u3000", " \u2003\t\u3000 "}) {
+            String output = consoleAtPath("add n/" + name
+                    + " d/2099-12-11 s/09:00 e/10:00\nlist\nbye\n", activityFile);
+
+            assertTrue(output.contains("[WARNING] Empty n/ parameter."), output);
+            assertFalse(output.contains("Added activity:"), output);
+            assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), output);
+            assertArrayEquals(original, Files.readAllBytes(activityFile));
+            assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
+
+            String restartOutput = consoleAtPath("list\nbye\n", activityFile);
+            assertFalse(restartOutput.contains("Activity data warning:"), restartOutput);
+            assertTrue(restartOutput.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"),
+                    restartOutput);
+            assertArrayEquals(original, Files.readAllBytes(activityFile));
+        }
+    }
+    //@@author
+
+    @Test
+    void unicodeNames_surviveAddingEditingSearchingAndRestarting(@TempDir Path tempDir) throws Exception {
+        String[] names = {"\u5b66\u4e60", "Caf\u00e9", "\ud83d\udcda Study"};
+        for (int i = 0; i < names.length; i++) {
+            Path activityFile = tempDir.resolve("unicode-" + i + ".txt");
+            String updatedName = names[i] + " revised";
+            String output = consoleAtPath("add n/" + names[i] + " d/2099-12-10 s/09:00 e/10:00\n"
+                    + "edit 1 n/" + updatedName + "\nfind " + names[i] + "\nbye\n", activityFile);
+
+            assertTrue(output.contains("Added activity: " + names[i]), output);
+            assertTrue(output.contains("Edited activity: " + updatedName), output);
+            assertTrue(output.contains("Found 1 matching activity:"), output);
+            assertFalse(output.contains("[WARNING]"), output);
+            byte[] saved = Files.readAllBytes(activityFile);
+
+            String restartOutput = consoleAtPath("list\nbye\n", activityFile);
+            assertTrue(restartOutput.contains("1. " + updatedName + " (2099-12-10, 09:00-10:00)"),
+                    restartOutput);
+            assertFalse(restartOutput.contains("Activity data warning:"), restartOutput);
+            assertArrayEquals(saved, Files.readAllBytes(activityFile));
+        }
+    }
+
+    //@@author Oliver-koh
     @Test
     void editWithUnicodeWhitespaceName_isRejectedAndPreservesActivityAndSavedBytes(@TempDir Path tempDir)
             throws Exception {
-        String[] whitespaceNames = {"\u2003", "\u3000"};
+        String[] whitespaceNames = {"\u2003", "\u3000", " \u2003\t\u3000 "};
         for (int i = 0; i < whitespaceNames.length; i++) {
             Path activityFile = tempDir.resolve("activities-" + i + ".txt");
             String addOutput = consoleAtPath("add n/Unicode bug test d/2099-12-10 s/09:00 e/10:00\nbye\n",
                     activityFile);
             assertTrue(addOutput.contains("Added activity: Unicode bug test"), addOutput);
             byte[] original = Files.readAllBytes(activityFile);
+            var originalModifiedTime = Files.getLastModifiedTime(activityFile);
 
             String editOutput = consoleAtPath("edit 1 n/" + whitespaceNames[i] + "\nlist\nbye\n", activityFile);
 
@@ -278,6 +345,7 @@ class UniEnableTest {
             assertTrue(editOutput.contains("1. Unicode bug test (2099-12-10, 09:00-10:00) [MEDIUM] [ ]"),
                     editOutput);
             assertArrayEquals(original, Files.readAllBytes(activityFile));
+            assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
 
             String restartOutput = consoleAtPath("list\nbye\n", activityFile);
             assertFalse(restartOutput.contains("Activity data warning:"), restartOutput);
@@ -286,6 +354,7 @@ class UniEnableTest {
             assertArrayEquals(original, Files.readAllBytes(activityFile));
         }
     }
+    //@@author
 
     /**
      * Retains the original console cases directly in Java so fresh checkouts can run them.
