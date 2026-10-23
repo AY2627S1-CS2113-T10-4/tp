@@ -754,9 +754,8 @@ The team supplied the ownership and version allocations below. Each member
 maintains their descriptions and diagrams; [portfolio pages](team/README.md)
 link their responsibilities, design, code and tests.
 
-The [code ownership index](CodeOwnership.md) maps source files and shared code
-sections to these responsibilities. RepoSense `@@author` tags preserve this
-assignment when bug fixes or formatting changes touch another member's feature.
+RepoSense `@@author` tags preserve these responsibility assignments when bug fixes
+or formatting changes touch another member's feature.
 
 | Team member | V1.0 work | V2.0 work |
 | --- | --- | --- |

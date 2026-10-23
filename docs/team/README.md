@@ -2,8 +2,7 @@
 
 Each member has a separate portfolio page named after their GitHub username and
 maintains its content. The table below retains the team's responsibility
-assignments even while a portfolio page is empty or unfinished. The
-[code ownership index](../CodeOwnership.md) records file and section attribution.
+assignments even while a portfolio page is empty or unfinished.
 
 | Member | Portfolio | Main responsibilities |
 | --- | --- | --- |
