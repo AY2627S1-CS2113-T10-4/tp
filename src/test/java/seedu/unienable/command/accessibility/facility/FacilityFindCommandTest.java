@@ -30,6 +30,8 @@ class FacilityFindCommandTest {
         var command = new Parser(manager).parse("facility find type/LIFT");
         var result = command.execute(activities, noWrites);
         assertFalse(result.isExit());
+        assertFalse(result.didChangeActivities());
+        assertTrue(result.getMessage().contains("[WARNING] No matching facilities found."));
         assertTrue(result.getMessage().endsWith(AccessibilityDisclaimer.TEXT));
         assertTrue(activities.getActivities().isEmpty());
     }

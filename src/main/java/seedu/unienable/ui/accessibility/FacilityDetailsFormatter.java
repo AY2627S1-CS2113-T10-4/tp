@@ -28,7 +28,7 @@ public final class FacilityDetailsFormatter {
         }
         output.append("\n\nAccessibility Features:");
         if (facility.getFeatures().isEmpty()) {
-            output.append("\nNo accessibility features recorded.");
+            output.append("\n[WARNING] No accessibility features recorded.");
         }
         for (FacilityFeature feature : facility.getFeatures()) {
             output.append("\n").append(feature.getType()).append(" | ").append(feature.getStatus());

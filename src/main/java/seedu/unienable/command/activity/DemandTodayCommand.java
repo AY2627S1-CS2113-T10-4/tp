@@ -39,6 +39,10 @@ public class DemandTodayCommand extends Command {
     public CommandResult execute(ActivityList activities, Storage storage) {
         LocalDate today = LocalDate.now(clock);
         long count = activities.countHighDemandOn(today);
-        return new CommandResult("High-demand activities scheduled today (" + today + "): " + count, false);
+        String message = "High-demand activities scheduled today (" + today + "): " + count;
+        if (count == 0) {
+            message = "[WARNING] " + message;
+        }
+        return new CommandResult(message, false);
     }
 }

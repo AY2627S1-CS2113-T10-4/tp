@@ -65,7 +65,7 @@ class DemandTodayCommandTest {
 
     @Test
     void execute_emptyListAndNoMatchingActivitiesReportZero() throws Exception {
-        String expected = "High-demand activities scheduled today (2026-10-23): 0";
+        String expected = "[WARNING] High-demand activities scheduled today (2026-10-23): 0";
         assertEquals(expected, parser.parse("demand today").execute(activities, noWrites).getMessage());
 
         add("Tomorrow", "2026-10-24", "09:00", DemandLevel.HIGH, false);
@@ -109,7 +109,7 @@ class DemandTodayCommandTest {
                 command.execute(activities, noWrites).getMessage());
 
         now.set(Instant.parse("2027-01-01T16:00:00Z"));
-        assertEquals("High-demand activities scheduled today (2027-01-02): 0",
+        assertEquals("[WARNING] High-demand activities scheduled today (2027-01-02): 0",
                 command.execute(activities, noWrites).getMessage());
     }
 

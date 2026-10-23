@@ -36,13 +36,13 @@ public final class ActivityListFormatter {
             + "Run 'list' to find the correct index for 'delete INDEX'.";
 
     /**
-     * Agreed v1.0 empty-list placeholder.
+     * Warns that a requested activity view has no entries.
      */
-    private static final String EMPTY_MESSAGE = "No activities yet.";
+    private static final String EMPTY_MESSAGE = "[WARNING] No activities yet.";
 
-    private static final String NO_OVERDUE_MESSAGE = "No overdue activities.";
+    private static final String NO_OVERDUE_MESSAGE = "[WARNING] No overdue activities.";
 
-    private static final String NO_NEXT_MESSAGE = "No upcoming incomplete activities.";
+    private static final String NO_NEXT_MESSAGE = "[WARNING] No upcoming incomplete activities.";
 
     private static final String UNKNOWN_RATING = "-";
 
@@ -180,7 +180,7 @@ public final class ActivityListFormatter {
     public static String formatFindResults(String keyword, List<Activity> matches,
                                            List<Activity> canonicalView) {
         if (matches.isEmpty()) {
-            return "No activities matched keyword \"" + keyword + "\".";
+            return "[WARNING] No activities matched keyword \"" + keyword + "\".";
         }
         String activityLabel = matches.size() == 1 ? "activity" : "activities";
         StringBuilder output = new StringBuilder("Found ")

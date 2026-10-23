@@ -176,7 +176,8 @@ Run 'list' to find the correct index for 'delete INDEX'.
 2. CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
 ```
 
-An empty list shows `No activities yet.` beneath the heading (and demand-view notice).
+An empty list shows `[WARNING] No activities yet.` beneath the heading
+(and demand-view notice).
 
 ### Counting today's high-demand activities: `demand today`
 
@@ -192,7 +193,8 @@ Format: `demand today`
   does not change the count.
 - Activities on other dates and those with `LOW` or `MEDIUM` demand are excluded.
   Importance, urgency and commitment ratings do not affect the count.
-- An empty schedule or no matching activities produces a count of `0`.
+- An empty schedule or no matching activities produces a count of `0` with
+  `[WARNING]` before the count message.
 - The command reads the current activity list without changing or saving it.
 
 With the two activities in the listing example above, assume the current local
@@ -208,7 +210,7 @@ Project meeting is counted even if it has already ended or is marked done.
 On 2026-12-01, the same two activities instead produce:
 
 ```text
-High-demand activities scheduled today (2026-12-01): 0
+[WARNING] High-demand activities scheduled today (2026-12-01): 0
 ```
 
 `DEMAND TODAY` also works. Missing or unsupported subcommands and extra arguments,
@@ -227,7 +229,8 @@ Input: `unmark 1`
 
 Output: `Unmarked activity: CS2113 tutorial`
 
-Repeating a command reports that the activity is already in the requested state.
+Repeating a command reports `[WARNING] Activity is already marked as done: NAME`
+or `[WARNING] Activity is already unmarked: NAME`, without changing or saving it.
 
 ### Deleting an activity: `delete`
 
@@ -358,7 +361,7 @@ Found 1 matching activity:
 ```
 
 `find exco PLANNING` returns the same activity. `find exam` reports
-`No activities matched keyword "exam".`; a valid search on an empty list has
+`[WARNING] No activities matched keyword "exam".`; a valid search on an empty list has
 the same no-match form. `find` without a keyword reports a warning and usage.
 
 ### Viewing priority: `list priority`
@@ -415,7 +418,7 @@ Overdue activities (started before now):
 4. [OVERDUE TODAY] CS2113 project (2026-12-04, 14:00-15:00) [MEDIUM] [ ]
 ```
 
-If nothing is overdue, the command shows `No overdue activities.`
+If nothing is overdue, the command shows `[WARNING] No overdue activities.`
 
 ### Viewing the next activity: `next`
 
@@ -432,7 +435,7 @@ Next activity (earliest upcoming):
 ```
 
 If no incomplete activity starts later, the command shows
-`No upcoming incomplete activities.`
+`[WARNING] No upcoming incomplete activities.`
 
 For an incomplete activity scheduled 09:00-09:30 on the current date:
 
@@ -490,7 +493,8 @@ Sample reference data.
 Verify with current campus information before you rely on it.
 ```
 
-`facility find type/REST_POINT` returns AS8; an unmatched search shows `No matching facilities found.`.
+`facility find type/REST_POINT` returns AS8; an unmatched search shows
+`[WARNING] No matching facilities found.`.
 
 ### Finding an accessible route: `route`
 
@@ -540,6 +544,11 @@ Output: `Goodbye from UniEnable!`
 ## Error Handling
 
 Invalid input usually produces `[WARNING]` and the app waits for another command.
+Empty activity views, searches with no matches, a zero daily-demand count, and
+unavailable route results also include `[WARNING]` on the no-result message.
+Facility lists without records or recorded features use the same marker.
+Repeated mark/unmark requests warn that completion is already in the requested
+state. These query and no-change warnings do not save or modify activities.
 Common causes include missing/duplicate fields, invalid dates or times, unknown
 facilities, or an activity index outside the current list.
 For `add` and `edit`, use real calendar dates and two-digit hours and minutes (for example,

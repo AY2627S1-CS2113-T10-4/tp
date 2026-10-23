@@ -110,7 +110,7 @@ class RouteCommandTest {
         CommandResult result = new RouteCommand(manager, "A", "C").execute(activities, noStorageAccess);
 
         assertFalse(result.isExit());
-        assertTrue(result.getMessage().contains("No confirmed accessible route recorded from A to C."));
+        assertTrue(result.getMessage().startsWith("[WARNING] No confirmed accessible route recorded from A to C."));
         assertTrue(result.getMessage().contains("Only connections marked YES"));
         assertTrue(result.getMessage().endsWith(AccessibilityDisclaimer.TEXT));
     }

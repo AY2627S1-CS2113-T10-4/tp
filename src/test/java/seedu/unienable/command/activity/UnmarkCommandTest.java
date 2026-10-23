@@ -38,6 +38,7 @@ class UnmarkCommandTest {
         var result = new UnmarkCommand(1).execute(activities, new Storage());
 
         assertFalse(result.didChangeActivities());
+        assertTrue(result.getMessage().startsWith("[WARNING] Activity is already unmarked"));
         assertTrue(result.getMessage().contains("already unmarked"));
     }
 }

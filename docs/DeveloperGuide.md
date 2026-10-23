@@ -218,7 +218,8 @@ Luke owns `demand today`, which displays the number of HIGH-demand activities
 scheduled on the computer's current local date. Completed activities and all
 start/end times on that date are included, because US16 describes scheduled
 daily demand. LOW/MEDIUM demand, activities on other dates and numeric ratings
-do not contribute. The result is `0` when nothing matches.
+do not contribute. The result is `0` when nothing matches, with `[WARNING]`
+before the count message.
 
 Execution follows the existing command/result path:
 
@@ -234,7 +235,8 @@ Execution follows the existing command/result path:
    a `long` count. The query takes O(n) time and O(1) additional space.
 5. The command returns `High-demand activities scheduled today (YYYY-MM-DD): N`
    in a `CommandResult` with exit and activity-change flags unset. The console
-   therefore displays the count without saving the activity file.
+   therefore displays the count without saving the activity file. A zero count
+   adds `[WARNING]` before the same message.
 
 The default clock is `Clock.systemDefaultZone()`; injected clocks control both
 the instant and local zone in tests. The same command can be executed repeatedly
@@ -366,7 +368,7 @@ input is case-insensitive.
 A missing or unreadable resource raises `UniEnableException` and uses the
 fallback described in [Architecture](#architecture). Invalid command filters
 raise `ParseException`. An unknown hub produces a warning with supported names;
-a valid search with no matches returns a normal no-results message.
+a valid search with no matches returns `[WARNING] No matching facilities found.`.
 
 #### Accessibility Route Connections (`connections.txt`)
 
@@ -513,8 +515,8 @@ without disabling successfully loaded facility queries.
 `RouteParser` reports malformed prefixes or missing endpoints through
 `ParseException`. Unknown or blank graph endpoints raise `IllegalArgumentException`,
 which `RouteCommand` converts to a checked `UniEnableException` with usage text.
-Known but disconnected endpoints return a normal "No confirmed accessible route
-recorded" message; this describes the local dataset rather than proving that
+Known but disconnected endpoints return a `[WARNING] No confirmed accessible route
+recorded` message; this describes the local dataset rather than proving that
 no accessible route exists on campus.
 
 #### Exiting the application
@@ -775,7 +777,7 @@ Supports US04, US05, US06, US09, and US31.
 
 **Extensions:** An empty list or invalid index produces a warning without a
 change. Repeating mark or unmark when the state already matches reports that
-state without saving. An invalid edit produces a warning without changing the
+state with `[WARNING]` without saving. An invalid edit produces a warning without changing the
 activity. A save failure follows the recovery path in UC01.
 
 ### UC03: Inspect recorded facility features
@@ -787,7 +789,8 @@ Supports US23.
 3. The result includes the sample-data disclaimer; activity data is unchanged.
 
 **Extensions:** Invalid filters, unknown hubs, or unavailable reference data
-produce a warning. A valid search with no matches returns a normal empty result.
+produce a warning. A valid search with no matches returns an empty result with
+`[WARNING]` on the no-match message.
 
 ### UC04: Find a recorded accessible route
 
@@ -799,7 +802,7 @@ Supports US26 and part of US27.
    disclaimer. Activity data is unchanged.
 
 **Extensions:** Malformed input, unknown endpoints, or unavailable connection
-data produce a warning. Known but disconnected endpoints return a no-route
+data produce a warning. Known but disconnected endpoints return a `[WARNING]` no-route
 message. A known hub queried against itself reports
 `[WARNING] Sorry, the source and destination are the same.`
 
@@ -813,8 +816,8 @@ Supports US03.
    can be used by edit, completion and deletion commands. Activities and storage
    remain unchanged.
 
-**Extensions:** A blank keyword produces a warning. No matches produce an ordinary
-no-match message, including when the activity list is empty.
+**Extensions:** A blank keyword produces a warning. No matches produce a
+`[WARNING]` no-match message, including when the activity list is empty.
 
 ### UC06: Inspect priority and time-sensitive activities
 
@@ -827,7 +830,7 @@ Supports US13, US18 and US19.
    include recorded ratings and scores; overdue rows include week/day labels.
    Activity data and its saved file remain unchanged.
 
-**Extensions:** Empty results display the view's normal empty-state message.
+**Extensions:** Empty results display the view's empty-state message with `[WARNING]`.
 Extra arguments produce a warning. An activity starting exactly now is excluded
 from both time queries, and completed activities remain eligible only for priority.
 
@@ -842,7 +845,8 @@ Supports US16; implemented by Luke.
 3. UniEnable displays the date and count without changing activities or storage.
 
 **Extensions:** An empty schedule or no matching activities produces a count of
-`0`. Invalid syntax produces a warning with `Usage: demand today` and the console
+`0` with `[WARNING]` before the count message. Invalid syntax produces a warning
+with `Usage: demand today` and the console
 continues. A later execution after local midnight counts the new date.
 
 <!-- SHARED: All members maintain non-functional requirements. -->
@@ -913,7 +917,7 @@ Run these steps in order, starting with no activity file.
 | 7 | `unmark 1`, then `list` | CS2113 tutorial class is incomplete again. |
 | 8 | `delete 1`, then `list` | CS2113 tutorial class is removed; CCA EXCO meeting is now chronological index 1. |
 | 9 | `list priority` | The remaining CCA EXCO meeting is index 1 with `Priority 128 (IMP 5, URG 4, COM 3)`. |
-| 10 | `overdue`, then `next` | `No overdue activities.` because 2099 is still in the future; `next` shows CCA EXCO meeting at chronological index 1. |
+| 10 | `overdue`, then `next` | `[WARNING] No overdue activities.` because 2099 is still in the future; `next` shows CCA EXCO meeting at chronological index 1. |
 | 11 | `list priority extra`, `overdue extra`, and `next extra` | Each command produces a warning and leaves activities unchanged. |
 
 At step 6, inspect `data/activities.txt`. It should retain insertion order and
@@ -986,7 +990,7 @@ Tomorrow high|2030-10-23|09:00|10:00|HIGH|false|-|-|-
 | `edit 5 dem/LOW`, then `demand today` | Count becomes 1, using the current activity data. |
 | `demand`, `demand tomorrow`, or `demand today extra` | Warning ending with `Usage: demand today`; the next valid command still works. |
 | Run with the local clock on 2030-10-23 | Date is 2030-10-23 and count is 1, even while the UTC date is still 2030-10-22 just after local midnight. |
-| Run with the local clock on 2030-10-24, or with an empty file | Count is 0 for the displayed date. |
+| Run with the local clock on 2030-10-24, or with an empty file | Count is 0 for the displayed date, with `[WARNING]` before the count message. |
 
 Compare file bytes and modification times immediately before and after the
 query itself: neither changes. Mark, unmark and edit are separate saving actions.
@@ -1030,10 +1034,10 @@ before and after searches and rejected edits; they must remain unchanged.
 | 6 | `find tutorial`, then `edit 2 imp/5` | Find retains tutorial index 2. Only its importance changes; its demand stays MEDIUM, completion stays incomplete and urgency/commitment stay unset. |
 | 7 | `bye`, relaunch from the same folder, then `list` | Meeting reloads as index 1 and `[X]`; tutorial reloads as index 2 and `[ ]`, with the edited dates and names. The file retains all edited ratings. |
 | 8 | `edit 2 s/13:00`, then `list` | Warning: existing end 12:00 is before the proposed start. Tutorial stays at 11:00–12:00 in memory and in the file. |
-| 9 | `find exam` | `No activities matched keyword "exam".`; no saved-file changes. |
+| 9 | `find exam` | `[WARNING] No activities matched keyword "exam".`; no saved-file changes. |
 | 10 | `delete 2` | Tutorial is removed; confirmation ends with `Activities in this session: 1`. |
-| 11 | `delete 1`, then `list` | Final meeting is removed; confirmation ends with `There is no activity recorded`. List shows `No activities yet.`. |
-| 12 | `delete 1`, then `find tutorial` | Empty-list deletion warning, followed by the ordinary no-match search message. |
+| 11 | `delete 1`, then `list` | Final meeting is removed; confirmation ends with `There is no activity recorded`. List shows `[WARNING] No activities yet.`. |
+| 12 | `delete 1`, then `find tutorial` | Empty-list deletion warning, followed by the `[WARNING]` no-match search message. |
 | 13 | `bye`, relaunch, then `list` | Empty activity file reloads successfully with no remaining activities. |
 
 The known Unicode-blank-name validation defect is described under

@@ -36,7 +36,7 @@ public class UnmarkCommand extends Command {
         boolean changed = activities.setDoneAtDisplayedIndex(displayedIndex, false);
         String message = changed
                 ? "Unmarked activity: " + activity.getName()
-                : "Activity is already unmarked: " + activity.getName();
+                : "[WARNING] Activity is already unmarked: " + activity.getName();
         return new CommandResult(message, false, changed);
     }
 }
