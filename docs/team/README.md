@@ -8,7 +8,7 @@ team's responsibility assignments.
 
 | Member | Portfolio | Main responsibilities |
 | --- | --- | --- |
-| Lou Yu Luke | [lukelouyu.md](lukelouyu.md) | Optional add ratings, facilities, accessible routes and exit. |
+| Lou Yu Luke | [lukelouyu.md](lukelouyu.md) | Optional add ratings, today's high-demand count (US16), facilities, accessible routes and exit. |
 | Atharva Rege | [atharva005.md](atharva005.md) | Activity creation and help; calendar dashboards remain planned. |
 | Muhammad Asyraf Bin Abdul Rahim | [officialasyrafrahim.md](officialasyrafrahim.md) | Activity listing, deletion, priority, overdue and next. |
 | Oliver | [oliver-koh.md](oliver-koh.md) | Completion, storage/recovery, activity editing and name search. |

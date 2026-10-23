@@ -14,6 +14,7 @@
   - [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search)
   - [Luke: Ratings and accessibility](#luke-ratings-and-accessibility)
     - [Optional ratings integration](#optional-ratings-integration)
+    - [Today's high-demand count (US16)](#todays-high-demand-count-us16)
     - [Facility Accessibility Data (`facilities.txt`)](#facility-accessibility-data-facilitiestxt)
     - [Facility lookup](#facility-lookup)
     - [Accessibility Route Connections (`connections.txt`)](#accessibility-route-connections-connectionstxt)
@@ -40,8 +41,9 @@ UniEnable is a Java command-line application for managing dated activities and
 checking campus accessibility reference information. Activities have start and
 end times, a demand level, a completion state, and optional importance, urgency,
 and commitment ratings. Users can edit those activities, search their names,
-rank them by priority, query overdue and upcoming activities, look up facility
-features, and find the shortest recorded accessible route between supported hubs.
+rank them by priority, count today's high-demand activities, query overdue and
+upcoming activities, look up facility features, and find the shortest recorded
+accessible route between supported hubs.
 
 The target users are tertiary students with ASD, ADHD, or mobility constraints
 who are adapting to unfamiliar university routines and managing their commitments
@@ -139,9 +141,9 @@ displayed by the console so the user can continue.
 | --- | --- |
 | Startup and console loop | `UniEnable` restores activity data and reads commands until `bye` or end of input. `ConsoleHelper` loads reference data, constructs the parser, executes commands, and saves activity changes. |
 | User interface | `Ui` reads lines and displays messages between borders. `ActivityListFormatter`, `FacilityOutputFormatter`, and `FacilityDetailsFormatter` build messages without reading input or printing. `RouteCommand` formats its own route result. |
-| Parsing | `Parser` identifies the command word. `AddCommandParser`, `EditCommandParser`, `ListDeleteCommandParser`, `MarkCommandParser`, `FacilityCommandParser`, and `RouteParser` validate their arguments and create commands. `Parser` validates `find` keywords and the no-argument `overdue`/`next` syntax directly. A shared injected `Clock` makes add/edit validation and time queries repeatable in tests. |
+| Parsing | `Parser` identifies the command word. `AddCommandParser`, `EditCommandParser`, `ListDeleteCommandParser`, `MarkCommandParser`, `FacilityCommandParser`, and `RouteParser` validate their arguments and create commands. `Parser` validates `find` keywords, the exact `demand today` syntax, and the no-argument `overdue`/`next` syntax directly. A shared injected `Clock` makes add/edit validation and time queries repeatable in tests. |
 | Command execution | Concrete subclasses implement `Command.execute(ActivityList, Storage)`. Each returns a `CommandResult`; the activity-change flag lets the console decide when to save. |
-| Activity model | `Activity` stores activity details, completion and ratings, and calculates its priority score on demand. `ActivityList` owns the collection, creates chronological, demand, priority, overdue, and next views, and resolves displayed indexes against the chronological view. |
+| Activity model | `Activity` stores activity details, completion and ratings, and calculates its priority score on demand. `ActivityList` owns the collection, creates chronological, demand, priority, overdue, and next views, counts HIGH-demand activities on a supplied date, and resolves displayed indexes against the chronological view. |
 | Accessibility logic | `FacilityManager` provides facility lookup and feature filtering. `ConnectionManager` provides connection queries and delegates route searches to `DijkstraShortestPath`, which uses a fresh `DijkstraSolver` per search. |
 | Reference models | `Facility` contains `FacilityFeature` records. `Connection` stores two facility names, a distance, accessibility and shelter statuses, a traversal type, and optional barrier information and notes. These objects are immutable. |
 | Storage | `Storage` loads six- or nine-field activity rows and saves nine-field rows, with recovery backups when needed. `FacilityStorage` and `ConnectionStorage` load bundled reference records and return records plus warnings in `LoadResult<T>`. |
@@ -192,13 +194,13 @@ Documentation to be completed by Oliver.
 
 <!-- END OWNER: Oliver (@Oliver-koh) -->
 
-<!-- BEGIN OWNER: Lou Yu Luke (@lukelouyu). Maintain optional add ratings, facilities, routes and exit documentation here. -->
+<!-- BEGIN OWNER: Lou Yu Luke (@lukelouyu). Maintain optional add ratings, today's high-demand count, facilities, routes and exit documentation here. -->
 
 ### Luke: Ratings and accessibility
 
-Luke maintains optional add ratings, facility reference data and queries,
-accessible route search, and the exit command. Shared activity models connect
-these enhancements with the other members' commands.
+Luke maintains optional add ratings, today's high-demand count (US16), facility
+reference data and queries, accessible route search, and the exit command.
+Shared activity models connect these enhancements with the other members' commands.
 
 #### Optional ratings integration
 
@@ -209,6 +211,41 @@ an integer from 1 to 5, so add, edit and storage use the same validation rule.
 The [shared class diagram](diagrams/shared/ActivityCreationClassDiagram.puml)
 shows how ratings fit into activity creation. Asyraf's priority view consumes
 them; Oliver's editing and persistence flows update and preserve them.
+
+#### Today's high-demand count (US16)
+
+Luke owns `demand today`, which displays the number of HIGH-demand activities
+scheduled on the computer's current local date. Completed activities and all
+start/end times on that date are included, because US16 describes scheduled
+daily demand. LOW/MEDIUM demand, activities on other dates and numeric ratings
+do not contribute. The result is `0` when nothing matches.
+
+Execution follows the existing command/result path:
+
+1. `Parser` accepts exactly two case-insensitive words, `demand today`, separated
+   by whitespace. Missing or unsupported subcommands and extra arguments raise
+   `ParseException` with a warning and `Usage: demand today`.
+2. `Parser` passes its shared `Clock` to `DemandTodayCommand`.
+3. Each `execute()` call obtains `LocalDate.now(clock)`, then calls
+   `ActivityList.countHighDemandOn(today)`. Obtaining the date during execution
+   avoids retaining yesterday's date after local midnight.
+4. The model scans its backing collection once, matching date and `DemandLevel.HIGH`,
+   without sorting, mutating completion, or changing insertion order. It returns
+   a `long` count. The query takes O(n) time and O(1) additional space.
+5. The command returns `High-demand activities scheduled today (YYYY-MM-DD): N`
+   in a `CommandResult` with exit and activity-change flags unset. The console
+   therefore displays the count without saving the activity file.
+
+The default clock is `Clock.systemDefaultZone()`; injected clocks control both
+the instant and local zone in tests. The same command can be executed repeatedly
+and reads the current date and collection each time. No new activity fields or
+saved-file changes are needed.
+
+`DemandTodayCommandTest` covers mixed dates/demand levels, completed activities,
+the whole day, zero results, case and whitespace handling, invalid syntax, and
+execution across midnight and New Year in `Asia/Singapore`. `UniEnableTest`
+checks the loaded-data console path and verifies that querying preserves both
+legacy file bytes and the modification time. `HelpCommandTest` checks discoverability.
 
 #### Facility Accessibility Data (`facilities.txt`)
 
@@ -512,6 +549,7 @@ written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 | --- | --- |
 | Activity input and commands | `AddCommandParserTest`, `EditCommandParserTest`, `MarkCommandParserTest`, and `ListDeleteCommandParserTest` check valid syntax and rejected inputs. `EditCommandTest` checks partial changes and atomic rejection. `FindCommandTest` checks name matching and retained indexes. Other activity tests cover ratings, ordering and completion. |
 | Priority and time views | `ActivityTest` checks the score and missing ratings. `ListPriorityCommandTest`, `OverdueCommandTest`, `NextCommandTest`, and `ActivityListFormatterTest` check completed-state rules, ordering, stable ties, canonical indexes, empty results, strict starts and week/year labels. Inject a non-UTC zone to test local midnight separately from the instant. |
+| Daily demand (Luke, US16) | `DemandTodayCommandTest` checks HIGH-only date matching, completed activities and all times of day, zero results, grammar, and local midnight/New Year transitions using a shared clock. `UniEnableTest` checks counting loaded activities without rewriting the file. |
 | Activity persistence | `StorageTest` checks field round trips, legacy rows, malformed data, recovery backups, and failed writes. `UniEnableTest` exercises console sessions, warnings, restart persistence, and invalid commands that must preserve saved bytes. |
 | Facility reference data | `FacilityStorageTest`, `FacilityManagerTest`, `FacilityCommandParserTest`, and the facility command tests cover loading, exact status matching, formatting, and unavailable data. |
 | Routing | `DijkstraSolverTest` checks distances and predecessors. `DijkstraShortestPathTest` compares all 81 ordered hub pairs in the bundled graph with JGraphT and rejects inaccessible shortcuts. `ConnectionManagerTest`, `RouteParserTest`, and `RouteCommandTest` cover endpoint lookup, disconnected hubs, same-hub routes, and output. |
@@ -564,16 +602,16 @@ storage. Using the current interface requires entering text commands in a termin
 ### Current boundaries
 
 The current build supports dated, same-day activities, optional ratings,
-chronological, demand, and priority views, overdue and next queries, activity
-editing and name search, completion, deletion, persistence, facility queries,
-and shortest recorded accessible routes.
+chronological, demand, and priority views, today's high-demand count, overdue and
+next queries, activity editing and name search, completion, deletion, persistence,
+facility queries, and shortest recorded accessible routes.
 Reference information covers the nine bundled hubs; it is sample data without
 live campus updates.
 
 The [user stories](#user-stories) distinguish available features from proposals.
-Two supplied Must-Have stories remain unimplemented: today's summary (US10)
-and today's high-demand count (US16). Keyword search (US03), editing (US05),
-and manual rescheduling (US09) are supported by `find` and `edit`.
+One supplied Must-Have story remains unimplemented: today's summary (US10).
+Today's high-demand count (US16) is supported by `demand today`. Keyword search
+(US03), editing (US05), and manual rescheduling (US09) are supported by `find` and `edit`.
 Workbook priority therefore does not imply inclusion in the current build.
 The team still needs to confirm release scope for the remaining stories.
 
@@ -587,7 +625,7 @@ in the [team portfolio pages](team/README.md).
 
 | Team member | V1.0 work | V2.0 work |
 | --- | --- | --- |
-| [Lou Yu Luke (@lukelouyu)](https://github.com/lukelouyu) | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2099-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
+| [Lou Yu Luke (@lukelouyu)](https://github.com/lukelouyu) | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Today's high-demand count (US16)](#todays-high-demand-count-us16): `demand today`. [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2099-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
 | [Atharva Rege (@Atharva005)](https://github.com/Atharva005) | Help: `help`. [Adding an activity with name, date, times, and optional demand](#atharva-activity-creation-and-help): `add n/Tutorial d/2099-12-01 s/09:00 e/10:00 dem/HIGH`. | Planned: `view today`, `view tomorrow`, and `view week`. |
 | [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#asyraf-activity-views-and-deletion): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#asyraf-activity-views-and-deletion): `list priority`, `overdue`, and `next`. |
 | [Oliver (@Oliver-koh)](https://github.com/Oliver-koh) | [Saving, backups, and recovery](#oliver-completion-storage-editing-and-search), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#oliver-completion-storage-editing-and-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
@@ -643,7 +681,7 @@ reschedule command is required. It also preserves completion and omitted fields.
 | ID | Priority | As a/an ... | I can ... | So that ... | Current status |
 | --- | --- | --- | --- | --- | --- |
 | US15 | Must-Have | student with sensory or attention limits | assign a demand level to an activity | I can record how demanding I expect it to be | Implemented |
-| US16 | Must-Have | student with sensory limits | see the count of high-demand activities scheduled today | I can anticipate a potentially stressful day | Not implemented |
+| US16 | Must-Have | student with sensory limits | see the count of high-demand activities scheduled today | I can anticipate a potentially stressful day | Implemented (Luke: `demand today`) |
 | US17 | Nice-to-Have | student managing my energy | set importance, commitment, and urgency levels on an activity | I can capture how much each one matters | Implemented |
 | US18 | Nice-to-Have | student unsure what to do first | view my activities, including completed ones, ordered by combined priority score | I can decide what to tackle next | Implemented |
 | US19 | Nice-to-Have | student aware of my workload | view the commitment level of a specific activity | I can decide whether to take it on | Implemented |
@@ -657,7 +695,10 @@ including `-` for unset ratings. Users can identify the desired activity by
 name and canonical index; no separate activity-details command is needed to
 read its commitment. Add and edit confirmations also show ratings.
 `list demand` orders demand levels and provides neither combined priority
-scoring nor a daily high-demand count.
+scoring nor a daily high-demand count. Luke's `demand today` implements US16 by
+counting today's HIGH-demand activities, including completed ones and activities
+earlier today; it returns `0` when none match. It provides the count rather than
+the full activity summary proposed in US10.
 
 US18 adapts the workbook's pending-only wording to the team's revised scope:
 `list priority` includes completed and incomplete activities. It uses
@@ -790,6 +831,20 @@ Supports US13, US18 and US19.
 Extra arguments produce a warning. An activity starting exactly now is excluded
 from both time queries, and completed activities remain eligible only for priority.
 
+### UC07: Check today's high-demand count
+
+Supports US16; implemented by Luke.
+
+1. The student enters `demand today`.
+2. UniEnable determines the current local date at execution time and counts
+   activities on that date with demand HIGH, including completed activities and
+   activities that have already ended.
+3. UniEnable displays the date and count without changing activities or storage.
+
+**Extensions:** An empty schedule or no matching activities produces a count of
+`0`. Invalid syntax produces a warning with `Usage: demand today` and the console
+continues. A later execution after local midnight counts the new date.
+
 <!-- SHARED: All members maintain non-functional requirements. -->
 
 ## Non-functional requirements
@@ -906,6 +961,38 @@ Sunday/Monday and December/January transitions, plus a non-UTC clock crossing
 local midnight. Compare bytes and modification times before and after queries;
 neither should change. A score test should cover the 2/250 bounds, all missing
 rating combinations, differing demands and completion states, and stable ties.
+
+### Today's high-demand count (Luke, US16)
+
+Use a disposable test folder and activity file. Reuse the fixed-clock integration
+entry point above with `Asia/Singapore`, initially at 2030-10-22 12:00 local time.
+Preload these rows before launching so already-ended activities can be checked:
+
+```text
+Yesterday high|2030-10-21|09:00|10:00|HIGH|false|-|-|-
+Today done|2030-10-22|08:00|09:00|HIGH|true|-|-|-
+Today later|2030-10-22|23:00|23:30|HIGH|false|-|-|-
+Today medium|2030-10-22|12:00|13:00|MEDIUM|false|5|5|5
+Today low|2030-10-22|14:00|15:00|LOW|false|-|-|-
+Tomorrow high|2030-10-23|09:00|10:00|HIGH|false|-|-|-
+```
+
+| Input or action | Expected result |
+| --- | --- |
+| `demand today` | `High-demand activities scheduled today (2030-10-22): 2`. |
+| `DEMAND TODAY` or extra whitespace between the words | The same date and count. |
+| `mark 5`, then `demand today` | Count remains 2 even though Today later is completed. |
+| `unmark 2`, then `demand today` | Count remains 2; completion does not affect scheduled demand. |
+| `edit 5 dem/LOW`, then `demand today` | Count becomes 1, using the current activity data. |
+| `demand`, `demand tomorrow`, or `demand today extra` | Warning ending with `Usage: demand today`; the next valid command still works. |
+| Run with the local clock on 2030-10-23 | Date is 2030-10-23 and count is 1, even while the UTC date is still 2030-10-22 just after local midnight. |
+| Run with the local clock on 2030-10-24, or with an empty file | Count is 0 for the displayed date. |
+
+Compare file bytes and modification times immediately before and after the
+query itself: neither changes. Mark, unmark and edit are separate saving actions.
+For midnight and December/January boundaries, the automated test advances an
+injected clock and executes the same command again; no computer clock changes
+are needed.
 
 ### Invalid activity and command input
 

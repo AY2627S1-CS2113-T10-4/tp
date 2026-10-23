@@ -1,5 +1,6 @@
 package seedu.unienable.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -9,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import seedu.unienable.exception.InvalidIndexException;
+import seedu.unienable.model.enums.DemandLevel;
 
 /**
  * Owns activity collection state without exposing its mutable backing list.
@@ -102,6 +104,22 @@ public class ActivityList {
         assert view.size() == activities.size() : "Demand view must contain every activity.";
         assert isSorted(view, DEMAND_ORDER) : "Demand view must be in demand and canonical order.";
         return view;
+    }
+
+    /**
+     * Counts HIGH-demand activities scheduled on the supplied date, including completed
+     * activities. Start and end times do not affect the full-day scheduled count.
+     *
+     * @param date date whose scheduled demand is counted
+     * @return number of HIGH-demand activities on that date
+     * @throws NullPointerException if the date is null
+     */
+    public long countHighDemandOn(LocalDate date) {
+        Objects.requireNonNull(date);
+        return activities.stream()
+                .filter(activity -> activity.getDate().equals(date))
+                .filter(activity -> activity.getDemand() == DemandLevel.HIGH)
+                .count();
     }
 
     /**

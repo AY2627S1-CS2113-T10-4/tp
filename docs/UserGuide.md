@@ -5,9 +5,9 @@
 UniEnable is a command-line application for managing dated activities and checking
 campus accessibility information. Add activities with optional importance, urgency
 and commitment ratings, edit activities, search their names, track completion,
-rank activities by priority, identify overdue and upcoming activities, search
-facilities, and find shortest recorded accessible routes. Activity changes save
-automatically.
+rank activities by priority, count today's high-demand activities, identify
+overdue and upcoming activities, search facilities, and find shortest recorded
+accessible routes. Activity changes save automatically.
 
 Calendar dashboards (`view today`, `view tomorrow`, and `view week`) from the
 V2.0 proposal remain planned and are unavailable in this build. The commands
@@ -56,10 +56,10 @@ Activities load at startup from `data/activities.txt`, relative to the folder
 where you launch the application. A missing file starts an empty list. Successful
 add, edit, delete, and completion changes save the entire activity list automatically.
 Every successful `edit` requests a save, even if the supplied values match the
-existing values. Read-only commands (`find`, `list`, `list demand`, `list priority`,
-`overdue`, `next`, facility queries, routes, and `help`) and `bye` do not save or
-retry a failed save. Repeated `mark`/`unmark` commands that leave completion
-unchanged also do not save.
+existing values. Read-only commands (`find`, `list`, `list demand`, `demand today`,
+`list priority`, `overdue`, `next`, facility queries, routes, and `help`) and `bye`
+do not save or retry a failed save. Repeated `mark`/`unmark` commands that leave
+completion unchanged also do not save.
 
 Saved activity rows use nine fields:
 ```text
@@ -177,6 +177,43 @@ Run 'list' to find the correct index for 'delete INDEX'.
 ```
 
 An empty list shows `No activities yet.` beneath the heading (and demand-view notice).
+
+### Counting today's high-demand activities: `demand today`
+
+See how many activities with demand `HIGH` are scheduled today, so you can
+anticipate a demanding day.
+
+Format: `demand today`
+
+- Today is the computer's current local date, checked each time the command runs.
+  The result includes the date so you can see which day was counted.
+- The count includes completed and incomplete activities across the whole day,
+  including activities that have already ended. Marking or unmarking an activity
+  does not change the count.
+- Activities on other dates and those with `LOW` or `MEDIUM` demand are excluded.
+  Importance, urgency and commitment ratings do not affect the count.
+- An empty schedule or no matching activities produces a count of `0`.
+- The command reads the current activity list without changing or saving it.
+
+With the two activities in the listing example above, assume the current local
+date is 2026-12-02. Input: `demand today`
+
+Output:
+
+```text
+High-demand activities scheduled today (2026-12-02): 1
+```
+
+Project meeting is counted even if it has already ended or is marked done.
+On 2026-12-01, the same two activities instead produce:
+
+```text
+High-demand activities scheduled today (2026-12-01): 0
+```
+
+`DEMAND TODAY` also works. Missing or unsupported subcommands and extra arguments,
+such as `demand`, `demand tomorrow`, or `demand today extra`, produce a warning
+ending with `Usage: demand today`.
 
 ### Changing completion: `mark` and `unmark`
 
@@ -553,6 +590,7 @@ from the full chronological list. Use the displayed index directly for `edit`,
 | `help` / `bye` | Show built-in help / exit |
 | `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Add an activity with optional ratings |
 | `list` / `list demand` | View activities by time / demand |
+| `demand today` | Count today's HIGH-demand activities, including completed ones |
 | `edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Update supplied activity fields; preserve omitted fields and completion |
 | `find KEYWORD` | Search activity names and retain chronological list indexes |
 | `list priority` | View all activities by combined priority score |

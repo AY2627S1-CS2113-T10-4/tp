@@ -85,6 +85,30 @@ class UniEnableTest {
     }
 
     @Test
+    void demandToday_countsLoadedActivitiesWithoutRewritingLegacyStorage(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        byte[] original = String.join("\n",
+                "Past high|2026-10-13|09:00|10:00|HIGH|false",
+                "Today done|2026-10-14|08:00|09:00|HIGH|true",
+                "Today late|2026-10-14|23:00|23:30|HIGH|false",
+                "Today medium|2026-10-14|12:00|13:00|MEDIUM|false",
+                "Tomorrow high|2026-10-15|09:00|10:00|HIGH|false", "")
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+        var originalModifiedTime = Files.getLastModifiedTime(activityFile);
+
+        String output = consoleAtPath("demand today extra\nDeMaNd ToDaY\nlist\nbye\n", activityFile);
+
+        assertTrue(output.contains("Usage: demand today"), output);
+        assertTrue(output.contains("High-demand activities scheduled today (2026-10-14): 2"), output);
+        assertTrue(output.contains("Today done (2026-10-14, 08:00-09:00) [HIGH] [X]"), output);
+        assertTrue(output.contains("Today late (2026-10-14, 23:00-23:30) [HIGH] [ ]"), output);
+        assertTrue(output.contains("Goodbye from UniEnable!"), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+        assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
+    }
+
+    @Test
     void deletingFinalActivity_reportsEmptyStateAndPersistsDeletion(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
         String output = consoleAtPath(String.join("\n",
