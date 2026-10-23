@@ -144,7 +144,7 @@ Update diagram sources and their images together. Use Java 25 and PlantUML:
 
 <!-- BEGIN OWNER: Atharva Rege (@Atharva005). Add activity-creation and help documentation here. -->
 
-### Atharva: Activity creation and help
+### Activity creation and help
 
 Documentation to be completed by Atharva.
 
@@ -152,7 +152,7 @@ Documentation to be completed by Atharva.
 
 <!-- BEGIN OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim). Add listing, deletion, priority, overdue and next documentation here. -->
 
-### Asyraf: Activity views and deletion
+### Activity views and deletion
 
 Asyraf maintains chronological and demand listing, deletion, priority ordering,
 and the overdue/next queries, including their displayed-index rules.
@@ -329,7 +329,7 @@ not change or save activity data.
 
 <!-- BEGIN OWNER: Oliver (@Oliver-koh). Add completion, storage/recovery, editing and search documentation here. -->
 
-### Oliver: Completion, storage, editing and search
+### Completion, storage, editing and search
 
 Documentation to be completed by Oliver.
 
