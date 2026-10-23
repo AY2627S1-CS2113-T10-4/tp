@@ -691,7 +691,7 @@ written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 | Daily demand (US16) | `DemandTodayCommandTest` covers counting rules, syntax and local midnight/New Year transitions; `UniEnableTest` checks loaded data and read-only behaviour. |
 | Activity persistence | `StorageTest` covers round trips, legacy data, malformed rows, backups and failed writes. `UniEnableTest` covers sessions, warnings, restarts and saved-byte preservation. |
 | Facility reference data | `FacilityStorageTest`, `FacilityManagerTest`, `FacilityCommandParserTest` and facility command tests cover loading, exact status matching, formatting and unavailable data. |
-| Routing | `DijkstraSolverTest` checks distances and predecessors. `DijkstraShortestPathTest` checks all 81 hub pairs against a fixed distance matrix and rejects inaccessible shortcuts. `ConnectionManagerTest`, `RouteParserTest` and `RouteCommandTest` cover endpoint errors, disconnected/same-hub routes and output. |
+| Routing | `DijkstraSolverTest` checks distances and predecessors. `DijkstraShortestPathTest` checks all 81 hub pairs against a manual distance matrix, validates route segments, checks a same-hub route and rejects inaccessible shortcuts. `ConnectionManagerTest`, `RouteParserTest` and `RouteCommandTest` cover endpoint errors, disconnected/same-hub routes and output. |
 
 Use `Clock.fixed()` with a non-UTC zone to test local midnight independently of
 the instant. `@TempDir` and explicit storage paths protect personal data; loaders

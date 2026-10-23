@@ -1,17 +1,17 @@
 package seedu.unienable.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.WeightedMultigraph;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 import seedu.unienable.exception.UniEnableException;
+import seedu.unienable.logic.DijkstraShortestPath.Route;
 import seedu.unienable.model.Connection;
 import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.model.enums.ShelterStatus;
@@ -22,33 +22,58 @@ import seedu.unienable.storage.FacilityStorage;
 //@@author lukelouyu
 /**
  * Checks route building and the separate DijkstraSolver through DijkstraShortestPath.findRoute().
- * Compares all 81 campus pairs against JGraphT and checks that inaccessible shortcuts are excluded.
+ * Checks all 81 campus pairs against a manual distance matrix and validates the returned route segments.
+ * The bundled graph has nine hubs and ten undirected links, including AS4-AS7 at 50 metres.
+ * Expected values are fixed test data; no reference shortest-path algorithm runs in these tests.
  */
 class DijkstraShortestPathTest {
+    /**
+     * Row and column order used by the manually calculated distance matrix.
+     */
+    private static final List<String> HUBS = List.of("AS1", "AS2", "AS3", "AS4", "AS5", "AS6", "AS7", "AS8", "CLB");
+
+    /**
+     * Shortest distances in metres for the bundled graph, with zero on the diagonal.
+     */
+    private static final long[][] EXPECTED_DISTANCES = {
+        // AS1, AS2, AS3, AS4, AS5, AS6, AS7, AS8, CLB
+        {0, 130, 165, 60, 115, 90, 110, 135, 160},
+        {130, 0, 35, 190, 245, 220, 240, 265, 290},
+        {165, 35, 0, 225, 280, 255, 275, 300, 325},
+        {60, 190, 225, 0, 55, 150, 50, 195, 220},
+        {115, 245, 280, 55, 0, 205, 65, 250, 275},
+        {90, 220, 255, 150, 205, 0, 200, 45, 70},
+        {110, 240, 275, 50, 65, 200, 0, 245, 270},
+        {135, 265, 300, 195, 250, 45, 245, 0, 55},
+        {160, 290, 325, 220, 275, 70, 270, 55, 0}
+    };
+
     @TestFactory
-    List<DynamicTest> allCampusPairs_matchJGraphTPathAndDistance() throws UniEnableException {
-        var facilities = new FacilityStorage().load().getRecords();
-        var connections = new ConnectionStorage(facilities).load().getRecords();
-        var shortestPath = new DijkstraShortestPath(connections);
-        var graph = createReferenceGraph(connections);
-        var names = graph.vertexSet().stream().sorted().toList();
-        assertEquals(9, names.size());
-
-        // The full library class name distinguishes it from our own DijkstraShortestPath.
-        var reference = new org.jgrapht.alg.shortestpath.DijkstraShortestPath<>(graph);
+    List<DynamicTest> findRoute_allCampusPairs_matchManualDistanceMatrix() throws UniEnableException {
+        var shortestPath = loadCampusGraph();
         List<DynamicTest> tests = new ArrayList<>();
-        for (String source : names) {
-            for (String destination : names) {
+        for (int i = 0; i < HUBS.size(); i++) {
+            for (int j = 0; j < HUBS.size(); j++) {
+                String source = HUBS.get(i);
+                String destination = HUBS.get(j);
+                long expectedDistance = EXPECTED_DISTANCES[i][j];
                 tests.add(DynamicTest.dynamicTest(source + " -> " + destination, () -> {
-                    var expected = reference.getPath(source, destination);
                     var actual = shortestPath.findRoute(source, destination).orElseThrow();
-
-                    assertEquals(expected.getVertexList(), actual.stops());
-                    assertEquals(expected.getWeight(), (double) actual.distanceInMetres());
+                    assertEquals(expectedDistance, actual.distanceInMetres());
+                    assertValidRoute(actual, source, destination);
                 }));
             }
         }
         return tests;
+    }
+
+    @Test
+    void findRoute_sameSourceAndDestination_returnsZeroDistanceAndNoSegments() throws UniEnableException {
+        var route = loadCampusGraph().findRoute("AS1", "AS1").orElseThrow();
+
+        assertEquals(0L, route.distanceInMetres());
+        assertEquals(List.of("AS1"), route.stops());
+        assertTrue(route.segments().isEmpty());
     }
 
     @Test
@@ -75,20 +100,37 @@ class DijkstraShortestPathTest {
     }
 
     /**
-     * Builds an independent, bidirectional JGraphT graph using recorded distances as weights.
-     * Only confirmed accessible connections are included as edges.
+     * Loads the bundled campus graph so the expected routes also check the recorded data.
      */
-    private static WeightedMultigraph<String, DefaultWeightedEdge> createReferenceGraph(List<Connection> connections) {
-        var graph = new WeightedMultigraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
-        for (var connection : connections) {
-            graph.addVertex(connection.getFrom());
-            graph.addVertex(connection.getTo());
-            if (connection.getAccessibility() == AccessibilityStatus.YES) {
-                var edge = graph.addEdge(connection.getFrom(), connection.getTo());
-                graph.setEdgeWeight(edge, connection.getDistanceInMetres());
-            }
-        }
-        return graph;
+    private static DijkstraShortestPath loadCampusGraph() throws UniEnableException {
+        var facilities = new FacilityStorage().load().getRecords();
+        var connections = new ConnectionStorage(facilities).load().getRecords();
+        assertEquals(9, facilities.size());
+        return new DijkstraShortestPath(connections);
     }
+
+    /**
+     * Checks that returned stops follow accessible links whose distances add up to the route total.
+     *
+     * @param route returned route.
+     * @param source requested source hub.
+     * @param destination requested destination hub.
+     */
+    private static void assertValidRoute(Route route, String source, String destination) {
+        assertEquals(source, route.stops().getFirst());
+        assertEquals(destination, route.stops().getLast());
+        assertEquals(route.stops().size() - 1, route.segments().size());
+        for (int i = 0; i < route.segments().size(); i++) {
+            Connection connection = route.segments().get(i);
+            String from = route.stops().get(i);
+            String to = route.stops().get(i + 1);
+            assertTrue(connection.getFrom().equals(from) && connection.getTo().equals(to)
+                    || connection.getFrom().equals(to) && connection.getTo().equals(from));
+            assertEquals(AccessibilityStatus.YES, connection.getAccessibility());
+        }
+        assertEquals(route.distanceInMetres(), route.segments().stream()
+                .mapToLong(Connection::getDistanceInMetres).sum());
+    }
+
 }
 //@@author
