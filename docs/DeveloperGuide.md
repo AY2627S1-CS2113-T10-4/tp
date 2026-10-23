@@ -38,22 +38,15 @@
 ## Introduction
 
 UniEnable is a Java command-line application for managing dated activities and
-checking campus accessibility reference information. Activities have start and
-end times, a demand level, a completion state, and optional importance, urgency,
-and commitment ratings. Users can edit those activities, search their names,
-rank them by priority, count today's high-demand activities, query overdue and
-upcoming activities, look up facility features, and find the shortest recorded
-accessible route between supported hubs.
+checking campus accessibility reference information. It combines activity
+planning with facility lookup and route search.
 
 The target users are tertiary students with ASD, ADHD, or mobility constraints
-who are adapting to unfamiliar university routines and managing their commitments
-independently. UniEnable aims to make those routines easier to organise by combining
-activity planning with campus facility and route information.
+who are adapting to university routines and managing commitments independently.
 
 This guide explains the current design for developers maintaining the application.
-See the [User Guide](UserGuide.md) for command formats and examples. Facility and
-connection records are bundled sample data, so their results need to be checked
-against current campus information before use.
+See the [User Guide](UserGuide.md) for commands and examples. Accessibility records
+are bundled sample data; check results against current campus information before use.
 
 ## Setting up and getting started
 
@@ -62,9 +55,8 @@ or running the application. In IntelliJ IDEA, import the project as a Gradle
 project and select JDK 25 for both the project SDK and Gradle JVM. The
 [README](../README.md#setting-up-in-intellij) gives the IDE setup steps.
 
-Use the included Gradle wrapper; a separate Gradle installation is unnecessary.
-The first build needs internet access to download Gradle and dependencies. Run
-the following commands from the project root:
+Run these commands from the project root using the included Gradle wrapper.
+The first build needs internet access to download Gradle and dependencies.
 
 | Purpose | Windows PowerShell | macOS / Linux |
 | --- | --- | --- |
@@ -124,49 +116,33 @@ Architecture and models used across members' features are maintained jointly.
 
 ![Architecture diagram showing the console, parsers, commands, models, accessibility logic, and storage](images/shared/ArchitectureDiagram.png)
 
-The diagram groups related classes by responsibility and shows selected
-dependencies. `UniEnable` loads activities and runs the console loop. Its
-package-private helper, `ConsoleHelper`, loads facilities before connections,
-then constructs the managers and parser. `Ui` handles console input and output;
-`Parser` delegates input to a feature parser, which creates a concrete `Command`.
-
-`ConsoleHelper` executes the command against the shared `ActivityList` and
-`Storage`. The returned `CommandResult` supplies a message, an exit flag, and an
-activity-change flag. Only a result reporting an activity change triggers a save,
-before its message is displayed. Facility and route commands query their managers
-without changing activities; recoverable errors use `UniEnableException` and are
-displayed by the console so the user can continue.
+`UniEnable` restores activities; `ConsoleHelper` loads facilities before connections
+and creates the managers and parser. `Ui` reads input, `Parser` creates a command,
+and the command queries or updates a model or manager. Its `CommandResult` carries
+a message, an exit flag and an activity-change flag. `ConsoleHelper` saves only
+when activities changed, then displays the message; the exit flag ends the loop.
 
 | Area | Main classes and responsibilities |
 | --- | --- |
-| Startup and console loop | `UniEnable` restores activity data and reads commands until `bye` or end of input. `ConsoleHelper` loads reference data, constructs the parser, executes commands, and saves activity changes. |
-| User interface | `Ui` reads lines and displays messages between borders. `ActivityListFormatter`, `FacilityOutputFormatter`, and `FacilityDetailsFormatter` build messages without reading input or printing. `RouteCommand` formats its own route result. |
-| Parsing | `Parser` identifies the command word. `AddCommandParser`, `EditCommandParser`, `ListDeleteCommandParser`, `MarkCommandParser`, `FacilityCommandParser`, and `RouteParser` validate their arguments and create commands. `Parser` validates `find` keywords, the exact `demand today` syntax, and the no-argument `overdue`/`next` syntax directly. A shared injected `Clock` makes add/edit validation and time queries repeatable in tests. |
-| Command execution | Concrete subclasses implement `Command.execute(ActivityList, Storage)`. Each returns a `CommandResult`; the activity-change flag lets the console decide when to save. |
-| Activity model | `Activity` stores activity details, completion and ratings, and calculates its priority score on demand. `ActivityList` owns the collection, creates chronological, demand, priority, overdue, and next views, counts HIGH-demand activities on a supplied date, and resolves displayed indexes against the chronological view. |
-| Accessibility logic | `FacilityManager` provides facility lookup and feature filtering. `ConnectionManager` provides connection queries and delegates route searches to `DijkstraShortestPath`, which uses a fresh `DijkstraSolver` per search. |
-| Reference models | `Facility` contains `FacilityFeature` records. `Connection` stores two facility names, a distance, accessibility and shelter statuses, a traversal type, and optional barrier information and notes. These objects are immutable. |
+| Startup and console loop | `UniEnable` runs until `bye` or end of input. `ConsoleHelper` loads reference data, creates the parser, executes commands and saves changes. |
+| User interface | `Ui` reads and displays text. `ActivityListFormatter`, `FacilityOutputFormatter` and `FacilityDetailsFormatter` build messages; `RouteCommand` formats its own result. |
+| Parsing | `Parser` dispatches to `AddCommandParser`, `EditCommandParser`, `ListDeleteCommandParser`, `MarkCommandParser`, `FacilityCommandParser` or `RouteParser`. It checks `find`, `demand today`, `overdue` and `next` directly. A shared injected `Clock` makes time checks repeatable. |
+| Command execution | Subclasses implement `Command.execute(ActivityList, Storage)` and return a `CommandResult`. |
+| Activity model | `Activity` stores details, completion and ratings and calculates priority. `ActivityList` owns the collection, supplies views and demand counts, and resolves displayed indexes against chronological order. |
+| Accessibility logic | `FacilityManager` handles facility queries. `ConnectionManager` delegates routes to `DijkstraShortestPath`, with a fresh `DijkstraSolver` per search. |
+| Reference models | Immutable `Facility` and `FacilityFeature` objects describe hubs. Immutable `Connection` objects hold endpoints, distance, statuses, traversal type, barriers and notes. |
 | Storage | `Storage` loads six- or nine-field activity rows and saves nine-field rows, with recovery backups when needed. `FacilityStorage` and `ConnectionStorage` load bundled reference records and return records plus warnings in `LoadResult<T>`. |
 | Exceptions | `UniEnableException` is the checked error contract for recoverable failures. `ParseException` reports invalid commands, while `InvalidIndexException` reports indexes outside the current activity view. |
 
-If facility loading fails, the parser still supports activity commands, help,
-and exit. If only connection loading fails, facility commands remain available
-but route commands report that connection data is unavailable. Activity-load
-warnings and failures are reported at startup; a fatal activity read failure
-starts an empty in-memory list while `Storage` retains recovery protection.
+Recoverable failures use `UniEnableException`; the console displays the problem
+and accepts another command. Failed facility loading leaves activity commands,
+help and exit available. Failed connection loading disables routes but keeps
+facility queries available. Activity-load warnings and failures appear at startup;
+a fatal read failure starts an empty list with `Storage` recovery protection.
 
 Diagram source: [ArchitectureDiagram.puml](diagrams/shared/ArchitectureDiagram.puml).
-Edit the source and regenerate its image together when the design changes. With
-the [PlantUML JAR](https://plantuml.com/download) available, run this command from
-the project root, replacing `PATH_TO_PLANTUML_JAR` with its location:
-
-```text
-java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tpng -o ../../images/shared docs/diagrams/shared/ArchitectureDiagram.puml
-```
-
-PlantUML resolves `../../images/shared` relative to the diagram source directory, producing
-`docs/images/shared/ArchitectureDiagram.png`. The source selects the bundled Smetana
-layout engine, so a separate Graphviz installation is unnecessary for this diagram.
+See [diagram maintenance](diagrams/README.md#regenerating-images) for rendering
+commands. Update each source and its image together when the design changes.
 
 <!-- END SHARED -->
 
@@ -215,39 +191,30 @@ them; Oliver's editing and persistence flows update and preserve them.
 #### Today's high-demand count (US16)
 
 Luke owns `demand today`, which displays the number of HIGH-demand activities
-scheduled on the computer's current local date. Completed activities and all
-start/end times on that date are included, because US16 describes scheduled
-daily demand. LOW/MEDIUM demand, activities on other dates and numeric ratings
-do not contribute. The result is `0` when nothing matches, with `[WARNING]`
-before the count message.
+scheduled on the current local date, including completed and already-ended
+activities. Other dates, LOW/MEDIUM demand and numeric ratings do not contribute.
+A zero count carries `[WARNING]`.
 
 Execution follows the existing command/result path:
 
-1. `Parser` accepts exactly two case-insensitive words, `demand today`, separated
-   by whitespace. Missing or unsupported subcommands and extra arguments raise
+1. `Parser` accepts exactly `demand today`, ignoring case and extra whitespace,
+   and passes its shared `Clock` to `DemandTodayCommand`. Invalid syntax raises
    `ParseException` with a warning and `Usage: demand today`.
-2. `Parser` passes its shared `Clock` to `DemandTodayCommand`.
-3. Each `execute()` call obtains `LocalDate.now(clock)`, then calls
-   `ActivityList.countHighDemandOn(today)`. Obtaining the date during execution
-   avoids retaining yesterday's date after local midnight.
-4. The model scans its backing collection once, matching date and `DemandLevel.HIGH`,
-   without sorting, mutating completion, or changing insertion order. It returns
-   a `long` count. The query takes O(n) time and O(1) additional space.
-5. The command returns `High-demand activities scheduled today (YYYY-MM-DD): N`
-   in a `CommandResult` with exit and activity-change flags unset. The console
-   therefore displays the count without saving the activity file. A zero count
-   adds `[WARNING]` before the same message.
+2. Each `execute()` call reads `LocalDate.now(clock)` and calls
+   `ActivityList.countHighDemandOn(today)`, so the date stays current after midnight.
+3. The model counts matching dates and `DemandLevel.HIGH` in one pass, returning
+   a `long` without sorting or changing activities: O(n) time and O(1) extra space.
+4. The command returns `High-demand activities scheduled today (YYYY-MM-DD): N`,
+   prefixed with `[WARNING]` when N is zero. Both result flags are false, so the
+   console continues without saving.
 
-The default clock is `Clock.systemDefaultZone()`; injected clocks control both
-the instant and local zone in tests. The same command can be executed repeatedly
-and reads the current date and collection each time. No new activity fields or
-saved-file changes are needed.
+The default clock is `Clock.systemDefaultZone()`; tests inject a clock to control
+the instant and zone. The count uses existing activity fields and needs no
+saved-file changes.
 
-`DemandTodayCommandTest` covers mixed dates/demand levels, completed activities,
-the whole day, zero results, case and whitespace handling, invalid syntax, and
-execution across midnight and New Year in `Asia/Singapore`. `UniEnableTest`
-checks the loaded-data console path and verifies that querying preserves both
-legacy file bytes and the modification time. `HelpCommandTest` checks discoverability.
+`DemandTodayCommandTest` covers counting rules, syntax, zero results and local
+midnight/New Year transitions. `UniEnableTest` checks the console path and
+unchanged file bytes and modification time; `HelpCommandTest` checks the help entry.
 
 #### Facility Accessibility Data (`facilities.txt`)
 
@@ -303,17 +270,16 @@ explains how commands query these records.
 ##### Overview
 
 The `facility` commands list reference facilities, show one hub's recorded
-features, or search by feature and accessibility status. The bundled dataset
-contains AS1 to AS8 and CLB, with stable IDs F01 to F09. Commands read this sample
-data without changing activities or editing facility records.
+features, or search by feature and accessibility status. They read the
+[bundled dataset](#facility-accessibility-data-facilitiestxt) without changing
+activities or facility records.
 
 ##### High-level design
 
 `FacilityStorage` parses the bundled resource into immutable `Facility` and
 `FacilityFeature` objects. `FacilityManager` takes a snapshot of the loaded list
-and handles queries without file I/O. The class diagram separates loading from
-querying; `LoadResult<T>` carries accepted records and warnings, with
-`T = Facility` for this loader.
+and handles queries without file I/O. `LoadResult<Facility>` carries accepted
+records and load warnings.
 
 ![Class diagram showing facility loading, query logic, and reference models](images/luke/FacilityClassDiagram.png)
 
@@ -321,28 +287,21 @@ Source: [FacilityClassDiagram.puml](diagrams/luke/FacilityClassDiagram.puml).
 
 ##### Implementation and sequence diagram
 
-1. During startup, `ConsoleHelper` calls `FacilityStorage.load()` to read the
-   bundled resource using the [facility data format and association rules](#facility-accessibility-data-facilitiestxt).
-2. The console displays load warnings and constructs `FacilityManager` from the
-   accepted records. The manager is passed into `Parser` and its
-   `FacilityCommandParser`.
-3. The feature parser creates `FacilityListCommand`, `FacilityViewCommand`, or
-   `FacilityFindCommand`. For a feature search, `type/` must precede the optional
+1. At startup, `ConsoleHelper` loads facilities, displays warnings and passes a
+   `FacilityManager` to `Parser` and its `FacilityCommandParser`.
+2. The feature parser creates `FacilityListCommand`, `FacilityViewCommand`, or
+   `FacilityFindCommand`. For searches, `type/` must precede the optional
    `status/`; the omitted status defaults to `YES`.
-4. Listing uses `getFacilities()`. A single-hub query uses `findFacility()`,
-   checking stable IDs before names, ignoring case and surrounding whitespace.
-   A search calls `findByFeature(type, status)` and matches the recorded status
-   exactly. An absent feature does not match `UNKNOWN`.
-5. Results preserve dataset order. A facility appears at most once in search
-   results, even if several records match. `FacilityOutputFormatter` builds the
-   response and adds the shared accessibility disclaimer; detail output also
-   uses `FacilityDetailsFormatter`.
-6. The command returns a `CommandResult` without an activity change. The console
-   displays the message without calling activity storage's `save()`.
+3. The manager uses `getFacilities()`, `findFacility()` or `findByFeature(type, status)`.
+   Lookup checks IDs before names, ignoring case and surrounding spaces. Searches
+   match statuses exactly, exclude absent features from `UNKNOWN`, and return each
+   matching facility once in dataset order.
+4. `FacilityOutputFormatter` builds responses and adds the accessibility disclaimer,
+   using `FacilityDetailsFormatter` for details in lists and single-hub lookups.
+   The command returns a `CommandResult` with no activity change, so no save occurs.
 
-The sequence shows the execution of `facility find type/LIFT status/NO` after
-parsing. In the bundled dataset it returns AS1 and AS2. Listing and single-hub
-lookup use the same read-only result path with different manager methods.
+The sequence shows `facility find type/LIFT status/NO`, which returns AS1 and AS2
+in the bundled dataset.
 
 ![Sequence diagram for finding facilities with a recorded feature and status](images/luke/FacilityLookupSequence.png)
 
@@ -358,12 +317,10 @@ treating missing features as `UNKNOWN` would lose that distinction.
 
 ##### Error handling
 
-Malformed rows, duplicate IDs or names, unknown facility references, and invalid
-enums produce line-numbered warnings while valid records remain available.
-For conflicting statuses of the same feature at a facility, the first valid
-status is kept and later conflicting rows are skipped. Resource tags, enum
-values, and feature-to-facility IDs are matched exactly when loading; command
-input is case-insensitive.
+The loader skips malformed rows, duplicate IDs/names, unknown facility references
+and invalid enums with line-numbered warnings. For conflicting statuses of the
+same feature, it keeps the first valid status. Loading matches tags, enums and
+facility IDs exactly; command input ignores case.
 
 A missing or unreadable resource raises `UniEnableException` and uses the
 fallback described in [Architecture](#architecture). Invalid command filters
@@ -373,11 +330,9 @@ a valid search with no matches returns `[WARNING] No matching facilities found.`
 #### Accessibility Route Connections (`connections.txt`)
 
 The UTF-8 [connection dataset](../src/main/resources/connections.txt) stores ten
-bidirectional links between the nine facilities. Together they form a weighted
-graph: hub names are vertices, recorded links are edges, and distances are edge
-weights. The [Connection model](../src/main/java/seedu/unienable/model/Connection.java)
-names each weight `distanceInMetres`, so distances here are the project's
-recorded values in metres.
+bidirectional links between the nine facilities. Hub names form graph vertices;
+links form edges weighted by the [Connection model's](../src/main/java/seedu/unienable/model/Connection.java)
+recorded `distanceInMetres` values.
 
 Each pipe-separated row follows this format:
 
@@ -420,18 +375,13 @@ explains how the graph is built and how routes are found and displayed.
 
 ##### Connectivity graph
 
-This project-generated graph shows the ten recorded connections. Node positions
-are schematic, not geographical.
+This schematic connectivity graph shows the ten recorded connections; it is
+not a geographical map.
 
 ![FASS accessibility connection graph](images/luke/fass-accessibility-network.svg)
 
 Source: [fass-accessibility-network.puml](diagrams/luke/fass-accessibility-network.puml).
-With Java 25 and the PlantUML JAR available, regenerate the SVG from the project
-root using the command below. The output is written to `docs/images/luke`.
-
-```text
-java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tsvg -o ../../images/luke docs/diagrams/luke/fass-accessibility-network.puml
-```
+See [diagram maintenance](diagrams/README.md#regenerating-images) for rendering commands.
 
 #### Accessible route search
 
@@ -446,10 +396,9 @@ details, total metres, and the sample-data disclaimer.
 
 `ConnectionManager` keeps a connection snapshot and constructs one reusable
 `DijkstraShortestPath` graph. Each query creates a fresh package-private
-`DijkstraSolver` for distances and predecessors. The returned `Route` is the
-nested record `DijkstraShortestPath.Route`; it copies its stop and segment lists.
-The diagram shows these query and result relationships, omitting graph-node
-internals and unrelated connection-filtering methods.
+`DijkstraSolver` to track distances and predecessors. The nested
+`DijkstraShortestPath.Route` record copies its stop and segment lists to protect
+the result from later changes.
 
 ![Class diagram showing route commands, the reusable graph, per-query solver, and route result](images/luke/RoutingClassDiagram.png)
 
@@ -457,9 +406,8 @@ Source: [RoutingClassDiagram.puml](diagrams/luke/RoutingClassDiagram.puml).
 
 ##### Implementation and sequence diagram
 
-1. After loading facilities, `ConsoleHelper` calls `ConnectionStorage.load()`.
-   It reads `/connections.txt`, validating endpoints against the already loaded
-   facility names. Valid records are passed to `ConnectionManager`.
+1. `ConsoleHelper` loads facilities before connections so `ConnectionStorage`
+   can validate endpoint names, then passes valid connections to `ConnectionManager`.
 2. `DijkstraShortestPath` assigns a vertex index to each distinct, normalised
    endpoint name. Endpoints from `NO` or `UNKNOWN` connections are still known
    vertices. It then adds two adjacency entries for each `YES` connection, using
@@ -467,26 +415,18 @@ Source: [RoutingClassDiagram.puml](diagrams/luke/RoutingClassDiagram.puml).
 3. `Parser` delegates route input to `RouteParser`, which requires `from/` before
    `to/` and creates a `RouteCommand`. Executing the command calls
    `ConnectionManager.findRoute()`, which delegates to the reusable graph.
-4. The graph resolves both names, ignoring case and surrounding spaces, and
-   creates a new solver. `dijkstra()` uses a priority queue to select the nearest
-   unsettled vertex. `eNeighbours()` updates a neighbour only when a shorter
-   distance is found, recording its predecessor vertex and connection. Distances
-   use `long` so a route total can exceed the `int` range of individual segments.
-5. If the destination distance remains `Long.MAX_VALUE`, the graph returns
-   `Optional.empty()`. Otherwise, it follows predecessors back to the source and
-   reverses the collected stops and connections to construct a `Route`.
-6. If the validated route has only one stop, `RouteCommand` reports
-   `[WARNING] Sorry, the source and destination are the same.` through the common
-   checked-exception path. Otherwise, it formats the result using the ordered
-   stops rather than a connection's stored endpoint direction. It displays traversal types, shelter,
-   barriers, and notes, adds the disclaimer, and returns without changing
-   activities or triggering a save.
+4. The graph resolves names ignoring case and surrounding spaces and creates a
+   fresh solver. `dijkstra()` selects the nearest unsettled vertex with a priority
+   queue and updates neighbours only for shorter distances, recording predecessor
+   vertices and connections. Totals use `long` to exceed individual segments' `int` range.
+5. An unreachable destination retains `Long.MAX_VALUE`, producing `Optional.empty()`.
+   Otherwise, the graph follows predecessors back to the source and reverses the
+   stops and connections into a `Route`. `RouteCommand` formats ordered stops,
+   segment types, shelter, barriers and notes, adds the disclaimer and returns
+   without changing activities or saving.
 
 The sequence shows a successful query between different hubs after parsing.
-Internally, the graph represents a known hub queried against itself as a
-zero-distance route with one stop and no segments; `RouteCommand` converts that
-result into the same-endpoint warning. The graph uses names found in the
-connection dataset; stable facility IDs such as F01 are not route endpoints.
+Endpoints are names in the connection dataset; facility IDs such as F01 are not accepted.
 
 ![Sequence diagram showing route lookup, Dijkstra search, and path reconstruction](images/luke/RouteSearchSequence.png)
 
@@ -495,10 +435,10 @@ Minor getter calls and console output are omitted to keep the search flow readab
 
 ##### Design considerations
 
-Reusing the graph avoids rebuilding the adjacency list for every request, while
-a fresh solver prevents search state leaking between requests. A predefined
-route table would require maintaining a separate path for each hub pair; the
-current search derives paths from the connection records instead.
+Positive edge weights make Dijkstra suitable for finding the shortest recorded
+distance. Reusing the graph avoids rebuilding adjacency lists; a fresh solver
+keeps each query's search state independent. Computing paths from connections
+also avoids maintaining a separate route for every hub pair.
 
 The cost is distance alone. Shelter, traversal type, and recorded barriers do
 not add routing restrictions or preferences, so a selected route may include
@@ -518,6 +458,10 @@ which `RouteCommand` converts to a checked `UniEnableException` with usage text.
 Known but disconnected endpoints return a `[WARNING] No confirmed accessible route
 recorded` message; this describes the local dataset rather than proving that
 no accessible route exists on campus.
+
+For the same known hub at both ends, the graph returns a zero-distance route
+with one stop and no segments. `RouteCommand` rejects that result with
+`[WARNING] Sorry, the source and destination are the same.`
 
 #### Exiting the application
 
@@ -549,18 +493,16 @@ written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 
 | Area | Representative tests and purpose |
 | --- | --- |
-| Activity input and commands | `AddCommandParserTest`, `EditCommandParserTest`, `MarkCommandParserTest`, and `ListDeleteCommandParserTest` check valid syntax and rejected inputs. `EditCommandTest` checks partial changes and atomic rejection. `FindCommandTest` checks name matching and retained indexes. Other activity tests cover ratings, ordering and completion. |
-| Priority and time views | `ActivityTest` checks the score and missing ratings. `ListPriorityCommandTest`, `OverdueCommandTest`, `NextCommandTest`, and `ActivityListFormatterTest` check completed-state rules, ordering, stable ties, canonical indexes, empty results, strict starts and week/year labels. Inject a non-UTC zone to test local midnight separately from the instant. |
-| Daily demand (Luke, US16) | `DemandTodayCommandTest` checks HIGH-only date matching, completed activities and all times of day, zero results, grammar, and local midnight/New Year transitions using a shared clock. `UniEnableTest` checks counting loaded activities without rewriting the file. |
-| Activity persistence | `StorageTest` checks field round trips, legacy rows, malformed data, recovery backups, and failed writes. `UniEnableTest` exercises console sessions, warnings, restart persistence, and invalid commands that must preserve saved bytes. |
-| Facility reference data | `FacilityStorageTest`, `FacilityManagerTest`, `FacilityCommandParserTest`, and the facility command tests cover loading, exact status matching, formatting, and unavailable data. |
-| Routing | `DijkstraSolverTest` checks distances and predecessors. `DijkstraShortestPathTest` compares all 81 ordered hub pairs in the bundled graph with JGraphT and rejects inaccessible shortcuts. `ConnectionManagerTest`, `RouteParserTest`, and `RouteCommandTest` cover endpoint lookup, disconnected hubs, same-hub routes, and output. |
+| Activity input and commands | Parser tests cover valid and rejected syntax. `EditCommandTest` checks partial changes and atomic rejection; `FindCommandTest` checks name matching and chronological indexes. |
+| Priority and time views | `ActivityTest`, `ListPriorityCommandTest`, `OverdueCommandTest`, `NextCommandTest` and `ActivityListFormatterTest` cover ratings, completion, ordering, ties, indexes, empty results and time boundaries. |
+| Daily demand (Luke, US16) | `DemandTodayCommandTest` covers counting rules, syntax and local midnight/New Year transitions; `UniEnableTest` checks loaded data and read-only behaviour. |
+| Activity persistence | `StorageTest` covers round trips, legacy data, malformed rows, backups and failed writes. `UniEnableTest` covers sessions, warnings, restarts and saved-byte preservation. |
+| Facility reference data | `FacilityStorageTest`, `FacilityManagerTest`, `FacilityCommandParserTest` and facility command tests cover loading, exact status matching, formatting and unavailable data. |
+| Routing | `DijkstraSolverTest` checks distances and predecessors. `DijkstraShortestPathTest` compares all 81 hub pairs with JGraphT and rejects inaccessible shortcuts. `ConnectionManagerTest`, `RouteParserTest` and `RouteCommandTest` cover endpoint errors, disconnected/same-hub routes and output. |
 
-Use the existing `Clock.fixed()` and temporary-storage patterns when extending
-tests. A fixed clock makes date boundaries repeatable; `@TempDir` and explicitly
-supplied storage paths keep fixtures separate from a developer's activity file.
-Reference loaders accept `Reader` inputs so tests can supply malformed records
-without changing bundled resources.
+Use `Clock.fixed()` with a non-UTC zone to test local midnight independently of
+the instant. `@TempDir` and explicit storage paths protect personal data; loaders
+accept `Reader` inputs for testing malformed records without editing resources.
 
 The [build configuration](../build.gradle) requires **100% line and branch
 coverage for its selected accessibility classes**. This is a repository rule,
@@ -596,10 +538,8 @@ skipped on restart. Keep reproductions in disposable data until validation is al
 
 ### Target users and value proposition
 
-The students described in the [Introduction](#introduction) need a predictable
-way to record commitments and check campus reference information. UniEnable
-brings these tasks into a keyboard-operated application with local activity
-storage. Using the current interface requires entering text commands in a terminal.
+UniEnable combines commitment planning and campus reference queries in a
+keyboard-operated terminal application, with activities stored locally.
 
 ### Current boundaries
 
@@ -619,11 +559,9 @@ The team still needs to confirm release scope for the remaining stories.
 
 ### Team contributions
 
-The following ownership and version allocations were supplied by the team.
-Sample commands illustrate each member's work. Each member should review and
-maintain the descriptions and diagrams for their enhancements.
-Individual responsibilities, design links and related code/tests are collected
-in the [team portfolio pages](team/README.md).
+The team supplied the ownership and version allocations below. Each member
+maintains their descriptions and diagrams; [portfolio pages](team/README.md)
+link their responsibilities, design, code and tests.
 
 | Team member | V1.0 work | V2.0 work |
 | --- | --- | --- |
@@ -776,9 +714,8 @@ Supports US04, US05, US06, US09, and US31.
    `There is no activity recorded`.
 
 **Extensions:** An empty list or invalid index produces a warning without a
-change. Repeating mark or unmark when the state already matches reports that
-state with `[WARNING]` without saving. An invalid edit produces a warning without changing the
-activity. A save failure follows the recovery path in UC01.
+change. Repeating mark or unmark reports the existing state with `[WARNING]`
+without saving. Invalid edits leave activities unchanged; save failures follow UC01.
 
 ### UC03: Inspect recorded facility features
 
@@ -845,9 +782,9 @@ Supports US16; implemented by Luke.
 3. UniEnable displays the date and count without changing activities or storage.
 
 **Extensions:** An empty schedule or no matching activities produces a count of
-`0` with `[WARNING]` before the count message. Invalid syntax produces a warning
-with `Usage: demand today` and the console
-continues. A later execution after local midnight counts the new date.
+`0` with `[WARNING]` before the count message. Invalid syntax shows a warning and
+`Usage: demand today`; the console continues. After local midnight, the next
+execution counts the new date.
 
 <!-- SHARED: All members maintain non-functional requirements. -->
 
@@ -960,11 +897,11 @@ For one incomplete activity on the same date at 09:00-09:30, check these clocks:
 | Exactly 09:00 | Empty | Empty. |
 | 09:15 | That activity with `OVERDUE TODAY`. | Empty. |
 
-Repeat with the activity completed: both time queries are empty. Also exercise
-Sunday/Monday and December/January transitions, plus a non-UTC clock crossing
-local midnight. Compare bytes and modification times before and after queries;
-neither should change. A score test should cover the 2/250 bounds, all missing
-rating combinations, differing demands and completion states, and stable ties.
+Repeat with the activity completed: both time queries are empty. Check
+Sunday/Monday, December/January and local-midnight boundaries with a non-UTC clock.
+Queries must preserve file bytes and modification times. `ActivityTest` and
+`ListPriorityCommandTest` cover score bounds 2/250, missing ratings, demand and
+completion combinations, and stable ties.
 
 ### Today's high-demand count (Luke, US16)
 
