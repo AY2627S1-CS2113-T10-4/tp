@@ -9,9 +9,11 @@ rank activities by priority, count today's high-demand activities, identify
 overdue and upcoming activities, search facilities, and find shortest recorded
 accessible routes. Activity changes save automatically.
 
-Calendar dashboards (`view today`, `view tomorrow`, and `view week`) from the
-V2.0 proposal remain planned and are unavailable in this build. The commands
-documented under [Features](#features) are implemented.
+<!-- @@author Atharva005 -->
+Calendar dashboards (`view today`, `view tomorrow`, and `view week`) summarize
+scheduled activities and ratings. `view week` covers today and the following six days.
+Use `help view` for their syntax and output details.
+<!-- @@author -->
 
 [Quick Start](#quick-start) · [Command Format](#command-format) ·
 [Data Storage](#data-storage) · [Features](#features) ·
@@ -609,17 +611,39 @@ Verify with current campus information before you rely on it.
 
 <!-- @@author -->
 
+<!-- @@author Atharva005 -->
 ### Viewing help and exiting: `help` and `bye`
 
-Input: `help`
+Format: `help [TOPIC]`
 
-Output begins with `UniEnable commands:` and lists all available commands,
-including activity `edit` and `find`, optional ratings, activity index rules and automatic saving
-location.
+- `help` displays a menu grouped into activity management, planning and priorities,
+  completion and deletion, facilities and routes, and help and exit.
+- `help TOPIC` displays that command's syntax, rules, and examples. Topic names
+  ignore letter case and must be a single command name.
+- Supported topics are `add`, `edit`, `find`, `list`, `demand`, `view`, `overdue`,
+  `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `help`, and `bye`.
+- `help list` covers all list variants; `help facility` includes feature search.
+  Enter `help list` rather than `help list demand`.
+- Help only displays instructions. For example, `help delete` removes nothing,
+  and `help bye` keeps the application running. Activity data is unchanged.
+
+Examples:
+
+```text
+help
+help add
+help edit
+help facility
+help route
+```
+
+The main menu begins with `UniEnable commands:`. Topic pages have a title such as
+`ADD - Create an activity`, followed by **Usage**, **Details**, and **Examples**.
 
 Input: `bye`
 
 Output: `Goodbye from UniEnable!`
+<!-- @@author -->
 
 ## Error Handling
 
@@ -639,9 +663,19 @@ stored data unchanged.
 `list priority`, `overdue`, and `next` accept no arguments. Extra arguments and
 unsupported list variants produce a warning; they do not change activities.
 
+<!-- @@author Atharva005 -->
 Example input: `help extra`
 
-Output: `[WARNING] help does not take arguments.`
+Output:
+
+```text
+[WARNING] Unknown help topic 'extra'.
+Usage: help [TOPIC]
+Type help to see the available commands.
+```
+
+Extra topic words, such as `help add extra`, also show a warning and the help usage.
+<!-- @@author -->
 
 If saving fails, the change may already be in memory. Repeating the same `add`
 can create a duplicate; exiting with `bye` does not retry the save.
@@ -673,6 +707,12 @@ from the full chronological list. Use the displayed index directly for `edit`,
 `mark`, `unmark`, or `delete`; indexes can change after editing dates or times.
 
 ## Command Summary
+
+<!-- @@author Atharva005 -->
+Use `help TOPIC` with any command name below for detailed instructions, such as
+`help add`, `help list`, or `help route`. Use `help view` for the calendar dashboards:
+`view today`, `view tomorrow`, and `view week`.
+<!-- @@author -->
 
 | Command | Purpose |
 | --- | --- |

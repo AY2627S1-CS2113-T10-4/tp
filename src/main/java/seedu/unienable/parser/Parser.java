@@ -199,11 +199,11 @@ public class Parser {
         //@@author
         //@@author Atharva005
         case "help":
-            if (words.length != 1) {
-                throw new ParseException(
-                        WARNING_MESSAGE + " help does not take arguments.");
+            if (words.length > 2) {
+                throw new ParseException(WARNING_MESSAGE
+                        + " help accepts at most one command name.\nUsage: help [TOPIC]");
             }
-            return new HelpCommand();
+            return words.length == 1 ? new HelpCommand() : new HelpCommand(words[1]);
         //@@author
         default:
             throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");

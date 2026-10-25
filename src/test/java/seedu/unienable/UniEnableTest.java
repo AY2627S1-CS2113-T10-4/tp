@@ -67,6 +67,38 @@ class UniEnableTest {
                 console(""));
     }
 
+    //@@author Atharva005
+    @Test
+    void topicHelp_showsInstructionsWithoutChangingActivitiesOrExiting(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n"
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+        var originalModifiedTime = Files.getLastModifiedTime(activityFile);
+        List<String> topics = List.of("add", "edit", "find", "list", "demand", "view", "overdue", "next",
+                "mark", "unmark", "delete", "facility", "route", "help", "bye");
+        List<String> commands = new ArrayList<>();
+        commands.add("help");
+        commands.addAll(topics.stream().map(topic -> "help " + topic).toList());
+        commands.addAll(List.of("help unknown", "help add extra", "list", "bye", ""));
+
+        String output = consoleAtPath(String.join("\n", commands), activityFile);
+
+        assertTrue(output.contains("ACTIVITY MANAGEMENT"));
+        assertTrue(output.contains("PLANNING AND PRIORITIES"));
+        for (String topic : topics) {
+            assertTrue(output.contains(topic.toUpperCase(java.util.Locale.ROOT) + " - "), topic);
+        }
+        assertTrue(output.contains("[WARNING] Unknown help topic 'unknown'"));
+        assertTrue(output.contains("[WARNING] help accepts at most one command name."));
+        assertEquals(2, output.split(Pattern.quote("[WARNING]"), -1).length - 1);
+        assertEquals(1, output.split(Pattern.quote("Goodbye from UniEnable!"), -1).length - 1);
+        assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"));
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+        assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
+    }
+    //@@author
+
     //@@author lukelouyu
     @Test
     void sameRouteEndpoints_warnWithoutChangingActivities(@TempDir Path tempDir) throws Exception {
