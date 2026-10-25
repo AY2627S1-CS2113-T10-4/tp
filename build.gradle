@@ -62,7 +62,6 @@ run {
     enableAssertions = true
     //@@author
     standardInput = System.in
-    enableAssertions = true
 }
 
 // Measure facility commands and the connection foundations for accessible routing.
@@ -72,8 +71,10 @@ jacoco {
 
 def accessibilityClasses = [
     'seedu/unienable/command/accessibility/facility/**',
-    'seedu/unienable/logic/FacilityManager*',
-    'seedu/unienable/logic/ConnectionManager*',
+    //@@author lukelouyu
+    'seedu/unienable/command/accessibility/connection/logic/FacilityManager*',
+    'seedu/unienable/command/accessibility/connection/logic/ConnectionManager*',
+    //@@author
     'seedu/unienable/model/Facility*',
     'seedu/unienable/model/Connection*',
     'seedu/unienable/model/enums/AccessibilityStatus*',

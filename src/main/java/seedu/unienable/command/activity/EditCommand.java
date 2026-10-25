@@ -1,22 +1,20 @@
 package seedu.unienable.command.activity;
 
+//@@author Oliver-koh
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Objects;
 
-//@@author lukelouyu
 import seedu.unienable.command.common.Command;
 import seedu.unienable.command.common.CommandResult;
-//@@author
 import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
 
-//@@author Oliver-koh
 /**
  * Edits the supplied fields of one activity selected by its chronological index.
  */

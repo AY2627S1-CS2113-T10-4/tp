@@ -1,4 +1,6 @@
-package seedu.unienable.logic;
+//@@author lukelouyu
+package seedu.unienable.command.accessibility.connection.logic;
+//@@author
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -8,7 +10,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import seedu.unienable.logic.DijkstraSolver.Node;
+//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.DijkstraSolver.Node;
+//@@author
 import seedu.unienable.model.Connection;
 import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.model.enums.ShelterStatus;

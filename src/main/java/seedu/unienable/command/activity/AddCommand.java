@@ -18,7 +18,6 @@ import seedu.unienable.storage.Storage;
  * The console saves activities when the command result reports a change.
  */
 public class AddCommand extends Command {
-    // Owner: Atharva
     private final Activity activity;
 
     /**

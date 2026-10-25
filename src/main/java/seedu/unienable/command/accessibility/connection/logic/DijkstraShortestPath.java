@@ -1,4 +1,5 @@
-package seedu.unienable.logic;
+//@@author lukelouyu
+package seedu.unienable.command.accessibility.connection.logic;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,11 +10,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import seedu.unienable.logic.DijkstraSolver.Node;
+import seedu.unienable.command.accessibility.connection.logic.DijkstraSolver.Node;
+//@@author
 import seedu.unienable.model.Connection;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
-//@@author lukelouyu
 /**
  * Finds the shortest recorded accessible route between campus facilities.
  * Connections are bidirectional; only links marked YES are traversable.
@@ -138,6 +139,4 @@ public final class DijkstraShortestPath {
             segments = List.copyOf(segments);
         }
     }
-
 }
-//@@author

@@ -1,21 +1,19 @@
 package seedu.unienable.command.activity;
 
+//@@author officialasyrafrahim
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-//@@author lukelouyu
 import seedu.unienable.command.common.Command;
 import seedu.unienable.command.common.CommandResult;
-//@@author
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.activity.ActivityListFormatter;
 
-//@@author officialasyrafrahim
 /**
  * Lists incomplete activities whose start is strictly before the current local
  * time, in chronological order with labels for today, this week, and earlier.

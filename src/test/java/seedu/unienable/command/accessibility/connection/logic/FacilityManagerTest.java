@@ -1,4 +1,6 @@
-package seedu.unienable.logic;
+//@@author lukelouyu
+package seedu.unienable.command.accessibility.connection.logic;
+//@@author
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -7,7 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
+
 import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;

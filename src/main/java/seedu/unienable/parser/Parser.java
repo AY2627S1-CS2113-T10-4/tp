@@ -3,6 +3,10 @@ package seedu.unienable.parser;
 import java.time.Clock;
 import java.util.Locale;
 
+//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.ConnectionManager;
+import seedu.unienable.command.accessibility.connection.logic.FacilityManager;
+//@@author
 import seedu.unienable.command.activity.DemandTodayCommand;
 import seedu.unienable.command.activity.FindCommand;
 import seedu.unienable.command.activity.NextCommand;
@@ -16,12 +20,8 @@ import seedu.unienable.command.common.Command;
 import seedu.unienable.command.common.HelpCommand;
 //@@author
 import seedu.unienable.exception.ParseException;
-import seedu.unienable.logic.ConnectionManager;
-import seedu.unienable.logic.FacilityManager;
 
 /**
- * Recognizes add, edit, find, list, view, list demand, list priority, overdue, next,
- * delete, facility, route and bye commands.
  * Recognizes activity, facility, route, help and exit commands.
  */
 public class Parser {

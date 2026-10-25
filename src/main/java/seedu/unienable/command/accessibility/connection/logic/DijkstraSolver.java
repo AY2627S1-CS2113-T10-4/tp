@@ -1,4 +1,5 @@
-package seedu.unienable.logic;
+//@@author lukelouyu
+package seedu.unienable.command.accessibility.connection.logic;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -9,7 +10,6 @@ import java.util.Set;
 
 import seedu.unienable.model.Connection;
 
-//@@author lukelouyu
 /**
  * Runs one Dijkstra search for DijkstraShortestPath.
  * Each search has its own mutable state so subsequent queries are independent.
@@ -20,10 +20,12 @@ final class DijkstraSolver {
      * Best known distance to each vertex; Long.MAX_VALUE denotes an unreachable vertex.
      */
     private final long[] dist;
+
     /**
      * Predecessor vertex indexes used to reconstruct the chosen route.
      */
     private final int[] previous;
+
     /**
      * Original links joining each vertex to its predecessor.
      */
@@ -46,7 +48,8 @@ final class DijkstraSolver {
     }
 
     /**
-     * Runs the supplied Dijkstra algorithm with predecessor tracking added.
+     * Calculates shortest distances and records predecessors from the source vertex.
+     * Search state belongs to this solver, which is created separately for each route query.
      */
     void dijkstra(List<List<Node>> adj, int src) {
         this.adj = adj;
@@ -108,8 +111,8 @@ final class DijkstraSolver {
     }
 
     /**
-     * Corresponds to the Node class in the provided priority-queue example.
-     * A connection is attached when the node represents an adjacency-list edge.
+     * Stores a vertex and cost for an adjacency edge or priority-queue candidate.
+     * Adjacency edges also retain the original connection for route reconstruction.
      */
     record Node(int node, long cost, Connection connection) implements Comparator<Node> {
         private Node() {

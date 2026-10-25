@@ -1,8 +1,8 @@
 package seedu.unienable.parser;
 
 import seedu.unienable.command.accessibility.connection.RouteCommand;
+import seedu.unienable.command.accessibility.connection.logic.ConnectionManager;
 import seedu.unienable.exception.ParseException;
-import seedu.unienable.logic.ConnectionManager;
 
 //@@author lukelouyu
 /**

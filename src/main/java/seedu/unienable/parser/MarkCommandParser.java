@@ -2,11 +2,9 @@ package seedu.unienable.parser;
 
 import java.util.regex.Pattern;
 
-//@@author lukelouyu
-import seedu.unienable.command.common.Command;
-//@@author
 import seedu.unienable.command.activity.MarkCommand;
 import seedu.unienable.command.activity.UnmarkCommand;
+import seedu.unienable.command.common.Command;
 import seedu.unienable.exception.ParseException;
 
 //@@author Oliver-koh

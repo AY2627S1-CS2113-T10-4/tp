@@ -2,6 +2,9 @@ package seedu.unienable.parser;
 
 import java.util.Locale;
 
+//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.FacilityManager;
+//@@author
 import seedu.unienable.command.accessibility.facility.FacilityFindCommand;
 import seedu.unienable.command.accessibility.facility.FacilityListCommand;
 import seedu.unienable.command.accessibility.facility.FacilityViewCommand;
@@ -9,7 +12,6 @@ import seedu.unienable.command.accessibility.facility.FacilityViewCommand;
 import seedu.unienable.command.common.Command;
 //@@author
 import seedu.unienable.exception.ParseException;
-import seedu.unienable.logic.FacilityManager;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 

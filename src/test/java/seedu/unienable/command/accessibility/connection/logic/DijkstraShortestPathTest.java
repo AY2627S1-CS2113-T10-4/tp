@@ -1,4 +1,6 @@
-package seedu.unienable.logic;
+//@@author lukelouyu
+package seedu.unienable.command.accessibility.connection.logic;
+//@@author
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,8 +12,10 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
+//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.DijkstraShortestPath.Route;
+//@@author
 import seedu.unienable.exception.UniEnableException;
-import seedu.unienable.logic.DijkstraShortestPath.Route;
 import seedu.unienable.model.Connection;
 import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.model.enums.ShelterStatus;

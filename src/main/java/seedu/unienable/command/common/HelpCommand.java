@@ -1,8 +1,6 @@
-//@@author lukelouyu
 package seedu.unienable.command.common;
-//@@author
-//@@author Atharva005
 
+//@@author Atharva005
 import java.util.Locale;
 import java.util.Map;
 

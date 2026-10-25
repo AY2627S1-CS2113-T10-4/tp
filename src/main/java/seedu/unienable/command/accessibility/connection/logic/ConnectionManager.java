@@ -1,4 +1,5 @@
-package seedu.unienable.logic;
+//@@author lukelouyu
+package seedu.unienable.command.accessibility.connection.logic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,13 +10,13 @@ import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.model.enums.ShelterStatus;
 import seedu.unienable.model.enums.TraversalType;
 
-//@@author lukelouyu
 /**
  * Provides read-only lookups, filtering and shortest accessible routes over bidirectional connection data.
  * Endpoints are short facility names such as AS1 and CLB, not stable IDs such as F01.
  */
 public final class ConnectionManager {
     private final List<Connection> connections;
+
     /**
      * Reuses the graph built from this manager's immutable connection snapshot.
      */

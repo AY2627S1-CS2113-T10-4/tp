@@ -16,7 +16,6 @@ import seedu.unienable.storage.Storage;
  * Shows the number of HIGH-demand activities scheduled today, including completed ones.
  */
 public class DemandTodayCommand extends Command {
-    // Owner: Luke
     private final Clock clock;
 
     /**

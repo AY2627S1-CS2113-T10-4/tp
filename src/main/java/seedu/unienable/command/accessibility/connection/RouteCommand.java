@@ -5,13 +5,11 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
-//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.ConnectionManager;
+import seedu.unienable.command.accessibility.connection.logic.DijkstraShortestPath.Route;
 import seedu.unienable.command.common.Command;
 import seedu.unienable.command.common.CommandResult;
-//@@author
 import seedu.unienable.exception.UniEnableException;
-import seedu.unienable.logic.ConnectionManager;
-import seedu.unienable.logic.DijkstraShortestPath.Route;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.Connection;
 import seedu.unienable.model.enums.ShelterStatus;

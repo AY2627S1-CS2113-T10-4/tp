@@ -18,7 +18,6 @@ import seedu.unienable.ui.activity.ActivityListFormatter;
  * activities. Rows with missing ratings appear last.
  */
 public class ListPriorityCommand extends Command {
-    // Owner: Asyraf
     private static final Logger LOGGER = Logger.getLogger(ListPriorityCommand.class.getName());
 
     /**

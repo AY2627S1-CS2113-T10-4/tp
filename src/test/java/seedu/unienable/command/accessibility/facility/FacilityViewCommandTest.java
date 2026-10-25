@@ -5,9 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
+
+//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.FacilityManager;
+//@@author
 import seedu.unienable.exception.UniEnableException;
-import seedu.unienable.logic.FacilityManager;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.Facility;
 import seedu.unienable.parser.Parser;

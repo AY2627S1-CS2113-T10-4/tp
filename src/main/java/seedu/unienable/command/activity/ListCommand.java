@@ -17,7 +17,6 @@ import seedu.unienable.ui.activity.ActivityListFormatter;
  * Lists all activities in the canonical order (by date, then start time).
  */
 public class ListCommand extends Command {
-    // Owner: Asyraf
     private static final Logger LOGGER = Logger.getLogger(ListCommand.class.getName());
 
     /**

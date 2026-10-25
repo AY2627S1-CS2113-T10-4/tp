@@ -17,7 +17,6 @@ import seedu.unienable.ui.activity.ActivityListFormatter;
  * Lists all activities grouped by demand (HIGH to LOW), ties in canonical order.
  */
 public class ListDemandCommand extends Command {
-    // Owner: Asyraf
     private static final Logger LOGGER = Logger.getLogger(ListDemandCommand.class.getName());
 
     /**
