@@ -46,7 +46,7 @@ class HelpCommandTest {
             previous = position;
         }
         for (String command : List.of("add", "edit INDEX", "find KEYWORD", "list demand", "list priority",
-                "demand today", "view today", "view tomorrow", "view week", "overdue", "next",
+                "view today", "view tomorrow", "view week", "overdue", "next",
                 "mark INDEX", "unmark INDEX", "delete INDEX", "facility list", "facility LOCATION",
                 "facility find", "route", "help [TOPIC]", "bye")) {
             assertTrue(message.contains("\n  " + command + " "), command);
@@ -66,7 +66,6 @@ class HelpCommandTest {
                 "edit 1 n/Project meeting dem/HIGH"},
             {"find", "find KEYWORD", "literal substring", "find project meeting"},
             {"list", "list priority", "list demand groups HIGH, MEDIUM, then LOW", "list demand"},
-            {"demand", "demand today", "Includes completed activities", "demand today"},
             {"view", "view week", "today and the following six days", "view tomorrow"},
             {"overdue", "overdue", "start strictly before the current time", "overdue"},
             {"next", "next", "start is strictly after the current time", "next"},
@@ -119,7 +118,7 @@ class HelpCommandTest {
 
     @Test
     void parse_unknownAndExtraTopics_showWarningAndUsage() {
-        for (String input : List.of("help extra", "help unknown", "help list demand", "help add n/Study",
+        for (String input : List.of("help extra", "help unknown", "help demand", "help list demand", "help add n/Study",
                 "help delete 1", "help facility find", "help route from/AS1 to/CLB")) {
             ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input), input);
             assertTrue(exception.getMessage().startsWith("[WARNING]"), input);

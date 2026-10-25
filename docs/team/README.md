@@ -6,8 +6,8 @@ assignments even while a portfolio page is empty or unfinished.
 
 | Member | Portfolio | Main responsibilities |
 | --- | --- | --- |
-| Lou Yu Luke | [lukelouyu.md](lukelouyu.md) | Optional add ratings, today's high-demand count (US16), facilities, accessible routes and exit. |
-| Atharva Rege | [atharva005.md](atharva005.md) | Activity creation and help; calendar dashboards remain planned. |
+| Lou Yu Luke | [lukelouyu.md](lukelouyu.md) | Optional add ratings, facilities, accessible routes and exit. |
+| Atharva Rege | [atharva005.md](atharva005.md) | Activity creation, help, and calendar dashboards including high-demand counts (US16). |
 | Muhammad Asyraf Bin Abdul Rahim | [officialasyrafrahim.md](officialasyrafrahim.md) | Activity listing, deletion, priority, overdue and next. |
 | Oliver | [oliver-koh.md](oliver-koh.md) | Completion, storage/recovery, activity editing and name search. |
 

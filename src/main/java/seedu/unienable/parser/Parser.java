@@ -7,7 +7,6 @@ import java.util.Locale;
 import seedu.unienable.command.accessibility.connection.logic.ConnectionManager;
 import seedu.unienable.command.accessibility.connection.logic.FacilityManager;
 //@@author
-import seedu.unienable.command.activity.DemandTodayCommand;
 import seedu.unienable.command.activity.FindCommand;
 import seedu.unienable.command.activity.NextCommand;
 import seedu.unienable.command.activity.OverdueCommand;
@@ -154,16 +153,6 @@ public class Parser {
         //@@author officialasyrafrahim
         case "list":
             return listDeleteCommandParser.parseList(words);
-        //@@author
-        //@@author lukelouyu
-        case "demand":
-            if (words.length != 2 || !"today".equalsIgnoreCase(words[1])) {
-                throw new ParseException(WARNING_MESSAGE
-                        + " Expected demand today without extra arguments.\nUsage: demand today");
-            }
-            return new DemandTodayCommand(clock);
-        //@@author
-        //@@author officialasyrafrahim
         case "overdue":
             if (words.length != 1) {
                 throw new ParseException(WARNING_MESSAGE

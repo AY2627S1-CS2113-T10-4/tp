@@ -25,7 +25,6 @@ public class HelpCommand extends Command {
 
             PLANNING AND PRIORITIES
               list priority       List activities by combined priority score
-              demand today        Count today's HIGH-demand activities
               view today          Show today's schedule, summary, and rating table
               view tomorrow       Show tomorrow's schedule, summary, and rating table
               view week           Show today and the following six days
@@ -136,21 +135,6 @@ public class HelpCommand extends Command {
                       list demand
                       list priority
                     """.stripTrailing()),
-            Map.entry("demand", """
-                    DEMAND - Count today's high-demand activities
-
-                    Usage:
-                      demand today
-
-                    Details:
-                      - Counts activities dated today whose demand is HIGH.
-                      - Includes completed activities and all times on the current local date.
-                      - Shows a warning when the count is zero; accepts no additional arguments.
-                      - Use list demand to browse activities by demand instead.
-
-                    Examples:
-                      demand today
-                    """.stripTrailing()),
             Map.entry("view", """
                     VIEW - Display a daily or seven-day dashboard
 
@@ -163,6 +147,7 @@ public class HelpCommand extends Command {
                       - today and tomorrow select the corresponding full local calendar day.
                       - week includes today and the following six days, grouped by date.
                       - Dashboards include completed activities, summaries, and an aligned rating table.
+                      - The summary counts HIGH-demand activities on the selected dates, including completed ones.
                       - IMP = importance (*), URG = urgency (!), COM = commitment (+).
                       - Priority score = URG x URG x (IMP + COM); N means a rating is missing.
                       - Missing ratings display -; demand L/M/H uses #/##/###.

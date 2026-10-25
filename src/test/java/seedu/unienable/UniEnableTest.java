@@ -75,7 +75,7 @@ class UniEnableTest {
                 .getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);
-        List<String> topics = List.of("add", "edit", "find", "list", "demand", "view", "overdue", "next",
+        List<String> topics = List.of("add", "edit", "find", "list", "view", "overdue", "next",
                 "mark", "unmark", "delete", "facility", "route", "help", "bye");
         List<String> commands = new ArrayList<>();
         commands.add("help");
@@ -120,9 +120,9 @@ class UniEnableTest {
     }
     //@@author
 
-    //@@author lukelouyu
+    //@@author Atharva005
     @Test
-    void demandToday_countsLoadedActivitiesWithoutRewritingLegacyStorage(@TempDir Path tempDir) throws Exception {
+    void viewToday_countsLoadedHighDemandWithoutRewritingLegacyStorage(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
         byte[] original = String.join("\n",
                 "Past high|2026-10-13|09:00|10:00|HIGH|false",
@@ -134,10 +134,10 @@ class UniEnableTest {
         Files.write(activityFile, original);
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);
 
-        String output = consoleAtPath("demand today extra\nDeMaNd ToDaY\nlist\nbye\n", activityFile);
+        String output = consoleAtPath("ViEw ToDaY\nlist\nbye\n", activityFile);
 
-        assertTrue(output.contains("Usage: demand today"), output);
-        assertTrue(output.contains("High-demand activities scheduled today (2026-10-14): 2"), output);
+        assertTrue(output.contains("SUMMARY\nTotal activities: 3\nCompleted: 1\nRemaining: 2\n"
+                + "High-demand activities: 2"), output);
         assertTrue(output.contains("Today done (2026-10-14, 08:00-09:00) [HIGH] [X]"), output);
         assertTrue(output.contains("Today late (2026-10-14, 23:00-23:30) [HIGH] [ ]"), output);
         assertTrue(output.contains("Goodbye from UniEnable!"), output);
@@ -229,7 +229,6 @@ class UniEnableTest {
             {"overdue", "[WARNING] No overdue activities."},
             {"next", "[WARNING] No upcoming incomplete activities."},
             {"find missing", "[WARNING] No activities matched keyword \"missing\"."},
-            {"demand today", "[WARNING] High-demand activities scheduled today (2026-10-14): 0"},
             {"facility find type/AUTOMATIC_DOOR", "[WARNING] No matching facilities found."}
         };
 
@@ -277,11 +276,11 @@ class UniEnableTest {
         Files.write(activityFile, original);
 
         String output = consoleAtPath(String.join("\n", "list", "list demand", "list priority", "overdue",
-                "next", "find Today", "demand today", "facility list", "facility find type/LIFT status/YES",
+                "next", "find Today", "view today", "facility list", "facility find type/LIFT status/YES",
                 "route from/AS6 to/AS7", "bye", ""), activityFile);
 
         assertFalse(output.contains("[WARNING]"), output);
-        assertTrue(output.contains("High-demand activities scheduled today (2026-10-14): 1"), output);
+        assertTrue(output.contains("High-demand activities: 1"), output);
         assertTrue(output.contains("Total distance: 200 metres"), output);
         assertArrayEquals(original, Files.readAllBytes(activityFile));
     }

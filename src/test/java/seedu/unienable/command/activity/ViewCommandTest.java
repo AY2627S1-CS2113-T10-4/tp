@@ -3,6 +3,7 @@ package seedu.unienable.command.activity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Clock;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import seedu.unienable.command.common.CommandResult;
 //@@author
 //@@author Atharva005
+import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
@@ -57,6 +60,81 @@ class ViewCommandTest {
                 DemandLevel.HIGH, true));
 
         assertEmptyViews(activities);
+    }
+
+    @Test
+    void parse_removedDemandCommand_reportsUnrecognizedCommand() {
+        for (String input : List.of("demand", "demand today", "DEMAND TODAY", "demand today extra")) {
+            ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input), input);
+            assertEquals("[WARNING] Unrecognized command. Type bye to exit.", exception.getMessage(), input);
+        }
+    }
+
+    @Test
+    void execute_highDemandCount_includesCompletedAndAllTodayTimes() throws Exception {
+        ActivityList activities = new ActivityList(List.of(
+                new Activity("Yesterday", TODAY.minusDays(1), START, END, DemandLevel.HIGH, false),
+                new Activity("Tomorrow", TODAY.plusDays(1), START, END, DemandLevel.HIGH, false),
+                new Activity("Done earlier", TODAY, LocalTime.MIDNIGHT, LocalTime.of(1, 0),
+                        DemandLevel.HIGH, true),
+                new Activity("Starting now", TODAY, LocalTime.NOON, LocalTime.of(13, 0),
+                        DemandLevel.HIGH, false),
+                new Activity("Later today", TODAY, LocalTime.of(23, 0), LocalTime.of(23, 30),
+                        DemandLevel.HIGH, false),
+                new Activity("Low", TODAY, START, END, DemandLevel.LOW, false),
+                new Activity("Medium", TODAY, START, END, DemandLevel.MEDIUM, true)));
+        List<Activity> original = activities.getActivities();
+        List<Boolean> completion = original.stream().map(Activity::isDone).toList();
+
+        CommandResult result = parser.parse("view today").execute(activities, noWrites);
+
+        assertTrue(result.getMessage().contains("SUMMARY\nTotal activities: 5\nCompleted: 2\nRemaining: 3\n"
+                + "High-demand activities: 3"));
+        assertFalse(result.getMessage().contains("Yesterday"));
+        assertFalse(result.getMessage().contains("Tomorrow"));
+        assertFalse(result.isExit());
+        assertFalse(result.didChangeActivities());
+        assertEquals(original, activities.getActivities());
+        assertEquals(completion, activities.getActivities().stream().map(Activity::isDone).toList());
+    }
+
+    @Test
+    void execute_noHighDemand_keepsPopulatedDashboardAndReportsZero() throws Exception {
+        ActivityList activities = new ActivityList(List.of(
+                new Activity("Low", TODAY, START, END, DemandLevel.LOW, false),
+                new Activity("Medium", TODAY, START, END, DemandLevel.MEDIUM, true)));
+
+        String message = parser.parse("view today").execute(activities, noWrites).getMessage();
+
+        assertTrue(message.contains("High-demand activities: 0"));
+        assertTrue(message.contains("RATING CHART"));
+        assertFalse(message.contains("[WARNING]"));
+    }
+
+    @Test
+    void execute_highDemandCount_refreshesAcrossLocalNewYearMidnight() throws Exception {
+        AtomicReference<Instant> now = new AtomicReference<>(Instant.parse("2026-12-31T15:59:59Z"));
+        Parser midnightParser = new Parser(mutableClock(now, ZoneId.of("Asia/Singapore")));
+        var command = midnightParser.parse("view today");
+        LocalDate newYear = LocalDate.of(2027, 1, 1);
+        ActivityList activities = new ActivityList(List.of(
+                new Activity("Last year", newYear.minusDays(1), START, END, DemandLevel.HIGH, false),
+                new Activity("New year", newYear, START, END, DemandLevel.HIGH, false),
+                new Activity("New year done", newYear, START, END, DemandLevel.HIGH, true),
+                new Activity("Low next day", newYear.plusDays(1), START, END, DemandLevel.LOW, false)));
+
+        // Parse before midnight, then execute after Singapore's date changes while UTC is still December 31.
+        now.set(Instant.parse("2026-12-31T16:00:00Z"));
+        String firstDay = command.execute(activities, noWrites).getMessage();
+        assertTrue(firstDay.startsWith("TODAY - Friday, 01 January 2027"));
+        assertTrue(firstDay.contains("High-demand activities: 2"));
+        assertFalse(firstDay.contains("Last year"));
+
+        now.set(Instant.parse("2027-01-01T16:00:00Z"));
+        String secondDay = command.execute(activities, noWrites).getMessage();
+        assertTrue(secondDay.startsWith("TODAY - Saturday, 02 January 2027"));
+        assertTrue(secondDay.contains("High-demand activities: 0"));
+        assertFalse(secondDay.contains("New year"));
     }
 
     @Test
@@ -216,6 +294,28 @@ class ViewCommandTest {
             assertFalse(result.didChangeActivities());
             assertEquals(original, activities.getActivities());
         }
+    }
+
+    /**
+     * Creates a clock whose zone views share an instant that can advance between command executions.
+     */
+    private static Clock mutableClock(AtomicReference<Instant> now, ZoneId zone) {
+        return new Clock() {
+            @Override
+            public ZoneId getZone() {
+                return zone;
+            }
+
+            @Override
+            public Clock withZone(ZoneId newZone) {
+                return mutableClock(now, newZone);
+            }
+
+            @Override
+            public Instant instant() {
+                return now.get();
+            }
+        };
     }
 }
 //@@author

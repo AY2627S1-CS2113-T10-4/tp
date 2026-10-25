@@ -1,5 +1,16 @@
 # UniEnable User Guide
 
+<!--
+RESPONSIBILITY SCOPES (feature responsibility, not the most recent Git editor):
+Atharva005: activity creation, calendar dashboards, and command help.
+officialasyrafrahim: listing, deletion, priority, overdue, and next.
+Oliver-koh: completion changes, activity persistence/recovery, editing, and search.
+lukelouyu: optional add ratings, facilities, routes, and exit.
+Sections marked SHARED are maintained jointly and have no single-author override.
+Named author comments begin a feature scope; the unnamed author comment ends it.
+-->
+
+<!-- SHARED: All members maintain the introduction and navigation. -->
 ## Introduction
 
 UniEnable is a command-line application for managing dated activities and checking
@@ -12,13 +23,14 @@ accessible routes. Activity changes save automatically.
 <!-- @@author Atharva005 -->
 Calendar dashboards (`view today`, `view tomorrow`, and `view week`) summarize
 scheduled activities and ratings. `view week` covers today and the following six days.
-Use `help view` for their syntax and output details.
+See [Calendar dashboards](#viewing-calendar-dashboards-view) for examples, or enter `help view`.
 <!-- @@author -->
 
 [Quick Start](#quick-start) · [Command Format](#command-format) ·
 [Data Storage](#data-storage) · [Features](#features) ·
 [Error Handling](#error-handling) · [FAQ](#faq) · [Command Summary](#command-summary)
 
+<!-- SHARED: All members maintain installation and startup instructions. -->
 ## Quick Start
 
 1. Install Java 25 and obtain `unienable.jar`.
@@ -30,6 +42,7 @@ Use `help view` for their syntax and output details.
 To build from source on Windows, run `.\gradlew.bat shadowJar` in the project folder,
 then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 
+<!-- SHARED: All members maintain the cross-feature command and index conventions. -->
 ## Command Format
 
 - Words in UPPER_CASE are placeholders; replace them with your own values.
@@ -47,6 +60,8 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
   while `find`, `list priority`, `overdue`, and `next` retain full chronological
   indexes, even when some indexes are missing from the results. Run `list` before
   changing an activity; adding, deleting, or rescheduling can change indexes.
+- Calendar dashboards (`view today`, `view tomorrow`, and `view week`) number only
+  their selected period. Run `list` to get indexes for changing those activities.
 - Sample outputs below omit the application's horizontal borders.
   The activity walkthrough, from `add` through `delete`, starts with an empty list
   and runs in order. Additional rating examples follow the walkthrough.
@@ -61,8 +76,9 @@ Activities load at startup from `data/activities.txt`, relative to the folder
 where you launch the application. A missing file starts an empty list. Successful
 add, edit, delete, and completion changes save the entire activity list automatically.
 Every successful `edit` requests a save, even if the supplied values match the
-existing values. Read-only commands (`find`, `list`, `list demand`, `demand today`,
-`list priority`, `overdue`, `next`, facility queries, routes, and `help`) and `bye`
+existing values. Read-only commands (`find`, `list`, `list demand`,
+`list priority`, `view today`, `view tomorrow`, `view week`, `overdue`, `next`,
+facility queries, routes, and `help`) and `bye`
 do not save or retry a failed save. Repeated `mark`/`unmark` commands that leave
 completion unchanged also do not save.
 
@@ -115,23 +131,22 @@ add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG
 Every supplied known prefix must appear once and contain a value.
 
 
-<!-- @@author -->
+Optional demand:
 
 | Optional field | Meaning | Accepted values | When omitted |
 | --- | --- | --- | --- |
 | `dem/` | Activity demand, separate from ratings | LOW, MEDIUM, HIGH | MEDIUM |
+
+<!-- @@author -->
+<!-- @@author lukelouyu -->
+
+Optional ratings:
+
+| Optional field | Meaning | Accepted values | When omitted |
+| --- | --- | --- | --- |
 | `imp/` | Importance | Whole number from 1 to 5 | Unset (`-`) |
 | `urg/` | Urgency | Whole number from 1 to 5 | Unset (`-`) |
 | `com/` | Commitment | Whole number from 1 to 5 | Unset (`-`) |
-
-<!-- @@author Atharva005 -->
-
-
-
-<!-- @@author -->
-
-
-<!-- @@author lukelouyu -->
 
 Supply all, some, or none of the ratings. To leave one unset, omit its prefix;
 do not enter a literal `-`. Empty values, duplicate prefixes, ratings outside
@@ -220,49 +235,106 @@ An empty list shows `[WARNING] No activities yet.` beneath the heading
 <!-- @@author -->
 
 
-<!-- @@author lukelouyu -->
+<!-- @@author Atharva005 -->
 
-### Counting today's high-demand activities: `demand today`
+### Viewing calendar dashboards: `view`
 
-See how many activities with demand `HIGH` are scheduled today, so you can
-anticipate a demanding day.
+Review a day's schedule or the next seven days, with completion counts, ratings,
+priority scores, and demand levels in one dashboard.
 
-Format: `demand today`
+Formats: `view today`, `view tomorrow`, and `view week`
 
-- Today is the computer's current local date, checked each time the command runs.
-  The result includes the date so you can see which day was counted.
-- The count includes completed and incomplete activities across the whole day,
-  including activities that have already ended. Marking or unmarking an activity
-  does not change the count.
-- Activities on other dates and those with `LOW` or `MEDIUM` demand are excluded.
-  Importance, urgency and commitment ratings do not affect the count.
-- An empty schedule or no matching activities produces a count of `0` with
-  `[WARNING]` before the count message.
-- The command reads the current activity list without changing or saving it.
+| Command | Included dates |
+| --- | --- |
+| `view today` | The full current local calendar day. |
+| `view tomorrow` | The full next local calendar day. |
+| `view week` | Today and the following six days, including both endpoints. |
 
-With the two activities in the listing example above, assume the current local
-date is 2026-12-02. Input: `demand today`
+- Activities appear by date and start time, including completed and already-ended
+  activities on those dates. `view week` starts today regardless of the weekday.
+- The summary's high-demand count includes every HIGH-demand activity on the
+  selected dates, including completed activities and earlier times that day.
+  A populated view can show zero high-demand activities without a warning.
+- A populated view includes a schedule, a summary, a rating table, rating totals,
+  and a demand distribution. Summary counts and rating totals appear one per line.
+- The rating table uses vertical bars and padded columns. `*`, `!`, and `+` show
+  importance (IMP), urgency (URG), and commitment (COM). Demand uses `# L`, `## M`,
+  or `### H` for LOW, MEDIUM, or HIGH.
+- An unset rating appears as `-`; an unavailable priority appears as `N`.
+  With all three ratings set, the score is `URG x URG x (IMP + COM)`.
+  Rating totals add the recorded values, including partially rated activities.
+- These commands do not change activities or save the file. Their row numbers
+  belong to the selected period; use `list` before edit, mark, unmark, or delete.
 
-Output:
+Try this example in a separate empty test folder. Assume today is **1 December
+2026**, before 21:00. When trying it on another date, replace the dates with today
+and tomorrow and choose times that have not ended for today's activities.
 
 ```text
-High-demand activities scheduled today (2026-12-02): 1
+add n/Practice quiz d/2026-12-01 s/21:00 e/21:30 dem/HIGH imp/4 urg/5 com/3
+add n/Stretch break d/2026-12-01 s/21:30 e/21:45 dem/LOW imp/1 urg/1 com/1
+add n/Plan tomorrow d/2026-12-01 s/22:00 e/22:30 dem/MEDIUM imp/3 com/2
+add n/Project notes d/2026-12-01 s/22:30 e/23:00 dem/MEDIUM urg/2
+add n/Project meeting d/2026-12-02 s/10:00 e/11:00 dem/HIGH imp/5 urg/4 com/3
+mark 1
+view today
 ```
 
-Project meeting is counted even if it has already ended or is marked done.
-On 2026-12-01, the same two activities instead produce:
+The dashboard is:
 
 ```text
-[WARNING] High-demand activities scheduled today (2026-12-01): 0
+TODAY - Tuesday, 01 December 2026
+
+Tue 01 Dec
+1. 21:00-21:30 [X] Practice quiz    IMP 4  URG 5  COM 3  DEM H
+2. 21:30-21:45 [ ] Stretch break    IMP 1  URG 1  COM 1  DEM L
+3. 22:00-22:30 [ ] Plan tomorrow    IMP 3  URG -  COM 2  DEM M
+4. 22:30-23:00 [ ] Project notes    IMP -  URG 2  COM -  DEM M
+
+SUMMARY
+Total activities: 4
+Completed: 1
+Remaining: 3
+High-demand activities: 1
+
+RATING CHART
+| Activity          | IMP       | URG       | COM       | PRIORITY SCORE     | DEMAND |
+| Practice quiz     | ****      | !!!!!     | +++       | 175                | ### H  |
+| Stretch break     | *         | !         | +         | 2                  | # L    |
+| Plan tomorrow     | ***       | -         | ++        | N                  | ## M   |
+| Project notes     | -         | !!        | -         | N                  | ## M   |
+
+RATING TOTALS
+IMP 8
+URG 8
+COM 6
+DEMAND DISTRIBUTION    LOW 1    MEDIUM 2    HIGH 1
+
+Legend: * Importance; ! Urgency; + Commitment; # Demand
+Priority score = URG x URG x (IMP + COM).
+Demand: L=#, M=##, H=###
+N = priority unavailable; - = rating not set.
 ```
 
-`DEMAND TODAY` also works. Missing or unsupported subcommands and extra arguments,
-such as `demand`, `demand tomorrow`, or `demand today extra`, produce a warning
-ending with `Usage: demand today`.
+`view tomorrow` shows only Project meeting. `view week` includes all five
+activities from Tuesday, 1 December through Monday, 7 December 2026. Empty days
+inside this populated week have a plain message, for example:
 
+```text
+Thu 03 Dec - No activities scheduled for this day.
+```
+
+If the entire selected day has no activities, its heading is followed by
+`[WARNING] No activities scheduled for this day.`. An entirely empty seven-day
+period instead shows `[WARNING] No activities scheduled for the next seven days.`.
+Empty periods omit the summary and rating sections. No warning is shown merely
+because one day inside a populated week is empty.
+
+`VIEW TODAY` also works. Missing, unknown, or extra arguments show a warning and
+`Usage: view today|tomorrow|week`; for example, `view` and `view week extra` are invalid.
+Use `help view` to read these rules in the application.
 
 <!-- @@author -->
-
 
 <!-- @@author Oliver-koh -->
 
@@ -612,7 +684,7 @@ Verify with current campus information before you rely on it.
 <!-- @@author -->
 
 <!-- @@author Atharva005 -->
-### Viewing help and exiting: `help` and `bye`
+### Viewing command help: `help`
 
 Format: `help [TOPIC]`
 
@@ -620,7 +692,7 @@ Format: `help [TOPIC]`
   completion and deletion, facilities and routes, and help and exit.
 - `help TOPIC` displays that command's syntax, rules, and examples. Topic names
   ignore letter case and must be a single command name.
-- Supported topics are `add`, `edit`, `find`, `list`, `demand`, `view`, `overdue`,
+- Supported topics are `add`, `edit`, `find`, `list`, `view`, `overdue`,
   `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `help`, and `bye`.
 - `help list` covers all list variants; `help facility` includes feature search.
   Enter `help list` rather than `help list demand`.
@@ -633,26 +705,58 @@ Examples:
 help
 help add
 help edit
+help list
+help view
 help facility
 help route
+help overdue
+help next
+help mark
+help unmark
+help delete
 ```
 
 The main menu begins with `UniEnable commands:`. Topic pages have a title such as
 `ADD - Create an activity`, followed by **Usage**, **Details**, and **Examples**.
+Each topic ends with `Type help to return to the command menu.`.
+
+<!-- @@author -->
+<!-- @@author lukelouyu -->
+
+### Exiting the application: `bye`
+
+Format: `bye`
+
+Exit the console session after checking that any activity changes saved successfully.
+`bye` accepts no arguments and does not retry a failed save.
 
 Input: `bye`
 
 Output: `Goodbye from UniEnable!`
 <!-- @@author -->
 
+<!-- SHARED: All members maintain common error behavior and cross-feature validation rules. -->
 ## Error Handling
 
 Invalid input usually produces `[WARNING]` and the app waits for another command.
-Empty activity views, searches with no matches, a zero daily-demand count, and
+Empty activity views, searches with no matches, and
 unavailable route results also include `[WARNING]` on the no-result message.
+
+<!-- @@author Atharva005 -->
+For `view week`, this warning applies only when the whole selected period is empty;
+empty days inside a populated week have a plain no-activities message.
+<!-- @@author -->
+
+<!-- @@author lukelouyu -->
 Facility lists without records or recorded features use the same marker.
+<!-- @@author -->
+
+<!-- @@author Oliver-koh -->
 Repeated mark/unmark requests warn that completion is already in the requested
-state. These query and no-change warnings do not save or modify activities.
+state. A repeated request does not save or modify activities.
+<!-- @@author -->
+
+<!-- SHARED: The following validation rules apply to multiple members' features. -->
 Common causes include missing/duplicate fields, invalid dates or times, unknown
 facilities, or an activity index outside the current list.
 For `add` and `edit`, use real calendar dates and two-digit hours and minutes (for example,
@@ -660,8 +764,10 @@ For `add` and `edit`, use real calendar dates and two-digit hours and minutes (f
 Rejected add or edit input, including an invalid rating, leaves the activity list and
 stored data unchanged.
 
+<!-- @@author officialasyrafrahim -->
 `list priority`, `overdue`, and `next` accept no arguments. Extra arguments and
 unsupported list variants produce a warning; they do not change activities.
+<!-- @@author -->
 
 <!-- @@author Atharva005 -->
 Example input: `help extra`
@@ -677,6 +783,7 @@ Type help to see the available commands.
 Extra topic words, such as `help add extra`, also show a warning and the help usage.
 <!-- @@author -->
 
+<!-- @@author Oliver-koh -->
 If saving fails, the change may already be in memory. Repeating the same `add`
 can create a duplicate; exiting with `bye` does not retry the save.
 
@@ -691,21 +798,38 @@ To recover before exiting:
    activity with a future end time, then delete it.
 4. Check that both changes succeed without a save error before exiting. Restart
    and run `list` to confirm the saved result.
+<!-- @@author -->
 
+<!-- SHARED: Each FAQ answer is maintained by the owner of the feature it describes. -->
 ## FAQ
 
+<!-- @@author Oliver-koh -->
 **Where is my data?** In `data/activities.txt` under the launch folder; use the same
 folder on each run. To transfer activities, copy this file before starting the app.
 
-**Can I edit an activity or facility?** Use `edit INDEX` with at least one field
+**Can I edit an activity?** Use `edit INDEX` with at least one field
 to update an activity while keeping omitted values and completion status.
 Date/time edits must leave an end after now; metadata-only edits can update
-historical activities. Facility records are read-only.
+historical activities.
 
 **Why does a search result start at index 2?** Activity `find` preserves indexes
 from the full chronological list. Use the displayed index directly for `edit`,
 `mark`, `unmark`, or `delete`; indexes can change after editing dates or times.
+<!-- @@author -->
 
+<!-- @@author lukelouyu -->
+**Can I edit facility records?** Facility records are read-only.
+<!-- @@author -->
+
+<!-- @@author Atharva005 -->
+**Why does `view week` start in the middle of a week?** It shows today and the
+following six days. It does not select a Monday-to-Sunday calendar week.
+
+**Why are dashboard numbers different from `list`?** Dashboards number the selected
+period from 1. Run `list` to get the current indexes for changing activities.
+<!-- @@author -->
+
+<!-- SHARED: All members maintain the combined command inventory; feature sections above carry individual tags. -->
 ## Command Summary
 
 <!-- @@author Atharva005 -->
@@ -716,13 +840,13 @@ Use `help TOPIC` with any command name below for detailed instructions, such as
 
 | Command | Purpose |
 | --- | --- |
-| `help` / `bye` | Show built-in help / exit |
+| `help [TOPIC]` / `bye` | Show categorized or detailed command help / exit |
 | `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Add an activity with optional ratings |
 | `list` / `list demand` | View activities by time / demand |
-| `demand today` | Count today's HIGH-demand activities, including completed ones |
 | `edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Update supplied activity fields; preserve omitted fields and completion |
 | `find KEYWORD` | Search activity names and retain chronological list indexes |
 | `list priority` | View all activities by combined priority score |
+| `view today` / `view tomorrow` / `view week` | Show today's, tomorrow's, or the next seven days' dashboard |
 | `overdue` / `next` | View incomplete activities that started before now / the earliest upcoming incomplete activity |
 | `mark INDEX` / `unmark INDEX` / `delete INDEX` | Change completion / delete |
 | `facility list` / `facility LOCATION` | View all facilities / one facility |
