@@ -1,13 +1,20 @@
-package seedu.unienable.command;
+//@@author lukelouyu
+package seedu.unienable.command.common;
 
 /**
- * Carries a user-facing message and whether the console loop should exit.
+ * Carries user-facing feedback and tells the console whether to exit or save activity changes.
  */
 public class CommandResult {
     private final String message;
     private final boolean isExit;
     private final boolean didChangeActivities;
 
+    /**
+     * Creates a result for a command that does not change activity data.
+     *
+     * @param message user-facing result message.
+     * @param isExit whether the console loop should exit.
+     */
     public CommandResult(String message, boolean isExit) {
         this(message, isExit, false);
     }
@@ -42,3 +49,4 @@ public class CommandResult {
         return didChangeActivities;
     }
 }
+//@@author

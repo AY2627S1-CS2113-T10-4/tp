@@ -9,7 +9,9 @@ import java.time.LocalTime;
 
 import org.junit.jupiter.api.Test;
 
-import seedu.unienable.command.CommandResult;
+//@@author lukelouyu
+import seedu.unienable.command.common.CommandResult;
+//@@author
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;

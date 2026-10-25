@@ -3,21 +3,24 @@ package seedu.unienable.parser;
 import java.time.Clock;
 import java.util.Locale;
 
-import seedu.unienable.command.ByeCommand;
-import seedu.unienable.command.Command;
-import seedu.unienable.command.HelpCommand;
-import seedu.unienable.command.activity.DemandTodayCommand;
+//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.ConnectionManager;
+import seedu.unienable.command.accessibility.connection.logic.FacilityManager;
+//@@author
 import seedu.unienable.command.activity.FindCommand;
 import seedu.unienable.command.activity.NextCommand;
 import seedu.unienable.command.activity.OverdueCommand;
+//@@author Atharva005
 import seedu.unienable.command.activity.ViewCommand;
+//@@author
+//@@author lukelouyu
+import seedu.unienable.command.common.ByeCommand;
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.HelpCommand;
+//@@author
 import seedu.unienable.exception.ParseException;
-import seedu.unienable.logic.ConnectionManager;
-import seedu.unienable.logic.FacilityManager;
 
 /**
- * Recognizes add, edit, find, list, view, list demand, list priority, overdue, next,
- * delete, facility, route and bye commands.
  * Recognizes activity, facility, route, help and exit commands.
  */
 public class Parser {
@@ -150,16 +153,6 @@ public class Parser {
         //@@author officialasyrafrahim
         case "list":
             return listDeleteCommandParser.parseList(words);
-        //@@author
-        //@@author lukelouyu
-        case "demand":
-            if (words.length != 2 || !"today".equalsIgnoreCase(words[1])) {
-                throw new ParseException(WARNING_MESSAGE
-                        + " Expected demand today without extra arguments.\nUsage: demand today");
-            }
-            return new DemandTodayCommand(clock);
-        //@@author
-        //@@author officialasyrafrahim
         case "overdue":
             if (words.length != 1) {
                 throw new ParseException(WARNING_MESSAGE
@@ -172,6 +165,8 @@ public class Parser {
                         + " next does not take arguments.\nUsage: next");
             }
             return new NextCommand(clock);
+        //@@author
+        //@@author Atharva005
         case "view":
             if (words.length != 2) {
                 throw new ParseException(WARNING_MESSAGE + " Usage: view today|tomorrow|week");
@@ -182,6 +177,8 @@ public class Parser {
             case "week" -> new ViewCommand(ViewCommand.Range.WEEK, clock);
             default -> throw new ParseException(WARNING_MESSAGE + " Usage: view today|tomorrow|week");
             };
+        //@@author
+        //@@author officialasyrafrahim
         case "delete":
             return listDeleteCommandParser.parseDelete(words);
         //@@author
@@ -193,11 +190,11 @@ public class Parser {
         //@@author
         //@@author Atharva005
         case "help":
-            if (words.length != 1) {
-                throw new ParseException(
-                        WARNING_MESSAGE + " help does not take arguments.");
+            if (words.length > 2) {
+                throw new ParseException(WARNING_MESSAGE
+                        + " help accepts at most one command name.\nUsage: help [TOPIC]");
             }
-            return new HelpCommand();
+            return words.length == 1 ? new HelpCommand() : new HelpCommand(words[1]);
         //@@author
         default:
             throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");

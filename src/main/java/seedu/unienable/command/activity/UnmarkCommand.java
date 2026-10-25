@@ -1,13 +1,13 @@
 package seedu.unienable.command.activity;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+//@@author Oliver-koh
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
 import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
-//@@author Oliver-koh
 /**
  * Marks one chronologically displayed activity as incomplete.
  */

@@ -1,5 +1,6 @@
 package seedu.unienable.command.activity;
 
+//@@author officialasyrafrahim
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -7,14 +8,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.activity.ActivityListFormatter;
 
-//@@author officialasyrafrahim
 /**
  * Shows the earliest incomplete activity whose start is strictly after the
  * current local time.

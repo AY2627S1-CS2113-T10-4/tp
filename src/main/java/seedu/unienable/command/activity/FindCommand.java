@@ -1,15 +1,15 @@
 package seedu.unienable.command.activity;
 
+//@@author Oliver-koh
 import java.util.List;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.activity.ActivityListFormatter;
 
-//@@author Oliver-koh
 /**
  * Finds activities by a case-insensitive substring of their names.
  */

@@ -4,8 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
-import seedu.unienable.logic.FacilityManager;
+
+//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.FacilityManager;
+//@@author
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.Facility;
 import seedu.unienable.parser.Parser;

@@ -15,15 +15,16 @@ import seedu.unienable.ui.Ui;
  * Runs the UniEnable console until bye or end of input.
  */
 public class UniEnable {
+    //@@author Atharva005
     /**
      * Starts the application and loads saved activity and facility data.
      *
      * @param args unused command-line arguments.
      */
     public static void main(String[] args) {
-        assert false : "dummy assertion to fail";
         run(System.in, System.out, Path.of("data", "activities.txt"));
     }
+    //@@author
 
     /**
      * Runs a session with an injectable activity file for isolated integration tests.

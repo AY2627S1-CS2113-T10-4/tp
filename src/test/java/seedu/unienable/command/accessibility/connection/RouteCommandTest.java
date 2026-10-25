@@ -11,9 +11,11 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import seedu.unienable.command.CommandResult;
+//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.ConnectionManager;
+import seedu.unienable.command.common.CommandResult;
+//@@author
 import seedu.unienable.exception.UniEnableException;
-import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.Connection;

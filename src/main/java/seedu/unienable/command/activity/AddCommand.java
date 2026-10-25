@@ -3,8 +3,10 @@ package seedu.unienable.command.activity;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+//@@author lukelouyu
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
+//@@author
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
@@ -16,7 +18,6 @@ import seedu.unienable.storage.Storage;
  * The console saves activities when the command result reports a change.
  */
 public class AddCommand extends Command {
-    // Owner: Atharva
     private final Activity activity;
 
     /**

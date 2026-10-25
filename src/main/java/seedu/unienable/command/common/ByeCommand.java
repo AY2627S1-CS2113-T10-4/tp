@@ -1,9 +1,9 @@
-package seedu.unienable.command;
+//@@author lukelouyu
+package seedu.unienable.command.common;
 
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
-//@@author lukelouyu
 /**
  * Displays the goodbye message and requests that the console loop exit.
  */

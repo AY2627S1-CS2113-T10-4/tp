@@ -12,11 +12,15 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+
+//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.FacilityManager;
+//@@author
 import seedu.unienable.exception.UniEnableException;
-import seedu.unienable.logic.FacilityManager;
 import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;

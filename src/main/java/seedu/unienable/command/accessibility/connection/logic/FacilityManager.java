@@ -1,4 +1,5 @@
-package seedu.unienable.logic;
+//@@author lukelouyu
+package seedu.unienable.command.accessibility.connection.logic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +10,6 @@ import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
-//@@author lukelouyu
 /**
  * Provides read-only lookups and feature searches over loaded facility reference data.
  */

@@ -2,9 +2,9 @@ package seedu.unienable.command.accessibility.facility;
 
 import java.util.List;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
-import seedu.unienable.logic.FacilityManager;
+import seedu.unienable.command.accessibility.connection.logic.FacilityManager;
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.Facility;
 import seedu.unienable.storage.Storage;
