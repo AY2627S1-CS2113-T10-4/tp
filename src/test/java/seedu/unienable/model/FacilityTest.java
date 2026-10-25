@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+//@@author lukelouyu
 /**
  * Checks that a facility owns an immutable snapshot of its features.
  */
@@ -22,3 +23,4 @@ class FacilityTest {
         assertThrows(UnsupportedOperationException.class, () -> facility.getFeatures().clear());
     }
 }
+//@@author

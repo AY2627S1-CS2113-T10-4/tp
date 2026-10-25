@@ -13,6 +13,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.activity.ActivityListFormatter;
 
+//@@author officialasyrafrahim
 /**
  * Lists incomplete activities whose start is strictly before the current local
  * time, in chronological order with labels for today, this week, and earlier.
@@ -33,7 +34,7 @@ public class OverdueCommand extends Command {
     /**
      * Creates an overdue command with an injectable clock for deterministic tests.
      *
-     * @param clock time source used for the overdue boundary
+     * @param clock time source used for the overdue boundary.
      */
     public OverdueCommand(Clock clock) {
         this.clock = Objects.requireNonNull(clock);
@@ -52,3 +53,4 @@ public class OverdueCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author

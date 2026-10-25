@@ -1,3 +1,4 @@
+# @@author lukelouyu
 FACILITY|F01|AS1|Faculty of Arts and Social Sciences, Block 1
 FEATURE|F01|STEP_FREE_ENTRANCE|YES|Ground floor entrance
 FEATURE|F01|LIFT|NO|Building has no lift; floors 4-5 are not accessible
@@ -40,3 +41,4 @@ FACILITY|F09|CLB|Central Library
 FEATURE|F09|STEP_FREE_ENTRANCE|YES|Main entrance
 FEATURE|F09|LIFT|YES|Shared upper floors linked to School of Computing
 FEATURE|F09|ACCESSIBLE_WASHROOM|YES|4th floor toilet requires staff card access
+# @@author

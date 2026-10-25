@@ -4,6 +4,7 @@ import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.model.enums.ShelterStatus;
 import seedu.unienable.model.enums.TraversalType;
 
+//@@author lukelouyu
 /**
  * Represents a bidirectional connection between two facilities.
  * The endpoints use facility names, such as AS1 and CLB,
@@ -30,15 +31,15 @@ public final class Connection {
     /**
      * Creates a connection without parsing or normalizing the supplied values.
      *
-     * @param id connection ID
-     * @param from one endpoint facility name, such as AS1
-     * @param to the other endpoint facility name, such as CLB
-     * @param distanceInMetres recorded distance in metres
-     * @param accessibility recorded accessibility; UNKNOWN means unconfirmed
-     * @param type physical traversal category
-     * @param shelter recorded shelter; UNKNOWN means unconfirmed
-     * @param knownBarrier optional known barrier, or null
-     * @param notes optional notes, or null
+     * @param id connection ID.
+     * @param from one endpoint facility name, such as AS1.
+     * @param to the other endpoint facility name, such as CLB.
+     * @param distanceInMetres recorded distance in metres.
+     * @param accessibility recorded accessibility; UNKNOWN means unconfirmed.
+     * @param type physical traversal category.
+     * @param shelter recorded shelter; UNKNOWN means unconfirmed.
+     * @param knownBarrier optional known barrier, or null.
+     * @param notes optional notes, or null.
      */
     public Connection(int id, String from, String to, int distanceInMetres,
             AccessibilityStatus accessibility, TraversalType type, ShelterStatus shelter,
@@ -117,3 +118,4 @@ public final class Connection {
         return notes;
     }
 }
+//@@author

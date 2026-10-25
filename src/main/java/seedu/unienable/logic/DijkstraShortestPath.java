@@ -13,6 +13,7 @@ import seedu.unienable.logic.DijkstraSolver.Node;
 import seedu.unienable.model.Connection;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+//@@author lukelouyu
 /**
  * Finds the shortest recorded accessible route between campus facilities.
  * Connections are bidirectional; only links marked YES are traversable.
@@ -139,3 +140,4 @@ public final class DijkstraShortestPath {
     }
 
 }
+//@@author

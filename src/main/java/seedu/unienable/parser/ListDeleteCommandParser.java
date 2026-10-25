@@ -9,6 +9,7 @@ import seedu.unienable.command.activity.ListDemandCommand;
 import seedu.unienable.command.activity.ListPriorityCommand;
 import seedu.unienable.exception.ParseException;
 
+//@@author officialasyrafrahim
 /**
  * Parses the list, list demand, list priority, and delete commands.
  * Only syntax is validated here: whether an index is a plain ASCII integer without a sign.
@@ -87,3 +88,4 @@ public class ListDeleteCommandParser {
         }
     }
 }
+//@@author

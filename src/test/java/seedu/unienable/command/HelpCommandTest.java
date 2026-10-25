@@ -8,7 +8,10 @@ import org.junit.jupiter.api.Test;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
-/** Verifies help describes available commands, optional ratings and automatic saving. */
+//@@author Atharva005
+/**
+ * Verifies help describes available commands, optional ratings and automatic saving.
+ */
 class HelpCommandTest {
     @Test
     void execute_showsAvailableCommandsAndAutomaticSaving() {
@@ -28,6 +31,8 @@ class HelpCommandTest {
         assertTrue(result.getMessage().contains("delete INDEX"));
         assertTrue(result.getMessage().contains("incomplete\n" + "delete INDEX"));
         assertTrue(result.getMessage().contains("list priority"));
+        assertTrue(result.getMessage().contains(
+                "demand today - Count today's HIGH-demand activities, including completed ones"));
         assertTrue(result.getMessage().contains("URG x URG x (IMP + COM)"));
         assertTrue(result.getMessage().contains("overdue - View incomplete activities"));
         assertTrue(result.getMessage().contains("next - View the earliest incomplete activity"));
@@ -38,3 +43,4 @@ class HelpCommandTest {
         assertFalse(result.didChangeActivities());
     }
 }
+//@@author

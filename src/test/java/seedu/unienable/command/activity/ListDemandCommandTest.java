@@ -14,6 +14,7 @@ import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
+//@@author officialasyrafrahim
 /**
  * Checks demand-order display and read-only behaviour for the list demand command.
  */
@@ -32,7 +33,7 @@ class ListDemandCommandTest {
         var result = parser.parse("list demand").execute(activities, noWrites);
         assertFalse(result.isExit());
         assertTrue(result.getMessage().startsWith("Activities by demand (HIGH to LOW):"));
-        assertTrue(result.getMessage().endsWith("No activities yet."));
+        assertTrue(result.getMessage().endsWith("[WARNING] No activities yet."));
     }
 
     @Test
@@ -57,9 +58,12 @@ class ListDemandCommandTest {
         assertTrue(message.indexOf("2. Late") < message.indexOf("3. Run"));
     }
 
-    /** Seeds existing activities without applying the add parser's current-time restriction. */
+    /**
+     * Seeds existing activities without applying the add parser's current-time restriction.
+     */
     private void add(String name, String date, String start, String end, String demand) {
         activities.addActivity(new Activity(name, LocalDate.parse(date), LocalTime.parse(start),
                 LocalTime.parse(end), DemandLevel.valueOf(demand), false));
     }
 }
+//@@author

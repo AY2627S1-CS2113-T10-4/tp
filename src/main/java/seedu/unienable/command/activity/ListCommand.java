@@ -10,6 +10,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.activity.ActivityListFormatter;
 
+//@@author officialasyrafrahim
 /**
  * Lists all activities in the canonical order (by date, then start time).
  */
@@ -29,3 +30,4 @@ public class ListCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author

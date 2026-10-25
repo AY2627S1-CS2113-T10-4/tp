@@ -14,6 +14,7 @@ import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.model.enums.ShelterStatus;
 import seedu.unienable.model.enums.TraversalType;
 
+//@@author lukelouyu
 /**
  * Checks shortest distances and predecessor information produced by the internal Dijkstra solver.
  */
@@ -64,3 +65,4 @@ class DijkstraSolverTest {
                 TraversalType.PATH, ShelterStatus.YES, null, null);
     }
 }
+//@@author

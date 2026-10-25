@@ -19,6 +19,7 @@ import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
+//@@author officialasyrafrahim
 /**
  * Checks the strict next-start boundary, completed activity exclusion, stable
  * ties, and chronological index display for the next command.
@@ -62,13 +63,13 @@ class NextCommandTest {
 
         String message = parser.parse("next").execute(activities, noWrites).getMessage();
 
-        assertTrue(message.endsWith("No upcoming incomplete activities."), message);
+        assertTrue(message.endsWith("[WARNING] No upcoming incomplete activities."), message);
     }
 
     @Test
     void execute_onEmptyList_showsEmptyMessage() throws Exception {
         String message = parser.parse("next").execute(activities, noWrites).getMessage();
-        assertTrue(message.endsWith("No upcoming incomplete activities."), message);
+        assertTrue(message.endsWith("[WARNING] No upcoming incomplete activities."), message);
     }
 
     @Test
@@ -81,3 +82,4 @@ class NextCommandTest {
                 LocalTime.parse(start).plusHours(1), DemandLevel.MEDIUM, done));
     }
 }
+//@@author

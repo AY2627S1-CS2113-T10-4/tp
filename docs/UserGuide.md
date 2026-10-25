@@ -5,9 +5,9 @@
 UniEnable is a command-line application for managing dated activities and checking
 campus accessibility information. Add activities with optional importance, urgency
 and commitment ratings, edit activities, search their names, track completion,
-rank activities by priority, identify overdue and upcoming activities, search
-facilities, and find shortest recorded accessible routes. Activity changes save
-automatically.
+rank activities by priority, count today's high-demand activities, identify
+overdue and upcoming activities, search facilities, and find shortest recorded
+accessible routes. Activity changes save automatically.
 
 Calendar dashboards (`view today`, `view tomorrow`, and `view week`) from the
 V2.0 proposal remain planned and are unavailable in this build. The commands
@@ -50,16 +50,19 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
   and runs in order. Additional rating examples follow the walkthrough.
   If you try them after the example dates, replace the dates with future dates.
 
+
+<!-- @@author Oliver-koh -->
+
 ## Data Storage
 
 Activities load at startup from `data/activities.txt`, relative to the folder
 where you launch the application. A missing file starts an empty list. Successful
 add, edit, delete, and completion changes save the entire activity list automatically.
 Every successful `edit` requests a save, even if the supplied values match the
-existing values. Read-only commands (`find`, `list`, `list demand`, `list priority`,
-`overdue`, `next`, facility queries, routes, and `help`) and `bye` do not save or
-retry a failed save. Repeated `mark`/`unmark` commands that leave completion
-unchanged also do not save.
+existing values. Read-only commands (`find`, `list`, `list demand`, `demand today`,
+`list priority`, `overdue`, `next`, facility queries, routes, and `help`) and `bye`
+do not save or retry a failed save. Repeated `mark`/`unmark` commands that leave
+completion unchanged also do not save.
 
 Saved activity rows use nine fields:
 ```text
@@ -88,7 +91,13 @@ After a save failure, keep the app open and follow the
 [recovery steps](#error-handling) before exiting.
 Facility and connection reference data are bundled and read-only.
 
+
+<!-- @@author -->
+
 ## Features
+
+
+<!-- @@author Atharva005 -->
 
 ### Adding an activity: `add`
 
@@ -103,6 +112,9 @@ add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG
 `n/`, `d/`, `s/`, and `e/` are required and must each appear once with a value.
 Every supplied known prefix must appear once and contain a value.
 
+
+<!-- @@author -->
+
 | Optional field | Meaning | Accepted values | When omitted |
 | --- | --- | --- | --- |
 | `dem/` | Activity demand, separate from ratings | LOW, MEDIUM, HIGH | MEDIUM |
@@ -110,9 +122,24 @@ Every supplied known prefix must appear once and contain a value.
 | `urg/` | Urgency | Whole number from 1 to 5 | Unset (`-`) |
 | `com/` | Commitment | Whole number from 1 to 5 | Unset (`-`) |
 
+<!-- @@author Atharva005 -->
+
+
+
+<!-- @@author -->
+
+
+<!-- @@author lukelouyu -->
+
 Supply all, some, or none of the ratings. To leave one unset, omit its prefix;
 do not enter a literal `-`. Empty values, duplicate prefixes, ratings outside
 1 to 5, decimals, and text are rejected.
+
+<!-- @@author -->
+
+
+<!-- @@author Atharva005 -->
+
 
 The end time must be strictly after the start time on
 the same day; overnight activities are not supported. The activity's date and end
@@ -121,7 +148,9 @@ local time zone. An activity that has already started can still be added if it
 has not ended; an activity ending exactly now is rejected. New activities start
 incomplete.
 
-Names cannot contain `|` or line breaks. Slash-containing text such as `and/or`
+Names must contain at least one non-whitespace character. Chinese, accented and
+emoji names are supported. Names cannot contain `|` or line breaks.
+Slash-containing text such as `and/or`
 and `w/o` is allowed. However, a known prefix (`n/`, `d/`, `s/`, `e/`, `dem/`,
 `imp/`, `urg/`, or `com/`)
 at the start of a whitespace-separated part of the name is treated as another
@@ -151,6 +180,12 @@ add n/Project meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH
 The app confirms Project meeting, its date/time, HIGH demand, three unset ratings,
 and a total of 2 activities.
 
+
+<!-- @@author -->
+
+
+<!-- @@author officialasyrafrahim -->
+
 ### Listing activities: `list` and `list demand`
 
 `list` sorts by date, then start time. `list demand` sorts HIGH, MEDIUM, LOW,
@@ -176,7 +211,58 @@ Run 'list' to find the correct index for 'delete INDEX'.
 2. CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
 ```
 
-An empty list shows `No activities yet.` beneath the heading (and demand-view notice).
+An empty list shows `[WARNING] No activities yet.` beneath the heading
+(and demand-view notice).
+
+
+<!-- @@author -->
+
+
+<!-- @@author lukelouyu -->
+
+### Counting today's high-demand activities: `demand today`
+
+See how many activities with demand `HIGH` are scheduled today, so you can
+anticipate a demanding day.
+
+Format: `demand today`
+
+- Today is the computer's current local date, checked each time the command runs.
+  The result includes the date so you can see which day was counted.
+- The count includes completed and incomplete activities across the whole day,
+  including activities that have already ended. Marking or unmarking an activity
+  does not change the count.
+- Activities on other dates and those with `LOW` or `MEDIUM` demand are excluded.
+  Importance, urgency and commitment ratings do not affect the count.
+- An empty schedule or no matching activities produces a count of `0` with
+  `[WARNING]` before the count message.
+- The command reads the current activity list without changing or saving it.
+
+With the two activities in the listing example above, assume the current local
+date is 2026-12-02. Input: `demand today`
+
+Output:
+
+```text
+High-demand activities scheduled today (2026-12-02): 1
+```
+
+Project meeting is counted even if it has already ended or is marked done.
+On 2026-12-01, the same two activities instead produce:
+
+```text
+[WARNING] High-demand activities scheduled today (2026-12-01): 0
+```
+
+`DEMAND TODAY` also works. Missing or unsupported subcommands and extra arguments,
+such as `demand`, `demand tomorrow`, or `demand today extra`, produce a warning
+ending with `Usage: demand today`.
+
+
+<!-- @@author -->
+
+
+<!-- @@author Oliver-koh -->
 
 ### Changing completion: `mark` and `unmark`
 
@@ -190,7 +276,14 @@ Input: `unmark 1`
 
 Output: `Unmarked activity: CS2113 tutorial`
 
-Repeating a command reports that the activity is already in the requested state.
+Repeating a command reports `[WARNING] Activity is already marked as done: NAME`
+or `[WARNING] Activity is already unmarked: NAME`, without changing or saving it.
+
+
+<!-- @@author -->
+
+
+<!-- @@author officialasyrafrahim -->
 
 ### Deleting an activity: `delete`
 
@@ -210,6 +303,12 @@ Activities in this session: 1
 The activity is removed immediately; subsequent indexes may change.
 When the last activity is deleted, the confirmation ends with
 `There is no activity recorded` instead of a remaining count.
+
+
+<!-- @@author -->
+
+
+<!-- @@author lukelouyu -->
 
 ### Trying optional add ratings
 
@@ -238,6 +337,12 @@ ordinary slashes in a name. Its demand is LOW; the others default to MEDIUM.
 The add confirmation displays the ratings, and saving preserves them across
 restarts. `list` and `list demand` show date, time, demand and completion, without
 ratings.
+
+
+<!-- @@author -->
+
+
+<!-- @@author Oliver-koh -->
 
 ### Editing an activity: `edit`
 
@@ -288,9 +393,9 @@ Completion stays `[X]`; omitted date, times, demand, importance and urgency rema
 unchanged. For a timing change, supply the date, start or end fields as needed;
 the resulting start must still be earlier than the resulting end.
 
-**Known limitation:** a name made only of Unicode space characters such as
-U+2003 can currently pass add or edit validation and then be skipped when saved
-data reloads. Avoid whitespace-only names. This validation defect is still open.
+Both `add` and `edit` reject whitespace-only names, including Unicode spaces such
+as U+2003 EM SPACE and U+3000 IDEOGRAPHIC SPACE. Rejected input leaves the activity
+list and saved data unchanged.
 
 ### Searching activity names: `find`
 
@@ -321,8 +426,14 @@ Found 1 matching activity:
 ```
 
 `find exco PLANNING` returns the same activity. `find exam` reports
-`No activities matched keyword "exam".`; a valid search on an empty list has
+`[WARNING] No activities matched keyword "exam".`; a valid search on an empty list has
 the same no-match form. `find` without a keyword reports a warning and usage.
+
+
+<!-- @@author -->
+
+
+<!-- @@author officialasyrafrahim -->
 
 ### Viewing priority: `list priority`
 
@@ -378,7 +489,7 @@ Overdue activities (started before now):
 4. [OVERDUE TODAY] CS2113 project (2026-12-04, 14:00-15:00) [MEDIUM] [ ]
 ```
 
-If nothing is overdue, the command shows `No overdue activities.`
+If nothing is overdue, the command shows `[WARNING] No overdue activities.`
 
 ### Viewing the next activity: `next`
 
@@ -395,7 +506,7 @@ Next activity (earliest upcoming):
 ```
 
 If no incomplete activity starts later, the command shows
-`No upcoming incomplete activities.`
+`[WARNING] No upcoming incomplete activities.`
 
 For an incomplete activity scheduled 09:00-09:30 on the current date:
 
@@ -408,6 +519,12 @@ For an incomplete activity scheduled 09:00-09:30 on the current date:
 A completed activity appears in neither time query. At its exact start, an
 incomplete activity appears in neither query; it remains visible in `list`.
 These strict boundaries also apply when the current clock includes seconds.
+
+
+<!-- @@author -->
+
+
+<!-- @@author lukelouyu -->
 
 ### Listing and viewing facilities: `facility`
 
@@ -453,7 +570,8 @@ Sample reference data.
 Verify with current campus information before you rely on it.
 ```
 
-`facility find type/REST_POINT` returns AS8; an unmatched search shows `No matching facilities found.`.
+`facility find type/REST_POINT` returns AS8; an unmatched search shows
+`[WARNING] No matching facilities found.`.
 
 ### Finding an accessible route: `route`
 
@@ -488,6 +606,9 @@ Sample reference data.
 Verify with current campus information before you rely on it.
 ```
 
+
+<!-- @@author -->
+
 ### Viewing help and exiting: `help` and `bye`
 
 Input: `help`
@@ -503,6 +624,11 @@ Output: `Goodbye from UniEnable!`
 ## Error Handling
 
 Invalid input usually produces `[WARNING]` and the app waits for another command.
+Empty activity views, searches with no matches, a zero daily-demand count, and
+unavailable route results also include `[WARNING]` on the no-result message.
+Facility lists without records or recorded features use the same marker.
+Repeated mark/unmark requests warn that completion is already in the requested
+state. These query and no-change warnings do not save or modify activities.
 Common causes include missing/duplicate fields, invalid dates or times, unknown
 facilities, or an activity index outside the current list.
 For `add` and `edit`, use real calendar dates and two-digit hours and minutes (for example,
@@ -553,6 +679,7 @@ from the full chronological list. Use the displayed index directly for `edit`,
 | `help` / `bye` | Show built-in help / exit |
 | `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Add an activity with optional ratings |
 | `list` / `list demand` | View activities by time / demand |
+| `demand today` | Count today's HIGH-demand activities, including completed ones |
 | `edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Update supplied activity fields; preserve omitted fields and completion |
 | `find KEYWORD` | Search activity names and retain chronological list indexes |
 | `list priority` | View all activities by combined priority score |

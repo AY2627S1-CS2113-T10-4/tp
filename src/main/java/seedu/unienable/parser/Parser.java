@@ -6,6 +6,7 @@ import java.util.Locale;
 import seedu.unienable.command.ByeCommand;
 import seedu.unienable.command.Command;
 import seedu.unienable.command.HelpCommand;
+import seedu.unienable.command.activity.DemandTodayCommand;
 import seedu.unienable.command.activity.FindCommand;
 import seedu.unienable.command.activity.NextCommand;
 import seedu.unienable.command.activity.OverdueCommand;
@@ -17,6 +18,7 @@ import seedu.unienable.logic.FacilityManager;
 /**
  * Recognizes add, edit, find, list, view, list demand, list priority, overdue, next,
  * delete, facility, route and bye commands.
+ * Recognizes activity, facility, route, help and exit commands.
  */
 public class Parser {
     /**
@@ -24,26 +26,36 @@ public class Parser {
      */
     private static final String WARNING_MESSAGE = "[WARNING]";
 
+    //@@author lukelouyu
     /**
      * Handles facility commands using the available reference data.
      */
     private final FacilityCommandParser facilityCommandParser;
+    //@@author
 
+    //@@author officialasyrafrahim
     /**
-     * Handles list, list demand, and delete commands.
+     * Handles list, list demand, list priority and delete commands.
      */
     private final ListDeleteCommandParser listDeleteCommandParser = new ListDeleteCommandParser();
+    //@@author
 
-    /** Handles mark and unmark commands. */
+    //@@author Oliver-koh
+    /**
+     * Handles mark and unmark commands.
+     */
     private final MarkCommandParser markCommandParser = new MarkCommandParser();
+    //@@author
 
+    //@@author lukelouyu
     /**
      * Handles route commands using the available connection reference data.
      */
     private final RouteParser routeParser;
+    //@@author
 
     /**
-     * Time source shared with the add command parser for deterministic validation.
+     * Time source shared by add/edit validation and date/time queries for deterministic tests.
      */
     private final Clock clock;
 
@@ -75,9 +87,9 @@ public class Parser {
 
     /**
      * Creates a parser with the supplied clock and no reference data.
-     * Injecting a clock keeps add-command validation deterministic in tests.
+     * Injecting a clock keeps add/edit validation and date/time queries deterministic in tests.
      *
-     * @param clock time source used by add-command validation.
+     * @param clock time source used by add/edit validation and date/time queries.
      */
     public Parser(Clock clock) {
         this(null, null, clock);
@@ -88,7 +100,7 @@ public class Parser {
      *
      * @param facilityManager manager used by facility commands, or null when unavailable.
      * @param connectionManager manager used by route commands, or null when unavailable.
-     * @param clock time source used by add-command validation.
+     * @param clock time source used by add/edit validation and date/time queries.
      */
     public Parser(FacilityManager facilityManager, ConnectionManager connectionManager, Clock clock) {
         this.facilityCommandParser = new FacilityCommandParser(facilityManager);
@@ -109,6 +121,7 @@ public class Parser {
         String commandWord = words[0].toLowerCase(Locale.ROOT);
 
         switch (commandWord) {
+        //@@author lukelouyu
         case "bye":
             if (words.length != 1) {
                 throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");
@@ -118,8 +131,12 @@ public class Parser {
             return facilityCommandParser.parseFacility(words);
         case "route":
             return routeParser.parseRoute(words);
+        //@@author
+        //@@author Atharva005
         case "add":
             return new AddCommandParser(clock).parse(trimmedInput.substring(words[0].length()).trim());
+        //@@author
+        //@@author Oliver-koh
         case "edit":
             return new EditCommandParser(clock).parse(trimmedInput.substring(words[0].length()).trim());
         case "find":
@@ -129,8 +146,20 @@ public class Parser {
                         + " find needs a non-blank activity name keyword.\nUsage: find KEYWORD");
             }
             return new FindCommand(keyword);
+        //@@author
+        //@@author officialasyrafrahim
         case "list":
             return listDeleteCommandParser.parseList(words);
+        //@@author
+        //@@author lukelouyu
+        case "demand":
+            if (words.length != 2 || !"today".equalsIgnoreCase(words[1])) {
+                throw new ParseException(WARNING_MESSAGE
+                        + " Expected demand today without extra arguments.\nUsage: demand today");
+            }
+            return new DemandTodayCommand(clock);
+        //@@author
+        //@@author officialasyrafrahim
         case "overdue":
             if (words.length != 1) {
                 throw new ParseException(WARNING_MESSAGE
@@ -155,16 +184,21 @@ public class Parser {
             };
         case "delete":
             return listDeleteCommandParser.parseDelete(words);
+        //@@author
+        //@@author Oliver-koh
         case "mark":
             return markCommandParser.parseMark(words);
         case "unmark":
             return markCommandParser.parseUnmark(words);
+        //@@author
+        //@@author Atharva005
         case "help":
             if (words.length != 1) {
                 throw new ParseException(
                         WARNING_MESSAGE + " help does not take arguments.");
             }
             return new HelpCommand();
+        //@@author
         default:
             throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");
         }

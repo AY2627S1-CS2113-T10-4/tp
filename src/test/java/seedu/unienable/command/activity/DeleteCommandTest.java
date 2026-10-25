@@ -17,6 +17,7 @@ import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
+//@@author officialasyrafrahim
 /**
  * Checks displayed-index deletion behaviour: index mapping, boundary indexes,
  * renumbering, and model-reported range errors.
@@ -88,9 +89,12 @@ class DeleteCommandTest {
         assertTrue(exception.getMessage().contains("There are no activities to delete."));
     }
 
-    /** Seeds existing activities without applying the add parser's current-time restriction. */
+    /**
+     * Seeds existing activities without applying the add parser's current-time restriction.
+     */
     private void add(String name, String date, String start, String end, String demand) {
         activities.addActivity(new Activity(name, LocalDate.parse(date), LocalTime.parse(start),
                 LocalTime.parse(end), DemandLevel.valueOf(demand), false));
     }
 }
+//@@author

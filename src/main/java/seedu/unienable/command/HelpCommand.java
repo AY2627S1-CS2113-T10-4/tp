@@ -3,6 +3,7 @@ package seedu.unienable.command;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
+//@@author Atharva005
 /**
  * Displays the commands currently available in UniEnable, including optional add ratings.
  */
@@ -28,6 +29,7 @@ public class HelpCommand extends Command {
                 + "    Multiword keywords are literal phrases; results keep chronological list indexes\n"
                 + "list - View activities by date and start time\n"
                 + "list demand - View activities by demand, HIGH to LOW\n"
+                + "demand today - Count today's HIGH-demand activities, including completed ones\n"
                 + "list priority - View all activities by combined priority score\n"
                 + "view today - View today's activities, summary, ratings, and demand\n"
                 + "view tomorrow - View tomorrow's activities, summary, ratings, and demand\n"
@@ -48,3 +50,4 @@ public class HelpCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author

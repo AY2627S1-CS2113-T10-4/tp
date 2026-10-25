@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.enums.DemandLevel;
 
+//@@author officialasyrafrahim
 /**
  * Checks pure formatting of activity views: preserved order, 1-based numbering,
  * and the empty-list placeholder.
@@ -28,7 +29,7 @@ class ActivityListFormatterTest {
     void formatList_empty_showsHeadingAndPlaceholder() {
         String message = ActivityListFormatter.formatList(List.of());
         assertTrue(message.startsWith("Activities"), "heading missing for empty list");
-        assertTrue(message.endsWith("No activities yet."), "empty-list placeholder missing");
+        assertTrue(message.endsWith("[WARNING] No activities yet."), "empty-list warning missing");
     }
 
     @Test
@@ -48,7 +49,8 @@ class ActivityListFormatterTest {
                 + "Run 'list' to find the correct index for 'delete INDEX'.\n";
         assertEquals(headingAndNotice + "1. Gym session (2026-10-12, 07:00-09:00) [HIGH] [ ]",
                 ActivityListFormatter.formatDemandList(List.of(mondayGym)));
-        assertEquals(headingAndNotice + "No activities yet.", ActivityListFormatter.formatDemandList(List.of()));
+        assertEquals(headingAndNotice + "[WARNING] No activities yet.",
+                ActivityListFormatter.formatDemandList(List.of()));
     }
 
     @Test
@@ -80,7 +82,7 @@ class ActivityListFormatterTest {
                 + "2. [OVERDUE WEEK] Gym session (2026-10-12, 07:00-09:00) [HIGH] [ ]\n"
                 + "3. [OVERDUE TODAY] Today (2026-10-13, 09:00-10:00) [LOW] [ ]",
                 message);
-        assertEquals("Overdue activities (started before now):\nNo overdue activities.",
+        assertEquals("Overdue activities (started before now):\n[WARNING] No overdue activities.",
                 ActivityListFormatter.formatOverdueList(List.of(), canonicalView,
                         LocalDateTime.parse("2026-10-13T12:00:00")));
     }
@@ -89,7 +91,8 @@ class ActivityListFormatterTest {
     void formatNext_showsOneIndexedActivityOrEmptyMessage() {
         assertEquals("Next activity (earliest upcoming):\n2. Lab (2026-10-13, 14:00-16:00) [LOW] [ ]",
                 ActivityListFormatter.formatNext(Optional.of(tuesdayLab), List.of(mondayGym, tuesdayLab)));
-        assertEquals("Next activity (earliest upcoming):\nNo upcoming incomplete activities.",
+        assertEquals("Next activity (earliest upcoming):\n[WARNING] No upcoming incomplete activities.",
                 ActivityListFormatter.formatNext(Optional.empty(), List.of(mondayGym, tuesdayLab)));
     }
 }
+//@@author

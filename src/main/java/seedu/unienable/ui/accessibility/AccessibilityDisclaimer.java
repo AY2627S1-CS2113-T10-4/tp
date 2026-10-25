@@ -1,5 +1,6 @@
 package seedu.unienable.ui.accessibility;
 
+//@@author lukelouyu
 /**
  * Common safety disclaimer for read-only campus accessibility information.
  */
@@ -10,3 +11,4 @@ public final class AccessibilityDisclaimer {
     private AccessibilityDisclaimer() {
     }
 }
+//@@author

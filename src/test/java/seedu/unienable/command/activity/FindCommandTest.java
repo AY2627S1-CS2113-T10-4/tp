@@ -1,7 +1,7 @@
 package seedu.unienable.command.activity;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -10,6 +10,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
+//@@author Oliver-koh
 /**
  * Checks case-insensitive activity-name search and preserved chronological indexes.
  */
@@ -44,7 +45,7 @@ class FindCommandTest {
 
         String message = parser.parse("find exam").execute(activities, noWrites).getMessage();
 
-        assertEquals("No activities matched keyword \"exam\".", message);
+        assertEquals("[WARNING] No activities matched keyword \"exam\".", message);
         assertTrue(activities.getActivities().size() == 1);
     }
 
@@ -53,3 +54,4 @@ class FindCommandTest {
                 .execute(activities, noWrites);
     }
 }
+//@@author

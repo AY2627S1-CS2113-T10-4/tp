@@ -12,6 +12,7 @@ import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
 
+//@@author lukelouyu
 /**
  * Checks read-only execution and empty metadata for facility find commands.
  */
@@ -30,7 +31,10 @@ class FacilityFindCommandTest {
         var command = new Parser(manager).parse("facility find type/LIFT");
         var result = command.execute(activities, noWrites);
         assertFalse(result.isExit());
+        assertFalse(result.didChangeActivities());
+        assertTrue(result.getMessage().contains("[WARNING] No matching facilities found."));
         assertTrue(result.getMessage().endsWith(AccessibilityDisclaimer.TEXT));
         assertTrue(activities.getActivities().isEmpty());
     }
 }
+//@@author

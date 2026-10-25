@@ -19,6 +19,7 @@ import seedu.unienable.model.enums.TraversalType;
 import seedu.unienable.storage.ConnectionStorage;
 import seedu.unienable.storage.FacilityStorage;
 
+//@@author lukelouyu
 /**
  * Protects endpoint identity and combined filters for accessible route graph construction.
  */
@@ -127,3 +128,4 @@ class ConnectionManagerTest {
                 new String[]{"SAME", "AS2", "AS2", "", "", "", ""},
                 new String[]{"SECOND", "AS3", "AS2", "RAMP", "UNKNOWN", "NO", "2"});
     }}
+//@@author

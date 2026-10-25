@@ -10,6 +10,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.activity.ActivityListFormatter;
 
+//@@author officialasyrafrahim
 /**
  * Lists all activities grouped by demand (HIGH to LOW), ties in canonical order.
  */
@@ -29,3 +30,4 @@ public class ListDemandCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author

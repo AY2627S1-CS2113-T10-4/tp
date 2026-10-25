@@ -9,11 +9,14 @@
 - [Design and implementation](#design-and-implementation)
   - [Shared design](#shared-design)
     - [Architecture](#architecture)
-  - [Atharva: Activity creation and help](#atharva-activity-creation-and-help)
-  - [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion)
-  - [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search)
-  - [Luke: Ratings and accessibility](#luke-ratings-and-accessibility)
+  - [Atharva: Activity creation and help](#activity-creation-and-help)
+  - [Asyraf: Activity views and deletion](#activity-views-and-deletion)
+    - [Ordering and displayed indexes](#ordering-and-displayed-indexes)
+    - [Priority, overdue and next views](#priority-overdue-and-next-views)
+  - [Oliver: Completion, storage, editing and search](#completion-storage-editing-and-search)
+  - [Ratings and accessibility](#ratings-and-accessibility)
     - [Optional ratings integration](#optional-ratings-integration)
+    - [Today's high-demand count](#todays-high-demand-count)
     - [Facility Accessibility Data (`facilities.txt`)](#facility-accessibility-data-facilitiestxt)
     - [Facility lookup](#facility-lookup)
     - [Accessibility Route Connections (`connections.txt`)](#accessibility-route-connections-connectionstxt)
@@ -28,7 +31,6 @@
   - [Energy and priority](#energy-and-priority)
   - [Accessible navigation](#accessible-navigation)
   - [Foundation](#foundation)
-- [Use cases](#use-cases)
 - [Non-functional requirements](#non-functional-requirements)
 - [Glossary](#glossary)
 - [Instructions for manual testing](#instructions-for-manual-testing)
@@ -37,21 +39,15 @@
 ## Introduction
 
 UniEnable is a Java command-line application for managing dated activities and
-checking campus accessibility reference information. Activities have start and
-end times, a demand level, a completion state, and optional importance, urgency,
-and commitment ratings. Users can edit those activities, search their names,
-rank them by priority, query overdue and upcoming activities, look up facility
-features, and find the shortest recorded accessible route between supported hubs.
+checking campus accessibility reference information. It combines activity
+planning with facility lookup and route search.
 
 The target users are tertiary students with ASD, ADHD, or mobility constraints
-who are adapting to unfamiliar university routines and managing their commitments
-independently. UniEnable aims to make those routines easier to organise by combining
-activity planning with campus facility and route information.
+who are adapting to university routines and managing commitments independently.
 
 This guide explains the current design for developers maintaining the application.
-See the [User Guide](UserGuide.md) for command formats and examples. Facility and
-connection records are bundled sample data, so their results need to be checked
-against current campus information before use.
+See the [User Guide](UserGuide.md) for commands and examples. Accessibility records
+are bundled sample data; check results against current campus information before use.
 
 ## Setting up and getting started
 
@@ -60,9 +56,8 @@ or running the application. In IntelliJ IDEA, import the project as a Gradle
 project and select JDK 25 for both the project SDK and Gradle JVM. The
 [README](../README.md#setting-up-in-intellij) gives the IDE setup steps.
 
-Use the included Gradle wrapper; a separate Gradle installation is unnecessary.
-The first build needs internet access to download Gradle and dependencies. Run
-the following commands from the project root:
+Run these commands from the project root using the included Gradle wrapper.
+The first build needs internet access to download Gradle and dependencies.
 
 | Purpose | Windows PowerShell | macOS / Linux |
 | --- | --- | --- |
@@ -91,7 +86,7 @@ Facility and connection data come from `src/main/resources/facilities.txt` and
 
 <!-- SHARED: All members maintain this ownership overview and the diagram index. -->
 
-Luke's and shared implementation write-ups are populated. The other members'
+Asyraf's, Luke's and shared implementation write-ups are populated. The other members'
 main headings mark where they should add their documentation.
 
 Implementation sections and diagram folders follow the responsibility assignments
@@ -102,15 +97,10 @@ details inside your block; maintain sections marked `SHARED` jointly.
 | Maintainer | Implementation sections | PlantUML sources | Rendered images |
 | --- | --- | --- | --- |
 | Shared | [Shared design](#shared-design) | [shared/](diagrams/shared) | [shared/](images/shared) |
-| [Atharva](team/atharva005.md) | [Atharva: Activity creation and help](#atharva-activity-creation-and-help) | Awaiting contribution | Awaiting contribution |
-| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion) | Awaiting contribution | Awaiting contribution |
-| [Oliver](team/oliver-koh.md) | [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search) | Awaiting contribution | Awaiting contribution |
-| [Luke](team/lukelouyu.md) | [Luke: Ratings and accessibility](#luke-ratings-and-accessibility) | [luke/](diagrams/luke) | [luke/](images/luke) |
-
-The combined activity-creation class diagram belongs to `shared` because it
-covers Atharva's add command and Luke's rating fields. Other diagrams are
-grouped by the primary feature maintainer. See the [diagram ownership index](diagrams/README.md)
-for every source/image pair and regeneration instructions.
+| [Atharva](team/atharva005.md) | [Atharva: Activity creation and help](#activity-creation-and-help) | Awaiting contribution | Awaiting contribution |
+| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#activity-views-and-deletion) | [asyraf/](diagrams/asyraf) | [asyraf/](images/asyraf) |
+| [Oliver](team/oliver-koh.md) | [Oliver: Completion, storage, editing and search](#completion-storage-editing-and-search) | Awaiting contribution | Awaiting contribution |
+| [Luke](team/lukelouyu.md) | [Ratings and accessibility](#ratings-and-accessibility) | [luke/](diagrams/luke) | [luke/](images/luke) |
 
 <!-- BEGIN SHARED: All members maintain the architecture and shared models jointly. -->
 
@@ -122,93 +112,299 @@ Architecture and models used across members' features are maintained jointly.
 
 ![Architecture diagram showing the console, parsers, commands, models, accessibility logic, and storage](images/shared/ArchitectureDiagram.png)
 
-The diagram groups related classes by responsibility and shows selected
-dependencies. `UniEnable` loads activities and runs the console loop. Its
-package-private helper, `ConsoleHelper`, loads facilities before connections,
-then constructs the managers and parser. `Ui` handles console input and output;
-`Parser` delegates input to a feature parser, which creates a concrete `Command`.
-
-`ConsoleHelper` executes the command against the shared `ActivityList` and
-`Storage`. The returned `CommandResult` supplies a message, an exit flag, and an
-activity-change flag. Only a result reporting an activity change triggers a save,
-before its message is displayed. Facility and route commands query their managers
-without changing activities; recoverable errors use `UniEnableException` and are
-displayed by the console so the user can continue.
+`UniEnable` restores activities; `ConsoleHelper` loads facilities before connections
+and creates the managers and parser. `Ui` reads input, `Parser` creates a command,
+and the command queries or updates a model or manager. Its `CommandResult` carries
+a message, an exit flag and an activity-change flag. `ConsoleHelper` saves only
+when activities changed, then displays the message; the exit flag ends the loop.
 
 | Area | Main classes and responsibilities |
 | --- | --- |
-| Startup and console loop | `UniEnable` restores activity data and reads commands until `bye` or end of input. `ConsoleHelper` loads reference data, constructs the parser, executes commands, and saves activity changes. |
-| User interface | `Ui` reads lines and displays messages between borders. `ActivityListFormatter`, `FacilityOutputFormatter`, and `FacilityDetailsFormatter` build messages without reading input or printing. `RouteCommand` formats its own route result. |
-| Parsing | `Parser` identifies the command word. `AddCommandParser`, `EditCommandParser`, `ListDeleteCommandParser`, `MarkCommandParser`, `FacilityCommandParser`, and `RouteParser` validate their arguments and create commands. `Parser` validates `find` keywords and the no-argument `overdue`/`next` syntax directly. A shared injected `Clock` makes add/edit validation and time queries repeatable in tests. |
-| Command execution | Concrete subclasses implement `Command.execute(ActivityList, Storage)`. Each returns a `CommandResult`; the activity-change flag lets the console decide when to save. |
-| Activity model | `Activity` stores activity details, completion and ratings, and calculates its priority score on demand. `ActivityList` owns the collection, creates chronological, demand, priority, overdue, and next views, and resolves displayed indexes against the chronological view. |
-| Accessibility logic | `FacilityManager` provides facility lookup and feature filtering. `ConnectionManager` provides connection queries and delegates route searches to `DijkstraShortestPath`, which uses a fresh `DijkstraSolver` per search. |
-| Reference models | `Facility` contains `FacilityFeature` records. `Connection` stores two facility names, a distance, accessibility and shelter statuses, a traversal type, and optional barrier information and notes. These objects are immutable. |
+| Startup and console loop | `UniEnable` runs until `bye` or end of input. `ConsoleHelper` loads reference data, creates the parser, executes commands and saves changes. |
+| User interface | `Ui` reads and displays text. `ActivityListFormatter`, `FacilityOutputFormatter` and `FacilityDetailsFormatter` build messages; `RouteCommand` formats its own result. |
+| Parsing | `Parser` dispatches to `AddCommandParser`, `EditCommandParser`, `ListDeleteCommandParser`, `MarkCommandParser`, `FacilityCommandParser` or `RouteParser`. It checks `find`, `demand today`, `overdue` and `next` directly. A shared injected `Clock` makes time checks repeatable. |
+| Command execution | Subclasses implement `Command.execute(ActivityList, Storage)` and return a `CommandResult`. |
+| Activity model | `Activity` stores details, completion and ratings and calculates priority. `ActivityList` owns the collection, supplies views and demand counts, and resolves displayed indexes against chronological order. |
+| Accessibility logic | `FacilityManager` handles facility queries. `ConnectionManager` delegates routes to `DijkstraShortestPath`, with a fresh `DijkstraSolver` per search. |
+| Reference models | Immutable `Facility` and `FacilityFeature` objects describe hubs. Immutable `Connection` objects hold endpoints, distance, statuses, traversal type, barriers and notes. |
 | Storage | `Storage` loads six- or nine-field activity rows and saves nine-field rows, with recovery backups when needed. `FacilityStorage` and `ConnectionStorage` load bundled reference records and return records plus warnings in `LoadResult<T>`. |
 | Exceptions | `UniEnableException` is the checked error contract for recoverable failures. `ParseException` reports invalid commands, while `InvalidIndexException` reports indexes outside the current activity view. |
 
-If facility loading fails, the parser still supports activity commands, help,
-and exit. If only connection loading fails, facility commands remain available
-but route commands report that connection data is unavailable. Activity-load
-warnings and failures are reported at startup; a fatal activity read failure
-starts an empty in-memory list while `Storage` retains recovery protection.
+Recoverable failures use `UniEnableException`; the console displays the problem
+and accepts another command. Failed facility loading leaves activity commands,
+help and exit available. Failed connection loading disables routes but keeps
+facility queries available. Activity-load warnings and failures appear at startup;
+a fatal read failure starts an empty list with `Storage` recovery protection.
 
 Diagram source: [ArchitectureDiagram.puml](diagrams/shared/ArchitectureDiagram.puml).
-Edit the source and regenerate its image together when the design changes. With
-the [PlantUML JAR](https://plantuml.com/download) available, run this command from
-the project root, replacing `PATH_TO_PLANTUML_JAR` with its location:
-
-```text
-java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tpng -o ../../images/shared docs/diagrams/shared/ArchitectureDiagram.puml
-```
-
-PlantUML resolves `../../images/shared` relative to the diagram source directory, producing
-`docs/images/shared/ArchitectureDiagram.png`. The source selects the bundled Smetana
-layout engine, so a separate Graphviz installation is unnecessary for this diagram.
+Update diagram sources and their images together. Use Java 25 and PlantUML:
+`-tpng` renders PNG diagrams; `-tsvg` renders the connectivity graph.
 
 <!-- END SHARED -->
 
 <!-- BEGIN OWNER: Atharva Rege (@Atharva005). Add activity-creation and help documentation here. -->
 
-### Atharva: Activity creation and help
+<!-- @@author Atharva005 -->
+
+
+### Activity creation and help
 
 Documentation to be completed by Atharva.
+
+
+<!-- @@author -->
 
 <!-- END OWNER: Atharva Rege (@Atharva005) -->
 
 <!-- BEGIN OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim). Add listing, deletion, priority, overdue and next documentation here. -->
 
-### Asyraf: Activity views and deletion
+<!-- @@author officialasyrafrahim -->
 
-Documentation to be completed by Asyraf.
+
+### Activity views and deletion
+
+Asyraf maintains chronological and demand listing, deletion, priority ordering,
+and the overdue/next queries, including their displayed-index rules.
+
+#### Ordering and displayed indexes
+
+##### Overview
+
+`list` displays activities by date and start time. `list demand` groups them from
+`HIGH` to `LOW`, then by date and start time. Delete, edit, mark and unmark always
+use the one-based indexes from chronological `list`, even after a demand-ordered
+list has been displayed.
+
+##### High-level design
+
+`ActivityList` keeps its backing list in insertion order and creates separate,
+unmodifiable sorted lists for display. The activity objects in those lists are
+shared with the backing list. Commands select a view, while
+`ActivityListFormatter` renders its supplied order without sorting or printing.
+
+![Class diagram showing activity views, list formatting and deletion](images/asyraf/ActivityOrderingClassDiagram.png)
+
+Source: [ActivityOrderingClassDiagram.puml](diagrams/asyraf/ActivityOrderingClassDiagram.puml).
+The [shared activity-creation diagram](diagrams/shared/ActivityCreationClassDiagram.puml)
+shows the activity fields omitted here.
+
+##### Implementation and sequence diagram
+
+1. `Parser` delegates `list` and `delete` syntax to `ListDeleteCommandParser`.
+   It creates `ListCommand`, `ListDemandCommand` or `DeleteCommand` as appropriate.
+   The same parser creates `ListPriorityCommand` for `list priority`.
+2. Listing calls `getCanonicalView()` or `getDemandView()`. Sorting is stable:
+   activities tied on all ordering fields retain their insertion order.
+3. `ActivityListFormatter` numbers the selected view from 1. The demand view
+   includes a notice telling users to run `list` before choosing a deletion index.
+4. For `delete 1`, `deleteByDisplayedIndex(1)` builds the canonical view, checks
+   the index and selects element 0. It removes that activity object from the
+   backing list rather than removing backing-list element 0.
+5. `DeleteCommand` returns the removed activity's details and the new count with
+   the activity-change flag set. If no activities remain, it shows
+   `There is no activity recorded` instead of a count. `ConsoleHelper` then saves
+   the updated activities before displaying the result, as described in
+   [Architecture](#architecture).
+
+The sequence starts after `DeleteCommand(1)` has been parsed. It highlights why
+deletion follows chronological display order even when insertion order differs.
+It assumes a valid index and omits the subsequent save and display calls.
+
+![Sequence diagram showing deletion through the canonical displayed index](images/asyraf/DeleteActivitySequence.png)
+
+Source: [DeleteActivitySequence.puml](diagrams/asyraf/DeleteActivitySequence.puml).
+
+##### Design considerations
+
+Sorting copies keeps listing read-only and preserves insertion order for storage.
+Sorting the backing list in place would make a display command change that order.
+Using one canonical index rule also avoids maintaining a separate "last displayed
+list" state, though users must check `list` when switching from the demand view.
+Priority and time views instead display full chronological indexes directly,
+as explained below.
+
+##### Error handling
+
+The parser rejects missing or extra arguments, signed or non-numeric indexes,
+and integers too large for `int`. Zero passes syntax checking but is rejected
+by `ActivityList`, which also handles empty lists and out-of-range indexes through
+`InvalidIndexException`. Invalid deletion leaves activities unchanged.
+Assertions check view ordering and deletion invariants; `FINE` log messages record
+list and delete operations. These support debugging, while checked exceptions
+handle invalid user input. Empty list views show `[WARNING] No activities yet.`.
+
+#### Priority, overdue and next views
+
+##### Overview
+
+`list priority` ranks every activity, including completed ones, by its combined
+priority score. `overdue` and `next` query incomplete activities relative to the
+current local time. All three views are read-only and display the full
+chronological index used by `edit`, `mark`, `unmark` and `delete`.
+
+`Activity.getPriorityScore()` calculates:
+
+```text
+URG * URG * (IMP + COM)
+```
+
+Each rating is an integer from 1 to 5. The score ranges from 2 to 250 and is
+available only when importance, urgency and commitment are all set. Missing
+ratings produce `null`, displayed as `NA`; demand and completion do not affect
+the score. Squaring urgency gives it greater weight, while importance and
+commitment contribute equally within the sum.
+
+##### High-level design
+
+`Activity` owns the score formula so every view uses one definition. `ActivityList`
+owns ordering and filtering. `ListPriorityCommand`, `OverdueCommand` and
+`NextCommand` select views, while `ActivityListFormatter` renders their results.
+`Parser` supplies the session's injected `Clock` to the time-query commands.
+
+![Class diagram for priority, overdue and next views](images/asyraf/PriorityAndTimeViewsClassDiagram.png)
+
+Source: [PriorityAndTimeViewsClassDiagram.puml](diagrams/asyraf/PriorityAndTimeViewsClassDiagram.puml).
+
+##### Implementation and sequence diagram
+
+1. `ListDeleteCommandParser` recognises `list priority`; `Parser` recognises
+   `overdue` and `next` and creates their commands with the session's clock.
+2. `OverdueCommand` and `NextCommand` capture `LocalDateTime.now(clock)` once per
+   execution, so filtering, labels and logging use the same instant.
+3. `getPriorityView()` sorts available scores in descending order, with missing
+   scores last. Ties use date and start time, then retain insertion order.
+   Completed activities remain included.
+4. `getOverdueView(now)` keeps incomplete activities whose start is strictly
+   before `now`, in chronological order. `getNext(now)` returns the earliest
+   incomplete start strictly after `now`, with equal starts retaining add order.
+5. Each command also obtains `getCanonicalView()`. The formatter maps selected
+   activities to their indexes in that full view instead of renumbering them.
+   Priority rows show scores and ratings; overdue rows show time labels.
+6. Each command returns a `CommandResult` with the activity-change flag unset,
+   so `ConsoleHelper` displays its message without calling `Storage.save()`.
+
+The sequence follows a successful `overdue` query from input to output. `next`
+uses the same clock and index flow; `list priority` omits the time boundary.
+
+![Sequence diagram for an overdue query with chronological indexes and no save](images/asyraf/PriorityAndTimeViewsSequence.png)
+
+Source: [PriorityAndTimeViewsSequence.puml](diagrams/asyraf/PriorityAndTimeViewsSequence.puml).
+
+##### Time-boundary rules
+
+Production uses `Clock.systemDefaultZone()`. Comparisons are strict: an activity
+starting exactly at `now` appears in neither `overdue` nor `next`. An activity
+that has started but not yet ended is overdue because the boundary uses its start.
+
+| Label or view | Rule for an incomplete activity |
+| --- | --- |
+| `OVERDUE TODAY` | Start date equals today and start is before now. |
+| `OVERDUE WEEK` | Start date is before today but not before the current week's Monday. |
+| `OVERDUE EARLIER` | Start date is before the current week's Monday. |
+| `next` | Earliest start strictly after now. |
+
+The formatter calculates Monday with `TemporalAdjusters.previousOrSame(MONDAY)`,
+which also handles week and year rollovers.
+
+##### Design considerations
+
+Keeping completion out of scoring allows completed and incomplete activities to
+appear together in priority order. Marking an activity changes its eligibility
+for time queries without changing its score.
+
+Using `Comparator.nullsLast(Comparator.reverseOrder())` puts missing scores after
+all available scores. Canonical tie-breaking and stable sorting make results
+predictable. Read-only views preserve backing-list order, while full chronological
+indexes let users act on a result without translating a filtered-view index.
+Adding, deleting or rescheduling activities can change those indexes.
+
+Injecting `Clock` allows command and integration tests to use `Clock.fixed()`
+with an explicit zone. Passing the captured `now` into model methods keeps them
+independent of the system clock and makes exact-boundary cases repeatable.
+
+##### Error handling
+
+The parsers reject extra arguments after `list priority`, `overdue` and `next`.
+The model rejects a null `now` and asserts priority and overdue ordering.
+Commands write `FINE` logs with view sizes and, for time queries, the captured time.
+
+The formatter shows unset ratings as `-` and an unavailable score as `NA`.
+Empty priority output includes `[WARNING] No activities yet.`; time queries use
+`[WARNING] No overdue activities.` and
+`[WARNING] No upcoming incomplete activities.` respectively. Empty results do
+not change or save activity data.
+
+
+<!-- @@author -->
 
 <!-- END OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim) -->
 
 <!-- BEGIN OWNER: Oliver (@Oliver-koh). Add completion, storage/recovery, editing and search documentation here. -->
 
-### Oliver: Completion, storage, editing and search
+<!-- @@author Oliver-koh -->
+
+
+### Completion, storage, editing and search
 
 Documentation to be completed by Oliver.
 
+
+<!-- @@author -->
+
 <!-- END OWNER: Oliver (@Oliver-koh) -->
 
-<!-- BEGIN OWNER: Lou Yu Luke (@lukelouyu). Maintain optional add ratings, facilities, routes and exit documentation here. -->
+<!-- BEGIN OWNER: Lou Yu Luke (@lukelouyu). Maintain optional add ratings, today's high-demand count, facilities, routes and exit documentation here. -->
 
-### Luke: Ratings and accessibility
+<!-- @@author lukelouyu -->
 
-Luke maintains optional add ratings, facility reference data and queries,
-accessible route search, and the exit command. Shared activity models connect
-these enhancements with the other members' commands.
+
+<a id="luke-ratings-and-accessibility"></a>
+
+### Ratings and accessibility
+
+This section covers optional add ratings, today's high-demand count (US16), facility
+reference data and queries, accessible route search, and the exit command.
+These features use the shared activity models and command/result flow.
 
 #### Optional ratings integration
 
-Luke owns the optional `imp/`, `urg/`, and `com/` enhancement to `add`.
+`add` accepts optional `imp/`, `urg/`, and `com/` ratings.
 `AddCommandParser` parses each rating independently into a nullable `Integer`;
 omitting a field leaves it unset. `Activity.validateRating()` accepts `null` or
 an integer from 1 to 5, so add, edit and storage use the same validation rule.
 The [shared class diagram](diagrams/shared/ActivityCreationClassDiagram.puml)
-shows how ratings fit into activity creation. Asyraf's priority view consumes
-them; Oliver's editing and persistence flows update and preserve them.
+shows how ratings fit into activity creation. The priority view uses these ratings;
+editing and persistence update and preserve them.
+
+<a id="todays-high-demand-count-us16"></a>
+
+#### Today's high-demand count
+
+`demand today` displays the number of HIGH-demand activities
+scheduled on the current local date, including completed and already-ended
+activities. Other dates, LOW/MEDIUM demand and numeric ratings do not contribute.
+A zero count carries `[WARNING]`.
+
+Execution follows the existing command/result path:
+
+1. `Parser` accepts exactly `demand today`, ignoring case and extra whitespace,
+   and passes its shared `Clock` to `DemandTodayCommand`. Invalid syntax raises
+   `ParseException` with a warning and `Usage: demand today`.
+2. Each `execute()` call reads `LocalDate.now(clock)` and calls
+   `ActivityList.countHighDemandOn(today)`, so the date stays current after midnight.
+3. The model counts matching dates and `DemandLevel.HIGH` in one pass, returning
+   a `long` without sorting or changing activities: O(n) time and O(1) extra space.
+4. The command returns `High-demand activities scheduled today (YYYY-MM-DD): N`,
+   prefixed with `[WARNING]` when N is zero. Both result flags are false, so the
+   console continues without saving.
+
+The default clock is `Clock.systemDefaultZone()`; tests inject a clock to control
+the instant and zone. The count uses existing activity fields and needs no
+saved-file changes.
+
+`DemandTodayCommandTest` covers counting rules, syntax, zero results and local
+midnight/New Year transitions. `UniEnableTest` checks the console path and
+unchanged file bytes and modification time; `HelpCommandTest` checks the help entry.
 
 #### Facility Accessibility Data (`facilities.txt`)
 
@@ -264,17 +460,16 @@ explains how commands query these records.
 ##### Overview
 
 The `facility` commands list reference facilities, show one hub's recorded
-features, or search by feature and accessibility status. The bundled dataset
-contains AS1 to AS8 and CLB, with stable IDs F01 to F09. Commands read this sample
-data without changing activities or editing facility records.
+features, or search by feature and accessibility status. They read the
+[bundled dataset](#facility-accessibility-data-facilitiestxt) without changing
+activities or facility records.
 
 ##### High-level design
 
 `FacilityStorage` parses the bundled resource into immutable `Facility` and
 `FacilityFeature` objects. `FacilityManager` takes a snapshot of the loaded list
-and handles queries without file I/O. The class diagram separates loading from
-querying; `LoadResult<T>` carries accepted records and warnings, with
-`T = Facility` for this loader.
+and handles queries without file I/O. `LoadResult<Facility>` carries accepted
+records and load warnings.
 
 ![Class diagram showing facility loading, query logic, and reference models](images/luke/FacilityClassDiagram.png)
 
@@ -282,28 +477,21 @@ Source: [FacilityClassDiagram.puml](diagrams/luke/FacilityClassDiagram.puml).
 
 ##### Implementation and sequence diagram
 
-1. During startup, `ConsoleHelper` calls `FacilityStorage.load()` to read the
-   bundled resource using the [facility data format and association rules](#facility-accessibility-data-facilitiestxt).
-2. The console displays load warnings and constructs `FacilityManager` from the
-   accepted records. The manager is passed into `Parser` and its
-   `FacilityCommandParser`.
-3. The feature parser creates `FacilityListCommand`, `FacilityViewCommand`, or
-   `FacilityFindCommand`. For a feature search, `type/` must precede the optional
+1. At startup, `ConsoleHelper` loads facilities, displays warnings and passes a
+   `FacilityManager` to `Parser` and its `FacilityCommandParser`.
+2. The feature parser creates `FacilityListCommand`, `FacilityViewCommand`, or
+   `FacilityFindCommand`. For searches, `type/` must precede the optional
    `status/`; the omitted status defaults to `YES`.
-4. Listing uses `getFacilities()`. A single-hub query uses `findFacility()`,
-   checking stable IDs before names, ignoring case and surrounding whitespace.
-   A search calls `findByFeature(type, status)` and matches the recorded status
-   exactly. An absent feature does not match `UNKNOWN`.
-5. Results preserve dataset order. A facility appears at most once in search
-   results, even if several records match. `FacilityOutputFormatter` builds the
-   response and adds the shared accessibility disclaimer; detail output also
-   uses `FacilityDetailsFormatter`.
-6. The command returns a `CommandResult` without an activity change. The console
-   displays the message without calling activity storage's `save()`.
+3. The manager uses `getFacilities()`, `findFacility()` or `findByFeature(type, status)`.
+   Lookup checks IDs before names, ignoring case and surrounding spaces. Searches
+   match statuses exactly, exclude absent features from `UNKNOWN`, and return each
+   matching facility once in dataset order.
+4. `FacilityOutputFormatter` builds responses and adds the accessibility disclaimer,
+   using `FacilityDetailsFormatter` for details in lists and single-hub lookups.
+   The command returns a `CommandResult` with no activity change, so no save occurs.
 
-The sequence shows the execution of `facility find type/LIFT status/NO` after
-parsing. In the bundled dataset it returns AS1 and AS2. Listing and single-hub
-lookup use the same read-only result path with different manager methods.
+The sequence shows `facility find type/LIFT status/NO`, which returns AS1 and AS2
+in the bundled dataset.
 
 ![Sequence diagram for finding facilities with a recorded feature and status](images/luke/FacilityLookupSequence.png)
 
@@ -319,26 +507,22 @@ treating missing features as `UNKNOWN` would lose that distinction.
 
 ##### Error handling
 
-Malformed rows, duplicate IDs or names, unknown facility references, and invalid
-enums produce line-numbered warnings while valid records remain available.
-For conflicting statuses of the same feature at a facility, the first valid
-status is kept and later conflicting rows are skipped. Resource tags, enum
-values, and feature-to-facility IDs are matched exactly when loading; command
-input is case-insensitive.
+The loader skips malformed rows, duplicate IDs/names, unknown facility references
+and invalid enums with line-numbered warnings. For conflicting statuses of the
+same feature, it keeps the first valid status. Loading matches tags, enums and
+facility IDs exactly; command input ignores case.
 
 A missing or unreadable resource raises `UniEnableException` and uses the
 fallback described in [Architecture](#architecture). Invalid command filters
 raise `ParseException`. An unknown hub produces a warning with supported names;
-a valid search with no matches returns a normal no-results message.
+a valid search with no matches returns `[WARNING] No matching facilities found.`
 
 #### Accessibility Route Connections (`connections.txt`)
 
 The UTF-8 [connection dataset](../src/main/resources/connections.txt) stores ten
-bidirectional links between the nine facilities. Together they form a weighted
-graph: hub names are vertices, recorded links are edges, and distances are edge
-weights. The [Connection model](../src/main/java/seedu/unienable/model/Connection.java)
-names each weight `distanceInMetres`, so distances here are the project's
-recorded values in metres.
+bidirectional links between the nine facilities. Hub names form graph vertices;
+links form edges weighted by the [Connection model's](../src/main/java/seedu/unienable/model/Connection.java)
+recorded `distanceInMetres` values.
 
 Each pipe-separated row follows this format:
 
@@ -381,18 +565,13 @@ explains how the graph is built and how routes are found and displayed.
 
 ##### Connectivity graph
 
-This project-generated graph shows the ten recorded connections. Node positions
-are schematic, not geographical.
+This schematic connectivity graph shows the ten recorded connections; it is
+not a geographical map.
 
 ![FASS accessibility connection graph](images/luke/fass-accessibility-network.svg)
 
 Source: [fass-accessibility-network.puml](diagrams/luke/fass-accessibility-network.puml).
-With Java 25 and the PlantUML JAR available, regenerate the SVG from the project
-root using the command below. The output is written to `docs/images/luke`.
-
-```text
-java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tsvg -o ../../images/luke docs/diagrams/luke/fass-accessibility-network.puml
-```
+Regenerate its SVG when the source changes.
 
 #### Accessible route search
 
@@ -407,10 +586,9 @@ details, total metres, and the sample-data disclaimer.
 
 `ConnectionManager` keeps a connection snapshot and constructs one reusable
 `DijkstraShortestPath` graph. Each query creates a fresh package-private
-`DijkstraSolver` for distances and predecessors. The returned `Route` is the
-nested record `DijkstraShortestPath.Route`; it copies its stop and segment lists.
-The diagram shows these query and result relationships, omitting graph-node
-internals and unrelated connection-filtering methods.
+`DijkstraSolver` to track distances and predecessors. The nested
+`DijkstraShortestPath.Route` record copies its stop and segment lists to protect
+the result from later changes.
 
 ![Class diagram showing route commands, the reusable graph, per-query solver, and route result](images/luke/RoutingClassDiagram.png)
 
@@ -418,9 +596,8 @@ Source: [RoutingClassDiagram.puml](diagrams/luke/RoutingClassDiagram.puml).
 
 ##### Implementation and sequence diagram
 
-1. After loading facilities, `ConsoleHelper` calls `ConnectionStorage.load()`.
-   It reads `/connections.txt`, validating endpoints against the already loaded
-   facility names. Valid records are passed to `ConnectionManager`.
+1. `ConsoleHelper` loads facilities before connections so `ConnectionStorage`
+   can validate endpoint names, then passes valid connections to `ConnectionManager`.
 2. `DijkstraShortestPath` assigns a vertex index to each distinct, normalised
    endpoint name. Endpoints from `NO` or `UNKNOWN` connections are still known
    vertices. It then adds two adjacency entries for each `YES` connection, using
@@ -428,26 +605,18 @@ Source: [RoutingClassDiagram.puml](diagrams/luke/RoutingClassDiagram.puml).
 3. `Parser` delegates route input to `RouteParser`, which requires `from/` before
    `to/` and creates a `RouteCommand`. Executing the command calls
    `ConnectionManager.findRoute()`, which delegates to the reusable graph.
-4. The graph resolves both names, ignoring case and surrounding spaces, and
-   creates a new solver. `dijkstra()` uses a priority queue to select the nearest
-   unsettled vertex. `eNeighbours()` updates a neighbour only when a shorter
-   distance is found, recording its predecessor vertex and connection. Distances
-   use `long` so a route total can exceed the `int` range of individual segments.
-5. If the destination distance remains `Long.MAX_VALUE`, the graph returns
-   `Optional.empty()`. Otherwise, it follows predecessors back to the source and
-   reverses the collected stops and connections to construct a `Route`.
-6. If the validated route has only one stop, `RouteCommand` reports
-   `[WARNING] Sorry, the source and destination are the same.` through the common
-   checked-exception path. Otherwise, it formats the result using the ordered
-   stops rather than a connection's stored endpoint direction. It displays traversal types, shelter,
-   barriers, and notes, adds the disclaimer, and returns without changing
-   activities or triggering a save.
+4. The graph resolves names ignoring case and surrounding spaces and creates a
+   fresh solver. `dijkstra()` selects the nearest unsettled vertex with a priority
+   queue and updates neighbours only for shorter distances, recording predecessor
+   vertices and connections. Totals use `long` to exceed individual segments' `int` range.
+5. An unreachable destination retains `Long.MAX_VALUE`, producing `Optional.empty()`.
+   Otherwise, the graph follows predecessors back to the source and reverses the
+   stops and connections into a `Route`. `RouteCommand` formats ordered stops,
+   segment types, shelter, barriers and notes, adds the disclaimer and returns
+   without changing activities or saving.
 
 The sequence shows a successful query between different hubs after parsing.
-Internally, the graph represents a known hub queried against itself as a
-zero-distance route with one stop and no segments; `RouteCommand` converts that
-result into the same-endpoint warning. The graph uses names found in the
-connection dataset; stable facility IDs such as F01 are not route endpoints.
+Endpoints are names in the connection dataset; facility IDs such as F01 are not accepted.
 
 ![Sequence diagram showing route lookup, Dijkstra search, and path reconstruction](images/luke/RouteSearchSequence.png)
 
@@ -456,10 +625,10 @@ Minor getter calls and console output are omitted to keep the search flow readab
 
 ##### Design considerations
 
-Reusing the graph avoids rebuilding the adjacency list for every request, while
-a fresh solver prevents search state leaking between requests. A predefined
-route table would require maintaining a separate path for each hub pair; the
-current search derives paths from the connection records instead.
+Positive edge weights make Dijkstra suitable for finding the shortest recorded
+distance. Reusing the graph avoids rebuilding adjacency lists; a fresh solver
+keeps each query's search state independent. Computing paths from connections
+also avoids maintaining a separate route for every hub pair.
 
 The cost is distance alone. Shelter, traversal type, and recorded barriers do
 not add routing restrictions or preferences, so a selected route may include
@@ -476,9 +645,13 @@ without disabling successfully loaded facility queries.
 `RouteParser` reports malformed prefixes or missing endpoints through
 `ParseException`. Unknown or blank graph endpoints raise `IllegalArgumentException`,
 which `RouteCommand` converts to a checked `UniEnableException` with usage text.
-Known but disconnected endpoints return a normal "No confirmed accessible route
-recorded" message; this describes the local dataset rather than proving that
+Known but disconnected endpoints return a `[WARNING] No confirmed accessible route
+recorded` message; this describes the local dataset rather than proving that
 no accessible route exists on campus.
+
+For the same known hub at both ends, the graph returns a zero-distance route
+with one stop and no segments. `RouteCommand` rejects that result with
+`[WARNING] Sorry, the source and destination are the same.`
 
 #### Exiting the application
 
@@ -486,6 +659,9 @@ no accessible route exists on campus.
 set and the activity-change flag unset. `ConsoleHelper` displays the message,
 then `UniEnable` stops the console loop. Exit does not save or retry a failed
 save; recovery must finish before the user enters `bye`.
+
+
+<!-- @@author -->
 
 <!-- END OWNER: Lou Yu Luke (@lukelouyu) -->
 
@@ -510,17 +686,16 @@ written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 
 | Area | Representative tests and purpose |
 | --- | --- |
-| Activity input and commands | `AddCommandParserTest`, `EditCommandParserTest`, `MarkCommandParserTest`, and `ListDeleteCommandParserTest` check valid syntax and rejected inputs. `EditCommandTest` checks partial changes and atomic rejection. `FindCommandTest` checks name matching and retained indexes. Other activity tests cover ratings, ordering and completion. |
-| Priority and time views | `ActivityTest` checks the score and missing ratings. `ListPriorityCommandTest`, `OverdueCommandTest`, `NextCommandTest`, and `ActivityListFormatterTest` check completed-state rules, ordering, stable ties, canonical indexes, empty results, strict starts and week/year labels. Inject a non-UTC zone to test local midnight separately from the instant. |
-| Activity persistence | `StorageTest` checks field round trips, legacy rows, malformed data, recovery backups, and failed writes. `UniEnableTest` exercises console sessions, warnings, restart persistence, and invalid commands that must preserve saved bytes. |
-| Facility reference data | `FacilityStorageTest`, `FacilityManagerTest`, `FacilityCommandParserTest`, and the facility command tests cover loading, exact status matching, formatting, and unavailable data. |
-| Routing | `DijkstraSolverTest` checks distances and predecessors. `DijkstraShortestPathTest` compares all 81 ordered hub pairs in the bundled graph with JGraphT and rejects inaccessible shortcuts. `ConnectionManagerTest`, `RouteParserTest`, and `RouteCommandTest` cover endpoint lookup, disconnected hubs, same-hub routes, and output. |
+| Activity input and commands | Parser tests cover valid and rejected syntax. `EditCommandTest` checks partial changes and atomic rejection; `FindCommandTest` checks name matching and chronological indexes. |
+| Priority and time views | `ActivityTest`, `ListPriorityCommandTest`, `OverdueCommandTest`, `NextCommandTest` and `ActivityListFormatterTest` cover ratings, completion, ordering, ties, indexes, empty results and time boundaries. |
+| Daily demand (US16) | `DemandTodayCommandTest` covers counting rules, syntax and local midnight/New Year transitions; `UniEnableTest` checks loaded data and read-only behaviour. |
+| Activity persistence | `StorageTest` covers round trips, legacy data, malformed rows, backups and failed writes. `UniEnableTest` covers sessions, warnings, restarts and saved-byte preservation. |
+| Facility reference data | `FacilityStorageTest`, `FacilityManagerTest`, `FacilityCommandParserTest` and facility command tests cover loading, exact status matching, formatting and unavailable data. |
+| Routing | `DijkstraSolverTest` checks distances and predecessors. `DijkstraShortestPathTest` checks all 81 hub pairs against a manual distance matrix, validates route segments, checks a same-hub route and rejects inaccessible shortcuts. `ConnectionManagerTest`, `RouteParserTest` and `RouteCommandTest` cover endpoint errors, disconnected/same-hub routes and output. |
 
-Use the existing `Clock.fixed()` and temporary-storage patterns when extending
-tests. A fixed clock makes date boundaries repeatable; `@TempDir` and explicitly
-supplied storage paths keep fixtures separate from a developer's activity file.
-Reference loaders accept `Reader` inputs so tests can supply malformed records
-without changing bundled resources.
+Use `Clock.fixed()` with a non-UTC zone to test local midnight independently of
+the instant. `@TempDir` and explicit storage paths protect personal data; loaders
+accept `Reader` inputs for testing malformed records without editing resources.
 
 The [build configuration](../build.gradle) requires **100% line and branch
 coverage for its selected accessibility classes**. This is a repository rule,
@@ -538,17 +713,15 @@ exceptions. Defensive collection copies protect activity views and reference
 data. Assertions check internal ordering and deletion invariants; enable them
 as described in the setup section. They support debugging rather than input validation.
 
-Storage distinguishes rejected records from failures to read the file. The
-console reports recoverable exceptions and continues accepting commands.
-Storage protects recovery writes with backups and uses temporary files when
-saving. A failed save can leave changes in memory; follow the
-[User Guide's recovery steps](UserGuide.md#error-handling) before exiting.
-Reference-data failures use the fallback described in [Architecture](#architecture).
-
-Known limitation: add and edit trim names with `String.trim()` and reject empty
-strings, while storage rejects `String.isBlank()` names on reload. A name made
-only of Unicode spaces such as U+2003 can therefore be accepted and saved, then
-skipped on restart. Keep reproductions in disposable data until validation is aligned.
+`Storage` distinguishes invalid records from read failures, using backups for
+recovery writes and temporary files for saves. Recoverable errors let the console
+continue; failed saves may leave unsaved changes in memory, so follow the
+[recovery steps](UserGuide.md#error-handling) before exiting. Reference-data failures
+use the [architecture fallback](#architecture). Add and edit
+[reject blank names, including Unicode whitespace](UserGuide.md#editing-an-activity-edit) with
+`[WARNING]` and usage without changing data; loaders retain their handling of
+historical names. Parser tests and `UniEnableTest` check validation, unchanged
+file bytes and restarts.
 
 <!-- SHARED: All members maintain product scope and the team responsibility table. -->
 
@@ -556,58 +729,42 @@ skipped on restart. Keep reproductions in disposable data until validation is al
 
 ### Target users and value proposition
 
-The students described in the [Introduction](#introduction) need a predictable
-way to record commitments and check campus reference information. UniEnable
-brings these tasks into a keyboard-operated application with local activity
-storage. Using the current interface requires entering text commands in a terminal.
+UniEnable combines commitment planning and campus reference queries in a
+keyboard-operated terminal application, with activities stored locally.
 
 ### Current boundaries
 
 The current build supports dated, same-day activities, optional ratings,
-chronological, demand, and priority views, overdue and next queries, activity
-editing and name search, completion, deletion, persistence, facility queries,
-and shortest recorded accessible routes.
+chronological, demand, and priority views, today's high-demand count, overdue and
+next queries, activity editing and name search, completion, deletion, persistence,
+facility queries, and shortest recorded accessible routes.
 Reference information covers the nine bundled hubs; it is sample data without
 live campus updates.
 
 The [user stories](#user-stories) distinguish available features from proposals.
-Two supplied Must-Have stories remain unimplemented: today's summary (US10)
-and today's high-demand count (US16). Keyword search (US03), editing (US05),
-and manual rescheduling (US09) are supported by `find` and `edit`.
+One supplied Must-Have story remains unimplemented: today's summary (US10).
+Today's high-demand count (US16) is supported by `demand today`. Keyword search
+(US03), editing (US05), and manual rescheduling (US09) are supported by `find` and `edit`.
 Workbook priority therefore does not imply inclusion in the current build.
 The team still needs to confirm release scope for the remaining stories.
 
 ### Team contributions
 
-The following ownership and version allocations were supplied by the team.
-Sample commands illustrate each member's work. Each member should review and
-maintain the descriptions and diagrams for their enhancements.
-Individual responsibilities, design links and related code/tests are collected
-in the [team portfolio pages](team/README.md).
+The team supplied the ownership and version allocations below. Each member
+maintains their descriptions and diagrams; [portfolio pages](team/README.md)
+link their responsibilities, design, code and tests.
+
+RepoSense `@@author` tags preserve these responsibility assignments when bug fixes
+or formatting changes touch another member's feature.
 
 | Team member | V1.0 work | V2.0 work |
 | --- | --- | --- |
-| [Lou Yu Luke (@lukelouyu)](https://github.com/lukelouyu) | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2099-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
-| [Atharva Rege (@Atharva005)](https://github.com/Atharva005) | Help: `help`. [Adding an activity with name, date, times, and optional demand](#atharva-activity-creation-and-help): `add n/Tutorial d/2099-12-01 s/09:00 e/10:00 dem/HIGH`. | Planned: `view today`, `view tomorrow`, and `view week`. |
-| [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#asyraf-activity-views-and-deletion): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#asyraf-activity-views-and-deletion): `list priority`, `overdue`, and `next`. |
-| [Oliver (@Oliver-koh)](https://github.com/Oliver-koh) | [Saving, backups, and recovery](#oliver-completion-storage-editing-and-search), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#oliver-completion-storage-editing-and-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
-
-<!-- SHARED: All members maintain user stories and current implementation statuses. -->
+| [Lou Yu Luke (@lukelouyu)](https://github.com/lukelouyu) | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Today's high-demand count](#todays-high-demand-count): `demand today`. [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2026-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
+| [Atharva Rege (@Atharva005)](https://github.com/Atharva005) | Help: `help`. [Adding an activity with name, date, times, and optional demand](#activity-creation-and-help): `add n/Tutorial d/2026-12-01 s/09:00 e/10:00 dem/HIGH`. | Planned: `view today`, `view tomorrow`, and `view week`. |
+| [Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim)](https://github.com/officialasyrafrahim) | [Chronological listing, demand ordering, and deletion](#activity-views-and-deletion): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#activity-views-and-deletion): `list priority`, `overdue`, and `next`. |
+| [Oliver (@Oliver-koh)](https://github.com/Oliver-koh) | [Saving, backups, and recovery](#completion-storage-editing-and-search), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#completion-storage-editing-and-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
 
 ## User stories
-
-These stories are adapted from the team's supplied `User Stories.xlsx`, grouped
-by its five epics. IDs follow the workbook's row order. The supplied priorities
-are retained: **Must-Have** identifies candidate MVP needs, **Nice-to-Have**
-identifies useful extensions, and **Future** identifies later ideas. Feature
-ownership is recorded under [Team contributions](#team-contributions); remaining
-release scope still needs team confirmation.
-
-Priority and implementation status are separate. **Implemented** means the
-current application supports the story, **Partial** means only part of the
-requested experience is available, and **Not implemented** means the user-facing
-feature is absent. Statuses below reflect the current repository rather than
-the proposed class structures or release plans in the tutorial document.
 
 ### Core schedule
 
@@ -622,11 +779,6 @@ the proposed class structures or release plans in the tutorial document.
 | US07 | Nice-to-Have | student balancing responsibilities | assign a category (academic, CCA, daily) to an activity | I can distinguish types of commitments | Not implemented |
 | US08 | Nice-to-Have | student who finds timetable entry tedious | add a recurring activity by specifying its day, time, and week numbers | I do not re-enter the same class repeatedly | Not implemented |
 | US09 | Nice-to-Have | student whose day changes unexpectedly | reschedule an activity to a new date or time | my plan stays realistic when disruptions occur | Implemented |
-
-US01 includes start and end times. US04, US05, US06 and US09 use indexes from
-chronological `list` or activity `find` results. `edit` implements manual changes
-and rescheduling through optional name, date and time fields; no separate
-reschedule command is required. It also preserves completion and omitted fields.
 
 ### Views and reminders
 
@@ -643,28 +795,13 @@ reschedule command is required. It also preserves completion and omitted fields.
 | ID | Priority | As a/an ... | I can ... | So that ... | Current status |
 | --- | --- | --- | --- | --- | --- |
 | US15 | Must-Have | student with sensory or attention limits | assign a demand level to an activity | I can record how demanding I expect it to be | Implemented |
-| US16 | Must-Have | student with sensory limits | see the count of high-demand activities scheduled today | I can anticipate a potentially stressful day | Not implemented |
+| US16 | Must-Have | student with sensory limits | see the count of high-demand activities scheduled today | I can anticipate a potentially stressful day | Implemented (Luke: `demand today`) |
 | US17 | Nice-to-Have | student managing my energy | set importance, commitment, and urgency levels on an activity | I can capture how much each one matters | Implemented |
 | US18 | Nice-to-Have | student unsure what to do first | view my activities, including completed ones, ordered by combined priority score | I can decide what to tackle next | Implemented |
 | US19 | Nice-to-Have | student aware of my workload | view the commitment level of a specific activity | I can decide whether to take it on | Implemented |
 | US20 | Nice-to-Have | student aware of my sensory limits | get a warning when the total demand of a day exceeds my personal daily limit | I can avoid overloading myself | Not implemented |
 | US21 | Future | student with a short gap between classes | see pending activities whose estimated duration fits a given gap | I can use the available time realistically | Not implemented |
 | US22 | Future | student managing my energy | get reminders to take a short break after a sustained work interval | I keep my energy up instead of burning out | Not implemented |
-
-US15 and US17 are supported when adding or editing an activity. For US19,
-`list priority` displays each activity's importance, urgency and commitment,
-including `-` for unset ratings. Users can identify the desired activity by
-name and canonical index; no separate activity-details command is needed to
-read its commitment. Add and edit confirmations also show ratings.
-`list demand` orders demand levels and provides neither combined priority
-scoring nor a daily high-demand count.
-
-US18 adapts the workbook's pending-only wording to the team's revised scope:
-`list priority` includes completed and incomplete activities. It uses
-`URG x URG x (IMP + COM)` when all three ratings are recorded; otherwise, its
-score is `NA` and sorts after available scores. This is implemented by Asyraf's
-priority view; `overdue` and `next` implement the on-demand queries in US13.
-They do not provide the proactive notification proposed in US14.
 
 ### Accessible navigation
 
@@ -679,13 +816,6 @@ They do not provide the proactive notification proposed in US14.
 | US29 | Future | student overwhelmed by ambient noise | view which supported locations are flagged as high-noise | I can avoid visiting them | Not implemented |
 | US30 | Future | student overwhelmed by ambient noise | request a route between hubs that avoids locations flagged as high-noise | my emotional wellbeing is protected while travelling | Not implemented |
 
-US26 adapts the supplied "predefined accessible route" story to the implemented
-shortest-distance search over recorded accessible connections. For US27, route
-output shows each connection's traversal type, shelter status, barriers, and
-notes, but does not collect all facility features along the route. Facility
-lookup supplies recorded features and notes rather than step-by-step directions
-to individual lifts or ramps. All accessibility results use bundled sample data.
-
 ### Foundation
 
 | ID | Priority | As a/an ... | I can ... | So that ... | Current status |
@@ -693,104 +823,6 @@ to individual lifts or ramps. All accessibility results use bundled sample data.
 | US31 | Must-Have | returning user | have my activities saved automatically and reloaded when I reopen the app | I can continue from my saved schedule between sessions | Implemented |
 | US32 | Future | student estimating my time | record an estimated duration on an activity | gap-fitting and planning features have data to work with | Not implemented |
 | US33 | Must-Have | new user | see a list of available commands and their formats | I can learn to use the product without external documentation | Implemented |
-
-US31's benefit is phrased around successfully saved data, since a failed save
-requires the [User Guide's recovery steps](UserGuide.md#error-handling).
-US32 concerns a separate estimated-duration value; start and end times alone do
-not provide that feature. US33 is supported by `help`.
-
-<!-- SHARED: All members maintain cross-feature use cases. -->
-
-## Use cases
-
-The actor is a student using the running console application. Successful saves
-require a writable activity-data location. These cases describe current behaviour.
-
-### UC01: Record an activity
-
-Supports US01, US15, US17, and US31.
-
-1. The student enters an `add` command with a name, date, start and end times,
-   and any optional demand or ratings.
-2. UniEnable validates the input and adds an incomplete activity.
-3. UniEnable saves the updated list and displays the activity details and count.
-
-**Extensions:** Invalid fields or an end date/time at or before now produce a
-warning without adding anything. If saving fails, the activity remains in memory
-and the app reports the failure; the student follows the
-[recovery steps](UserGuide.md#error-handling) before exiting.
-
-### UC02: Change or delete a selected activity
-
-Supports US04, US05, US06, US09, and US31.
-
-1. The student runs `list` and selects an index from the chronological view.
-2. The student enters `edit INDEX` with one or more fields, `mark INDEX`,
-   `unmark INDEX`, or `delete INDEX`.
-3. UniEnable applies the change, saves, and confirms it. A deleted activity is
-   removed immediately; rescheduling can also change chronological indexes.
-   If deletion leaves no activities, the confirmation shows
-   `There is no activity recorded`.
-
-**Extensions:** An empty list or invalid index produces a warning without a
-change. Repeating mark or unmark when the state already matches reports that
-state without saving. An invalid edit produces a warning without changing the
-activity. A save failure follows the recovery path in UC01.
-
-### UC03: Inspect recorded facility features
-
-Supports US23.
-
-1. The student enters `facility list`, a facility ID or name, or a feature search.
-2. UniEnable queries the loaded facilities and displays details or matching hubs.
-3. The result includes the sample-data disclaimer; activity data is unchanged.
-
-**Extensions:** Invalid filters, unknown hubs, or unavailable reference data
-produce a warning. A valid search with no matches returns a normal empty result.
-
-### UC04: Find a recorded accessible route
-
-Supports US26 and part of US27.
-
-1. The student enters `route from/START to/END` using supported hub names.
-2. UniEnable finds a shortest-distance path through connections marked `YES`.
-3. UniEnable displays ordered stops, segment details, total distance, and the
-   disclaimer. Activity data is unchanged.
-
-**Extensions:** Malformed input, unknown endpoints, or unavailable connection
-data produce a warning. Known but disconnected endpoints return a no-route
-message. A known hub queried against itself reports
-`[WARNING] Sorry, the source and destination are the same.`
-
-### UC05: Find an activity by name
-
-Supports US03.
-
-1. The student enters `find KEYWORD` with a non-blank name substring.
-2. UniEnable searches completed and incomplete activities, ignoring letter case.
-3. UniEnable displays matches in chronological order with full-list indexes that
-   can be used by edit, completion and deletion commands. Activities and storage
-   remain unchanged.
-
-**Extensions:** A blank keyword produces a warning. No matches produce an ordinary
-no-match message, including when the activity list is empty.
-
-### UC06: Inspect priority and time-sensitive activities
-
-Supports US13, US18 and US19.
-
-1. The student enters `list priority`, `overdue`, or `next` without arguments.
-2. UniEnable sorts all activities by score, filters incomplete activities whose
-   starts precede now, or selects the earliest incomplete start after now.
-3. UniEnable displays the result with full chronological indexes. Priority rows
-   include recorded ratings and scores; overdue rows include week/day labels.
-   Activity data and its saved file remain unchanged.
-
-**Extensions:** Empty results display the view's normal empty-state message.
-Extra arguments produce a warning. An activity starting exactly now is excluded
-from both time queries, and completed activities remain eligible only for priority.
-
-<!-- SHARED: All members maintain non-functional requirements. -->
 
 ## Non-functional requirements
 
@@ -841,7 +873,8 @@ with the team before making those guarantees.
    there and run `java -ea -jar unienable.jar`. Its `data/activities.txt` will
    belong to this test folder. Keep the folder for restart checks.
 3. Enter commands one at a time. Expected results below omit console borders.
-   Dates use 2099 so they are in the future; replace them if necessary.
+   Examples use 2026 dates; for future-date scenarios, choose dates and times
+   later than the computer's current local time.
 
 ### Activities and restart persistence
 
@@ -850,23 +883,23 @@ Run these steps in order, starting with no activity file.
 | Step | Input or action | Expected result |
 | --- | --- | --- |
 | 1 | `help`, then `list` | Help lists supported commands; the list is empty. |
-| 2 | `add n/CCA EXCO meeting d/2099-12-02 s/14:00 e/15:00 dem/HIGH imp/5 urg/4 com/3` | CCA EXCO meeting is added with all three ratings and a count of 1. |
-| 3 | `add n/CS2113 tutorial class d/2099-12-01 s/09:00 e/10:00 imp/2` | CS2113 tutorial class is added with default MEDIUM demand, importance 2, and unset urgency/commitment; count is 2. |
+| 2 | `add n/CCA EXCO meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH imp/5 urg/4 com/3` | CCA EXCO meeting is added with all three ratings and a count of 1. |
+| 3 | `add n/CS2113 tutorial class d/2026-12-01 s/09:00 e/10:00 imp/2` | CS2113 tutorial class is added with default MEDIUM demand, importance 2, and unset urgency/commitment; count is 2. |
 | 4 | `list`, then `list demand` | Chronological order is CS2113 tutorial class, CCA EXCO meeting; demand order is CCA EXCO meeting, CS2113 tutorial class. Both are incomplete. |
 | 5 | `mark 1`, then `mark 1` again | CS2113 tutorial class becomes done even though demand order was shown last. The second command reports it is already done. |
 | 6 | `bye`, relaunch from the same folder, then `list` | The app exits cleanly; CS2113 tutorial class reloads as `[X]` and CCA EXCO meeting as `[ ]`. |
 | 7 | `unmark 1`, then `list` | CS2113 tutorial class is incomplete again. |
 | 8 | `delete 1`, then `list` | CS2113 tutorial class is removed; CCA EXCO meeting is now chronological index 1. |
 | 9 | `list priority` | The remaining CCA EXCO meeting is index 1 with `Priority 128 (IMP 5, URG 4, COM 3)`. |
-| 10 | `overdue`, then `next` | `No overdue activities.` because 2099 is still in the future; `next` shows CCA EXCO meeting at chronological index 1. |
+| 10 | `overdue`, then `next` | Before the meeting starts, `[WARNING] No overdue activities.`; `next` shows CCA EXCO meeting at chronological index 1. |
 | 11 | `list priority extra`, `overdue extra`, and `next extra` | Each command produces a warning and leaves activities unchanged. |
 
 At step 6, inspect `data/activities.txt`. It should retain insertion order and
 all ratings, even though `list` shows chronological order:
 
 ```text
-CCA EXCO meeting|2099-12-02|14:00|15:00|HIGH|false|5|4|3
-CS2113 tutorial class|2099-12-01|09:00|10:00|MEDIUM|true|2|-|-
+CCA EXCO meeting|2026-12-02|14:00|15:00|HIGH|false|5|4|3
+CS2113 tutorial class|2026-12-01|09:00|10:00|MEDIUM|true|2|-|-
 ```
 
 Compare the file contents before and after the repeated mark at step 5 and the
@@ -882,13 +915,13 @@ and disposable storage. Do not change the computer's clock or personal activity 
 Use these rows in the disposable `data/activities.txt` before starting the app:
 
 ```text
-Planning meeting|2030-10-21|10:00|11:00|MEDIUM|false|3|2|4
-Team stand-up|2030-10-22|09:00|09:30|HIGH|false|5|4|-
-Submit project report|2030-10-22|14:00|15:00|HIGH|false|4|5|4
-Dentist appointment|2030-10-24|15:00|16:00|LOW|false|4|3|2
+Planning meeting|2026-11-21|10:00|11:00|MEDIUM|false|3|2|4
+Team stand-up|2026-11-22|09:00|09:30|HIGH|false|5|4|-
+Submit project report|2026-11-22|14:00|15:00|HIGH|false|4|5|4
+Dentist appointment|2026-11-24|15:00|16:00|LOW|false|4|3|2
 ```
 
-At 2030-10-22 12:00 local time, priority indexes are 3, 4, 1, 2 with scores
+At 2026-11-22 12:00 local time, priority indexes are 3, 4, 1, 2 with scores
 200, 54, 28, NA. Overdue returns index 1 as `OVERDUE WEEK` and index 2 as
 `OVERDUE TODAY`; next selects index 3. Marking
 index 3 removes it from next but leaves it in priority at score 200.
@@ -901,11 +934,43 @@ For one incomplete activity on the same date at 09:00-09:30, check these clocks:
 | Exactly 09:00 | Empty | Empty. |
 | 09:15 | That activity with `OVERDUE TODAY`. | Empty. |
 
-Repeat with the activity completed: both time queries are empty. Also exercise
-Sunday/Monday and December/January transitions, plus a non-UTC clock crossing
-local midnight. Compare bytes and modification times before and after queries;
-neither should change. A score test should cover the 2/250 bounds, all missing
-rating combinations, differing demands and completion states, and stable ties.
+Repeat with the activity completed: both time queries are empty. Check
+Sunday/Monday, December/January and local-midnight boundaries with a non-UTC clock.
+Queries must preserve file bytes and modification times. `ActivityTest` and
+`ListPriorityCommandTest` cover score bounds 2/250, missing ratings, demand and
+completion combinations, and stable ties.
+
+### Daily high-demand count
+
+Use a disposable test folder and activity file. Reuse the fixed-clock integration
+entry point above with `Asia/Singapore`, initially at 2026-10-22 12:00 local time.
+Preload these rows before launching so already-ended activities can be checked:
+
+```text
+Yesterday high|2026-10-21|09:00|10:00|HIGH|false|-|-|-
+Today done|2026-10-22|08:00|09:00|HIGH|true|-|-|-
+Today later|2026-10-22|23:00|23:30|HIGH|false|-|-|-
+Today medium|2026-10-22|12:00|13:00|MEDIUM|false|5|5|5
+Today low|2026-10-22|14:00|15:00|LOW|false|-|-|-
+Tomorrow high|2026-10-23|09:00|10:00|HIGH|false|-|-|-
+```
+
+| Input or action | Expected result |
+| --- | --- |
+| `demand today` | `High-demand activities scheduled today (2026-10-22): 2`. |
+| `DEMAND TODAY` or extra whitespace between the words | The same date and count. |
+| `mark 5`, then `demand today` | Count remains 2 even though Today later is completed. |
+| `unmark 2`, then `demand today` | Count remains 2; completion does not affect scheduled demand. |
+| `edit 5 dem/LOW`, then `demand today` | Count becomes 1, using the current activity data. |
+| `demand`, `demand tomorrow`, or `demand today extra` | Warning ending with `Usage: demand today`; the next valid command still works. |
+| Run with the local clock just after midnight on 2026-10-23 | Date is 2026-10-23 and count is 1, while the UTC date is still 2026-10-22. |
+| Run with the local clock on 2026-10-24, or with an empty file | Count is 0 for the displayed date, with `[WARNING]` before the count message. |
+
+Compare file bytes and modification times immediately before and after the
+query itself: neither changes. Mark, unmark and edit are separate saving actions.
+For midnight and December/January boundaries, the automated test advances an
+injected clock and executes the same command again; no computer clock changes
+are needed.
 
 ### Invalid activity and command input
 
@@ -914,10 +979,10 @@ leave CCA EXCO meeting unchanged in memory and on disk, and allow the next comma
 
 | Input | Expected reason for rejection |
 | --- | --- |
-| `add n/Bad d/2099-12-01 s/09:00` | Missing end time. |
-| `add n/Bad d/2099-12-01 s/09:00 e/10:00 imp/6` | Rating outside 1 to 5. |
-| `add n/Bad d/2099-02-30 s/09:00 e/10:00` | Invalid calendar date. |
-| `add n/Bad d/2099-12-01 s/10:00 e/09:00` | End time does not follow start time. |
+| `add n/Bad d/2026-12-01 s/09:00` | Missing end time. |
+| `add n/Bad d/2026-12-01 s/09:00 e/10:00 imp/6` | Rating outside 1 to 5. |
+| `add n/Bad d/2026-02-30 s/09:00 e/10:00` | Invalid calendar date. |
+| `add n/Bad d/2026-12-01 s/10:00 e/09:00` | End time does not follow start time. |
 | `add n/Ended d/2000-01-01 s/09:00 e/10:00` | Activity has already ended. |
 | `delete 0` and `mark 99` | Index outside the current chronological list. |
 | `edit 1` or `edit 1 n/` | At least one field is required; a supplied name cannot be empty. |
@@ -935,23 +1000,25 @@ before and after searches and rejected edits; they must remain unchanged.
 
 | Step | Input or action | Expected result |
 | --- | --- | --- |
-| 1 | `add n/CCA EXCO meeting d/2099-12-02 s/14:00 e/15:00 dem/HIGH imp/5 urg/4 com/3` | Meeting is chronological index 1, initially incomplete. |
-| 2 | `add n/CS2113 tutorial class d/2099-12-01 s/09:00 e/10:00 imp/2` | Tutorial becomes index 1; meeting becomes index 2. |
+| 1 | `add n/CCA EXCO meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH imp/5 urg/4 com/3` | Meeting is chronological index 1, initially incomplete. |
+| 2 | `add n/CS2113 tutorial class d/2026-12-01 s/09:00 e/10:00 imp/2` | Tutorial becomes index 1; meeting becomes index 2. |
 | 3 | `mark 2`, then `find eXcO` | One matching activity, numbered 2, with the meeting marked `[X]`. |
 | 4 | `edit 2 n/CCA EXCO planning meeting com/4` | Only name and commitment change. Date, times, HIGH demand, importance 5, urgency 4 and completion remain unchanged. |
-| 5 | `edit 1 d/2099-12-03 s/11:00 e/12:00` | Tutorial moves after the meeting; refreshed chronological indexes are meeting 1 and tutorial 2. |
+| 5 | `edit 1 d/2026-12-03 s/11:00 e/12:00` | Tutorial moves after the meeting; refreshed chronological indexes are meeting 1 and tutorial 2. |
 | 6 | `find tutorial`, then `edit 2 imp/5` | Find retains tutorial index 2. Only its importance changes; its demand stays MEDIUM, completion stays incomplete and urgency/commitment stay unset. |
 | 7 | `bye`, relaunch from the same folder, then `list` | Meeting reloads as index 1 and `[X]`; tutorial reloads as index 2 and `[ ]`, with the edited dates and names. The file retains all edited ratings. |
 | 8 | `edit 2 s/13:00`, then `list` | Warning: existing end 12:00 is before the proposed start. Tutorial stays at 11:00–12:00 in memory and in the file. |
-| 9 | `find exam` | `No activities matched keyword "exam".`; no saved-file changes. |
+| 9 | `find exam` | `[WARNING] No activities matched keyword "exam".`; no saved-file changes. |
 | 10 | `delete 2` | Tutorial is removed; confirmation ends with `Activities in this session: 1`. |
-| 11 | `delete 1`, then `list` | Final meeting is removed; confirmation ends with `There is no activity recorded`. List shows `No activities yet.`. |
-| 12 | `delete 1`, then `find tutorial` | Empty-list deletion warning, followed by the ordinary no-match search message. |
+| 11 | `delete 1`, then `list` | Final meeting is removed; confirmation ends with `There is no activity recorded`. List shows `[WARNING] No activities yet.`. |
+| 12 | `delete 1`, then `find tutorial` | Empty-list deletion warning, followed by the `[WARNING]` no-match search message. |
 | 13 | `bye`, relaunch, then `list` | Empty activity file reloads successfully with no remaining activities. |
 
-The known Unicode-blank-name validation defect is described under
-[Defensive programming](#defensive-programming). Keep
-any deliberate reproduction of that defect in disposable test data.
+In a disposable test folder, also try `add` and `edit` with a name containing only
+U+2003 EM SPACE or U+3000 IDEOGRAPHIC SPACE: both must show the blank-name warning.
+Chinese, accented and emoji names are supported and must survive adding, editing
+and restarting. Confirm that rejected commands leave the original activity and
+saved file unchanged, including after restarting.
 
 ### Facility queries and routes
 
@@ -990,7 +1057,7 @@ Broken row
 
 1. Launch the app. Expect a warning for line 2; `list` shows Legacy as completed
    despite its past date. Loading alone leaves the file unchanged.
-2. Enter `add n/Recovery d/2099-12-01 s/10:00 e/11:00`. Expect a successful save.
+2. Enter `add n/Recovery d/2026-12-01 s/10:00 e/11:00`. Expect a successful save.
    `data/activities.txt.corrupt.bak` must match the original two-row file byte for
    byte, including the malformed row. The replacement activity file has two
    valid nine-field rows, with unset ratings represented by `-`.
@@ -1000,12 +1067,8 @@ Broken row
 For a failed-backup case, start from a fresh copy of the two-row fixture and
 create a **non-empty directory** named `data/activities.txt.corrupt.bak` before
 launching. Adding Recovery should report a save failure and preserve the original
-activity file. The new activity remains in memory and the console keeps running.
-Move the blocking directory aside and follow the
-[User Guide's recovery steps](UserGuide.md#error-handling) to trigger a new save.
-Restart only after successful recovery and confirm both activities reload.
-
-<!-- SHARED: All members maintain attribution for shared resources and tools. -->
+activity file. The added activity remains in memory; follow the
+[recovery steps](UserGuide.md#error-handling) before exiting.
 
 ## Acknowledgements
 

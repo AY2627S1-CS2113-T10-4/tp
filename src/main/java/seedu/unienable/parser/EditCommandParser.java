@@ -18,6 +18,7 @@ import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.enums.DemandLevel;
 
+//@@author Oliver-koh
 /**
  * Parses the V2.0 edit command using optional activity and rating fields.
  */
@@ -35,12 +36,16 @@ public class EditCommandParser {
 
     private final Clock clock;
 
-    /** Creates a parser using the system clock. */
+    /**
+     * Creates a parser using the system clock.
+     */
     public EditCommandParser() {
         this(Clock.systemDefaultZone());
     }
 
-    /** Creates a parser with a supplied clock for deterministic validation. */
+    /**
+     * Creates a parser with a supplied clock for deterministic validation.
+     */
     EditCommandParser(Clock clock) {
         this.clock = Objects.requireNonNull(clock);
     }
@@ -48,7 +53,7 @@ public class EditCommandParser {
     /**
      * Parses an edit command after the leading {@code edit} word.
      *
-     * @param arguments index followed by one or more editable fields
+     * @param arguments index followed by one or more editable fields.
      * @return validated edit command
      * @throws ParseException for malformed or incomplete input
      */
@@ -66,6 +71,9 @@ public class EditCommandParser {
 
         Map<String, String> fields = readFields(trimmed.substring(separator).trim());
         String name = fields.get("n");
+        if (name != null && name.isBlank()) {
+            throw invalid("Empty n/ parameter.");
+        }
         if (name != null && (name.contains("|") || name.indexOf('\n') >= 0 || name.indexOf('\r') >= 0)) {
             throw invalid("The activity name must not contain | or line breaks.");
         }
@@ -179,3 +187,4 @@ public class EditCommandParser {
         return new ParseException("[WARNING] " + message + "\n" + USAGE);
     }
 }
+//@@author

@@ -14,6 +14,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
 
+//@@author Oliver-koh
 /**
  * Edits the supplied fields of one activity selected by its chronological index.
  */
@@ -37,24 +38,28 @@ public class EditCommand extends Command {
     private final boolean commitmentSupplied;
     private final Clock clock;
 
-    /** Creates an edit command using the system clock. */
+    /**
+     * Creates an edit command using the system clock.
+     */
     public EditCommand(int displayedIndex, String name, LocalDate date, LocalTime startTime,
-                       LocalTime endTime, DemandLevel demand, boolean nameSupplied,
-                       boolean dateSupplied, boolean startTimeSupplied, boolean endTimeSupplied,
-                       boolean demandSupplied, Integer importance, Integer urgency, Integer commitment,
-                       boolean importanceSupplied, boolean urgencySupplied, boolean commitmentSupplied) {
+            LocalTime endTime, DemandLevel demand, boolean nameSupplied,
+            boolean dateSupplied, boolean startTimeSupplied, boolean endTimeSupplied,
+            boolean demandSupplied, Integer importance, Integer urgency, Integer commitment,
+            boolean importanceSupplied, boolean urgencySupplied, boolean commitmentSupplied) {
         this(displayedIndex, name, date, startTime, endTime, demand, nameSupplied, dateSupplied,
                 startTimeSupplied, endTimeSupplied, demandSupplied, importance, urgency, commitment,
                 importanceSupplied, urgencySupplied, commitmentSupplied, Clock.systemDefaultZone());
     }
 
-    /** Creates an edit command with an injectable clock for deterministic validation. */
+    /**
+     * Creates an edit command with an injectable clock for deterministic validation.
+     */
     public EditCommand(int displayedIndex, String name, LocalDate date, LocalTime startTime,
-                       LocalTime endTime, DemandLevel demand, boolean nameSupplied,
-                       boolean dateSupplied, boolean startTimeSupplied, boolean endTimeSupplied,
-                       boolean demandSupplied, Integer importance, Integer urgency, Integer commitment,
-                       boolean importanceSupplied, boolean urgencySupplied, boolean commitmentSupplied,
-                       Clock clock) {
+            LocalTime endTime, DemandLevel demand, boolean nameSupplied,
+            boolean dateSupplied, boolean startTimeSupplied, boolean endTimeSupplied,
+            boolean demandSupplied, Integer importance, Integer urgency, Integer commitment,
+            boolean importanceSupplied, boolean urgencySupplied, boolean commitmentSupplied,
+            Clock clock) {
         this.displayedIndex = displayedIndex;
         this.name = name;
         this.date = date;
@@ -122,3 +127,4 @@ public class EditCommand extends Command {
         return new UniEnableException("[WARNING] " + message);
     }
 }
+//@@author

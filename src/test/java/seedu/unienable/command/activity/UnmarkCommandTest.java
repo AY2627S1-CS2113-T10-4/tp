@@ -12,6 +12,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
 
+//@@author Oliver-koh
 /**
  * Tests unmarking activities and reporting repeated no-op operations.
  */
@@ -38,6 +39,8 @@ class UnmarkCommandTest {
         var result = new UnmarkCommand(1).execute(activities, new Storage());
 
         assertFalse(result.didChangeActivities());
+        assertTrue(result.getMessage().startsWith("[WARNING] Activity is already unmarked"));
         assertTrue(result.getMessage().contains("already unmarked"));
     }
 }
+//@@author

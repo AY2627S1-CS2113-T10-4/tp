@@ -7,6 +7,7 @@ import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
+//@@author Oliver-koh
 /**
  * Marks one chronologically displayed activity as incomplete.
  */
@@ -16,7 +17,7 @@ public class UnmarkCommand extends Command {
     /**
      * Creates an unmark command.
      *
-     * @param displayedIndex one-based index shown by {@code list}
+     * @param displayedIndex one-based index shown by {@code list}.
      */
     public UnmarkCommand(int displayedIndex) {
         this.displayedIndex = displayedIndex;
@@ -25,8 +26,8 @@ public class UnmarkCommand extends Command {
     /**
      * Marks the selected activity as incomplete and reports whether its state changed.
      *
-     * @param activities shared activity collection
-     * @param storage activity storage, not used directly
+     * @param activities shared activity collection.
+     * @param storage activity storage, not used directly.
      * @return command result for the console
      * @throws UniEnableException when the displayed index is invalid
      */
@@ -36,7 +37,8 @@ public class UnmarkCommand extends Command {
         boolean changed = activities.setDoneAtDisplayedIndex(displayedIndex, false);
         String message = changed
                 ? "Unmarked activity: " + activity.getName()
-                : "Activity is already unmarked: " + activity.getName();
+                : "[WARNING] Activity is already unmarked: " + activity.getName();
         return new CommandResult(message, false, changed);
     }
 }
+//@@author

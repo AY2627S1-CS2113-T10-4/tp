@@ -19,6 +19,7 @@ import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
+//@@author officialasyrafrahim
 /**
  * Checks strict overdue boundaries, time labels, chronological indexes, and the
  * exclusion of completed or future-starting activities.
@@ -72,7 +73,7 @@ class OverdueCommandTest {
     @Test
     void execute_onEmptyList_showsNoOverdueMessage() throws Exception {
         String message = parser.parse("overdue").execute(activities, noWrites).getMessage();
-        assertTrue(message.endsWith("No overdue activities."), message);
+        assertTrue(message.endsWith("[WARNING] No overdue activities."), message);
     }
 
     @Test
@@ -105,3 +106,4 @@ class OverdueCommandTest {
                 LocalTime.of(endHour, 0), DemandLevel.MEDIUM, false));
     }
 }
+//@@author

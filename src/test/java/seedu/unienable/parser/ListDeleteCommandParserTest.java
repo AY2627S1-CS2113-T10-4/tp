@@ -15,6 +15,7 @@ import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
+//@@author officialasyrafrahim
 /**
  * Checks list, list demand, and delete grammar through the real Parser:
  * accepted variants construct the right command; rejected inputs produce one
@@ -29,7 +30,7 @@ class ListDeleteCommandParserTest {
         Command command = parser.parse("list");
         assertInstanceOf(ListCommand.class, command);
         assertTrue(command.execute(new ActivityList(), unusedByListCommands).getMessage()
-                .endsWith("No activities yet."));
+                .endsWith("[WARNING] No activities yet."));
     }
 
     @Test
@@ -74,3 +75,4 @@ class ListDeleteCommandParserTest {
         assertThrows(ParseException.class, () -> parser.parse("delete 99999999999999"));
     }
 }
+//@@author
