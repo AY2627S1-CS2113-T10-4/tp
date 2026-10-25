@@ -1,5 +1,6 @@
 package seedu.unienable.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -77,6 +78,15 @@ public class ActivityList {
         assert view.size() == activities.size() : "Canonical view must contain every activity.";
         assert isSorted(view, CANONICAL_ORDER) : "Canonical view must be in date and start-time order.";
         return view;
+    }
+
+    /** Returns activities scheduled on the inclusive date range in chronological order. */
+    public List<Activity> getViewBetween(LocalDate start, LocalDate end) {
+        Objects.requireNonNull(start);
+        Objects.requireNonNull(end);
+        return getCanonicalView().stream()
+                .filter(activity -> !activity.getDate().isBefore(start) && !activity.getDate().isAfter(end))
+                .toList();
     }
 
     /**
