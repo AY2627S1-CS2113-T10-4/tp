@@ -15,8 +15,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+//@@author lukelouyu
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
+//@@author
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;

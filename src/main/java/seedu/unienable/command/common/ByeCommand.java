@@ -1,4 +1,6 @@
-package seedu.unienable.command;
+//@@author lukelouyu
+package seedu.unienable.command.common;
+//@@author
 
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;

@@ -8,8 +8,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+//@@author
+//@@author lukelouyu
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
+//@@author
+//@@author Atharva005
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;

@@ -2,7 +2,9 @@ package seedu.unienable;
 
 import java.time.Clock;
 
-import seedu.unienable.command.CommandResult;
+//@@author lukelouyu
+import seedu.unienable.command.common.CommandResult;
+//@@author
 import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;

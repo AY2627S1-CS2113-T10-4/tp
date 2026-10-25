@@ -1,4 +1,6 @@
-package seedu.unienable.command;
+//@@author lukelouyu
+package seedu.unienable.command.common;
+//@@author
 
 /**
  * Carries a user-facing message and whether the console loop should exit.

@@ -16,7 +16,9 @@ import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
-import seedu.unienable.command.Command;
+//@@author lukelouyu
+import seedu.unienable.command.common.Command;
+//@@author
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
@@ -83,9 +85,6 @@ class AddCommandParserTest {
             assertEquals(expected[i][2], result.getCommitment());
         }
     }
-    //@@author
-    //@@author Atharva005
-
     //@@author
     //@@author lukelouyu
     @Test

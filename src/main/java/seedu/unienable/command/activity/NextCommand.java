@@ -7,8 +7,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+//@@author lukelouyu
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
+//@@author
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
