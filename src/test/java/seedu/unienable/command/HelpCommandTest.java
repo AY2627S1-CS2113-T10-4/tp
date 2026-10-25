@@ -36,6 +36,7 @@ class HelpCommandTest {
         assertTrue(result.getMessage().contains("URG x URG x (IMP + COM)"));
         assertTrue(result.getMessage().contains("overdue - View incomplete activities"));
         assertTrue(result.getMessage().contains("next - View the earliest incomplete activity"));
+        assertTrue(result.getMessage().contains("view week - View today and the following six days, grouped by day"));
         assertTrue(result.getMessage().contains("route from/START to/END"));
         assertTrue(result.getMessage().contains("Activity changes are saved automatically"));
         assertFalse(result.getMessage().contains("await Branches"));

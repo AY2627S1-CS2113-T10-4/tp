@@ -33,7 +33,7 @@ public class HelpCommand extends Command {
                 + "list priority - View all activities by combined priority score\n"
                 + "view today - View today's activities, summary, ratings, and demand\n"
                 + "view tomorrow - View tomorrow's activities, summary, ratings, and demand\n"
-                + "view week - View this Monday-to-Sunday week's activities and summary\n"
+                + "view week - View today and the following six days, grouped by day\n"
                 + "    Score = URG x URG x (IMP + COM); missing ratings display NA\n"
                 + "overdue - View incomplete activities that started before now\n"
                 + "next - View the earliest incomplete activity that starts after now\n"

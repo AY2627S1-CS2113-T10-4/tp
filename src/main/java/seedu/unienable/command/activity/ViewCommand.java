@@ -1,7 +1,7 @@
+//@@author Atharva005
 package seedu.unienable.command.activity;
 
 import java.time.Clock;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -15,7 +15,9 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
 
-/** Displays scheduled activities and rating summaries for a day or Monday-to-Sunday week. */
+/**
+ * Displays scheduled activities and rating summaries for a day or today and the following six days.
+ */
 public class ViewCommand extends Command {
     private static final Logger LOGGER = Logger.getLogger(ViewCommand.class.getName());
     private static final DateTimeFormatter DAY_FORMAT = DateTimeFormatter.ofPattern("EEE dd MMM", Locale.ENGLISH);
@@ -25,17 +27,23 @@ public class ViewCommand extends Command {
     private final Range range;
     private final Clock clock;
 
-    /** The supported date ranges for a view command. */
+    /**
+     * The supported date ranges for a view command.
+     */
     public enum Range {
         TODAY, TOMORROW, WEEK
     }
 
-    /** Creates a date view using the system clock. */
+    /**
+     * Creates a date view using the system clock.
+     */
     public ViewCommand(Range range) {
         this(range, Clock.systemDefaultZone());
     }
 
-    /** Creates a date view with an injectable clock for deterministic date selection. */
+    /**
+     * Creates a date view with an injectable clock for deterministic date selection.
+     */
     public ViewCommand(Range range, Clock clock) {
         this.range = range;
         this.clock = clock;
@@ -45,27 +53,33 @@ public class ViewCommand extends Command {
     public CommandResult execute(ActivityList activities, Storage storage) {
         LocalDate today = LocalDate.now(clock);
         LocalDate start = range == Range.TOMORROW ? today.plusDays(1) : today;
-        LocalDate end = range == Range.WEEK
-                ? today.with(DayOfWeek.MONDAY).plusDays(6) : start;
-        LocalDate weekStart = range == Range.WEEK ? today.with(DayOfWeek.MONDAY) : start;
-        LocalDate weekEnd = range == Range.WEEK ? end : start;
-        List<Activity> view = activities.getViewBetween(weekStart, weekEnd);
+        LocalDate end = range == Range.WEEK ? start.plusDays(6) : start;
+        List<Activity> view = activities.getViewBetween(start, end);
         LOGGER.fine(() -> "Displayed " + view.size() + " activities for " + range + ".");
-        return new CommandResult(format(start, end, weekStart, view), false);
+        return new CommandResult(format(start, end, view), false);
     }
 
-    /** Renders the selected range followed by its schedule and aggregate sections. */
-    private String format(LocalDate start, LocalDate end, LocalDate weekStart, List<Activity> view) {
+    /**
+     * Renders a warning for an empty range, or its schedule and aggregate sections when populated.
+     */
+    private String format(LocalDate start, LocalDate end, List<Activity> view) {
         StringBuilder output = new StringBuilder();
         if (range == Range.WEEK) {
-            output.append("WEEK - ").append(weekStart.format(WEEK_FORMAT))
+            output.append("WEEK - ").append(start.format(WEEK_FORMAT))
                     .append(" to ").append(end.format(WEEK_FORMAT));
-            for (int day = 0; day < 7; day++) {
-                appendDay(output, weekStart.plusDays(day), view);
-            }
         } else {
             output.append(range == Range.TODAY ? "TODAY - " : "TOMORROW - ")
                     .append(start.format(WEEK_FORMAT));
+        }
+        if (view.isEmpty()) {
+            return output.append("\n\n[WARNING] No activities scheduled for ")
+                    .append(range == Range.WEEK ? "the next seven days." : "this day.").toString();
+        }
+        if (range == Range.WEEK) {
+            for (int day = 0; day < 7; day++) {
+                appendDay(output, start.plusDays(day), view);
+            }
+        } else {
             appendDay(output, start, view);
         }
         appendSummary(output, view);
@@ -73,12 +87,14 @@ public class ViewCommand extends Command {
         return output.toString();
     }
 
-    /** Adds one day's activities or an explicit empty-day message. */
+    /**
+     * Adds one day's activities or an explicit empty-day message.
+     */
     private static void appendDay(StringBuilder output, LocalDate date, List<Activity> view) {
         List<Activity> daily = view.stream().filter(activity -> activity.getDate().equals(date)).toList();
         output.append("\n\n").append(date.format(DAY_FORMAT));
         if (daily.isEmpty()) {
-            output.append(" - No scheduled activities");
+            output.append(" - No activities scheduled for this day.");
             return;
         }
         int index = view.indexOf(daily.get(0)) + 1;
@@ -93,23 +109,30 @@ public class ViewCommand extends Command {
         }
     }
 
-    /** Adds completion and high-demand counts for the selected activities. */
+    /**
+     * Adds completion and high-demand counts for the selected activities.
+     */
     private static void appendSummary(StringBuilder output, List<Activity> view) {
         long completed = view.stream().filter(Activity::isDone).count();
         long highDemand = view.stream().filter(activity -> activity.getDemand() == DemandLevel.HIGH).count();
         output.append("\n\nSUMMARY\nTotal activities: ").append(view.size())
-                .append("    Completed: ").append(completed)
-                .append("    Remaining: ").append(view.size() - completed)
+                .append("\nCompleted: ").append(completed)
+                .append("\nRemaining: ").append(view.size() - completed)
                 .append("\nHigh-demand activities: ").append(highDemand);
     }
 
-    /** Adds per-activity rating marks, rating totals, and demand distribution. */
+    /**
+     * Adds a rating table with padded columns and vertical bars, rating totals, and demand distribution.
+     */
     private static void appendRatingChart(StringBuilder output, List<Activity> view) {
-        output.append("\n\nRATING CHART\nActivity                       IMP / URG / COM                 PRIORITY SCORE  DEMAND");
+        int nameWidth = Math.max("Activity".length(),
+                view.stream().mapToInt(activity -> activity.getName().length()).max().orElse(0));
+        String rowFormat = "| %-" + nameWidth + "s     | %-5s     | %-5s     | %-5s     | %-14s     | %-6s |";
+        output.append("\n\nRATING CHART\n").append(String.format(Locale.ENGLISH, rowFormat,
+                "Activity", "IMP", "URG", "COM", "PRIORITY SCORE", "DEMAND"));
         int importanceTotal = 0;
         int urgencyTotal = 0;
         int commitmentTotal = 0;
-        int ratingsSet = 0;
         int low = 0;
         int medium = 0;
         int high = 0;
@@ -117,42 +140,68 @@ public class ViewCommand extends Command {
             Integer importance = activity.getImportance();
             Integer urgency = activity.getUrgency();
             Integer commitment = activity.getCommitment();
-            if (importance != null) { importanceTotal += importance; ratingsSet++; }
-            if (urgency != null) { urgencyTotal += urgency; ratingsSet++; }
-            if (commitment != null) { commitmentTotal += commitment; ratingsSet++; }
+            if (importance != null) {
+                importanceTotal += importance;
+            }
+            if (urgency != null) {
+                urgencyTotal += urgency;
+            }
+            if (commitment != null) {
+                commitmentTotal += commitment;
+            }
             switch (activity.getDemand()) {
             case LOW -> low++;
             case MEDIUM -> medium++;
             case HIGH -> high++;
             default -> throw new IllegalStateException("Unexpected demand level.");
             }
-            output.append("\n").append(activity.getName()).append("  IMP ").append(stars(importance))
-                    .append("  URG ").append(exclamations(urgency)).append("  COM ").append(dots(commitment))
-                    .append("  ").append(activity.getPriorityScore() == null ? "N" : activity.getPriorityScore())
-                    .append("  ").append("#".repeat(demandCount(activity.getDemand())))
-                    .append(" ").append(demandCode(activity.getDemand()));
+            Integer priorityScore = activity.getPriorityScore();
+            String priority = priorityScore == null ? "N" : priorityScore.toString();
+            String demand = "#".repeat(demandCount(activity.getDemand())) + " " + demandCode(activity.getDemand());
+            output.append("\n").append(String.format(Locale.ENGLISH, rowFormat, activity.getName(),
+                    stars(importance), exclamations(urgency), commitmentMarks(commitment), priority, demand));
         }
         output.append("\n\nRATING TOTALS\nIMP ").append(importanceTotal)
-                .append("    URG ").append(urgencyTotal).append("    COM ").append(commitmentTotal)
-                .append("\nRatings set: ").append(ratingsSet).append("/").append(view.size() * 3)
-                .append("; rating totals use recorded ratings only.")
+                .append("\nURG ").append(urgencyTotal)
+                .append("\nCOM ").append(commitmentTotal)
                 .append("\nDEMAND DISTRIBUTION    LOW ").append(low)
                 .append("    MEDIUM ").append(medium).append("    HIGH ").append(high)
-                .append("\n\nLegend: * Importance; ! Urgency; ").append("• Commitment; # Demand")
+                .append("\n\nLegend: * Importance; ! Urgency; + Commitment; # Demand")
+                .append("\nPriority score = URG x URG x (IMP + COM).")
                 .append("\nDemand: L=#, M=##, H=###")
                 .append("\nN = priority unavailable; - = rating not set.");
     }
 
     private static int demandCount(DemandLevel demand) {
-        return switch (demand) { case LOW -> 1; case MEDIUM -> 2; case HIGH -> 3; };
+        return switch (demand) {
+        case LOW -> 1;
+        case MEDIUM -> 2;
+        case HIGH -> 3;
+        };
     }
 
     private static String demandCode(DemandLevel demand) {
-        return switch (demand) { case LOW -> "L"; case MEDIUM -> "M"; case HIGH -> "H"; };
+        return switch (demand) {
+        case LOW -> "L";
+        case MEDIUM -> "M";
+        case HIGH -> "H";
+        };
     }
 
-    private static String rating(Integer value) { return value == null ? "-" : value.toString(); }
-    private static String stars(Integer value) { return value == null ? "-" : "*".repeat(value); }
-    private static String exclamations(Integer value) { return value == null ? "-" : "!".repeat(value); }
-    private static String dots(Integer value) { return value == null ? "-" : "•".repeat(value); }
+    private static String rating(Integer value) {
+        return value == null ? "-" : value.toString();
+    }
+
+    private static String stars(Integer value) {
+        return value == null ? "-" : "*".repeat(value);
+    }
+
+    private static String exclamations(Integer value) {
+        return value == null ? "-" : "!".repeat(value);
+    }
+
+    private static String commitmentMarks(Integer value) {
+        return value == null ? "-" : "+".repeat(value);
+    }
 }
+//@@author

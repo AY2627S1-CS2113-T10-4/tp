@@ -10,7 +10,9 @@ import seedu.unienable.command.activity.DemandTodayCommand;
 import seedu.unienable.command.activity.FindCommand;
 import seedu.unienable.command.activity.NextCommand;
 import seedu.unienable.command.activity.OverdueCommand;
+//@@author Atharva005
 import seedu.unienable.command.activity.ViewCommand;
+//@@author
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
@@ -172,6 +174,8 @@ public class Parser {
                         + " next does not take arguments.\nUsage: next");
             }
             return new NextCommand(clock);
+        //@@author
+        //@@author Atharva005
         case "view":
             if (words.length != 2) {
                 throw new ParseException(WARNING_MESSAGE + " Usage: view today|tomorrow|week");
@@ -182,6 +186,8 @@ public class Parser {
             case "week" -> new ViewCommand(ViewCommand.Range.WEEK, clock);
             default -> throw new ParseException(WARNING_MESSAGE + " Usage: view today|tomorrow|week");
             };
+        //@@author
+        //@@author officialasyrafrahim
         case "delete":
             return listDeleteCommandParser.parseDelete(words);
         //@@author

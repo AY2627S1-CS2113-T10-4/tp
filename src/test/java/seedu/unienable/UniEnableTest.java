@@ -189,6 +189,11 @@ class UniEnableTest {
             {"list", "[WARNING] No activities yet."},
             {"list demand", "[WARNING] No activities yet."},
             {"list priority", "[WARNING] No activities yet."},
+            //@@author Atharva005
+            {"view today", "[WARNING] No activities scheduled for this day."},
+            {"view tomorrow", "[WARNING] No activities scheduled for this day."},
+            {"view week", "[WARNING] No activities scheduled for the next seven days."},
+            //@@author
             {"overdue", "[WARNING] No overdue activities."},
             {"next", "[WARNING] No upcoming incomplete activities."},
             {"find missing", "[WARNING] No activities matched keyword \"missing\"."},
