@@ -21,6 +21,7 @@ public class UniEnable {
      * @param args unused command-line arguments.
      */
     public static void main(String[] args) {
+        assert false : "dummy assertion to fail";
         run(System.in, System.out, Path.of("data", "activities.txt"));
     }
 

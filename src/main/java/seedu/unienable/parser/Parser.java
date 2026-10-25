@@ -10,11 +10,14 @@ import seedu.unienable.command.activity.DemandTodayCommand;
 import seedu.unienable.command.activity.FindCommand;
 import seedu.unienable.command.activity.NextCommand;
 import seedu.unienable.command.activity.OverdueCommand;
+import seedu.unienable.command.activity.ViewCommand;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.logic.ConnectionManager;
 import seedu.unienable.logic.FacilityManager;
 
 /**
+ * Recognizes add, edit, find, list, view, list demand, list priority, overdue, next,
+ * delete, facility, route and bye commands.
  * Recognizes activity, facility, route, help and exit commands.
  */
 public class Parser {
@@ -169,6 +172,16 @@ public class Parser {
                         + " next does not take arguments.\nUsage: next");
             }
             return new NextCommand(clock);
+        case "view":
+            if (words.length != 2) {
+                throw new ParseException(WARNING_MESSAGE + " Usage: view today|tomorrow|week");
+            }
+            return switch (words[1].toLowerCase(Locale.ROOT)) {
+            case "today" -> new ViewCommand(ViewCommand.Range.TODAY, clock);
+            case "tomorrow" -> new ViewCommand(ViewCommand.Range.TOMORROW, clock);
+            case "week" -> new ViewCommand(ViewCommand.Range.WEEK, clock);
+            default -> throw new ParseException(WARNING_MESSAGE + " Usage: view today|tomorrow|week");
+            };
         case "delete":
             return listDeleteCommandParser.parseDelete(words);
         //@@author

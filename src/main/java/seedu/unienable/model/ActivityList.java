@@ -87,6 +87,15 @@ public class ActivityList {
     }
     //@@author
 
+    /** Returns activities scheduled on the inclusive date range in chronological order. */
+    public List<Activity> getViewBetween(LocalDate start, LocalDate end) {
+        Objects.requireNonNull(start);
+        Objects.requireNonNull(end);
+        return getCanonicalView().stream()
+                .filter(activity -> !activity.getDate().isBefore(start) && !activity.getDate().isAfter(end))
+                .toList();
+    }
+
     //@@author Oliver-koh
     /**
      * Returns activities whose names contain the supplied phrase, ignoring case.
