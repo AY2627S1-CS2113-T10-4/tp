@@ -1,0 +1,37 @@
+' TEAM: Architecture is maintained jointly; feature sources retain their author scopes.
+@startuml
+!pragma layout smetana
+
+title UniEnable team architecture
+top to bottom direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam componentStyle rectangle
+skinparam componentBackgroundColor #EDF3F8
+skinparam componentBorderColor #526477
+skinparam ArrowColor #526477
+skinparam nodesep 45
+skinparam ranksep 50
+
+component "Console bootstrap\nUniEnable\nConsoleHelper" as Console
+component "Console UI and formatters\nUi / ActivityListFormatter\nFacilityOutputFormatter / FacilityDetailsFormatter" as UI
+component "Parsing\nParser (dispatch, view ranges, help topics)\nAddCommandParser / EditCommandParser\nListDeleteCommandParser / MarkCommandParser\nFacilityCommandParser / RouteParser\nInjected Clock for validation and time queries" as Parsing
+component "Commands\ncommand.common: Command / CommandResult\nHelpCommand (menu and topic help) / ByeCommand\ncommand.activity: add / edit / find / mark / unmark / delete\nlist / list demand / list priority / overdue / next\nViewCommand: today / tomorrow / rolling seven days\ncommand.accessibility: facility queries / route" as Commands
+component "Storage\nStorage: activities, ratings, completion, recovery backups\nFacilityStorage / ConnectionStorage: bundled reference data\nLoadResult<T>: records and warnings" as Storage
+component "Accessibility logic\ncommand.accessibility.connection.logic\nFacilityManager / ConnectionManager\nDijkstraShortestPath / DijkstraSolver" as Accessibility
+component "Models\nActivityList / Activity: schedules, ratings and priority scores\nFacility / FacilityFeature / Connection: reference data" as Models
+
+Console ..> UI : read / display
+Console ..> Parsing : parse input
+Console ..> Commands : execute
+Console ..> Storage : load / save after activity changes
+Parsing ..> Commands : create
+Commands ..> Models : read / update activities
+Commands ..> Accessibility : query
+Commands ..> UI : format list and facility results
+Accessibility ..> Models : read reference data
+Storage ..> Models : load records / save activities
+
+@enduml

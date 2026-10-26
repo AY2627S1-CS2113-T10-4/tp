@@ -1,0 +1,73 @@
+'@@author Oliver-koh
+@startuml
+title Mark an activity and save if changed
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ParticipantBackgroundColor #EDF3F8
+skinparam ParticipantBorderColor #526477
+skinparam ArrowColor #526477
+skinparam sequenceMessageAlign center
+hide footbox
+
+participant "ConsoleHelper" as Console
+participant ":MarkCommand" as Mark
+participant "activities:ActivityList" as Activities
+participant "storage:Storage" as Storage
+
+note over Console, Mark
+  Parser has already created MarkCommand(1).
+end note
+Console -> Mark : execute(activities, storage)
+activate Mark
+Mark -> Activities : getByDisplayedIndex(1)
+activate Activities
+Activities --> Mark : selected activity
+deactivate Activities
+Mark -> Activities : setDoneAtDisplayedIndex(1, true)
+activate Activities
+note right of Activities
+  Resolve the canonical index again.
+  Return false if already done;
+  otherwise set done and return true.
+end note
+Activities --> Mark : changed
+deactivate Activities
+Mark --> Console : result
+deactivate Mark
+
+opt result.didChangeActivities()
+  Console -> Storage : save(activities)
+  activate Storage
+  opt loadedCorruptData and file exists
+    Storage -> Storage : backupCorruptFile()
+    note right of Storage
+      Copy the original bytes and verify
+      the .corrupt.bak file before writing.
+    end note
+  end
+  Storage -> Activities : getActivities()
+  activate Activities
+  Activities --> Storage : insertion-order snapshot
+  deactivate Activities
+  note right of Storage
+    Serialise the snapshot to nine-field rows.
+    Files.writeString(...) writes the UTF-8
+    contents to activities.txt.tmp.
+  end note
+  Storage -> Storage : moveIntoPlace(temporaryFile)
+  note right of Storage
+    Attempt atomic replacement;
+    fall back on FileSystemException.
+    Clear the recovery flag after success.
+  end note
+  Storage --> Console
+  deactivate Storage
+end
+note over Console, Mark
+  Display the command result through Ui
+  after any required save succeeds.
+end note
+@enduml
+'@@author

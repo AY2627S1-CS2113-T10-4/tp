@@ -15,7 +15,9 @@ Technical design details remain in the [Developer Guide](../DeveloperGuide.md).
 Each member maintains the implementation section assigned to their features.
 
 The [diagram ownership index](../diagrams/README.md) lists every source/image pair.
-Architecture and the combined activity-creation/rating class model are kept in
-the shared folders rather than assigned exclusively to one member.
+Architecture uses the `team/architecture` source and image folders. Each member's
+other diagrams use matching `class` and `sequence` subfolders; the campus graph
+uses `luke/graph`. Atharva maintains the activity-creation diagrams in the
+corresponding `atharva` subfolders.
 
 [About Us](../AboutUs.md) · [Developer Guide](../DeveloperGuide.md) · [User Guide](../UserGuide.md)

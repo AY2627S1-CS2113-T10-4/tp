@@ -122,14 +122,16 @@ public class ViewCommand extends Command {
     }
 
     /**
-     * Adds a rating table with padded columns and vertical bars, rating totals, and demand distribution.
+     * Adds a padded rating table with a header divider, rating totals, and demand distribution.
      */
     private static void appendRatingChart(StringBuilder output, List<Activity> view) {
         int nameWidth = Math.max("Activity".length(),
                 view.stream().mapToInt(activity -> activity.getName().length()).max().orElse(0));
         String rowFormat = "| %-" + nameWidth + "s     | %-5s     | %-5s     | %-5s     | %-14s     | %-6s |";
-        output.append("\n\nRATING CHART\n").append(String.format(Locale.ENGLISH, rowFormat,
-                "Activity", "IMP", "URG", "COM", "PRIORITY SCORE", "DEMAND"));
+        String header = String.format(Locale.ENGLISH, rowFormat,
+                "Activity", "IMP", "URG", "COM", "PRIORITY SCORE", "DEMAND");
+        output.append("\n\nRATING CHART\n").append(header)
+                .append("\n").append(header.replaceAll("[^|]", "-"));
         int importanceTotal = 0;
         int urgencyTotal = 0;
         int commitmentTotal = 0;
