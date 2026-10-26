@@ -1,6 +1,6 @@
 '@@author Atharva005
 @startuml
-title Display categorized help or one topic
+title Display help for a known topic
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName SansSerif
@@ -13,36 +13,27 @@ hide footbox
 
 participant "ConsoleHelper" as Console
 participant "parser:Parser" as Parser
-participant "help:HelpCommand" as Help
 participant "ui:Ui" as UI
 
-Console -> Parser : parse(input)
-alt more than one topic word
-  Parser --> Console : ParseException (usage warning)
-  Console -> UI : showMessage(exception.getMessage())
-else zero or one topic word
-  Parser -> Help : HelpCommand() or HelpCommand(topic)
-  note right of Help
-    No topic: select OVERVIEW.
-    Otherwise normalize with Locale.ROOT
-    and look up TOPIC_HELP.
-  end note
-  alt menu requested or topic found
-    Help --> Parser : initialized helpCommand
-    Parser --> Console : helpCommand
-    Console -> Help : execute(activities, storage)
-    Help --> Console : CommandResult(message, false)
-    Console -> UI : showMessage(result.getMessage())
-  else unknown topic
-    Help --> Parser : ParseException (unknown-topic warning)
-    Parser --> Console : ParseException
-    Console -> UI : showMessage(exception.getMessage())
-  end
-end
+Console -> Parser : parse("help view")
+create participant "help:HelpCommand" as Help
+Parser -> Help : HelpCommand("view")
+note right of Help
+  Normalize the topic with Locale.ROOT
+  and look up TOPIC_HELP.
+end note
+Help --> Parser : initialized helpCommand
+Parser --> Console : helpCommand
+Console -> Help : execute(activities, storage)
+Help --> Console : CommandResult(message, false)
+Console -> UI : showMessage(result.getMessage())
 
 note over Console, UI
+  This sequence assumes one known topic.
+  Bare help instead constructs HelpCommand() for OVERVIEW.
+  Extra topic words are rejected before construction.
+  An unknown topic causes the constructor to throw ParseException.
   Help and rejected input never request saving or exit.
-  The console accepts another command after a warning.
 end note
 @enduml
 '@@author

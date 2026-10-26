@@ -12,11 +12,11 @@ graph uses `luke/graph/`; it is separate from the class and sequence diagrams.
 
 | Folder | Responsibility |
 | --- | --- |
-| [team](team) | Team architecture. |
-| [atharva](atharva) | Activity creation, calendar dashboards, and categorized/topic help. |
-| [asyraf](asyraf) | Chronological/demand listing, deletion, priority, overdue and next. |
-| [oliver](oliver) | Completion, storage/recovery, editing and search. |
-| [luke](luke) | Optional add ratings, facility data/queries, route connections/search and exit. |
+| [team](#team) | Team architecture. |
+| [atharva](#atharva) | Activity creation, calendar dashboards, and categorized/topic help. |
+| [asyraf](#asyraf) | Chronological/demand listing, deletion, priority, overdue and next. |
+| [oliver](#oliver) | Completion, storage/recovery, editing and search. |
+| [luke](#luke) | Optional add ratings, facility data/queries, route connections/search and exit. |
 
 Atharva maintains activity creation, calendar dashboards, and help diagrams in the
 `atharva` source and image folders, including their presentation of optional ratings.

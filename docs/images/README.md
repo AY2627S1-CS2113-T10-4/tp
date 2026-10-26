@@ -9,15 +9,20 @@ section, and regeneration commands.
 
 | Folder | Class diagrams | Sequence diagrams | Other diagrams |
 | --- | --- | --- | --- |
-| [team](team) | - | - | [Architecture](team/architecture) |
-| [atharva](atharva) | [Class](atharva/class) | [Sequence](atharva/sequence) | - |
-| [asyraf](asyraf) | [Class](asyraf/class) | [Sequence](asyraf/sequence) | - |
-| [oliver](oliver) | [Class](oliver/class) | [Sequence](oliver/sequence) | - |
-| [luke](luke) | [Class](luke/class) | [Sequence](luke/sequence) | [Connectivity graph](luke/graph) |
+| [team](#team) | - | - | [Architecture](#team) |
+| [atharva](#atharva) | [Class](#atharva) | [Sequence](#atharva) | - |
+| [asyraf](#asyraf) | [Class](#asyraf) | [Sequence](#asyraf) | - |
+| [oliver](#oliver) | [Class](#oliver) | [Sequence](#oliver) | - |
+| [luke](#luke) | [Class](#luke) | [Sequence](#luke) | [Connectivity graph](#luke) |
 
 Atharva maintains the activity-creation class diagram in the `atharva` folder,
 including its presentation of Luke's rating fields. Class/sequence diagrams use
 `.png`, and the campus connectivity graph uses `.svg`.
+
+## Team
+
+- [ArchitectureDiagram.png](team/architecture/ArchitectureDiagram.png) shows the
+  shared startup, command, model, storage, and output responsibilities.
 
 <!-- @@author Atharva005 -->
 
@@ -33,8 +38,8 @@ including its presentation of Luke's rating fields. Class/sequence diagrams use
   populated periods, schedule grouping, and rating-table rendering.
 - [TopicHelpClassDiagram.png](atharva/class/TopicHelpClassDiagram.png) shows menu and
   topic selection, validation, and read-only command results.
-- [TopicHelpSequence.png](atharva/sequence/TopicHelpSequence.png) shows menu/topic requests
-  and warnings for unknown topics or extra arguments.
+- [TopicHelpSequence.png](atharva/sequence/TopicHelpSequence.png) shows construction
+  and execution for a known help topic, with notes on the other help scenarios.
 <!-- @@author -->
 
 <!-- @@author officialasyrafrahim -->
@@ -81,4 +86,21 @@ including its presentation of Luke's rating fields. Class/sequence diagrams use
   validation, case-insensitive matching, and chronological-index formatting.
 - [FindActivitySequence.png](oliver/sequence/FindActivitySequence.png) shows searching and
   formatting with chronological indexes, without saving.
+<!-- @@author -->
+
+<!-- @@author lukelouyu -->
+
+## Luke
+
+- [FacilityClassDiagram.png](luke/class/FacilityClassDiagram.png) shows facility
+  models, loading, feature search, and command formatting.
+- [FacilityLookupSequence.png](luke/sequence/FacilityLookupSequence.png) shows a
+  feature query through the parser, manager, and formatter.
+- [RoutingClassDiagram.png](luke/class/RoutingClassDiagram.png) shows route parsing,
+  graph management, shortest-path solving, and route output.
+- [RouteSearchSequence.png](luke/sequence/RouteSearchSequence.png) shows accessible
+  edge selection, path solving, and segment display.
+- [fass-accessibility-network.svg](luke/graph/fass-accessibility-network.svg) shows
+  the bundled campus reference graph.
+
 <!-- @@author -->

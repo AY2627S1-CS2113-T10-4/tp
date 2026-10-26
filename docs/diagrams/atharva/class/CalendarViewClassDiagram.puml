@@ -20,7 +20,6 @@ class Parser {
   +parse(input: String): Command
 }
 class ViewCommand {
-  -range: Range
   -clock: Clock
   +ViewCommand(range: Range, clock: Clock)
   +execute(activities: ActivityList, storage: Storage): CommandResult
@@ -51,7 +50,7 @@ class CommandResult {
 
 Command <|-- ViewCommand
 Parser ..> ViewCommand : creates with session clock
-ViewCommand --> Range : selected period
+ViewCommand --> Range : range (selected period)
 ViewCommand ..> ActivityList : inclusive date query
 ViewCommand ..> Activity : reads details and ratings
 ViewCommand ..> CommandResult : creates read-only result
