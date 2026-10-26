@@ -20,7 +20,6 @@ class AddCommandParser {
   +parse(arguments: String): AddCommand
 }
 class AddCommand {
-  -activity: Activity
   +execute(...): CommandResult
 }
 class ActivityList {
@@ -46,7 +45,7 @@ enum DemandLevel {
 Command <|-- AddCommand
 AddCommandParser ..> AddCommand : creates
 AddCommandParser ..> Activity : validates ratings
-AddCommand --> Activity
+AddCommand --> Activity : activity
 AddCommand ..> ActivityList : appends to
 ActivityList --> "0..*" Activity : activities
 Activity --> "1" DemandLevel : demand

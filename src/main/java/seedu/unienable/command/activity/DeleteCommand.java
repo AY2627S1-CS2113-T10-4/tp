@@ -2,16 +2,15 @@ package seedu.unienable.command.activity;
 
 import java.util.logging.Logger;
 
-//@@author lukelouyu
+//@@author officialasyrafrahim
 import seedu.unienable.command.common.Command;
 import seedu.unienable.command.common.CommandResult;
-//@@author
 import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
-//@@author officialasyrafrahim
+
 /**
  * Deletes one activity chosen by its 1-based displayed index in the canonical list.
  */

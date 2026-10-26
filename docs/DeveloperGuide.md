@@ -57,9 +57,11 @@ Named author comments begin a feature scope; the unnamed author comment ends it.
   - [Energy and priority](#energy-and-priority)
   - [Accessible navigation](#accessible-navigation)
   - [Foundation](#foundation)
+- [Non-Functional Requirements](#non-functional-requirements)
 - [Glossary](#glossary)
 - [Instructions for manual testing](#instructions-for-manual-testing)
   - [Prepare a separate test folder](#prepare-a-separate-test-folder)
+  - [Run a session with a fixed clock](#run-a-session-with-a-fixed-clock)
   - [Activities and restart persistence](#activities-and-restart-persistence)
   - [Priority and strict local-time boundaries](#priority-and-strict-local-time-boundaries)
   - [Calendar dashboards and topic help](#calendar-dashboards-and-topic-help)
@@ -87,7 +89,7 @@ are bundled sample data; check results against current campus information before
 Install **JDK 25** and clone the repository. Check `java -version` before building
 or running the application. In IntelliJ IDEA, import the project as a Gradle
 project and select JDK 25 for both the project SDK and Gradle JVM. The
-[README](../README.md#setting-up-in-intellij) gives the IDE setup steps.
+[README](https://github.com/lukelouyu/tp/blob/dee199c35538bbb2fca3d64006ac13ee046f132a/README.md#setting-up-in-intellij) gives the IDE setup steps.
 
 Run these commands from the project root using the included Gradle wrapper.
 The first build needs internet access to download Gradle and dependencies.
@@ -125,11 +127,11 @@ responsibility below.
 
 | Implementation sections | PlantUML sources | Rendered images |
 | --- | --- | --- |
-| [Team design](#team-design) | [Architecture](diagrams/team/architecture) | [Architecture](images/team/architecture) |
-| [Activity creation, calendar views and help](#activity-creation-calendar-views-and-help) | [Class](diagrams/atharva/class) · [Sequence](diagrams/atharva/sequence) | [Class](images/atharva/class) · [Sequence](images/atharva/sequence) |
-| [Activity views and deletion](#activity-views-and-deletion) | [Class](diagrams/asyraf/class) · [Sequence](diagrams/asyraf/sequence) | [Class](images/asyraf/class) · [Sequence](images/asyraf/sequence) |
-| [Completion, storage, editing and search](#completion-storage-editing-and-search) | [Class](diagrams/oliver/class) · [Sequence](diagrams/oliver/sequence) | [Class](images/oliver/class) · [Sequence](images/oliver/sequence) |
-| [Ratings and accessibility](#ratings-and-accessibility) | [Class](diagrams/luke/class) · [Sequence](diagrams/luke/sequence) · [Graph](diagrams/luke/graph) | [Class](images/luke/class) · [Sequence](images/luke/sequence) · [Graph](images/luke/graph) |
+| [Team design](#team-design) | [Architecture](diagrams/README.md#team) | [Architecture](images/README.md#team) |
+| [Activity creation, calendar views and help](#activity-creation-calendar-views-and-help) | [Class and sequence](diagrams/README.md#atharva) | [Class and sequence](images/README.md#atharva) |
+| [Activity views and deletion](#activity-views-and-deletion) | [Class and sequence](diagrams/README.md#asyraf) | [Class and sequence](images/README.md#asyraf) |
+| [Completion, storage, editing and search](#completion-storage-editing-and-search) | [Class and sequence](diagrams/README.md#oliver) | [Class and sequence](images/README.md#oliver) |
+| [Ratings and accessibility](#ratings-and-accessibility) | [Class, sequence, and graph](diagrams/README.md#luke) | [Class, sequence, and graph](images/README.md#luke) |
 
 Each member's source and image folders use matching `class/` and `sequence/`
 subfolders. The team component diagram uses `team/architecture/`; the campus
@@ -194,11 +196,11 @@ The test tree mirrors these packages under `src/test/java/seedu/unienable`.
 
 | Package | Contents and source location |
 | --- | --- |
-| `command.common` | [`Command`, `CommandResult`, `HelpCommand`, and `ByeCommand`](../src/main/java/seedu/unienable/command/common). |
-| `command.activity` | [Activity commands](../src/main/java/seedu/unienable/command/activity), including `ViewCommand`. |
-| `command.accessibility.facility` | [Facility list, lookup, and feature-search commands](../src/main/java/seedu/unienable/command/accessibility/facility). |
-| `command.accessibility.connection` | [`RouteCommand`](../src/main/java/seedu/unienable/command/accessibility/connection/RouteCommand.java). |
-| `command.accessibility.connection.logic` | [`ConnectionManager`, `FacilityManager`, `DijkstraShortestPath`, and `DijkstraSolver`](../src/main/java/seedu/unienable/command/accessibility/connection/logic). |
+| `command.common` | [`Command`, `CommandResult`, `HelpCommand`, and `ByeCommand`](https://github.com/lukelouyu/tp/tree/dee199c35538bbb2fca3d64006ac13ee046f132a/src/main/java/seedu/unienable/command/common). |
+| `command.activity` | [Activity commands](https://github.com/lukelouyu/tp/tree/dee199c35538bbb2fca3d64006ac13ee046f132a/src/main/java/seedu/unienable/command/activity), including `ViewCommand`. |
+| `command.accessibility.facility` | [Facility list, lookup, and feature-search commands](https://github.com/lukelouyu/tp/tree/dee199c35538bbb2fca3d64006ac13ee046f132a/src/main/java/seedu/unienable/command/accessibility/facility). |
+| `command.accessibility.connection` | [`RouteCommand`](https://github.com/lukelouyu/tp/blob/dee199c35538bbb2fca3d64006ac13ee046f132a/src/main/java/seedu/unienable/command/accessibility/connection/RouteCommand.java). |
+| `command.accessibility.connection.logic` | [`ConnectionManager`, `FacilityManager`, `DijkstraShortestPath`, and `DijkstraSolver`](https://github.com/lukelouyu/tp/tree/dee199c35538bbb2fca3d64006ac13ee046f132a/src/main/java/seedu/unienable/command/accessibility/connection/logic). |
 
 The former top-level `seedu.unienable.logic` package has moved under the connection
 package. `ConsoleHelper`, parsers, and commands import the relocated classes;
@@ -339,10 +341,11 @@ without facility or connection data and leaves both result flags unset.
 requests, and read-only execution. `UniEnableTest` checks topic help through the
 console, including saved-file preservation.
 
-The sequence includes the menu, valid topics, unknown topics, and extra-word
-rejection. Each path displays instructions or a warning without changing data.
+The sequence shows a successful `help view` request, with construction beginning
+the help object's lifeline. The note identifies how menu requests and invalid
+input differ; the validation rules above cover those other scenarios.
 
-![Topic help sequence including invalid input](images/atharva/sequence/TopicHelpSequence.png)
+![Sequence for a valid topic help request](images/atharva/sequence/TopicHelpSequence.png)
 
 Source: [TopicHelpSequence.puml](diagrams/atharva/sequence/TopicHelpSequence.puml).
 
@@ -539,6 +542,14 @@ index, combines old and new values, and validates the replacement before calling
 unchanged. Time validation runs when a date or time is supplied; metadata-only
 edits can update historical activities. Rejected edits leave the activity intact.
 
+**Design choice:** Build and validate a replacement activity before changing the
+list. This keeps a failed multi-field edit from leaving half of the requested
+changes applied, and preserves the original completion state and omitted fields.
+Mutating the original object field by field would allocate fewer objects, but
+would require rollback or validation of the complete candidate state first.
+Replacement is simpler here; callers must obtain a fresh view after an edit
+rather than retain an old activity reference.
+
 ![Sequence diagram showing validation, activity replacement, saving, and edit confirmation](images/oliver/sequence/EditActivitySequence.png)
 
 Source: [EditActivitySequence.puml](diagrams/oliver/sequence/EditActivitySequence.puml).
@@ -629,6 +640,22 @@ Source: [CompletionAndSaveSequence.puml](diagrams/oliver/sequence/CompletionAndS
 The sequence assumes a valid index and successful file operations. Its optional
 blocks show when the console saves and when storage first creates a recovery backup.
 
+**Save ownership:** Commands report whether they changed activities;
+`ConsoleHelper` owns the save-and-display sequence. This gives every modifying
+command the same save-error handling and avoids writes for queries and repeated
+completion requests. Command-owned saves would make each command independently
+persistent, but would duplicate this policy. A new caller that bypasses the
+console must honour the result flag itself. Saving follows the in-memory change,
+so an I/O failure leaves that change in memory and requires the documented recovery.
+
+**File format:** UTF-8 pipe-separated rows are easy to inspect, require no
+serialization dependency, and keep the six-field legacy format readable alongside
+the nine-field rated format. JSON would support named fields and escaping more
+flexibly, but would add a parser and a migration decision. The current format
+instead rejects pipes and line breaks in names and requires coordinated
+loader/writer changes whenever a column is added. It provides recovery protection
+for detected corruption, rather than a versioned backup history.
+
 <!-- @@author -->
 
 <!-- END OWNER: Oliver (@Oliver-koh) -->
@@ -657,7 +684,7 @@ editing and persistence update and preserve them.
 
 #### Facility accessibility data (`facilities.txt`)
 
-The [facility dataset](../src/main/resources/facilities.txt) stores nine
+The [facility dataset](https://github.com/lukelouyu/tp/blob/dee199c35538bbb2fca3d64006ac13ee046f132a/src/main/resources/facilities.txt) stores nine
 facilities: AS1 to AS8 and Central Library (CLB), identified by F01 to F09.
 It is bundled with the application and loaded from the classpath, including
 when running the packaged JAR.
@@ -768,9 +795,9 @@ a valid search with no matches returns `[WARNING] No matching facilities found.`
 
 #### Accessibility route connections (`connections.txt`)
 
-The [connection dataset](../src/main/resources/connections.txt) stores ten
+The [connection dataset](https://github.com/lukelouyu/tp/blob/dee199c35538bbb2fca3d64006ac13ee046f132a/src/main/resources/connections.txt) stores ten
 bidirectional links between the nine facilities. Hub names form graph vertices;
-links form edges weighted by the [Connection model's](../src/main/java/seedu/unienable/model/Connection.java)
+links form edges weighted by the [Connection model's](https://github.com/lukelouyu/tp/blob/dee199c35538bbb2fca3d64006ac13ee046f132a/src/main/java/seedu/unienable/model/Connection.java)
 recorded `distanceInMetres` values.
 
 Each pipe-separated row follows this format:
@@ -1087,6 +1114,28 @@ link their responsibilities, design, code and tests.
 | US32 | Future | student estimating my time | record an estimated duration on an activity | gap-fitting and planning features have data to work with | Not implemented |
 | US33 | Must-Have | new user | see a list of available commands and their formats | I can learn to use the product without external documentation | Implemented |
 
+## Non-Functional Requirements
+
+These are acceptance constraints for maintenance and release testing. The checks
+below describe how to verify them; they do not claim every platform has already
+been tested or establish an unmeasured performance benchmark.
+
+| ID | Requirement | Acceptance check |
+| --- | --- | --- |
+| NFR-01 | The executable uses Java 25 and a text terminal on Windows, macOS, or Linux, without requiring an IDE at runtime. | On each release platform, build with JDK 25, launch the JAR with `java -ea -jar unienable.jar`, and complete an add/list/bye/restart smoke test. |
+| NFR-02 | Activity management, facility lookup, help, and routing work offline once the JAR is built or downloaded. | Disconnect networking and run the activity, facility, route, and help manual scenarios using the bundled reference data. The initial Gradle dependency download is outside this runtime constraint. |
+| NFR-03 | After a successful activity save, restarting from the same working directory restores all activity fields, ratings, completion state, and insertion order. | Run the restart scenario below and compare the nine-field UTF-8 file and reloaded activities. Repeat with a legacy six-field row. |
+| NFR-04 | Read-only commands, rejected input, and repeated mark/unmark requests do not rewrite the activity file. | Compare saved bytes and modification time before and after queries, invalid commands, and completion no-ops. |
+| NFR-05 | Detected malformed activity rows produce line-numbered warnings. A later recovery save must preserve and verify the original bytes in `.corrupt.bak` before replacing the activity file; a failed backup must preserve the original file. | Run the corruption and blocked-backup scenarios below and the storage regression suite. |
+| NFR-06 | Invalid user input produces an informative warning and allows another command. Users can discover supported syntax through `help` and `help TOPIC`. | Run the invalid-input and topic-help scenarios, then issue `list` and `bye` to confirm the session remains usable. |
+| NFR-07 | Date-sensitive behavior uses the session's local time consistently and can be reproduced without changing the computer clock. | Run the fixed-clock fixtures below in Asia/Singapore and the automated strict-boundary and calendar tests. |
+| NFR-08 | Changes remain buildable and follow the configured style and accessibility coverage constraints. | Run `check` with Java 25 before release; it must pass JUnit, Checkstyle, and the configured JaCoCo verification. |
+
+The supported runtime assumes a writable local data directory and one running
+instance per activity file. Concurrent editing and synchronization across devices
+are outside the current scope. Timing targets require a separately recorded
+workload, hardware, and measurement procedure before they can be claimed.
+
 ## Glossary
 
 | Term | Meaning in UniEnable |
@@ -1119,6 +1168,44 @@ link their responsibilities, design, code and tests.
 3. Enter commands one at a time. Expected results below omit console borders.
    Examples use 2026 dates; for future-date scenarios, choose dates and times
    later than the computer's current local time.
+
+### Run a session with a fixed clock
+
+The repository includes a small [manual session driver](testing/FixedClockSession.java)
+and [priority](testing/fixtures/priority.txt),
+[boundary](testing/fixtures/boundary.txt), and
+[calendar](testing/fixtures/calendar.txt) fixtures. The driver copies the chosen
+fixture into a new temporary directory, prints the disposable activity-file path,
+and calls `UniEnable.run(input, output, activityFile, clock)`. Every launch starts
+with a fresh copy, so it cannot overwrite personal activity data. Enter commands
+interactively and finish with `bye`.
+
+Build the JAR and compile the driver once from the repository root. In Windows
+PowerShell with JDK 25 selected:
+
+```powershell
+.\gradlew.bat shadowJar
+javac -cp build/libs/unienable.jar -d build/manual-test docs/testing/FixedClockSession.java
+java -ea -cp "build/manual-test;build/libs/unienable.jar" seedu.unienable.FixedClockSession docs/testing/fixtures/priority.txt 2026-11-22T12:00
+```
+
+On macOS / Linux, use:
+
+```sh
+./gradlew shadowJar
+javac -cp build/libs/unienable.jar -d build/manual-test docs/testing/FixedClockSession.java
+java -ea -cp "build/manual-test:build/libs/unienable.jar" seedu.unienable.FixedClockSession docs/testing/fixtures/priority.txt 2026-11-22T12:00
+```
+
+The final argument is the simulated local date/time in `Asia/Singapore`.
+For the priority scenario, enter `list priority`, `overdue`, `next`,
+`mark 3`, `next`, and `bye`. For the strict-boundary table, replace the last
+two arguments with `docs/testing/fixtures/boundary.txt 2026-11-22T08:59`, then
+repeat at `2026-11-22T09:00` and `2026-11-22T09:15`, entering `overdue`,
+`next`, and `bye` each time. For calendar dashboards, use
+`docs/testing/fixtures/calendar.txt 2026-10-25T12:00` and enter `view today`,
+`view tomorrow`, `view week`, `help view`, and `bye`.
+The expected results and fixture rows appear in the corresponding sections below.
 
 <!-- TEAM: This walkthrough combines Atharva's add/help, Asyraf's listing/deletion, and Oliver's completion/storage. -->
 
@@ -1155,12 +1242,12 @@ read-only commands below: these commands should not change the saved bytes.
 
 ### Priority and strict local-time boundaries
 
-For deterministic time checks, use the fixed-clock integration entry point
-`UniEnable.run(input, output, activityFile, clock)` from tests in the
-`seedu.unienable` package. Supply `Clock.fixed()` with `ZoneId.of("Asia/Singapore")`
-and disposable storage. Do not change the computer's clock or personal activity file.
+For deterministic time checks, use the [fixed-clock driver](#run-a-session-with-a-fixed-clock)
+with `priority.txt` at `2026-11-22T12:00`. It supplies `Clock.fixed()` with
+`ZoneId.of("Asia/Singapore")` and disposable storage.
 
-Use these rows in the disposable `data/activities.txt` before starting the app:
+The `priority.txt` fixture contains these rows; the driver copies them into its
+disposable `activities.txt`:
 
 ```text
 Planning meeting|2026-11-21|10:00|11:00|MEDIUM|false|3|2|4
@@ -1194,8 +1281,8 @@ completion combinations, and stable ties.
 
 ### Calendar dashboards and topic help
 
-Use the fixed-clock integration entry point described above, initially at
-2026-10-25 12:00 in `Asia/Singapore`. Preload a disposable activity file with:
+Use the [fixed-clock driver](#run-a-session-with-a-fixed-clock) with `calendar.txt`
+at `2026-10-25T12:00` in `Asia/Singapore`. Its fixture contains:
 
 ```text
 Yesterday|2026-10-24|09:00|10:00|LOW|false|-|-|-
@@ -1346,6 +1433,15 @@ activity file. The added activity remains in memory; follow the
 <!-- TEAM: All members maintain acknowledgements and source references. -->
 
 ## Acknowledgements
+
+UniEnable builds on the [CS2113 team-project starter](https://github.com/NUS-CS2113-AY2627-S1/tp),
+whose history includes the [SE-EDU Duke starter](https://github.com/se-edu/duke).
+Retained and adapted material includes the Gradle wrapper and build conventions,
+Checkstyle configuration, GitHub Actions CI structure, and the original
+README/setup and documentation scaffolding. The team updated the build for
+Java 25 and developed UniEnable's activity and accessibility features and guides.
+The inherited [contributors list](https://github.com/lukelouyu/tp/blob/dee199c35538bbb2fca3d64006ac13ee046f132a/CONTRIBUTORS.md)
+records contributors to that starter foundation.
 
 UniEnable's facility and connection datasets were compiled with reference to
 the [NUS FASS *Access Routes / Faculty Map*](https://osa.nus.edu.sg/wp-content/uploads/2025/03/250224-FASS-Access-Route-Faculty-Map.pdf),

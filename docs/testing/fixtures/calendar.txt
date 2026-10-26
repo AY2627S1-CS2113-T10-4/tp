@@ -1,0 +1,8 @@
+Yesterday|2026-10-24|09:00|10:00|LOW|false|-|-|-
+Practice quiz|2026-10-25|21:00|21:30|HIGH|true|4|5|3
+Stretch break|2026-10-25|21:30|21:45|LOW|false|1|1|1
+Plan tomorrow|2026-10-25|22:00|22:30|MEDIUM|false|3|-|2
+Project notes|2026-10-25|22:30|23:00|MEDIUM|false|-|2|-
+Project meeting|2026-10-26|10:00|11:00|HIGH|false|5|4|3
+Final included day|2026-10-31|10:00|11:00|LOW|false|-|-|-
+Outside window|2026-11-01|10:00|11:00|LOW|false|-|-|-

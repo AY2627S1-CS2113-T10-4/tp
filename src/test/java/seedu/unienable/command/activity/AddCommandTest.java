@@ -26,7 +26,7 @@ class AddCommandTest {
     void execute_twoAdds_updatesActivityListAndDisplaysCount() {
         ActivityList activities = new ActivityList();
         AddCommand command = new AddCommand("Team Meeting", LocalDate.of(2026, 10, 20),
-                LocalTime.of(9, 0), LocalTime.of(10, 0), DemandLevel.MEDIUM);
+                LocalTime.of(9, 0), LocalTime.of(10, 0), DemandLevel.MEDIUM, null, null, null);
 
         CommandResult firstResult = command.execute(activities, new Storage());
         CommandResult secondResult = command.execute(activities, new Storage());

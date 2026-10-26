@@ -14,13 +14,13 @@ hide footbox
 participant "ConsoleHelper" as Console
 participant "parser:Parser" as Parser
 participant "listParser:ListDeleteCommandParser" as ListParser
-participant "command:ListCommand" as Query
 participant "activities:ActivityList" as Activities
 participant "ActivityListFormatter" as Formatter
 participant "ui:Ui" as UI
 
 Console -> Parser : parse("list")
 Parser -> ListParser : parseList(words)
+create participant "command:ListCommand" as Query
 ListParser -> Query : ListCommand()
 ListParser --> Parser : command
 Parser --> Console : command

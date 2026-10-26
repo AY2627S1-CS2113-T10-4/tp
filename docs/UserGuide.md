@@ -427,8 +427,10 @@ add n/CS2113 project d/2026-12-04 s/14:00 e/15:00 imp/5 urg/5 com/4
 add n/Team stand-up d/2026-12-04 s/16:00 e/17:00 imp/5 urg/4
 ```
 
-The first command also demonstrates reordered fields, mixed-case prefixes, and
-ordinary slashes in a name. Its demand is LOW; the others default to MEDIUM.
+After restoring the HIGH-demand Project meeting, the second command, Planning
+and/or review, demonstrates reordered fields, mixed-case prefixes, and ordinary
+slashes in a name. Planning and/or review uses LOW demand; CS2113 project and
+Team stand-up default to MEDIUM.
 
 | Activity | Importance | Urgency | Commitment |
 | --- | --- | --- | --- |

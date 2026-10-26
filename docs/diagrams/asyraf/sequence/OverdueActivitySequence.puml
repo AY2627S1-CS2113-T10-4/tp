@@ -13,12 +13,12 @@ hide footbox
 
 participant "ConsoleHelper" as Console
 participant "parser:Parser" as Parser
-participant "command:OverdueCommand" as Query
 participant "activities:ActivityList" as Activities
 participant "ActivityListFormatter" as Formatter
 participant "ui:Ui" as UI
 
 Console -> Parser : parse("overdue")
+create participant "command:OverdueCommand" as Query
 Parser -> Query : OverdueCommand(clock)
 Parser --> Console : command
 Console -> Query : execute(activities, storage)

@@ -1,0 +1,4 @@
+Planning meeting|2026-11-21|10:00|11:00|MEDIUM|false|3|2|4
+Team stand-up|2026-11-22|09:00|09:30|HIGH|false|5|4|-
+Submit project report|2026-11-22|14:00|15:00|HIGH|false|4|5|4
+Dentist appointment|2026-11-24|15:00|16:00|LOW|false|4|3|2
