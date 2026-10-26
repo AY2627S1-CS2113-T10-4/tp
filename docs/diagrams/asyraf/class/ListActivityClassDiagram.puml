@@ -1,0 +1,57 @@
+'@@author officialasyrafrahim
+@startuml
+!pragma layout smetana
+title Chronological activity listing
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #526477
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+hide empty members
+
+abstract class Command {
+  +execute(...): CommandResult
+}
+class Parser {
+  +parse(input: String): Command
+}
+class ListDeleteCommandParser {
+  +parseList(words: String[]): Command
+}
+class ListCommand {
+  +execute(...): CommandResult
+}
+class ActivityList {
+  +getCanonicalView(): List<Activity>
+}
+class Activity {
+  +getName(): String
+}
+class ActivityListFormatter <<utility>> {
+  {static} +formatList(...): String
+}
+class CommandResult {
+  +getMessage(): String
+  +didChangeActivities(): boolean
+}
+Command <|-- ListCommand
+Parser ..> ListDeleteCommandParser : delegates list
+ListDeleteCommandParser ..> ListCommand : creates
+ListCommand ..> ActivityList : queries
+ListCommand ..> ActivityListFormatter : formats
+ListCommand ..> CommandResult : read-only result
+ActivityList --> "0..*" Activity : activities
+note bottom of ActivityList
+  Sort by date and start time; ties retain insertion order.
+  Return a separate, unmodifiable view; keep backing order unchanged.
+  Include completed activities and show the empty-list warning when needed.
+end note
+note bottom of CommandResult
+  No activity changes or exit are requested.
+  ConsoleHelper displays the message without saving.
+end note
+@enduml
+'@@author

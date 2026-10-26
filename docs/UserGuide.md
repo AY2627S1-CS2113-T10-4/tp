@@ -6,11 +6,11 @@ Atharva005: activity creation, calendar dashboards, and command help.
 officialasyrafrahim: listing, deletion, priority, overdue, and next.
 Oliver-koh: completion changes, activity persistence/recovery, editing, and search.
 lukelouyu: optional add ratings, facilities, routes, and exit.
-Sections marked SHARED are maintained jointly and have no single-author override.
+Sections marked TEAM are maintained jointly and have no single-author override.
 Named author comments begin a feature scope; the unnamed author comment ends it.
 -->
 
-<!-- SHARED: All members maintain the introduction and navigation. -->
+<!-- TEAM: All members maintain the introduction and navigation. -->
 ## Introduction
 
 UniEnable is a command-line application for managing dated activities and checking
@@ -30,7 +30,7 @@ See [Calendar dashboards](#viewing-calendar-dashboards-view) for examples, or en
 [Data Storage](#data-storage) · [Features](#features) ·
 [Error Handling](#error-handling) · [FAQ](#faq) · [Command Summary](#command-summary)
 
-<!-- SHARED: All members maintain installation and startup instructions. -->
+<!-- TEAM: All members maintain installation and startup instructions. -->
 ## Quick Start
 
 1. Install Java 25 and obtain `unienable.jar`.
@@ -42,7 +42,7 @@ See [Calendar dashboards](#viewing-calendar-dashboards-view) for examples, or en
 To build from source on Windows, run `.\gradlew.bat shadowJar` in the project folder,
 then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 
-<!-- SHARED: All members maintain the cross-feature command and index conventions. -->
+<!-- TEAM: All members maintain the cross-feature command and index conventions. -->
 ## Command Format
 
 - Words in UPPER_CASE are placeholders; replace them with your own values.
@@ -257,9 +257,14 @@ Formats: `view today`, `view tomorrow`, and `view week`
   A populated view can show zero high-demand activities without a warning.
 - A populated view includes a schedule, a summary, a rating table, rating totals,
   and a demand distribution. Summary counts and rating totals appear one per line.
-- The rating table uses vertical bars and padded columns. `*`, `!`, and `+` show
+- The rating table uses vertical bars, padded columns, and a horizontal divider
+  directly below its column headings. `*`, `!`, and `+` show
   importance (IMP), urgency (URG), and commitment (COM). Demand uses `# L`, `## M`,
   or `### H` for LOW, MEDIUM, or HIGH.
+- Read the table in a terminal with a monospaced font. Activity, rating, and score
+  columns have at least five spaces before the next separator; the activity column
+  expands for longer names. Rows follow the schedule's chronological order. To rank
+  activities by score, use [list priority](#viewing-priority-list-priority).
 - An unset rating appears as `-`; an unavailable priority appears as `N`.
   With all three ratings set, the score is `URG x URG x (IMP + COM)`.
   Rating totals add the recorded values, including partially rated activities.
@@ -299,6 +304,7 @@ High-demand activities: 1
 
 RATING CHART
 | Activity          | IMP       | URG       | COM       | PRIORITY SCORE     | DEMAND |
+|-------------------|-----------|-----------|-----------|--------------------|--------|
 | Practice quiz     | ****      | !!!!!     | +++       | 175                | ### H  |
 | Stretch break     | *         | !         | +         | 2                  | # L    |
 | Plan tomorrow     | ***       | -         | ++        | N                  | ## M   |
@@ -316,9 +322,14 @@ Demand: L=#, M=##, H=###
 N = priority unavailable; - = rating not set.
 ```
 
+Practice quiz has priority `5 x 5 x (4 + 3) = 175`. Plan tomorrow and Project
+notes show `N` because at least one rating is unset. Their recorded ratings still
+contribute to the IMP, URG, and COM totals.
+
 `view tomorrow` shows only Project meeting. `view week` includes all five
-activities from Tuesday, 1 December through Monday, 7 December 2026. Empty days
-inside this populated week have a plain message, for example:
+activities from Tuesday, 1 December through Monday, 7 December 2026. Its summary
+shows total 5, completed 1, remaining 4, and high-demand 2. Empty days inside this
+populated week have a plain message, for example:
 
 ```text
 Thu 03 Dec - No activities scheduled for this day.
@@ -329,6 +340,23 @@ If the entire selected day has no activities, its heading is followed by
 period instead shows `[WARNING] No activities scheduled for the next seven days.`.
 Empty periods omit the summary and rating sections. No warning is shown merely
 because one day inside a populated week is empty.
+
+For example, in a separate folder with no saved activities and the same assumed
+date, `view today` produces:
+
+```text
+TODAY - Tuesday, 01 December 2026
+
+[WARNING] No activities scheduled for this day.
+```
+
+In that empty session, `view week` produces:
+
+```text
+WEEK - Tuesday, 01 December 2026 to Monday, 07 December 2026
+
+[WARNING] No activities scheduled for the next seven days.
+```
 
 `VIEW TODAY` also works. Missing, unknown, or extra arguments show a warning and
 `Usage: view today|tomorrow|week`; for example, `view` and `view week extra` are invalid.
@@ -735,7 +763,7 @@ Input: `bye`
 Output: `Goodbye from UniEnable!`
 <!-- @@author -->
 
-<!-- SHARED: All members maintain common error behavior and cross-feature validation rules. -->
+<!-- TEAM: All members maintain common error behavior and cross-feature validation rules. -->
 ## Error Handling
 
 Invalid input usually produces `[WARNING]` and the app waits for another command.
@@ -756,7 +784,7 @@ Repeated mark/unmark requests warn that completion is already in the requested
 state. A repeated request does not save or modify activities.
 <!-- @@author -->
 
-<!-- SHARED: The following validation rules apply to multiple members' features. -->
+<!-- TEAM: The following validation rules apply to multiple members' features. -->
 Common causes include missing/duplicate fields, invalid dates or times, unknown
 facilities, or an activity index outside the current list.
 For `add` and `edit`, use real calendar dates and two-digit hours and minutes (for example,
@@ -800,7 +828,7 @@ To recover before exiting:
    and run `list` to confirm the saved result.
 <!-- @@author -->
 
-<!-- SHARED: Each FAQ answer is maintained by the owner of the feature it describes. -->
+<!-- TEAM: Each FAQ answer is maintained by the owner of the feature it describes. -->
 ## FAQ
 
 <!-- @@author Oliver-koh -->
@@ -829,7 +857,7 @@ following six days. It does not select a Monday-to-Sunday calendar week.
 period from 1. Run `list` to get the current indexes for changing activities.
 <!-- @@author -->
 
-<!-- SHARED: All members maintain the combined command inventory; feature sections above carry individual tags. -->
+<!-- TEAM: All members maintain the combined command inventory; feature sections above carry individual tags. -->
 ## Command Summary
 
 <!-- @@author Atharva005 -->

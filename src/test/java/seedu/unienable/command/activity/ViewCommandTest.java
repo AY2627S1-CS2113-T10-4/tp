@@ -237,10 +237,16 @@ class ViewCommandTest {
         String chart = message.substring(message.indexOf("RATING CHART\n") + "RATING CHART\n".length(),
                 message.indexOf("\n\nRATING TOTALS"));
         String[] lines = chart.split("\n");
+        assertTrue(lines[1].matches("\\|[-|]+\\|"), lines[1]);
         for (String line : lines) {
-            assertTrue(line.startsWith("| ") && line.endsWith(" |"), line);
+            assertTrue(line.startsWith("|") && line.endsWith("|"), line);
             assertEquals(7L, line.chars().filter(character -> character == '|').count(), line);
             assertEquals(lines[0].length(), line.length(), line);
+        }
+        for (int position = 0; position < lines[0].length(); position++) {
+            if (lines[0].charAt(position) == '|') {
+                assertEquals('|', lines[1].charAt(position), lines[1]);
+            }
         }
         String[] headings = {"Activity", "IMP", "URG", "COM", "PRIORITY SCORE", "DEMAND"};
         int[] starts = new int[headings.length];
@@ -258,14 +264,14 @@ class ViewCommandTest {
             {"Project notes", "-", "!!", "-", "N", "## M"},
             {"An activity name longer than the old heading", "*****", "!!!!!", "+++++", "250", "### H"}
         };
-        assertEquals(expectedRows.length + 1, lines.length);
+        assertEquals(expectedRows.length + 2, lines.length);
         for (int row = 0; row < expectedRows.length; row++) {
             for (int column = 0; column < headings.length; column++) {
                 String expected = expectedRows[row][column];
-                assertEquals(expected, lines[row + 1].substring(starts[column], starts[column] + expected.length()));
+                assertEquals(expected, lines[row + 2].substring(starts[column], starts[column] + expected.length()));
                 if (column + 1 < headings.length) {
-                    String gap = lines[row + 1].substring(starts[column] + expected.length(), starts[column + 1]);
-                    assertTrue(gap.endsWith("     | ") && gap.replace("|", "").isBlank(), lines[row + 1]);
+                    String gap = lines[row + 2].substring(starts[column] + expected.length(), starts[column + 1]);
+                    assertTrue(gap.endsWith("     | ") && gap.replace("|", "").isBlank(), lines[row + 2]);
                 }
             }
         }
