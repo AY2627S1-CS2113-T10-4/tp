@@ -136,7 +136,19 @@ responsibility below.
 Each member's source and image folders use matching `class/` and `sequence/`
 subfolders. The team component diagram uses `team/architecture/`; the campus
 connectivity graph uses `graph/` within its feature's folders. The
-[diagram index](diagrams/README.md) lists every source/image pair.
+[diagram index](diagrams/README.md) records source/image paths and regeneration instructions.
+
+<!--
+DIAGRAM EDITING GUIDE FOR ATHARVA, ASYRAF, AND OLIVER
+The TODO comments in each feature section mark the exact diagram insertion points.
+Create the named .puml source under docs/diagrams/OWNER/class or sequence, then
+generate its matching PNG under docs/images/OWNER/class or sequence.
+Each TODO contains the actual Markdown image and source-link format to use.
+After both files are ready, remove the TODO instructions and surrounding HTML
+comment markers to display the image and source link. These HTML comments hide
+the templates in the rendered guide; // does not comment out Markdown.
+For Asyraf's deletion sequence, keep the existing .puml and regenerate only its PNG.
+-->
 
 <!-- BEGIN TEAM: All members maintain the architecture and common models jointly. -->
 
@@ -238,9 +250,14 @@ follow the start and the current local time. Invalid input produces a
 console saves the list before displaying the confirmation. See the
 [user examples](UserGuide.md#adding-an-activity-add).
 
+<!-- TODO (@Atharva005): Add the class diagram for activity creation and optional ratings here.
+Write the PlantUML source at: docs/diagrams/atharva/class/ActivityCreationClassDiagram.puml
+Generate its image at: docs/images/atharva/class/ActivityCreationClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Class diagram showing activity creation and optional ratings](images/atharva/class/ActivityCreationClassDiagram.png)
 
 Source: [ActivityCreationClassDiagram.puml](diagrams/atharva/class/ActivityCreationClassDiagram.puml).
+-->
 The diagram's source and image follow the activity-creation responsibility scope.
 The optional rating implementation is documented in
 [Optional ratings integration](#optional-ratings-integration).
@@ -249,9 +266,14 @@ The sequence follows parsing, construction, and insertion, including the optiona
 rating constructor. Saving follows the
 [completion and persistence flow](#completion-and-persistence).
 
+<!-- TODO (@Atharva005): Add the sequence diagram for adding an activity here.
+Write the PlantUML source at: docs/diagrams/atharva/sequence/AddActivitySequence.puml
+Generate its image at: docs/images/atharva/sequence/AddActivitySequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence diagram showing add parsing, activity construction, and insertion](images/atharva/sequence/AddActivitySequence.png)
 
 Source: [AddActivitySequence.puml](diagrams/atharva/sequence/AddActivitySequence.puml).
+-->
 
 #### Calendar dashboards
 
@@ -273,9 +295,14 @@ it never requests a save or exit.
 
 The class diagram shows the selected command, date-range query, and result members.
 
+<!-- TODO (@Atharva005): Add the class diagram for calendar dashboards here.
+Write the PlantUML source at: docs/diagrams/atharva/class/CalendarViewClassDiagram.puml
+Generate its image at: docs/images/atharva/class/CalendarViewClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Calendar dashboard classes and inclusive date ranges](images/atharva/class/CalendarViewClassDiagram.png)
 
 Source: [CalendarViewClassDiagram.puml](diagrams/atharva/class/CalendarViewClassDiagram.puml).
+-->
 
 For a populated period, the formatter appends:
 
@@ -310,9 +337,14 @@ padded columns, and read-only results with a storage stub that fails on writes.
 The sequence assumes a supported range and shows both empty and populated
 periods. Invalid arguments are rejected before the command is created.
 
+<!-- TODO (@Atharva005): Add the sequence diagram for calendar dashboards here.
+Write the PlantUML source at: docs/diagrams/atharva/sequence/CalendarViewSequence.puml
+Generate its image at: docs/images/atharva/sequence/CalendarViewSequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Calendar dashboard sequence for empty and populated periods](images/atharva/sequence/CalendarViewSequence.png)
 
 Source: [CalendarViewSequence.puml](diagrams/atharva/sequence/CalendarViewSequence.puml).
+-->
 
 #### Categorized and topic help
 
@@ -321,9 +353,14 @@ with five categories: activity management, planning and priorities, completion
 and deletion, facilities and routes, and help and exit. A static `TOPIC_HELP` map
 keeps detailed usage, rules, and examples beside each supported topic.
 
+<!-- TODO (@Atharva005): Add the class diagram for categorized and topic help here.
+Write the PlantUML source at: docs/diagrams/atharva/class/TopicHelpClassDiagram.puml
+Generate its image at: docs/images/atharva/class/TopicHelpClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Categorized menu and topic help classes](images/atharva/class/TopicHelpClassDiagram.png)
 
 Source: [TopicHelpClassDiagram.puml](diagrams/atharva/class/TopicHelpClassDiagram.puml).
+-->
 
 `Parser` accepts zero or one topic word after `help`. For one word,
 `HelpCommand(String topic)` normalizes it with `Locale.ROOT`, looks it up, and
@@ -345,9 +382,14 @@ The sequence shows a successful `help view` request, with construction beginning
 the help object's lifeline. The note identifies how menu requests and invalid
 input differ; the validation rules above cover those other scenarios.
 
+<!-- TODO (@Atharva005): Add the sequence diagram for categorized and topic help here.
+Write the PlantUML source at: docs/diagrams/atharva/sequence/TopicHelpSequence.puml
+Generate its image at: docs/images/atharva/sequence/TopicHelpSequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence for a valid topic help request](images/atharva/sequence/TopicHelpSequence.png)
 
 Source: [TopicHelpSequence.puml](diagrams/atharva/sequence/TopicHelpSequence.puml).
+-->
 
 <!-- @@author -->
 
@@ -372,13 +414,23 @@ does not reorder the backing collection or request a save.
 Displayed indexes start at 1 and form the common index contract for delete,
 edit, mark, and unmark. An empty view displays `[WARNING] No activities yet.`.
 
+<!-- TODO (@officialasyrafrahim): Add the class diagram for chronological listing here.
+Write the PlantUML source at: docs/diagrams/asyraf/class/ListActivityClassDiagram.puml
+Generate its image at: docs/images/asyraf/class/ListActivityClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Class diagram for chronological listing](images/asyraf/class/ListActivityClassDiagram.png)
 
 Source: [ListActivityClassDiagram.puml](diagrams/asyraf/class/ListActivityClassDiagram.puml).
+-->
 
+<!-- TODO (@officialasyrafrahim): Add the sequence diagram for chronological listing here.
+Write the PlantUML source at: docs/diagrams/asyraf/sequence/ListActivitySequence.puml
+Generate its image at: docs/images/asyraf/sequence/ListActivitySequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence diagram for chronological listing](images/asyraf/sequence/ListActivitySequence.png)
 
 Source: [ListActivitySequence.puml](diagrams/asyraf/sequence/ListActivitySequence.puml).
+-->
 
 #### Demand-ordered listing
 
@@ -390,13 +442,23 @@ These rows have their own demand-order numbering. The formatter includes a
 notice to run `list` before selecting the chronological index for deletion.
 Use that same chronological index for other indexed changes.
 
+<!-- TODO (@officialasyrafrahim): Add the class diagram for demand-ordered listing here.
+Write the PlantUML source at: docs/diagrams/asyraf/class/ListDemandClassDiagram.puml
+Generate its image at: docs/images/asyraf/class/ListDemandClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Class diagram for demand-ordered listing](images/asyraf/class/ListDemandClassDiagram.png)
 
 Source: [ListDemandClassDiagram.puml](diagrams/asyraf/class/ListDemandClassDiagram.puml).
+-->
 
+<!-- TODO (@officialasyrafrahim): Add the sequence diagram for demand-ordered listing here.
+Write the PlantUML source at: docs/diagrams/asyraf/sequence/ListDemandSequence.puml
+Generate its image at: docs/images/asyraf/sequence/ListDemandSequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence diagram for demand-ordered listing](images/asyraf/sequence/ListDemandSequence.png)
 
 Source: [ListDemandSequence.puml](diagrams/asyraf/sequence/ListDemandSequence.puml).
+-->
 
 #### Activity deletion
 
@@ -411,11 +473,21 @@ with the activity-change flag set. The last deletion uses
 `There is no activity recorded` and still requests saving the now-empty list.
 `ConsoleHelper` saves before displaying the confirmation.
 
+<!-- TODO (@officialasyrafrahim): Add the class diagram for activity deletion here.
+Write the PlantUML source at: docs/diagrams/asyraf/class/DeleteActivityClassDiagram.puml
+Generate its image at: docs/images/asyraf/class/DeleteActivityClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Class diagram for activity deletion](images/asyraf/class/DeleteActivityClassDiagram.png)
 
 Source: [DeleteActivityClassDiagram.puml](diagrams/asyraf/class/DeleteActivityClassDiagram.puml).
+-->
 
+<!-- TODO (@officialasyrafrahim): Add the sequence diagram for activity deletion here.
+Keep the existing PlantUML source: docs/diagrams/asyraf/sequence/DeleteActivitySequence.puml
+Generate its image at: docs/images/asyraf/sequence/DeleteActivitySequence.png
+Uncomment the image Markdown below once the PNG is ready.
 ![Sequence diagram for activity deletion](images/asyraf/sequence/DeleteActivitySequence.png)
+-->
 
 Source: [DeleteActivitySequence.puml](diagrams/asyraf/sequence/DeleteActivitySequence.puml).
 
@@ -463,13 +535,23 @@ all available scores. Ties use date and start time, then retain insertion order.
 The formatter shows unset ratings as `-` and unavailable priority as `NA`.
 Demand and completion do not change the score. The query does not request saving.
 
+<!-- TODO (@officialasyrafrahim): Add the class diagram for priority listing here.
+Write the PlantUML source at: docs/diagrams/asyraf/class/ListPriorityClassDiagram.puml
+Generate its image at: docs/images/asyraf/class/ListPriorityClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Class diagram for priority listing](images/asyraf/class/ListPriorityClassDiagram.png)
 
 Source: [ListPriorityClassDiagram.puml](diagrams/asyraf/class/ListPriorityClassDiagram.puml).
+-->
 
+<!-- TODO (@officialasyrafrahim): Add the sequence diagram for priority listing here.
+Write the PlantUML source at: docs/diagrams/asyraf/sequence/ListPrioritySequence.puml
+Generate its image at: docs/images/asyraf/sequence/ListPrioritySequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence diagram for priority listing](images/asyraf/sequence/ListPrioritySequence.png)
 
 Source: [ListPrioritySequence.puml](diagrams/asyraf/sequence/ListPrioritySequence.puml).
+-->
 
 #### Overdue activities
 
@@ -481,13 +563,23 @@ exactly now are excluded. Results retain chronological order and full-list index
 earlier in the current Monday-to-Sunday week, or earlier. An empty result displays
 `[WARNING] No overdue activities.`. The query changes no completion state or file.
 
+<!-- TODO (@officialasyrafrahim): Add the class diagram for overdue activities here.
+Write the PlantUML source at: docs/diagrams/asyraf/class/OverdueActivityClassDiagram.puml
+Generate its image at: docs/images/asyraf/class/OverdueActivityClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Class diagram for overdue activities](images/asyraf/class/OverdueActivityClassDiagram.png)
 
 Source: [OverdueActivityClassDiagram.puml](diagrams/asyraf/class/OverdueActivityClassDiagram.puml).
+-->
 
+<!-- TODO (@officialasyrafrahim): Add the sequence diagram for overdue activities here.
+Write the PlantUML source at: docs/diagrams/asyraf/sequence/OverdueActivitySequence.puml
+Generate its image at: docs/images/asyraf/sequence/OverdueActivitySequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence diagram for overdue activities](images/asyraf/sequence/OverdueActivitySequence.png)
 
 Source: [OverdueActivitySequence.puml](diagrams/asyraf/sequence/OverdueActivitySequence.puml).
+-->
 
 #### Next activity
 
@@ -500,13 +592,23 @@ are excluded.
 An empty `Optional` produces `[WARNING] No upcoming incomplete activities.`.
 This command does not mark, reschedule, or save an activity.
 
+<!-- TODO (@officialasyrafrahim): Add the class diagram for the next activity here.
+Write the PlantUML source at: docs/diagrams/asyraf/class/NextActivityClassDiagram.puml
+Generate its image at: docs/images/asyraf/class/NextActivityClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Class diagram for next activity](images/asyraf/class/NextActivityClassDiagram.png)
 
 Source: [NextActivityClassDiagram.puml](diagrams/asyraf/class/NextActivityClassDiagram.puml).
+-->
 
+<!-- TODO (@officialasyrafrahim): Add the sequence diagram for the next activity here.
+Write the PlantUML source at: docs/diagrams/asyraf/sequence/NextActivitySequence.puml
+Generate its image at: docs/images/asyraf/sequence/NextActivitySequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence diagram for next activity](images/asyraf/sequence/NextActivitySequence.png)
 
 Source: [NextActivitySequence.puml](diagrams/asyraf/sequence/NextActivitySequence.puml).
+-->
 
 The list parser rejects unknown variants and extra arguments. Time queries
 reject extra words. Checked exceptions keep invalid commands recoverable; `FINE`
@@ -532,9 +634,14 @@ The class diagram shows edit parsing, chronological index resolution, activity
 replacement, and the result that requests saving. It omits unrelated activity
 fields and the individual edit arguments.
 
+<!-- TODO (@Oliver-koh): Add the class diagram for activity editing here.
+Write the PlantUML source at: docs/diagrams/oliver/class/EditActivityClassDiagram.puml
+Generate its image at: docs/images/oliver/class/EditActivityClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Activity editing class diagram](images/oliver/class/EditActivityClassDiagram.png)
 
 Source: [EditActivityClassDiagram.puml](diagrams/oliver/class/EditActivityClassDiagram.puml).
+-->
 
 `EditCommandParser` records which fields were supplied. `EditCommand` resolves the
 index, combines old and new values, and validates the replacement before calling
@@ -550,9 +657,14 @@ would require rollback or validation of the complete candidate state first.
 Replacement is simpler here; callers must obtain a fresh view after an edit
 rather than retain an old activity reference.
 
+<!-- TODO (@Oliver-koh): Add the sequence diagram for activity editing here.
+Write the PlantUML source at: docs/diagrams/oliver/sequence/EditActivitySequence.puml
+Generate its image at: docs/images/oliver/sequence/EditActivitySequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence diagram showing validation, activity replacement, saving, and edit confirmation](images/oliver/sequence/EditActivitySequence.png)
 
 Source: [EditActivitySequence.puml](diagrams/oliver/sequence/EditActivitySequence.puml).
+-->
 This sequence assumes valid input and successful file operations; rejected edits
 return before replacement or saving.
 
@@ -566,13 +678,23 @@ The class diagram separates keyword validation, name matching, and formatting.
 The formatter receives both the matches and the full chronological view so it
 can display the indexes used by activity-changing commands.
 
+<!-- TODO (@Oliver-koh): Add the class diagram for name search here.
+Write the PlantUML source at: docs/diagrams/oliver/class/FindActivityClassDiagram.puml
+Generate its image at: docs/images/oliver/class/FindActivityClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Activity name search class diagram](images/oliver/class/FindActivityClassDiagram.png)
 
 Source: [FindActivityClassDiagram.puml](diagrams/oliver/class/FindActivityClassDiagram.puml).
+-->
 
+<!-- TODO (@Oliver-koh): Add the sequence diagram for name search here.
+Write the PlantUML source at: docs/diagrams/oliver/sequence/FindActivitySequence.puml
+Generate its image at: docs/images/oliver/sequence/FindActivitySequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence diagram showing name search and formatting with full chronological indexes](images/oliver/sequence/FindActivitySequence.png)
 
 Source: [FindActivitySequence.puml](diagrams/oliver/sequence/FindActivitySequence.puml).
+-->
 The activity-change flag stays unset, so the console displays the result without saving.
 
 #### Marking activities
@@ -588,13 +710,23 @@ already-in-that-state warning and skips saving. On a change, the console saves
 before displaying the confirmation. The sequence assumes a valid index and
 successful file operations.
 
+<!-- TODO (@Oliver-koh): Add the class diagram for marking activities here.
+Write the PlantUML source at: docs/diagrams/oliver/class/MarkActivityClassDiagram.puml
+Generate its image at: docs/images/oliver/class/MarkActivityClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Class diagram for marking activities](images/oliver/class/MarkActivityClassDiagram.png)
 
 Source: [MarkActivityClassDiagram.puml](diagrams/oliver/class/MarkActivityClassDiagram.puml).
+-->
 
+<!-- TODO (@Oliver-koh): Add the sequence diagram for marking activities here.
+Write the PlantUML source at: docs/diagrams/oliver/sequence/MarkActivitySequence.puml
+Generate its image at: docs/images/oliver/sequence/MarkActivitySequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence diagram for marking activities](images/oliver/sequence/MarkActivitySequence.png)
 
 Source: [MarkActivitySequence.puml](diagrams/oliver/sequence/MarkActivitySequence.puml).
+-->
 
 #### Unmarking activities
 
@@ -609,13 +741,23 @@ already-in-that-state warning and skips saving. On a change, the console saves
 before displaying the confirmation. The sequence assumes a valid index and
 successful file operations.
 
+<!-- TODO (@Oliver-koh): Add the class diagram for unmarking activities here.
+Write the PlantUML source at: docs/diagrams/oliver/class/UnmarkActivityClassDiagram.puml
+Generate its image at: docs/images/oliver/class/UnmarkActivityClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Class diagram for unmarking activities](images/oliver/class/UnmarkActivityClassDiagram.png)
 
 Source: [UnmarkActivityClassDiagram.puml](diagrams/oliver/class/UnmarkActivityClassDiagram.puml).
+-->
 
+<!-- TODO (@Oliver-koh): Add the sequence diagram for unmarking activities here.
+Write the PlantUML source at: docs/diagrams/oliver/sequence/UnmarkActivitySequence.puml
+Generate its image at: docs/images/oliver/sequence/UnmarkActivitySequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence diagram for unmarking activities](images/oliver/sequence/UnmarkActivitySequence.png)
 
 Source: [UnmarkActivitySequence.puml](diagrams/oliver/sequence/UnmarkActivitySequence.puml).
+-->
 
 #### Completion and persistence
 
@@ -623,9 +765,14 @@ Source: [UnmarkActivitySequence.puml](diagrams/oliver/sequence/UnmarkActivitySeq
 they request persistence only when completion actually changes. The class diagram
 focuses on the result flag that controls saving and on the storage recovery state.
 
+<!-- TODO (@Oliver-koh): Add the class diagram for conditional activity saving and recovery here.
+Write the PlantUML source at: docs/diagrams/oliver/class/ActivityPersistenceClassDiagram.puml
+Generate its image at: docs/images/oliver/class/ActivityPersistenceClassDiagram.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Class diagram showing conditional activity saving and storage recovery state](images/oliver/class/ActivityPersistenceClassDiagram.png)
 
 Source: [ActivityPersistenceClassDiagram.puml](diagrams/oliver/class/ActivityPersistenceClassDiagram.puml).
+-->
 
 `Storage` loads legacy six-field rows and current nine-field rows, preserving
 optional ratings. It reports malformed rows and protects later recovery saves
@@ -634,9 +781,14 @@ command's activity-change flag is set. See [Data Storage](UserGuide.md#data-stor
 [editing](UserGuide.md#editing-an-activity-edit), and
 [searching](UserGuide.md#searching-activity-names-find) for user-facing rules.
 
+<!-- TODO (@Oliver-koh): Add the sequence diagram for completion and conditional saving here.
+Write the PlantUML source at: docs/diagrams/oliver/sequence/CompletionAndSaveSequence.puml
+Generate its image at: docs/images/oliver/sequence/CompletionAndSaveSequence.png
+Uncomment the image and source-link Markdown below once both files are ready.
 ![Sequence diagram showing marking an activity and saving only when its state changes](images/oliver/sequence/CompletionAndSaveSequence.png)
 
 Source: [CompletionAndSaveSequence.puml](diagrams/oliver/sequence/CompletionAndSaveSequence.puml).
+-->
 The sequence assumes a valid index and successful file operations. Its optional
 blocks show when the console saves and when storage first creates a recovery backup.
 
@@ -678,9 +830,9 @@ These features use the shared activity models and command/result flow.
 `AddCommandParser` parses each rating independently into a nullable `Integer`;
 omitting a field leaves it unset. `Activity.validateRating()` accepts `null` or
 an integer from 1 to 5, so add, edit and storage use the same validation rule.
-The [activity-creation class diagram](diagrams/atharva/class/ActivityCreationClassDiagram.puml)
-shows how ratings fit into activity creation. The priority view uses these ratings;
-editing and persistence update and preserve them.
+The class-diagram placeholder in [Adding activities](#adding-activities) marks
+where to show how ratings fit into activity creation. The priority view uses
+these ratings; editing and persistence update and preserve them.
 
 #### Facility accessibility data (`facilities.txt`)
 
