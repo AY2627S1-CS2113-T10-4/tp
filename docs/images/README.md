@@ -92,6 +92,8 @@ including its presentation of Luke's rating fields. Class/sequence diagrams use
 
 ## Luke
 
+- [ActivityNameValidatorClassDiagram.png](luke/class/ActivityNameValidatorClassDiagram.png)
+  shows ASCII command-word checks and the name validator used by add/edit parsers.
 - [ActivityScheduleValidatorClassDiagram.png](luke/class/ActivityScheduleValidatorClassDiagram.png)
   shows the shared duplicate/clash validator and its add/edit integrations.
 - [FacilityClassDiagram.png](luke/class/FacilityClassDiagram.png) shows facility

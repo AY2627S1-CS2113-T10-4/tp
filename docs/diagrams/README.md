@@ -120,6 +120,7 @@ are rendered from the corresponding PlantUML sources.
 | --- | --- | --- |
 | [FacilityClassDiagram.puml](luke/class/FacilityClassDiagram.puml) | [PNG](../images/luke/class/FacilityClassDiagram.png) | [Facility lookup](../DeveloperGuide.md#facility-lookup) |
 | [ActivityScheduleValidatorClassDiagram.puml](luke/class/ActivityScheduleValidatorClassDiagram.puml) | [PNG](../images/luke/class/ActivityScheduleValidatorClassDiagram.png) | [Activity schedule validation](../DeveloperGuide.md#activity-schedule-validation) |
+| [ActivityNameValidatorClassDiagram.puml](luke/class/ActivityNameValidatorClassDiagram.puml) | [PNG](../images/luke/class/ActivityNameValidatorClassDiagram.png) | [ASCII command/name validation](../DeveloperGuide.md#ascii-command-name-validation) |
 | [RoutingClassDiagram.puml](luke/class/RoutingClassDiagram.puml) | [PNG](../images/luke/class/RoutingClassDiagram.png) | [Accessible route search](../DeveloperGuide.md#accessible-route-search) |
 
 ### Sequence diagrams
