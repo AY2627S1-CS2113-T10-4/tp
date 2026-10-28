@@ -23,9 +23,11 @@ See [Calendar dashboards](#viewing-calendar-dashboards-view) for examples, or en
 <!-- TEAM: All members maintain installation and startup instructions. -->
 ## Quick Start
 
-1. Install Java 25. Download or clone the source from the
-   [GitHub repository](https://github.com/lukelouyu/tp) and build `unienable.jar`
-   using the commands below.
+1. Install Java 25 and download `unienable.jar` from the
+   [test release](https://github.com/lukelouyu/tp/releases/tag/v2.0-test.20261028)
+   ([direct JAR download](https://github.com/lukelouyu/tp/releases/download/v2.0-test.20261028/unienable.jar)).
+   This is a prerelease for testing. Alternatively, download or clone the source
+   from the [GitHub repository](https://github.com/lukelouyu/tp) and build it below.
 2. Open a terminal in the folder containing the JAR.
 3. Run `java -jar unienable.jar`.
 4. Enter a command and press Enter; use `help` to view the built-in command list.
