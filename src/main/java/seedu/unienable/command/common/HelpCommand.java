@@ -44,7 +44,6 @@ public class HelpCommand extends Command {
 
             HELP AND EXIT
               help [TOPIC]        Show this menu or detailed command help
-              save                Retry saving the current activities
               bye                 Exit UniEnable
 
             Run list to get the indexes for edit, mark, unmark, and delete.
@@ -68,7 +67,9 @@ public class HelpCommand extends Command {
                     Details:
                       - n/, d/, s/, and e/ are required; prefixes may appear in any order.
                       - Names can contain spaces, but cannot be blank or contain | or line breaks.
-                      - Unicode names, including accented letters, Chinese, Tamil, and emoji, are supported.
+                      - Names use printable ASCII only: English letters, digits, spaces, and punctuation.
+                      - Backslashes, commas, and single/double quotation marks are forbidden in names.
+                      - Slash / is allowed; /\\ and \\/ are forbidden. There is no slash-escape syntax.
                       - Use a real YYYY-MM-DD date and 24-hour HH:mm times, such as 09:30.
                       - End must be after start on the same day and after the current time.
                       - Duplicate activities are rejected. Intentional overlaps require overlap/ALLOW.
@@ -93,10 +94,12 @@ public class HelpCommand extends Command {
                       - Run list first and use the activity's current chronological index.
                       - Supply at least one field; omitted fields and completion are preserved.
                       - Names, dates, times, demand, and ratings follow the same rules as add.
-                      - Replacement names support Unicode; control characters and line breaks are rejected.
+                      - Replacement names use printable ASCII only; | and line breaks are rejected.
+                      - Backslashes, commas, and single/double quotation marks are forbidden in names.
+                      - Slash / is allowed; /\\ and \\/ are forbidden. There is no slash-escape syntax.
                       - Date/time edits must leave an end after start on the same day and after now.
                       - Duplicate edits are rejected. Use overlap/ALLOW to confirm an intentional time clash.
-                      - Name, demand, or rating edits alone can update historical activities.
+                      - Activities ending at or before now cannot be edited, including name or rating changes.
                       - To change completion, use mark or unmark. Successful edits save automatically.
 
                     Examples:
@@ -307,21 +310,6 @@ public class HelpCommand extends Command {
                       help facility
                       help view
                     """.stripTrailing()),
-            Map.entry("save", """
-                    SAVE - Save current activities
-
-                    Usage:
-                      save
-
-                    Details:
-                      - Retries a failed save without adding, editing, or toggling an activity.
-                      - Fix the reported file or backup problem first.
-                      - Unsaved-change warnings clear only after a successful save.
-                      - Accepts no arguments.
-
-                    Examples:
-                      save
-                    """.stripTrailing()),
             Map.entry("bye", """
                     BYE - Exit UniEnable
 
@@ -330,8 +318,8 @@ public class HelpCommand extends Command {
 
                     Details:
                       - Accepts no arguments and ends the current console session.
-                      - Activity changes save when made; bye does not perform another save.
-                      - Unsaved changes block exit. Fix the save error and run save before retrying bye.
+                      - Activity changes save when made; bye retries saving only if changes remain unsaved.
+                      - A failed retry keeps the app running. Fix the file problem and enter bye again.
                       - Reading help bye displays these instructions and keeps the app running.
 
                     Examples:

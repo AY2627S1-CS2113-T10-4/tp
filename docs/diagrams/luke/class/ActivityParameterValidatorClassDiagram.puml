@@ -1,4 +1,4 @@
-'@@author Atharva005
+'@@author lukelouyu
 @startuml
 !pragma layout smetana
 title Activity parameter typo validation
@@ -37,11 +37,12 @@ EditCommandParser ..> ActivityParameterValidator : validates before reading fiel
 ActivityParameterValidator ..> ParseException : warns about a likely misspelled prefix
 
 note bottom of ActivityParameterValidator
-  Scan whitespace-delimited alphabetic tokens ending in /.
+  Scan whitespace-delimited alphanumeric tokens ending in /.
   Skip recognised prefixes and single-letter slash text.
   Check one insertion, deletion, substitution, or adjacent swap
   against multi-letter prefixes using edit distance.
   Ordinary names containing and/or or w/o remain valid.
+  Prefix-like name text must be reworded; no slash-escape syntax exists.
 end note
 note bottom of ParseException
   Example: Unknown parameter 'demm/'. Did you mean 'dem/'?

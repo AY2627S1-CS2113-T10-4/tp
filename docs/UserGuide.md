@@ -1,15 +1,5 @@
 # UniEnable User Guide
 
-<!--
-RESPONSIBILITY SCOPES (feature responsibility, not the most recent Git editor):
-Atharva005: activity creation, calendar dashboards, and command help.
-officialasyrafrahim: listing, deletion, priority, overdue, and next.
-Oliver-koh: completion changes, activity persistence/recovery, editing, and search.
-lukelouyu: optional add ratings, facilities, routes, and exit.
-Sections marked TEAM are maintained jointly and have no single-author override.
-Named author comments begin a feature scope; the unnamed author comment ends it.
--->
-
 <!-- TEAM: All members maintain the introduction and navigation. -->
 ## Introduction
 
@@ -33,7 +23,11 @@ See [Calendar dashboards](#viewing-calendar-dashboards-view) for examples, or en
 <!-- TEAM: All members maintain installation and startup instructions. -->
 ## Quick Start
 
-1. Install Java 25 and obtain `unienable.jar`.
+1. Install Java 25 and download `unienable.jar` from the
+   [test release](https://github.com/lukelouyu/tp/releases/tag/v2.0-test.20261028)
+   ([direct JAR download](https://github.com/lukelouyu/tp/releases/download/v2.0-test.20261028/unienable.jar)).
+   This is a prerelease for testing. Alternatively, download or clone the source
+   from the [GitHub repository](https://github.com/lukelouyu/tp) and build it below.
 2. Open a terminal in the folder containing the JAR.
 3. Run `java -jar unienable.jar`.
 4. Enter a command and press Enter; use `help` to view the built-in command list.
@@ -41,6 +35,51 @@ See [Calendar dashboards](#viewing-calendar-dashboards-view) for examples, or en
 
 To build from source on Windows, run `.\gradlew.bat shadowJar` in the project folder,
 then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
+
+Try this first session in an empty launch folder. The examples use a future date;
+if you try them after that date, replace it with a date that has not ended.
+The horizontal borders are omitted from the expected outputs below.
+
+Command:
+
+```text
+add n/Study d/2099-12-10 s/09:00 e/10:00
+```
+
+Expected output:
+
+```text
+Added activity: Study
+Date: 2099-12-10
+Time: 09:00 - 10:00
+Demand: MEDIUM
+Importance: -
+Urgency: -
+Commitment: -
+Activities in this session: 1
+```
+
+Next commands, in the same session:
+
+```text
+mark 1
+list
+```
+
+Expected output, in command order:
+
+```text
+Marked activity as done: Study
+Activities (by date, start time):
+1. Study (2099-12-10, 09:00-10:00) [MEDIUM] [X]
+```
+
+The `[X]` indicates completion. Enter `bye` to exit; the next launch from the
+same folder will load this activity. The feature walkthrough below starts with
+its own empty list, independently of this first-session example.
+To reproduce that walkthrough, exit the app, copy the JAR into a different empty
+directory, and launch it from that directory. Keep the first session's data in
+its original directory.
 
 <!-- TEAM: All members maintain the cross-feature command and index conventions. -->
 ## Command Format
@@ -137,17 +176,43 @@ The end time must be strictly after the start time on
 the same day; overnight activities are not supported. The activity's date and end
 time together must also be strictly after the current date/time in your computer's
 local time zone. An activity that has already started can still be added if it
-has not ended; an activity ending exactly now is rejected. New activities start
+has not ended; an activity ending exactly now is rejected. Historical activities
+cannot be added, and there is no override for this restriction. New activities start
 incomplete.
 
-Names support Unicode, including Chinese, Tamil, accented letters, and emoji.
-They must be non-blank and cannot contain `|`, line breaks, control characters,
-or malformed surrogate pairs. Ordinary slash text such as `and/or` and `w/o`
-is allowed. Avoid field prefixes at the start of a word in a name: they are
-parsed as fields. Names are saved in UTF-8.
+Activity names must contain at least one non-whitespace character and use
+printable ASCII characters only. English letters, digits, spaces, and ordinary
+ASCII punctuation are allowed. Chinese, Tamil, accented letters, emoji, and
+non-printable characters such as tabs are rejected with:
 
-Likely misspellings of multi-letter prefixes, such as `demm/HIGH` or `impp/5`,
+```text
+[WARNING] Please write the activity name in English (ASCII characters only).
+```
+
+The `|` character and line breaks remain forbidden and receive a separate
+delimiter warning. Ordinary slash text such as `and/or` and `w/o` is allowed.
+Backslashes (`\`), commas (`,`), single quotation marks (`'`, including apostrophes),
+and double quotation marks (`"`) are forbidden. Slash (`/`) is allowed, subject to
+the prefix rules below. Combinations `/\` and `\/` are forbidden because they
+contain a backslash. There is no slash-escape or quoted-name syntax. Both Add and
+Edit reject these characters with:
+
+```text
+[WARNING] Activity names must not contain backslashes (\), commas (,), or quotation marks (' or "). Slash (/) is allowed; /\ and \/ are not.
+```
+
+These input restrictions do not prevent loading historical saved names.
+Avoid field prefixes at the start of a word in a name: they are parsed as fields.
+Names are saved in UTF-8. Historical saved names containing non-ASCII characters
+can still be loaded, listed, and searched; a replacement name supplied with
+`edit INDEX n/NAME` must follow the printable-ASCII rule.
+
+Likely misspellings of multi-letter prefixes, such as `demm/HIGH`, `dem1/HIGH`, or `impp/5`,
 produce a warning instead of becoming part of the name. This also applies to edit.
+Ordinary `and/or` and `w/o` remain allowed. Prefix-like slash text, such as a
+word beginning `d/` or a likely typo such as `dim/sum`, cannot be entered literally
+at a field boundary. Reword it using spaces or hyphens, such as `dim-sum` or
+`date notes`; do not attempt to quote or backslash-escape it.
 
 A duplicate activity has the same name (ignoring case and surrounding whitespace),
 date, start and end times as an existing activity. Changing demand, ratings or
@@ -269,7 +334,7 @@ mark 1
 view today
 ```
 
-The dashboard is:
+Expected output for `view today` after those setup commands:
 
 ```text
 TODAY - Tuesday, 01 December 2026
@@ -398,12 +463,14 @@ edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [im
 - Use an index from chronological `list` or activity `find` output and supply
   at least one field. The command updates one activity at a time.
 - Each supplied field must have a value and appear once. Names follow the same
-  Unicode, prefix, pipe, and line-break rules as `add`.
+  printable-ASCII, prefix, pipe, and line-break rules as `add`.
 - Omitted fields, including ratings, keep their existing values. An omitted
   demand does not reset to MEDIUM. Ratings accept 1 to 5; `-` cannot clear a rating.
 - If any date/time field is supplied, the combined old and new values must form
   a same-day activity with its end strictly after its start and the current local
-  time. A change only to name, demand, or ratings can update historical activities.
+  time. Activities whose existing end is at or before the current local time cannot
+  be edited at all, including name, demand, rating, or rescheduling changes.
+  Historical activities already saved remain loadable, listable, and searchable.
 - Validation failures leave the activity unchanged. Successful edits save
   automatically and display all resulting fields, including ratings.
 - Name or schedule edits must not duplicate another activity. Time overlaps
@@ -419,13 +486,40 @@ they are independent of the earlier activity walkthrough:
 ```text
 add n/CCA EXCO meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH imp/5 urg/4 com/3
 mark 1
+```
+
+Next command:
+
+```text
 edit 1 n/CCA EXCO planning meeting com/4
 ```
 
-The confirmation begins with `Edited activity: CCA EXCO planning meeting` and
-shows the resulting fields. Completion stays `[X]`; omitted fields are preserved.
-Names follow the same Unicode and delimiter rules as add. Saved names can be
-listed, searched, and renamed in any supported script.
+Expected output:
+
+```text
+Edited activity: CCA EXCO planning meeting
+Date: 2026-12-02
+Time: 14:00 - 15:00
+Demand: HIGH
+Importance: 5
+Urgency: 4
+Commitment: 4
+```
+
+Command: `list`
+
+Expected output:
+
+```text
+Activities (by date, start time):
+1. CCA EXCO planning meeting (2026-12-02, 14:00-15:00) [HIGH] [X]
+```
+
+Completion stays `[X]`; the omitted demand, importance, and urgency are preserved.
+Replacement names follow the same printable-ASCII and delimiter rules as add.
+Previously saved non-ASCII names can still be listed and searched. For an activity
+eligible for editing (its end is still in the future), omitting `n/` preserves
+the saved name. This does not allow editing an activity that has already ended.
 
 ### Searching activity names: `find`
 
@@ -434,7 +528,8 @@ Find activities by a case-insensitive substring of their names.
 Format: `find KEYWORD`
 
 - Supply a non-blank name substring. Multiple words form one literal phrase;
-  do not add quotation marks unless the quotes are part of the name.
+  do not wrap the keyword in quotation marks. Quotes are literal search text and
+  are useful only when matching historical saved names that already contain them.
 - Searches include completed and incomplete activities. They search names,
   rather than dates, demand levels or ratings, and do not interpret regular expressions.
 - Matches appear chronologically with indexes from the **full** chronological
@@ -612,6 +707,25 @@ If the source and destination are the same hub, including names that differ only
 in letter case, the command shows
 `[WARNING] Sorry, the source and destination are the same.`
 
+When both endpoints are known hubs but no path connects them using only
+connections marked YES for accessibility, the command displays the following
+two-line warning. `START` and `END` are replaced by the actual endpoints:
+
+```text
+[WARNING] No confirmed accessible route recorded from START to END.
+Only connections marked YES for accessibility are used.
+```
+
+The sample-data disclaimer is appended after this warning:
+
+```text
+Sample reference data.
+Verify with current campus information before you rely on it.
+```
+
+This means the local dataset has no recorded accessible path between those hubs;
+it does not establish that no accessible route exists on campus.
+
 Input: `route from/as6 to/as7`
 
 Output:
@@ -645,7 +759,7 @@ Format: `help [TOPIC]`
 - `help TOPIC` displays that command's syntax, rules, and examples. Topic names
   ignore letter case and must be a single command name.
 - Supported topics are `add`, `edit`, `find`, `list`, `view`, `overdue`,
-  `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `save`, `help`, and `bye`.
+  `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `help`, and `bye`.
 - `help list` covers all list variants; `help facility` includes feature search.
   Enter `help list` rather than `help list demand`.
 - Help only displays instructions. For example, `help delete` removes nothing,
@@ -664,16 +778,6 @@ The main menu begins with `UniEnable commands:`. Topic pages have a title such a
 Each topic ends with `Type help to return to the command menu.`.
 
 <!-- @@author -->
-<!-- @@author Oliver-koh -->
-
-### Saving changes: `save`
-
-Format: `save`
-
-Retry a failed save after fixing the reported problem. Successful saving displays
-`Activities saved.` and clears the unsaved-change warning. No activity fields change.
-
-<!-- @@author -->
 <!-- @@author lukelouyu -->
 
 ### Exiting the application: `bye`
@@ -681,8 +785,10 @@ Retry a failed save after fixing the reported problem. Successful saving display
 Format: `bye`
 
 Exit the console session after checking that any activity changes saved successfully.
-`bye` accepts no arguments and does not retry a failed save. If changes remain
-unsaved, exit is blocked; fix the error and run `save` first.
+`bye` accepts no arguments. If changes remain unsaved after an automatic save
+failed, it retries saving before exiting. A failed retry keeps the app open;
+fix the reported file or backup-path problem and enter `bye` again. If all changes
+are already saved, `bye` exits without another write.
 
 Input: `bye`
 
@@ -695,6 +801,8 @@ Output: `Goodbye from UniEnable!`
 Invalid input usually produces `[WARNING]` and the app waits for another command.
 Empty activity views, searches with no matches, and
 unavailable route results also include `[WARNING]` on the no-result message.
+See [route results](#finding-an-accessible-route-route) for the no-recorded-path
+warning and its meaning.
 
 <!-- @@author Atharva005 -->
 For `view week`, this warning applies only when the whole selected period is empty;
@@ -712,8 +820,14 @@ Command words must use ASCII characters. For example, entering `加入` or
 ```
 
 The app then waits for another command. Unknown ASCII command words and blank
-input keep the usual unrecognized-command warning. Non-ASCII activity names
-supplied to add or edit are supported; control characters still receive a name warning.
+input keep the usual unrecognized-command warning. Non-ASCII or non-printable
+activity names supplied to `add` or `edit` receive the separate name warning:
+
+```text
+[WARNING] Please write the activity name in English (ASCII characters only).
+```
+
+Rejected commands leave activities and the saved file unchanged.
 <!-- @@author -->
 
 <!-- @@author Oliver-koh -->
@@ -758,9 +872,10 @@ appears after subsequent commands. Repeating an add is not a save retry.
 
 1. Keep the app open and fix the reported file or backup-path problem. Preserve
    a separate copy of any existing activity file or recovery backup.
-2. Enter `save`. It writes the current list without changing any activity.
-3. Wait for `Activities saved.` and check that the unsaved warning has cleared.
-   Then use `bye`. Exit is blocked while changes remain unsaved.
+2. Enter `bye`. It retries writing the current list without changing any activity.
+3. A successful retry displays `Goodbye from UniEnable!` and exits. If saving
+   still fails, the app stays open with the error and unsaved-change warning.
+   Correct the problem and enter `bye` again.
 <!-- @@author -->
 
 <!-- TEAM: Each FAQ answer is maintained by the owner of the feature it describes. -->
@@ -772,8 +887,8 @@ folder on each run. To transfer activities, copy this file before starting the a
 
 **Can I edit an activity?** Use `edit INDEX` with at least one field
 to update an activity while keeping omitted values and completion status.
-Date/time edits must leave an end after now; metadata-only edits can update
-historical activities.
+Date/time edits must leave an end after now. Activities ending at or before now
+cannot be edited, including metadata-only changes or moving them into the future.
 
 **Why does a search result start at index 2?** Activity `find` preserves indexes
 from the full chronological list. Use the displayed index directly for `edit`,
@@ -803,7 +918,6 @@ Use `help TOPIC` with any command name below for detailed instructions, such as
 
 | Command | Purpose |
 | --- | --- |
-| `save` | Save current activities or retry a failed save |
 | `help [TOPIC]` / `bye` | Show categorized or detailed command help / exit |
 | `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]` | Add an activity with optional ratings |
 | `list` / `list demand` | View activities by time / demand |

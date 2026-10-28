@@ -14,28 +14,19 @@ section, and regeneration commands.
 | [oliver](#oliver) | [Class](#oliver) | [Sequence](#oliver) | - |
 | [luke](#luke) | [Class](#luke) | [Sequence](#luke) | Architecture and [connectivity graph](#luke) |
 
-Atharva maintains the activity-creation diagrams and the six name, parameter,
-and schedule validation diagrams in the `atharva` folder. Class/sequence diagrams use
+Luke maintains the activity-creation class diagram and name/parameter validation
+pairs in the `luke` folder. Atharva maintains the add sequence, calendar, help,
+and schedule validation diagrams in `atharva`. Class/sequence diagrams use
 `.png`, and the campus connectivity graph uses `.svg`.
 
 <!-- @@author Atharva005 -->
 
 ## Atharva
 
-- [ActivityNameValidatorClassDiagram.png](atharva/class/ActivityNameValidatorClassDiagram.png)
-  shows command-word checks and Unicode name validation.
-- [ActivityNameValidationSequence.png](atharva/sequence/ActivityNameValidationSequence.png)
-  shows valid-name and warning paths before command execution.
-- [ActivityParameterValidatorClassDiagram.png](atharva/class/ActivityParameterValidatorClassDiagram.png)
-  shows the shared prefix-typo checker used by add and edit.
-- [ActivityParameterValidationSequence.png](atharva/sequence/ActivityParameterValidationSequence.png)
-  shows a typo warning before an activity command executes.
 - [ActivityScheduleValidatorClassDiagram.png](atharva/class/ActivityScheduleValidatorClassDiagram.png)
   shows duplicate and overlap validation before add/edit changes.
 - [ActivityScheduleValidationSequence.png](atharva/sequence/ActivityScheduleValidationSequence.png)
   shows duplicate rejection, overlap approval, and successful validation.
-- [ActivityCreationClassDiagram.png](atharva/class/ActivityCreationClassDiagram.png)
-  shows activity creation and optional rating fields.
 - [AddActivitySequence.png](atharva/sequence/AddActivitySequence.png) shows activity parsing,
   construction, and insertion, including optional ratings.
 - [CalendarViewClassDiagram.png](atharva/class/CalendarViewClassDiagram.png) shows date
@@ -99,6 +90,17 @@ and schedule validation diagrams in the `atharva` folder. Class/sequence diagram
 <!-- @@author lukelouyu -->
 
 ## Luke
+
+- [ActivityCreationClassDiagram.png](luke/class/ActivityCreationClassDiagram.png)
+  shows activity creation and optional rating fields.
+- [ActivityNameValidatorClassDiagram.png](luke/class/ActivityNameValidatorClassDiagram.png)
+  shows command-word checks and printable-ASCII name validation.
+- [ActivityNameValidationSequence.png](luke/sequence/ActivityNameValidationSequence.png)
+  shows valid-name and warning paths before command execution.
+- [ActivityParameterValidatorClassDiagram.png](luke/class/ActivityParameterValidatorClassDiagram.png)
+  shows the shared prefix-typo checker used by add and edit.
+- [ActivityParameterValidationSequence.png](luke/sequence/ActivityParameterValidationSequence.png)
+  shows a typo warning before an activity command executes.
 
 - [ArchitectureDiagram.png](luke/architecture/ArchitectureDiagram.png) shows
   startup, commands, models, storage, and output responsibilities.

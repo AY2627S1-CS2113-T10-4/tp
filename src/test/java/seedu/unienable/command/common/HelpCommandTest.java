@@ -60,16 +60,15 @@ class HelpCommandTest {
     @TestFactory
     Stream<DynamicTest> execute_topics_showUsageRulesAndExamplesWithoutReferenceData() {
         String[][] cases = {
-            {"add", "add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm", "Demand defaults to MEDIUM",
+            {"add", "add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm", "Names use printable ASCII only",
                 "add n/Study d/2030-12-01 s/10:00 e/11:00"},
-            {"edit", "edit INDEX [n/NAME]", "omitted fields and completion are preserved",
+            {"edit", "edit INDEX [n/NAME]", "Replacement names use printable ASCII only",
                 "edit 1 n/Project meeting dem/HIGH"},
             {"find", "find KEYWORD", "literal substring", "find project meeting"},
             {"list", "list priority", "list demand groups HIGH, MEDIUM, then LOW", "list demand"},
             {"view", "view week", "today and the following six days", "view tomorrow"},
             {"overdue", "overdue", "end strictly before the current time", "overdue"},
             {"next", "next", "start is strictly after the current time", "next"},
-            {"save", "save", "Retries a failed save", "Unsaved-change warnings"},
             {"mark", "mark INDEX", "already completed activity warns", "mark 1"},
             {"unmark", "unmark INDEX", "already incomplete activity warns", "unmark 1"},
             {"delete", "delete INDEX", "There is no undo command", "delete 1"},
@@ -98,6 +97,15 @@ class HelpCommandTest {
             assertFalse(result.didChangeActivities());
             assertTrue(activities.getActivities().isEmpty());
         }));
+    }
+
+    @Test
+    void removedSaveCommand_isAbsentFromHelpAndParser() {
+        String menu = new HelpCommand().execute(new ActivityList(), noWrites).getMessage();
+        assertFalse(menu.contains("\n  save "), menu);
+        for (String input : List.of("save", "save extra", "help save")) {
+            assertThrows(ParseException.class, () -> parser.parse(input), input);
+        }
     }
 
     @Test

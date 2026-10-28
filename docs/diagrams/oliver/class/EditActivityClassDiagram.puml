@@ -79,6 +79,7 @@ note bottom of EditCommand
   Fields is an immutable group of optional replacements.
   A null component means that field was omitted.
   Omitted fields and completion are preserved.
+  Reject every edit when the original activity ends at or before now.
   Date/time edits validate the combined range before replacement.
   Name/schedule edits reject duplicates and unapproved clashes, excluding the original.
   Demand/rating-only edits skip schedule validation.

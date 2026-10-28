@@ -58,6 +58,9 @@ public class EditCommandParser {
      * @throws ParseException for malformed or incomplete input
      */
     public EditCommand parse(String arguments) throws ParseException {
+        if (arguments.contains("|") || arguments.indexOf('\n') >= 0 || arguments.indexOf('\r') >= 0) {
+            throw invalid("The activity name must not contain | or line breaks.");
+        }
         ActivityParameterValidator.validate(arguments);
         String trimmed = arguments.trim();
         if (trimmed.isEmpty()) {

@@ -24,7 +24,7 @@ import seedu.unienable.ui.Ui;
 final class ConsoleHelper {
     //@@author Oliver-koh
     private static final String UNSAVED_NOTICE =
-            "[WARNING] Unsaved activity changes. Fix the save error and run 'save' before exiting.";
+            "[WARNING] Unsaved activity changes. Fix the save error and enter 'bye' to retry saving and exit.";
     //@@author
     /**
      * Prevents instantiation of this stateless helper.
@@ -96,6 +96,8 @@ final class ConsoleHelper {
             //@@author Oliver-koh
             if (result.didChangeActivities()) {
                 storage.markUnsavedChanges();
+            }
+            if (result.didChangeActivities() || result.isExit() && storage.hasUnsavedChanges()) {
                 storage.save(activities);
             }
             if (result.isExit() && storage.hasUnsavedChanges()) {

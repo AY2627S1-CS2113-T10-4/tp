@@ -12,14 +12,15 @@ graph uses `luke/graph/`; it is separate from the class and sequence diagrams.
 
 | Folder | Responsibility |
 | --- | --- |
-| [atharva](#atharva) | Activity creation, calendar dashboards, help, and name/parameter/schedule validation diagrams. |
+| [atharva](#atharva) | Add sequence, calendar dashboards, help, and schedule validation diagrams. |
 | [asyraf](#asyraf) | Chronological/demand listing, deletion, priority, overdue and next. |
 | [oliver](#oliver) | Completion, storage/recovery, editing and search. |
-| [luke](#luke) | Architecture, optional add ratings, facility data/queries, route connections/search and exit. |
+| [luke](#luke) | Activity-creation class diagram, name/parameter validation, architecture, optional add ratings, accessibility and exit. |
 
-Atharva maintains activity creation, calendar dashboards, help, and all six
-name/parameter/schedule validation diagrams. Luke maintains the architecture
-diagram and the shared validation helper code. Exit has no separate diagram.
+Luke maintains the activity-creation class diagram, the name and parameter
+validation class/sequence pairs, the architecture diagram, and shared validation
+helper code. Atharva maintains the add sequence, calendar dashboards, help, and
+schedule validation pair. Exit has no separate diagram.
 
 Owned PlantUML sources use single-quote author comments. Their image links and
 Developer Guide embeds sit inside the corresponding Markdown author scopes.
@@ -34,9 +35,6 @@ are rendered from the corresponding PlantUML sources.
 
 | Source | Rendered image | Developer Guide section |
 | --- | --- | --- |
-| [ActivityCreationClassDiagram.puml](atharva/class/ActivityCreationClassDiagram.puml) | [PNG](../images/atharva/class/ActivityCreationClassDiagram.png) | [Adding activities](../DeveloperGuide.md#adding-activities) |
-| [ActivityNameValidatorClassDiagram.puml](atharva/class/ActivityNameValidatorClassDiagram.puml) | [PNG](../images/atharva/class/ActivityNameValidatorClassDiagram.png) | [Command and name validation](../DeveloperGuide.md#ascii-command-name-validation) |
-| [ActivityParameterValidatorClassDiagram.puml](atharva/class/ActivityParameterValidatorClassDiagram.puml) | [PNG](../images/atharva/class/ActivityParameterValidatorClassDiagram.png) | [Activity parameter validation](../DeveloperGuide.md#activity-parameter-validation) |
 | [ActivityScheduleValidatorClassDiagram.puml](atharva/class/ActivityScheduleValidatorClassDiagram.puml) | [PNG](../images/atharva/class/ActivityScheduleValidatorClassDiagram.png) | [Activity schedule validation](../DeveloperGuide.md#activity-schedule-validation) |
 | [CalendarViewClassDiagram.puml](atharva/class/CalendarViewClassDiagram.puml) | [PNG](../images/atharva/class/CalendarViewClassDiagram.png) | [Calendar dashboards](../DeveloperGuide.md#calendar-dashboards) |
 | [TopicHelpClassDiagram.puml](atharva/class/TopicHelpClassDiagram.puml) | [PNG](../images/atharva/class/TopicHelpClassDiagram.png) | [Categorized and topic help](../DeveloperGuide.md#categorized-and-topic-help) |
@@ -46,8 +44,6 @@ are rendered from the corresponding PlantUML sources.
 | Source | Rendered image | Developer Guide section |
 | --- | --- | --- |
 | [AddActivitySequence.puml](atharva/sequence/AddActivitySequence.puml) | [PNG](../images/atharva/sequence/AddActivitySequence.png) | [Adding activities](../DeveloperGuide.md#adding-activities) |
-| [ActivityNameValidationSequence.puml](atharva/sequence/ActivityNameValidationSequence.puml) | [PNG](../images/atharva/sequence/ActivityNameValidationSequence.png) | [Command and name validation](../DeveloperGuide.md#ascii-command-name-validation) |
-| [ActivityParameterValidationSequence.puml](atharva/sequence/ActivityParameterValidationSequence.puml) | [PNG](../images/atharva/sequence/ActivityParameterValidationSequence.png) | [Activity parameter validation](../DeveloperGuide.md#activity-parameter-validation) |
 | [ActivityScheduleValidationSequence.puml](atharva/sequence/ActivityScheduleValidationSequence.puml) | [PNG](../images/atharva/sequence/ActivityScheduleValidationSequence.png) | [Activity schedule validation](../DeveloperGuide.md#activity-schedule-validation) |
 | [CalendarViewSequence.puml](atharva/sequence/CalendarViewSequence.puml) | [PNG](../images/atharva/sequence/CalendarViewSequence.png) | [Calendar dashboards](../DeveloperGuide.md#calendar-dashboards) |
 | [TopicHelpSequence.puml](atharva/sequence/TopicHelpSequence.puml) | [PNG](../images/atharva/sequence/TopicHelpSequence.png) | [Categorized and topic help](../DeveloperGuide.md#categorized-and-topic-help) |
@@ -124,6 +120,9 @@ are rendered from the corresponding PlantUML sources.
 
 | Source | Rendered image | Developer Guide section |
 | --- | --- | --- |
+| [ActivityCreationClassDiagram.puml](luke/class/ActivityCreationClassDiagram.puml) | [PNG](../images/luke/class/ActivityCreationClassDiagram.png) | [Adding activities](../DeveloperGuide.md#adding-activities) |
+| [ActivityNameValidatorClassDiagram.puml](luke/class/ActivityNameValidatorClassDiagram.puml) | [PNG](../images/luke/class/ActivityNameValidatorClassDiagram.png) | [Command and name validation](../DeveloperGuide.md#ascii-command-name-validation) |
+| [ActivityParameterValidatorClassDiagram.puml](luke/class/ActivityParameterValidatorClassDiagram.puml) | [PNG](../images/luke/class/ActivityParameterValidatorClassDiagram.png) | [Activity parameter validation](../DeveloperGuide.md#activity-parameter-validation) |
 | [FacilityClassDiagram.puml](luke/class/FacilityClassDiagram.puml) | [PNG](../images/luke/class/FacilityClassDiagram.png) | [Facility lookup](../DeveloperGuide.md#facility-lookup) |
 | [RoutingClassDiagram.puml](luke/class/RoutingClassDiagram.puml) | [PNG](../images/luke/class/RoutingClassDiagram.png) | [Accessible route search](../DeveloperGuide.md#accessible-route-search) |
 
@@ -131,6 +130,8 @@ are rendered from the corresponding PlantUML sources.
 
 | Source | Rendered image | Developer Guide section |
 | --- | --- | --- |
+| [ActivityNameValidationSequence.puml](luke/sequence/ActivityNameValidationSequence.puml) | [PNG](../images/luke/sequence/ActivityNameValidationSequence.png) | [Command and name validation](../DeveloperGuide.md#ascii-command-name-validation) |
+| [ActivityParameterValidationSequence.puml](luke/sequence/ActivityParameterValidationSequence.puml) | [PNG](../images/luke/sequence/ActivityParameterValidationSequence.png) | [Activity parameter validation](../DeveloperGuide.md#activity-parameter-validation) |
 | [FacilityLookupSequence.puml](luke/sequence/FacilityLookupSequence.puml) | [PNG](../images/luke/sequence/FacilityLookupSequence.png) | [Facility lookup](../DeveloperGuide.md#facility-lookup) |
 | [RouteSearchSequence.puml](luke/sequence/RouteSearchSequence.puml) | [PNG](../images/luke/sequence/RouteSearchSequence.png) | [Accessible route search](../DeveloperGuide.md#accessible-route-search) |
 

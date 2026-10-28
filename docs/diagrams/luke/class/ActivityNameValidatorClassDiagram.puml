@@ -1,7 +1,7 @@
-'@@author Atharva005
+'@@author lukelouyu
 @startuml
 !pragma layout smetana
-title Command and Unicode activity name validation
+title Command and printable-ASCII activity name validation
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName SansSerif
@@ -25,6 +25,7 @@ class ActivityParameterValidator <<package-private>> {
   ~{static} validate(arguments: String): void
 }
 class ActivityNameValidator <<package-private>> {
+  ~{static} rejectForbiddenPunctuation(input: String): void
   ~{static} validate(name: String): void
 }
 class ParseException <<checked exception>>
@@ -37,7 +38,7 @@ EditCommandParser ..> ActivityNameValidator : checks supplied name
 AddCommandParser ..> ActivityParameterValidator : checks field spelling
 EditCommandParser ..> ActivityParameterValidator : checks field spelling
 ActivityParameterValidator ..> ParseException : rejects likely prefix typos
-ActivityNameValidator ..> ParseException : rejects controls / malformed surrogates
+ActivityNameValidator ..> ParseException : rejects non-printable / non-ASCII input
 
 note top of Parser
   Check the command word before case conversion.
@@ -46,10 +47,13 @@ note top of Parser
 end note
 
 note bottom of ActivityNameValidator
-  Unicode names are accepted, including accents, Chinese, Tamil, and emoji.
-  Reject control characters and malformed UTF-16 surrogates.
+  Supplied names must use printable ASCII (0x20-0x7E).
+  Reject non-ASCII names, control characters and DEL.
+  Whitespace-only names receive the empty-name warning.
   Parsers keep blank-name and delimiter checks.
-  Storage reads and writes names as UTF-8.
+  Historical Unicode names still load and save as UTF-8.
+  Reject backslashes, commas and both quotation marks in the extracted name.
+  Slash is allowed subject to prefix rules; no escape or quote syntax exists.
 end note
 @enduml
 '@@author

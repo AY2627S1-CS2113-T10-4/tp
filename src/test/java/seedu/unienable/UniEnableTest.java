@@ -363,19 +363,24 @@ class UniEnableTest {
 
     //@@author lukelouyu
     @Test
-    void unicodeNames_surviveAddingEditingAndRestart(@TempDir Path tempDir) throws Exception {
+    void nonAsciiNames_rejectAddAndEditAndPreserveSavedData(@TempDir Path tempDir) throws Exception {
         String[] names = {"复习", "வணக்கம்", "படி", "Café", "📚 Study", "Study\u2003group"};
         for (int i = 0; i < names.length; i++) {
             Path file = tempDir.resolve("unicode-" + i + ".txt");
+            byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n"
+                    .getBytes(StandardCharsets.UTF_8);
+            Files.write(file, original);
             String output = consoleAtPath("add n/" + names[i] + " d/2099-12-10 s/09:00 e/10:00\n"
                     + "edit 1 n/" + names[i] + " revised imp/5\nlist\nbye\n", file);
-            assertTrue(output.contains("Added activity: " + names[i]), output);
-            assertTrue(output.contains("Edited activity: " + names[i] + " revised"), output);
-            assertFalse(output.contains("[WARNING]"), output);
-            byte[] saved = Files.readAllBytes(file);
+            String warning = "[WARNING] Please write the activity name in English (ASCII characters only).";
+            assertEquals(2, output.split(java.util.regex.Pattern.quote(warning), -1).length - 1, output);
+            assertFalse(output.contains("Added activity:"), output);
+            assertFalse(output.contains("Edited activity:"), output);
+            assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), output);
+            assertArrayEquals(original, Files.readAllBytes(file));
             String restarted = consoleAtPath("list\nbye\n", file);
-            assertTrue(restarted.contains("1. " + names[i] + " revised ("), restarted);
-            assertArrayEquals(saved, Files.readAllBytes(file));
+            assertTrue(restarted.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), restarted);
+            assertArrayEquals(original, Files.readAllBytes(file));
         }
     }
     //@@author

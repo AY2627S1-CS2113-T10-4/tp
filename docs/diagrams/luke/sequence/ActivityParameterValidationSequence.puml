@@ -1,4 +1,4 @@
-'@@author Atharva005
+'@@author lukelouyu
 @startuml
 title Check activity parameters before creating a command
 skinparam backgroundColor white
@@ -22,7 +22,7 @@ Parser -> Fields : parse(arguments)
 activate Fields
 Fields -> Validator : validate(arguments)
 activate Validator
-loop each alphabetic prefix-like token
+loop each alphanumeric prefix-like token
   Validator -> Validator : skip known prefixes and single-letter tokens
   Validator -> Validator : isOneEditAway(token, prefix)
 end

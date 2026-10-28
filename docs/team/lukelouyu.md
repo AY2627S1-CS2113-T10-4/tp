@@ -16,13 +16,13 @@ UniEnable is a Java 25 command-line application that helps students plan dated a
 
 - **Facilities and accessible routes:** Implemented facility models, data loading, lookup, feature/status filtering, and route queries ([PR #6](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/6), [PR #17](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/17)). Dijkstra's algorithm searches bidirectional connections marked accessible and reports distance, shelter, and recorded barriers. Separating loading, graph search, and formatting supports recoverable failures and independent repeated queries.
 - **Optional activity ratings:** Integrated independent importance, urgency, and commitment ratings into creation and the shared model ([PR #30](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/30)). Ratings may be omitted; supplied values share a 1-5 rule. Integration preserves unset ratings and legacy records while supporting teammates' priority and calendar features.
-- **Shared validation and integration:** Implemented command-word checks and shared activity-name, parameter-spelling, duplicate, and schedule-clash validation. These reject invalid changes before mutation, support valid Unicode names, and allow explicitly confirmed overlaps while still rejecting duplicates. Also maintained exit handling and shared command/package integration.
+- **Shared validation and integration:** Implemented command-word checks and shared activity-name, parameter-spelling, duplicate, and schedule-clash validation. These enforce printable-ASCII activity-name input before mutation, retain historical Unicode storage compatibility, and allow explicitly confirmed overlaps while still rejecting duplicates. Also maintained exit handling and shared command/package integration.
 
 #### Documentation contributions
 
 - **User Guide:** [Optional add ratings](../UserGuide.md#trying-optional-add-ratings), [facility queries](../UserGuide.md#listing-and-viewing-facilities-facility), [feature search](../UserGuide.md#finding-facilities-by-feature-facility-find), [routes](../UserGuide.md#finding-an-accessible-route-route), and [exit](../UserGuide.md#exiting-the-application-bye).
 - **Developer Guide:** [Architecture](../DeveloperGuide.md#architecture), shared validation, [ratings/accessibility](../DeveloperGuide.md#ratings-and-accessibility), data-loading contracts, and routing design. Consolidated guide sections and accessibility diagrams in [PR #35](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/35).
-- **Diagrams:** Contributed the architecture diagram, facility and routing class/sequence pairs, and the campus connectivity graph - six diagrams in total ([index](../diagrams/README.md#luke)). The six shared validation diagrams are credited to Atharva.
+- **Diagrams:** Contributed the activity-creation class diagram, name and parameter validation class/sequence pairs, architecture diagram, facility and routing class/sequence pairs, and campus connectivity graph - eleven diagrams in total ([index](../diagrams/README.md#luke)). The add sequence and schedule validation pair remain credited to Atharva.
 
 #### Team-based tasks and reviews
 

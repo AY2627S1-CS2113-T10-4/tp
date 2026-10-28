@@ -63,6 +63,9 @@ public class AddCommandParser {
      * @throws ParseException for absent, duplicate, unknown, or malformed arguments.
      */
     public AddCommand parse(String arguments) throws ParseException {
+        if (arguments.contains("|") || arguments.indexOf('\n') >= 0 || arguments.indexOf('\r') >= 0) {
+            throw invalid("The activity name must not contain | or line breaks.");
+        }
         ActivityParameterValidator.validate(arguments);
         Map<String, String> fields = readFields(arguments);
         for (String required : new String[] {"n", "d", "s", "e"}) {
