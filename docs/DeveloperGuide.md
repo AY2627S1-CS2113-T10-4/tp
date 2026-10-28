@@ -1022,6 +1022,8 @@ These features use the shared activity models and command/result flow.
 `AddCommandParser` parses each rating independently into a nullable `Integer`;
 omitting a field leaves it unset. `Activity.validateRating()` accepts `null` or
 an integer from 1 to 5, so add, edit and storage use the same validation rule.
+The add sequence passes the parsed `importance`, `urgency`, and `commitment`
+values into `Activity`; it does not assign a default rating of 5.
 The class diagram in [Adding activities](#adding-activities) shows
 how ratings fit into activity creation. The priority view uses
 these ratings; editing and persistence update and preserve them.

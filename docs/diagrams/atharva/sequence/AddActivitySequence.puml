@@ -37,8 +37,12 @@ create participant ":AddCommand" as Add
 AddParser -> Add : AddCommand(...)
 activate Add
 create participant ":Activity" as Activity
-Add -> Activity : Activity(..., false, 5, null, null)
+Add -> Activity : Activity(..., false, importance, urgency, commitment)
 activate Activity
+note right of Activity
+  Pass the parsed ratings unchanged.
+  Each omitted rating is null; a supplied rating keeps its validated value.
+end note
 Activity --> Add
 deactivate Activity
 Add --> AddParser
