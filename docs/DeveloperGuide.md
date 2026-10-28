@@ -171,15 +171,13 @@ display correctly. Injected `UniEnable.run()` sessions use the caller's output s
 
 <a id="ascii-command-name-validation"></a>
 
-`Parser` requires ASCII command words. Names supplied to add and edit must use
+`Parser` requires English command words. Names supplied to add and edit must use
 printable ASCII (0x20 through 0x7E) and contain a non-whitespace character.
 Parsers retain their blank-name, pipe, and line-break checks; the shared
 `ActivityNameValidator` also rejects Unicode-only whitespace as empty and rejects
 non-ASCII and non-printable characters before constructing a command. Invalid
 names produce `[WARNING] Please write the activity name in English (ASCII characters only).`
-The entire add or edit is rejected without changing model state or saved bytes.
-Storage does not apply this input restriction: historical Unicode names still
-load, display, and match find keywords in UTF-8. Edits omitting `n/` preserve them.
+
 
 <!-- @@author -->
 <!-- @@author lukelouyu -->
@@ -214,11 +212,6 @@ and accepts another command. Failed facility loading leaves activity commands,
 help and exit available. Failed connection loading disables routes but keeps
 facility queries available. Activity-load warnings and failures appear at startup;
 a fatal read failure starts an empty list with `Storage` recovery protection.
-
-Luke maintains the architecture source and image together in
-`docs/diagrams/luke/architecture` and `docs/images/luke/architecture`.
-Regenerate the PNG after changing components or dependencies using the
-[diagram regeneration instructions](diagrams/README.md#regenerating-images).
 
 <!-- @@author lukelouyu -->
 
