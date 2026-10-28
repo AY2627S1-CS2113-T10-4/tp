@@ -651,12 +651,12 @@ these ratings; editing and persistence update and preserve them.
 
 `ActivityParameterValidator` is a package-private shared parser helper. Add and
 edit call `validate(arguments)` before extracting fields, so likely typos cannot
-silently become part of an activity name. The helper scans prefix-like tokens,
+silently become part of an activity name. The helper scans alphanumeric prefix-like tokens,
 skips known prefixes, and compares unknown multi-letter tokens with recognised
 multi-letter prefixes. One insertion, deletion, substitution, or adjacent swap
 produces a `ParseException` suggesting the intended prefix.
 
-For example, `demm/HIGH` produces an unknown-parameter warning suggesting `dem/`.
+For example, `demm/HIGH` and `dem1/HIGH` produce an unknown-parameter warning suggesting `dem/`.
 `ConsoleHelper` displays that warning; no add/edit command executes and neither
 activities nor saved data changes. Ordinary slash text such as `and/or` and `w/o`
 remains valid. Single-letter slash text is excluded from the typo check.

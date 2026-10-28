@@ -22,6 +22,29 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class UniEnableProcessTest {
     @Test
+    void digitPrefixTypos_rejectAddAndEditWithoutWritingData(@TempDir Path tempDir) throws Exception {
+        String add = "add n/Class dem1/HIGH d/2099-12-10 s/10:00 e/11:00\n";
+        String warning = "[WARNING] Unknown parameter 'dem1/'. Did you mean 'dem/'?";
+        String emptyOutput = runSession(tempDir, add + "list\nbye\n");
+        Path activityFile = tempDir.resolve("data/activities.txt");
+        assertTrue(emptyOutput.contains(warning), emptyOutput);
+        assertFalse(emptyOutput.contains("Added activity:"), emptyOutput);
+        assertFalse(Files.exists(activityFile));
+
+        Files.createDirectories(activityFile.getParent());
+        byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n".getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+        var originalModifiedTime = Files.getLastModifiedTime(activityFile);
+        String output = runSession(tempDir, add + "edit 1 n/Class dem1/HIGH imp/5\nlist\nbye\n");
+        assertEquals(2, output.split(Pattern.quote(warning), -1).length - 1, output);
+        assertFalse(output.contains("Added activity:"), output);
+        assertFalse(output.contains("Edited activity:"), output);
+        assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+        assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
+    }
+
+    @Test
     void duplicateAndClashingCommandsPreserveCountAndStoredBytes(@TempDir Path tempDir) throws Exception {
         String setup = runSession(tempDir, "add n/CS2113 tutorial d/2099-12-01 s/10:00 e/11:00\n"
                 + "add n/Later d/2099-12-01 s/12:00 e/13:00\nbye\n");

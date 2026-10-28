@@ -12,7 +12,7 @@ import seedu.unienable.exception.ParseException;
  * Catches likely misspellings of activity fields without treating every slash in a name as a field.
  */
 final class ActivityParameterValidator {
-    private static final Pattern PARAMETER = Pattern.compile("(?i)(?<!\\S)([a-z]+)/");
+    private static final Pattern PARAMETER = Pattern.compile("(?i)(?<!\\S)([a-z0-9]+)/");
     private static final List<String> PREFIXES = List.of("n", "d", "s", "e", "dem", "imp", "urg", "com", "overlap");
 
     /** Prevents instantiation of this shared parser helper. */
@@ -20,7 +20,7 @@ final class ActivityParameterValidator {
     }
 
     /**
-     * Rejects a one-edit typo in a multi-letter prefix, including an adjacent transposition.
+     * Rejects a one-edit alphanumeric typo in a multi-letter prefix, including an adjacent transposition.
      * Ordinary slash text such as and/or, w/o and module codes remains valid name content.
      *
      * @param arguments unparsed activity fields.

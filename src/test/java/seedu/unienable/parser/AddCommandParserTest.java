@@ -65,7 +65,8 @@ class AddCommandParserTest {
 
     @Test
     void parse_mistypedOptionalPrefix_warnsInsteadOfSavingItInName() {
-        for (String typo : new String[]{"demm/HIGH", "dme/HIGH", "impp/5", "ur/3", "comm/4"}) {
+        for (String typo : new String[]{"demm/HIGH", "dme/HIGH", "impp/5", "ur/3", "comm/4",
+            "dem1/HIGH", "1dem/HIGH", "de1/HIGH", "imp2/5", "ur3/3", "co4/4"}) {
             ParseException error = assertThrows(ParseException.class,
                     () -> parser.parse("n/Class " + typo + " d/2026-12-10 s/09:00 e/10:00"));
             assertTrue(error.getMessage().contains("Unknown parameter"));

@@ -37,7 +37,7 @@ EditCommandParser ..> ActivityParameterValidator : validates before reading fiel
 ActivityParameterValidator ..> ParseException : warns about a likely misspelled prefix
 
 note bottom of ActivityParameterValidator
-  Scan whitespace-delimited alphabetic tokens ending in /.
+  Scan whitespace-delimited alphanumeric tokens ending in /.
   Skip recognised prefixes and single-letter slash text.
   Check one insertion, deletion, substitution, or adjacent swap
   against multi-letter prefixes using edit distance.

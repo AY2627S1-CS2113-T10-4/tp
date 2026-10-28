@@ -156,7 +156,7 @@ Names are saved in UTF-8. Historical saved names containing non-ASCII characters
 can still be loaded, listed, and searched; a replacement name supplied with
 `edit INDEX n/NAME` must follow the printable-ASCII rule.
 
-Likely misspellings of multi-letter prefixes, such as `demm/HIGH` or `impp/5`,
+Likely misspellings of multi-letter prefixes, such as `demm/HIGH`, `dem1/HIGH`, or `impp/5`,
 produce a warning instead of becoming part of the name. This also applies to edit.
 
 A duplicate activity has the same name (ignoring case and surrounding whitespace),

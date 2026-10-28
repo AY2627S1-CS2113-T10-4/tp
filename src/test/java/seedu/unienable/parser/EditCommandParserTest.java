@@ -55,6 +55,9 @@ class EditCommandParserTest {
     void parse_mistypedPrefixInName_rejectsWholeEdit() {
         assertThrows(ParseException.class, () -> parser.parse("edit 1 n/Class demm/HIGH"));
         assertThrows(ParseException.class, () -> parser.parse("edit 1 n/Class imp/5 comn/3"));
+        ParseException exception = assertThrows(ParseException.class,
+                () -> parser.parse("edit 1 n/Class dem1/HIGH imp/5"));
+        assertEquals("[WARNING] Unknown parameter 'dem1/'. Did you mean 'dem/'?", exception.getMessage());
     }
 
     @Test
