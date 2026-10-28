@@ -45,14 +45,6 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 <!-- TEAM: All members maintain the cross-feature command and index conventions. -->
 ## Command Format
 
-This example shows adding an activity, marking it complete, and listing it.
-The `[X]` marker indicates completion. It assumes 1 December 2026 before 14:00;
-use a future date when trying the commands yourself.
-
-![Actual output illustrating add, mark, and list commands](images/user-guide/activity-workflow.png)
-
-[Plain-text version of the workflow](images/user-guide/activity-workflow.txt).
-
 - Words in UPPER_CASE are placeholders; replace them with your own values.
 - Square brackets in command formats indicate optional fields; do not type them.
 - Command words, prefixes, demand levels, feature types, statuses, and hub codes
@@ -289,11 +281,6 @@ view today
 ```
 
 The dashboard is:
-
-![Today dashboard showing the schedule, completion counts, rating chart, and totals](images/user-guide/calendar-today.png)
-
-The image uses the example's date and activities. The same output is available
-as [plain text](images/user-guide/calendar-today.txt) and below for easy copying.
 
 ```text
 TODAY - Tuesday, 01 December 2026
