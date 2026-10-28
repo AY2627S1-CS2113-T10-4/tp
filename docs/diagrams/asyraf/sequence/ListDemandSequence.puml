@@ -28,10 +28,12 @@ Console -> Query : execute(activities, storage)
 Query -> Activities : getDemandView()
 note right of Activities
   Sort HIGH, MEDIUM, LOW; ties use date and start time.
-  Rows use demand-order indexes, not chronological indexes.
+  Row order changes; each row keeps its chronological index.
 end note
 Activities --> Query : view
-Query -> Formatter : formatDemandList(view)
+Query -> Activities : getCanonicalView()
+Activities --> Query : canonicalView
+Query -> Formatter : formatDemandList(view, canonicalView)
 Formatter --> Query : formatted rows or empty-state warning
 Query --> Console : CommandResult(message, false)
 note over Console, UI

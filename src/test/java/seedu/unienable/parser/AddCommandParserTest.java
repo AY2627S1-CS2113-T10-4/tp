@@ -38,6 +38,15 @@ class AddCommandParserTest {
     private final AddCommandParser parser = new AddCommandParser(FIXED_CLOCK);
 
     @Test
+    void parse_mistypedOptionalPrefix_warnsInsteadOfSavingItInName() {
+        for (String typo : new String[]{"demm/HIGH", "dme/HIGH", "impp/5", "ur/3", "comm/4"}) {
+            ParseException error = assertThrows(ParseException.class,
+                    () -> parser.parse("n/Class " + typo + " d/2026-12-10 s/09:00 e/10:00"));
+            assertTrue(error.getMessage().contains("Unknown parameter"));
+        }
+    }
+
+    @Test
     void parse_outOfOrderFieldsAndMultiWordName_addsActivity() throws Exception {
         ActivityList activities = new ActivityList();
         Command command = parser.parse("CoM/3 dEm/hIgH E/11:45 iMp/5 N/Group Meeting "
@@ -196,7 +205,7 @@ class AddCommandParserTest {
             ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input), input);
             assertEquals("[WARNING] End time must be later than current time.\n"
                     + "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] "
-                    + "[imp/IMP] [urg/URG] [com/COM]",
+                    + "[imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]",
                     exception.getMessage());
         }
     }

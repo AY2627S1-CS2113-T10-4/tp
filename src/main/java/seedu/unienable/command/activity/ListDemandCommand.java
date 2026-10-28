@@ -20,6 +20,12 @@ public class ListDemandCommand extends Command {
     private static final Logger LOGGER = Logger.getLogger(ListDemandCommand.class.getName());
 
     /**
+     * Creates a read-only activity listing ordered by demand.
+     */
+    public ListDemandCommand() {
+    }
+
+    /**
      * Returns the demand-ordered activity list for Ui.showMessage() without
      * changing any user data.
      */
@@ -27,7 +33,7 @@ public class ListDemandCommand extends Command {
     public CommandResult execute(ActivityList activities, Storage storage) {
         List<Activity> view = activities.getDemandView();
         LOGGER.fine(() -> "Displayed " + view.size() + " activities grouped by demand.");
-        String message = ActivityListFormatter.formatDemandList(view);
+        String message = ActivityListFormatter.formatDemandList(view, activities.getCanonicalView());
         return new CommandResult(message, false);
     }
 }

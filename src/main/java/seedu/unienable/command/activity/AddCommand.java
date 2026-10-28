@@ -21,6 +21,7 @@ import seedu.unienable.storage.Storage;
  */
 public class AddCommand extends Command {
     private final Activity activity;
+    private final boolean allowOverlap;
     /**
      * Creates a command that will insert one incomplete activity with optional ratings.
      *
@@ -36,6 +37,25 @@ public class AddCommand extends Command {
      */
     public AddCommand(String name, LocalDate date, LocalTime startTime, LocalTime endTime, DemandLevel demand,
             Integer importance, Integer urgency, Integer commitment) {
+        this(name, date, startTime, endTime, demand, importance, urgency, commitment, false);
+    }
+
+    /**
+     * Creates an add command with explicit permission for an intentional time overlap.
+     *
+     * @param name activity name.
+     * @param date scheduled activity date.
+     * @param startTime scheduled start time.
+     * @param endTime scheduled end time.
+     * @param demand activity demand level.
+     * @param importance importance from 1 to 5, or null when unset.
+     * @param urgency urgency from 1 to 5, or null when unset.
+     * @param commitment commitment from 1 to 5, or null when unset.
+     * @param allowOverlap whether this command permits an intentional time overlap.
+     */
+    public AddCommand(String name, LocalDate date, LocalTime startTime, LocalTime endTime, DemandLevel demand,
+            Integer importance, Integer urgency, Integer commitment, boolean allowOverlap) {
+        this.allowOverlap = allowOverlap;
         this.activity = new Activity(name, date, startTime, endTime, demand, false,
                 importance, urgency, commitment);
     }
@@ -43,11 +63,11 @@ public class AddCommand extends Command {
     /**
      * Checks the schedule before inserting the activity and reporting success.
      *
-     * @throws UniEnableException if the activity duplicates or overlaps an existing activity.
+     * @throws UniEnableException if the activity duplicates or has an unapproved overlap with an existing activity.
      */
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {
-        ActivityScheduleValidator.validate(activity, activities, null);
+        ActivityScheduleValidator.validate(activity, activities, null, allowOverlap);
         activities.addActivity(activity);
         String message = "Added activity: " + activity.getName() + "\n"
                 + "Date: " + activity.getDate() + "\n"

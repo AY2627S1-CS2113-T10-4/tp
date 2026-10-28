@@ -28,7 +28,7 @@ public class HelpCommand extends Command {
               view today          Show today's schedule, summary, and rating table
               view tomorrow       Show tomorrow's schedule, summary, and rating table
               view week           Show today and the following six days
-              overdue             Show incomplete activities that have started
+              overdue             Show incomplete activities that have ended
               next                Show the earliest upcoming incomplete activity
 
             COMPLETION AND DELETION
@@ -44,6 +44,7 @@ public class HelpCommand extends Command {
 
             HELP AND EXIT
               help [TOPIC]        Show this menu or detailed command help
+              save                Retry saving the current activities
               bye                 Exit UniEnable
 
             Run list to get the indexes for edit, mark, unmark, and delete.
@@ -51,7 +52,7 @@ public class HelpCommand extends Command {
             """.stripTrailing();
 
     private static final String EDIT_USAGE = "edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] "
-            + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]";
+            + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]";
 
     /**
      * Keeps command instructions together so the parser does not duplicate help text.
@@ -61,15 +62,16 @@ public class HelpCommand extends Command {
                     ADD - Create an activity
 
                     Usage:
-                      add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]
+                      add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] \
+                    [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]
 
                     Details:
                       - n/, d/, s/, and e/ are required; prefixes may appear in any order.
                       - Names can contain spaces, but cannot be blank or contain | or line breaks.
-                      - Write names in English using ASCII characters only; accents and emoji are rejected.
+                      - Unicode names, including accented letters, Chinese, Tamil, and emoji, are supported.
                       - Use a real YYYY-MM-DD date and 24-hour HH:mm times, such as 09:30.
                       - End must be after start on the same day and after the current time.
-                      - Duplicate activities and overlapping times on the same date are rejected.
+                      - Duplicate activities are rejected. Intentional overlaps require overlap/ALLOW.
                       - Back-to-back activities are allowed; completed activities still occupy their time.
                       - Demand defaults to MEDIUM; choose LOW, MEDIUM, or HIGH.
                       - IMP = importance; URG = urgency; COM = commitment.
@@ -91,9 +93,9 @@ public class HelpCommand extends Command {
                       - Run list first and use the activity's current chronological index.
                       - Supply at least one field; omitted fields and completion are preserved.
                       - Names, dates, times, demand, and ratings follow the same rules as add.
-                      - Replacement names must use ASCII characters only.
+                      - Replacement names support Unicode; control characters and line breaks are rejected.
                       - Date/time edits must leave an end after start on the same day and after now.
-                      - Name or schedule edits cannot duplicate or overlap another activity.
+                      - Duplicate edits are rejected. Use overlap/ALLOW to confirm an intentional time clash.
                       - Name, demand, or rating edits alone can update historical activities.
                       - To change completion, use mark or unmark. Successful edits save automatically.
 
@@ -128,7 +130,7 @@ public class HelpCommand extends Command {
 
                     Details:
                       - list shows date/start-time order; identical times keep insertion order.
-                      - list demand groups HIGH, MEDIUM, then LOW and uses its own numbering.
+                      - list demand groups HIGH, MEDIUM, then LOW and keeps chronological indexes.
                       - Run list before edit, mark, unmark, or delete to confirm the correct index.
                       - list priority sorts highest scores first and keeps chronological indexes.
                       - Priority score = URG x URG x (IMP + COM).
@@ -152,6 +154,7 @@ public class HelpCommand extends Command {
                       - today and tomorrow select the corresponding full local calendar day.
                       - week includes today and the following six days, grouped by date.
                       - Dashboards include completed activities, summaries, and an aligned rating table.
+                      - Rating tables fit 80 columns; long names are shortened to 26 columns with ...
                       - The summary counts HIGH-demand activities on the selected dates, including completed ones.
                       - IMP = importance (*), URG = urgency (!), COM = commitment (+).
                       - Priority score = URG x URG x (IMP + COM); N means a rating is missing.
@@ -166,14 +169,14 @@ public class HelpCommand extends Command {
                       view week
                     """.stripTrailing()),
             Map.entry("overdue", """
-                    OVERDUE - Find incomplete activities that have started
+                    OVERDUE - Find incomplete activities that have ended
 
                     Usage:
                       overdue
 
                     Details:
-                      - Shows incomplete activities with a start strictly before the current time.
-                      - Includes activities still in progress; excludes completed activities.
+                      - Shows incomplete activities with an end strictly before the current time.
+                      - Excludes ongoing and completed activities, including activities ending exactly now.
                       - Results use chronological indexes and labels for today, this week, or earlier.
                       - Accepts no arguments and does not mark or modify any activity.
 
@@ -235,7 +238,8 @@ public class HelpCommand extends Command {
 
                     Details:
                       - Run list and choose the current chronological index, starting at 1.
-                      - Do not use numbering from list demand or the calendar dashboards.
+                      - list demand retains chronological indexes; run list to confirm the current index.
+                      - Do not use numbering from the calendar dashboards.
                       - Removes that activity and saves the remaining list automatically.
                       - Remaining indexes can change; run list again before another indexed command.
                       - There is no undo command. A missing or invalid index leaves activities unchanged.
@@ -273,7 +277,8 @@ public class HelpCommand extends Command {
                       route from/START to/END
 
                     Details:
-                      - Supply two different facility IDs or names, with from/ before to/.
+                      - Supply two different facility names (AS1-AS8 or CLB), with from/ before to/.
+                      - Facility IDs such as F01 are not accepted as route endpoints.
                       - Results show the route segments and total recorded distance in metres.
                       - Same endpoints, unknown facilities, or no confirmed accessible path produce warnings.
                       - Routes need loaded connection data and do not change activities.
@@ -302,6 +307,21 @@ public class HelpCommand extends Command {
                       help facility
                       help view
                     """.stripTrailing()),
+            Map.entry("save", """
+                    SAVE - Save current activities
+
+                    Usage:
+                      save
+
+                    Details:
+                      - Retries a failed save without adding, editing, or toggling an activity.
+                      - Fix the reported file or backup problem first.
+                      - Unsaved-change warnings clear only after a successful save.
+                      - Accepts no arguments.
+
+                    Examples:
+                      save
+                    """.stripTrailing()),
             Map.entry("bye", """
                     BYE - Exit UniEnable
 
@@ -311,6 +331,7 @@ public class HelpCommand extends Command {
                     Details:
                       - Accepts no arguments and ends the current console session.
                       - Activity changes save when made; bye does not perform another save.
+                      - Unsaved changes block exit. Fix the save error and run save before retrying bye.
                       - Reading help bye displays these instructions and keeps the app running.
 
                     Examples:

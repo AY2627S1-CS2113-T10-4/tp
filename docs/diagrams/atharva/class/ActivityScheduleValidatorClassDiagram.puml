@@ -1,4 +1,4 @@
-'@@author lukelouyu
+'@@author Atharva005
 @startuml
 !pragma layout smetana
 title Activity schedule validation before add or edit
@@ -43,11 +43,13 @@ ActivityList --> "0..*" Activity : activities
 
 note bottom of ActivityScheduleValidator
   validate(candidate: Activity, activities: ActivityList,
-           replacedActivity: Activity)
+           replacedActivity: Activity, allowOverlap: boolean)
 
   Duplicate: same name ignoring case/outer spaces,
   and identical date, start and end.
   Clash: same date and positive time overlap.
+  Explicit overlap/ALLOW skips only the clash check.
+  Duplicate identities are always rejected.
   Touching endpoints are allowed.
   An edit excludes only its original record.
   Validation performs no mutation or file I/O.

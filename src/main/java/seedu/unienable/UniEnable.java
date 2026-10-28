@@ -17,6 +17,12 @@ import seedu.unienable.ui.Ui;
  * Runs the UniEnable console until bye or end of input.
  */
 public class UniEnable {
+
+    /**
+     * Prevents construction of this application entry-point utility.
+     */
+    private UniEnable() {
+    }
     //@@author Atharva005
     /**
      * Starts the application and loads saved activity and facility data.

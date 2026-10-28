@@ -56,8 +56,8 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 - Enter each command on one line, including all optional fields.
 - Dates use `YYYY-MM-DD`, such as `2026-12-01`; times use 24-hour `HH:mm`.
 - Activity indexes start at 1. Change commands (`delete`, `edit`, `mark`, and `unmark`)
-  use indexes from chronological `list` output. `list demand` numbers can differ,
-  while `find`, `list priority`, `overdue`, and `next` retain full chronological
+  use indexes from chronological `list` output. `list demand`,
+  `find`, `list priority`, `overdue`, and `next` retain full chronological
   indexes, even when some indexes are missing from the results. Run `list` before
   changing an activity; adding, deleting, or rescheduling can change indexes.
 - Calendar dashboards (`view today`, `view tomorrow`, and `view week`) number only
@@ -67,53 +67,31 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
   and runs in order. Additional rating examples follow the walkthrough.
   If you try them after the example dates, replace the dates with future dates.
 
-
 <!-- @@author Oliver-koh -->
 
 ## Data Storage
 
-Activities load at startup from `data/activities.txt`, relative to the folder
-where you launch the application. A missing file starts an empty list. Successful
-add, edit, delete, and completion changes save the entire activity list automatically.
-Every successful `edit` requests a save, even if the supplied values match the
-existing values. Read-only commands (`find`, `list`, `list demand`,
-`list priority`, `view today`, `view tomorrow`, `view week`, `overdue`, `next`,
-facility queries, routes, and `help`) and `bye`
-do not save or retry a failed save. Repeated `mark`/`unmark` commands that leave
-completion unchanged also do not save.
+Activities save automatically to `data/activities.txt`, relative to the folder
+where the app starts. Use the same folder on each launch. A missing file starts
+an empty list. Ratings and completion status survive restarting.
 
-Saved activity rows use nine fields:
-```text
-NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM
-```
-`DONE` is `true` or `false`. Each rating is a whole number from 1 to 5, or `-`
-when unset. Ratings and completion state survive saving and restarting.
-Existing six-field V1.0 rows still load, with all three ratings unset. Historical
-activities can load; the end-after-now rule applies to adding an activity and
-to edits that supply a date, start time, or end time. Metadata-only edits can
-update historical activities without changing their date or times.
-Loading alone does not rewrite the file. The next successful activity-changing
-save writes every row in the nine-field format. V1.0 cannot load nine-field rows;
-keep a separate copy of a V1.0 file if you need to return to that version.
-The loader does not check whether a stored end follows its start. Do not treat
-loading without warnings as validation of manually edited activity times.
+Read-only commands and repeated mark/unmark requests do not save. A successful
+edit saves even if the supplied values match the existing ones. Older six-field
+files still load; later saves use the current format, which V1.0 cannot read.
 
-Malformed rows are skipped with line-numbered warnings. If the file cannot be
-read, the app reports `Activity data unavailable:` and starts with an empty list.
-In either case, before a later save, the original file must be copied and verified
-at `data/activities.txt.corrupt.bak`. If the backup fails, the save fails without
-replacing the activity file. Copy this backup elsewhere before recovery; a later
-recovery backup can overwrite it.
+Malformed rows, including time ranges whose end is not after their start, are
+skipped with line-numbered warnings. Historical activities with valid time ranges
+still load. An unreadable file starts
+an empty list with a warning. Before a later save, the app preserves the original
+file in `data/activities.txt.corrupt.bak`; a failed backup prevents replacement.
+Keep a separate copy of that backup before further recovery attempts.
 
-After a save failure, keep the app open and follow the
-[recovery steps](#error-handling) before exiting.
+If saving fails, keep the app open and follow [Error Handling](#error-handling).
 Facility and connection reference data are bundled and read-only.
-
 
 <!-- @@author -->
 
 ## Features
-
 
 <!-- @@author Atharva005 -->
 
@@ -124,12 +102,11 @@ Add an incomplete activity with a date, time, and optional demand and ratings.
 Format:
 
 ```text
-add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]
+add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]
 ```
 
 `n/`, `d/`, `s/`, and `e/` are required and must each appear once with a value.
 Every supplied known prefix must appear once and contain a value.
-
 
 Optional demand:
 
@@ -154,9 +131,7 @@ do not enter a literal `-`. Empty values, duplicate prefixes, ratings outside
 
 <!-- @@author -->
 
-
 <!-- @@author Atharva005 -->
-
 
 The end time must be strictly after the start time on
 the same day; overnight activities are not supported. The activity's date and end
@@ -165,30 +140,29 @@ local time zone. An activity that has already started can still be added if it
 has not ended; an activity ending exactly now is rejected. New activities start
 incomplete.
 
-Names must contain at least one non-whitespace character and use ASCII characters
-only. Chinese, Tamil, accented letters and emoji are rejected with
-`[WARNING] Please write the activity name in English (ASCII characters only).`
-Names cannot contain `|` or line breaks. English letters, digits, spaces and
-ASCII punctuation are allowed; the application checks characters, not the
-language of words written with ASCII letters.
+Names support Unicode, including Chinese, Tamil, accented letters, and emoji.
+They must be non-blank and cannot contain `|`, line breaks, control characters,
+or malformed surrogate pairs. Ordinary slash text such as `and/or` and `w/o`
+is allowed. Avoid field prefixes at the start of a word in a name: they are
+parsed as fields. Names are saved in UTF-8.
 
-Slash-containing text such as `and/or`
-and `w/o` is allowed. However, a known prefix (`n/`, `d/`, `s/`, `e/`, `dem/`,
-`imp/`, `urg/`, or `com/`)
-at the start of a whitespace-separated part of the name is treated as another
-field, so avoid these prefixes in names.
+Likely misspellings of multi-letter prefixes, such as `demm/HIGH` or `impp/5`,
+produce a warning instead of becoming part of the name. This also applies to edit.
 
 A duplicate activity has the same name (ignoring case and surrounding whitespace),
 date, start and end times as an existing activity. Changing demand, ratings or
 completion does not make it a different activity. Duplicates are rejected with
 `[WARNING] Duplicate activity already recorded at index ...`.
 
-Other activities on the same date are rejected if their times overlap, with
+By default, activities on the same date are rejected if their times overlap, with
 `[WARNING] Activity clashes with index ...`. Both warnings identify the existing
 activity using its chronological `list` index. Completed activities still occupy
 their scheduled time. Back-to-back activities, such as 10:00-11:00 and
-11:00-12:00, and the same times on different dates are allowed. A rejected add
-does not increase the activity count or change saved data.
+11:00-12:00, and the same times on different dates are allowed. Add `overlap/ALLOW`
+to confirm an intentional overlap, including with a completed activity. The flag
+applies only to that command and never permits a duplicate. For example:
+append `overlap/ALLOW` when intentionally adding a concurrent reminder. A rejected
+add does not increase the activity count or change saved data.
 
 Input:
 ```text
@@ -206,20 +180,8 @@ Commitment: -
 Activities in this session: 1
 ```
 
-Repeating the same add command produces:
-
-```text
-[WARNING] Duplicate activity already recorded at index 1: CS2113 tutorial (2026-12-01, 10:00-11:00).
-```
-
-Adding `Other class` on that date from 10:30 to 11:30 produces:
-
-```text
-[WARNING] Activity clashes with index 1: CS2113 tutorial (2026-12-01, 10:00-11:00).
-```
-
-In both cases, the count stays at 1 and the saved file stays unchanged. Starting
-the next activity at 11:00 is allowed because the activities do not overlap.
+Rejected duplicates and overlaps show the conflicting activity and its
+chronological index without changing the list or saved data.
 
 For the following examples, also enter:
 ```text
@@ -228,9 +190,7 @@ add n/Project meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH
 The app confirms Project meeting, its date/time, HIGH demand, three unset ratings,
 and a total of 2 activities.
 
-
 <!-- @@author -->
-
 
 <!-- @@author officialasyrafrahim -->
 
@@ -253,18 +213,18 @@ Input: `list demand`
 Output:
 ```text
 Activities by demand (HIGH to LOW):
-Note: Do not use indexes from 'list demand' for deletion.
-Run 'list' to find the correct index for 'delete INDEX'.
-1. Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
-2. CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
+Indexes refer to the chronological 'list' order.
+2. Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
+1. CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
 ```
+
+Demand sorting changes row order while keeping the indexes from `list`.
+For example, `mark 2`, `unmark 2`, `edit 2 imp/5`, and `delete 2` select Project meeting.
 
 An empty list shows `[WARNING] No activities yet.` beneath the heading
 (and demand-view notice).
 
-
 <!-- @@author -->
-
 
 <!-- @@author Atharva005 -->
 
@@ -282,25 +242,18 @@ Formats: `view today`, `view tomorrow`, and `view week`
 | `view week` | Today and the following six days, including both endpoints. |
 
 - Activities appear by date and start time, including completed and already-ended
-  activities on those dates. `view week` starts today regardless of the weekday.
-- The summary's high-demand count includes every HIGH-demand activity on the
-  selected dates, including completed activities and earlier times that day.
-  A populated view can show zero high-demand activities without a warning.
-- A populated view includes a schedule, a summary, a rating table, rating totals,
-  and a demand distribution. Summary counts and rating totals appear one per line.
-- The rating table uses vertical bars, padded columns, and a horizontal divider
-  directly below its column headings. `*`, `!`, and `+` show
-  importance (IMP), urgency (URG), and commitment (COM). Demand uses `# L`, `## M`,
-  or `### H` for LOW, MEDIUM, or HIGH.
-- Read the table in a terminal with a monospaced font. Activity, rating, and score
-  columns have at least five spaces before the next separator; the activity column
-  expands for longer names. Rows follow the schedule's chronological order. To rank
-  activities by score, use [list priority](#viewing-priority-list-priority).
-- An unset rating appears as `-`; an unavailable priority appears as `N`.
-  With all three ratings set, the score is `URG x URG x (IMP + COM)`.
-  Rating totals add the recorded values, including partially rated activities.
-- These commands do not change activities or save the file. Their row numbers
-  belong to the selected period; use `list` before edit, mark, unmark, or delete.
+  activities on those dates. HIGH-demand counts include completed activities.
+- Each populated dashboard includes a schedule, completion summary, rating table,
+  rating totals, and demand distribution. Recorded ratings contribute to totals
+  even when other ratings are unset.
+- Table symbols are `*` for importance, `!` for urgency, `+` for commitment,
+  and `# L` / `## M` / `### H` for demand. Missing ratings show `-`;
+  unavailable priority shows `N`.
+- Use a monospaced font. Rating table rows fit within 80 terminal columns; names use
+  at most 26 terminal columns, including a trailing `...` when shortened. Full names
+  remain in the schedule and saved data.
+- Dashboard row numbers belong to the selected period. Use `list` to obtain
+  indexes for edit, mark, unmark, or delete. Dashboards do not save changes.
 
 Try this example in a separate empty test folder. Assume today is **1 December
 2026**, before 21:00. When trying it on another date, replace the dates with today
@@ -334,12 +287,12 @@ Remaining: 3
 High-demand activities: 1
 
 RATING CHART
-| Activity          | IMP       | URG       | COM       | PRIORITY SCORE     | DEMAND |
-|-------------------|-----------|-----------|-----------|--------------------|--------|
-| Practice quiz     | ****      | !!!!!     | +++       | 175                | ### H  |
-| Stretch break     | *         | !         | +         | 2                  | # L    |
-| Plan tomorrow     | ***       | -         | ++        | N                  | ## M   |
-| Project notes     | -         | !!        | -         | N                  | ## M   |
+| Activity      | IMP   | URG   | COM   | PRIORITY SCORE | DEMAND |
+|---------------|-------|-------|-------|----------------|--------|
+| Practice quiz | ****  | !!!!! | +++   | 175            | ### H  |
+| Stretch break | *     | !     | +     | 2              | # L    |
+| Plan tomorrow | ***   | -     | ++    | N              | ## M   |
+| Project notes | -     | !!    | -     | N              | ## M   |
 
 RATING TOTALS
 IMP 8
@@ -353,45 +306,17 @@ Demand: L=#, M=##, H=###
 N = priority unavailable; - = rating not set.
 ```
 
-Practice quiz has priority `5 x 5 x (4 + 3) = 175`. Plan tomorrow and Project
-notes show `N` because at least one rating is unset. Their recorded ratings still
-contribute to the IMP, URG, and COM totals.
+Practice quiz has priority `5 x 5 x (4 + 3) = 175`.
+Rows with a missing rating show `N` for priority.
+`view tomorrow` shows Project meeting; `view week` includes all five activities.
 
-`view tomorrow` shows only Project meeting. `view week` includes all five
-activities from Tuesday, 1 December through Monday, 7 December 2026. Its summary
-shows total 5, completed 1, remaining 4, and high-demand 2. Empty days inside this
-populated week have a plain message, for example:
+An empty day shows `[WARNING] No activities scheduled for this day.`; an empty
+week shows `[WARNING] No activities scheduled for the next seven days.` Empty
+periods omit the summary and rating sections. An empty day within a populated
+week instead shows a plain no-activities message.
 
-```text
-Thu 03 Dec - No activities scheduled for this day.
-```
-
-If the entire selected day has no activities, its heading is followed by
-`[WARNING] No activities scheduled for this day.`. An entirely empty seven-day
-period instead shows `[WARNING] No activities scheduled for the next seven days.`.
-Empty periods omit the summary and rating sections. No warning is shown merely
-because one day inside a populated week is empty.
-
-For example, in a separate folder with no saved activities and the same assumed
-date, `view today` produces:
-
-```text
-TODAY - Tuesday, 01 December 2026
-
-[WARNING] No activities scheduled for this day.
-```
-
-In that empty session, `view week` produces:
-
-```text
-WEEK - Tuesday, 01 December 2026 to Monday, 07 December 2026
-
-[WARNING] No activities scheduled for the next seven days.
-```
-
-`VIEW TODAY` also works. Missing, unknown, or extra arguments show a warning and
-`Usage: view today|tomorrow|week`; for example, `view` and `view week extra` are invalid.
-Use `help view` to read these rules in the application.
+Missing or unsupported arguments show `Usage: view today|tomorrow|week`.
+Use `help view` for the command rules.
 
 <!-- @@author -->
 
@@ -412,9 +337,7 @@ Output: `Unmarked activity: CS2113 tutorial`
 Repeating a command reports `[WARNING] Activity is already marked as done: NAME`
 or `[WARNING] Activity is already unmarked: NAME`, without changing or saving it.
 
-
 <!-- @@author -->
-
 
 <!-- @@author officialasyrafrahim -->
 
@@ -422,7 +345,7 @@ or `[WARNING] Activity is already unmarked: NAME`, without changing or saving it
 
 Format: `delete INDEX`
 
-Input: `delete 2` (index from `list`, not `list demand`)
+Input: `delete 2` (the index shown beside Project meeting in either list view)
 
 Output:
 ```text
@@ -437,19 +360,15 @@ The activity is removed immediately; subsequent indexes may change.
 When the last activity is deleted, the confirmation ends with
 `There is no activity recorded` instead of a remaining count.
 
-
 <!-- @@author -->
-
 
 <!-- @@author lukelouyu -->
 
 ### Trying optional add ratings
 
-Try these after the activity walkthrough above. They add to your current list
-and are not included in its earlier sample outputs. First re-add the Project
-meeting removed by `delete 2`, then add the three rating examples. This creates
-the five-activity schedule used by the priority, overdue, and next examples.
-Enter each command on its own line:
+After the add/list/completion/delete examples, re-add Project meeting and add
+the rated activities below. This five-activity schedule is used by the priority,
+overdue, and next examples. Enter each command on its own line:
 
 ```text
 add n/Project meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH
@@ -458,24 +377,11 @@ add n/CS2113 project d/2026-12-04 s/14:00 e/15:00 imp/5 urg/5 com/4
 add n/Team stand-up d/2026-12-04 s/16:00 e/17:00 imp/5 urg/4
 ```
 
-After restoring the HIGH-demand Project meeting, the second command, Planning
-and/or review, demonstrates reordered fields, mixed-case prefixes, and ordinary
-slashes in a name. Planning and/or review uses LOW demand; CS2113 project and
-Team stand-up default to MEDIUM.
-
-| Activity | Importance | Urgency | Commitment |
-| --- | --- | --- | --- |
-| Planning and/or review | 5 | - | 3 |
-| CS2113 project | 5 | 5 | 4 |
-| Team stand-up | 5 | 4 | - |
-
-The add confirmation displays the ratings, and saving preserves them across
-restarts. `list` and `list demand` show date, time, demand and completion, without
-ratings.
-
+The mixed-case command demonstrates reordered fields and a slash in a name.
+Omitted ratings stay unset. Ratings appear in add confirmations and persist across
+restarts; `list` and `list demand` show demand and completion without ratings.
 
 <!-- @@author -->
-
 
 <!-- @@author Oliver-koh -->
 
@@ -486,13 +392,13 @@ Change selected fields while preserving omitted fields and completion status.
 Format:
 
 ```text
-edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]
+edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]
 ```
 
 - Use an index from chronological `list` or activity `find` output and supply
   at least one field. The command updates one activity at a time.
 - Each supplied field must have a value and appear once. Names follow the same
-  prefix, pipe and line-break restrictions as `add`.
+  Unicode, prefix, pipe, and line-break rules as `add`.
 - Omitted fields, including ratings, keep their existing values. An omitted
   demand does not reset to MEDIUM. Ratings accept 1 to 5; `-` cannot clear a rating.
 - If any date/time field is supplied, the combined old and new values must form
@@ -500,7 +406,8 @@ edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [im
   time. A change only to name, demand, or ratings can update historical activities.
 - Validation failures leave the activity unchanged. Successful edits save
   automatically and display all resulting fields, including ratings.
-- Name or schedule edits must not duplicate or overlap another activity. The
+- Name or schedule edits must not duplicate another activity. Time overlaps
+  require `overlap/ALLOW` on that edit, for example `edit 2 s/10:30 overlap/ALLOW`. The
   activity being edited is excluded from this comparison. Rejected multi-field
   edits leave every field and the saved file unchanged.
 - Rescheduling can change chronological indexes. Run `list` or `find` again
@@ -515,30 +422,10 @@ mark 1
 edit 1 n/CCA EXCO planning meeting com/4
 ```
 
-The edit output is:
-
-```text
-Edited activity: CCA EXCO planning meeting
-Date: 2026-12-02
-Time: 14:00 - 15:00
-Demand: HIGH
-Importance: 5
-Urgency: 4
-Commitment: 4
-```
-
-Completion stays `[X]`; omitted date, times, demand, importance and urgency remain
-unchanged. For a timing change, supply the date, start or end fields as needed;
-the resulting start must still be earlier than the resulting end.
-
-Both `add` and `edit` reject whitespace-only names, including Unicode spaces such
-as U+2003 EM SPACE and U+3000 IDEOGRAPHIC SPACE. Rejected input leaves the activity
-list and saved data unchanged.
-
-Replacement names supplied with `edit INDEX n/NAME` must also use ASCII characters only;
-otherwise the English-only warning appears and none of the supplied fields are
-changed. Previously saved non-ASCII names still load and can be listed, searched
-or renamed using ASCII characters.
+The confirmation begins with `Edited activity: CCA EXCO planning meeting` and
+shows the resulting fields. Completion stays `[X]`; omitted fields are preserved.
+Names follow the same Unicode and delimiter rules as add. Saved names can be
+listed, searched, and renamed in any supported script.
 
 ### Searching activity names: `find`
 
@@ -572,9 +459,7 @@ Found 1 matching activity:
 `[WARNING] No activities matched keyword "exam".`; a valid search on an empty list has
 the same no-match form. `find` without a keyword reports a warning and usage.
 
-
 <!-- @@author -->
-
 
 <!-- @@author officialasyrafrahim -->
 
@@ -593,9 +478,8 @@ formula. Higher scores appear first. Activities with missing ratings show
 start-time order, and equal date/time keep add order. Indexes refer to chronological
 `list` output.
 
-Return to the original activity-walkthrough folder, after restoring Project
-meeting and adding the rating examples. The separate edit/find examples do not
-change this five-activity schedule. With those five activities still incomplete:
+Using the five-activity schedule from [optional add ratings](#trying-optional-add-ratings),
+with all activities incomplete:
 
 ```text
 Activities by priority (highest first):
@@ -609,23 +493,23 @@ Indexes refer to the chronological 'list' order.
 
 ### Viewing overdue activities: `overdue`
 
-`overdue` shows incomplete activities whose start is strictly before the current
-local time. An activity that has started but not ended is included. Completed
-activities and activities starting exactly now or later are excluded.
+`overdue` shows incomplete activities whose end is strictly before the current
+local time. Ongoing and completed activities are excluded. An activity ending
+exactly now becomes overdue only after that time has passed.
 
 Each row keeps its chronological `list` index and adds one label:
 
 | Label | Meaning |
 | --- | --- |
-| `OVERDUE TODAY` | Starts earlier today. |
-| `OVERDUE WEEK` | Starts on an earlier day in the current Monday-to-Sunday week. |
-| `OVERDUE EARLIER` | Starts before the current week's Monday. |
+| `OVERDUE TODAY` | Ended earlier today. |
+| `OVERDUE WEEK` | Ended on an earlier day in the current Monday-to-Sunday week. |
+| `OVERDUE EARLIER` | Ended before the current week's Monday. |
 
 Using the same five-activity schedule, assume the current local time is
-2026-12-04 at 15:00. The containing week starts on Monday, 2026-11-30:
+2026-12-04 at 15:01. The containing week starts on Monday, 2026-11-30:
 
 ```text
-Overdue activities (started before now):
+Overdue activities (ended before now):
 1. [OVERDUE WEEK] CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
 2. [OVERDUE WEEK] Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
 3. [OVERDUE WEEK] Planning and/or review (2026-12-03, 10:00-11:00) [LOW] [ ]
@@ -641,7 +525,7 @@ the current local time. Activities starting exactly now and completed activities
 are skipped. Equal starts keep add order, and the row keeps its chronological
 `list` index.
 
-At the same assumed local time, 2026-12-04 at 15:00, with the same five activities:
+At the same assumed local time, 2026-12-04 at 15:01, with the same five activities:
 
 ```text
 Next activity (earliest upcoming):
@@ -657,12 +541,13 @@ For an incomplete activity scheduled 09:00-09:30 on the current date:
 | --- | --- | --- |
 | 08:59 | No | Yes, if it is the earliest future incomplete activity. |
 | Exactly 09:00 | No | No. |
-| 09:15 | Yes, even though it is still in progress. | No. |
+| 09:15 | No; the activity is ongoing. | No. |
+| Exactly 09:30 | No. | No. |
+| 09:31 | Yes, if still incomplete. | No. |
 
 A completed activity appears in neither time query. At its exact start, an
 incomplete activity appears in neither query; it remains visible in `list`.
 These strict boundaries also apply when the current clock includes seconds.
-
 
 <!-- @@author -->
 
@@ -748,7 +633,6 @@ Sample reference data.
 Verify with current campus information before you rely on it.
 ```
 
-
 <!-- @@author -->
 
 <!-- @@author Atharva005 -->
@@ -761,7 +645,7 @@ Format: `help [TOPIC]`
 - `help TOPIC` displays that command's syntax, rules, and examples. Topic names
   ignore letter case and must be a single command name.
 - Supported topics are `add`, `edit`, `find`, `list`, `view`, `overdue`,
-  `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `help`, and `bye`.
+  `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `save`, `help`, and `bye`.
 - `help list` covers all list variants; `help facility` includes feature search.
   Enter `help list` rather than `help list demand`.
 - Help only displays instructions. For example, `help delete` removes nothing,
@@ -772,21 +656,22 @@ Examples:
 ```text
 help
 help add
-help edit
-help list
 help view
-help facility
-help route
-help overdue
-help next
-help mark
-help unmark
-help delete
 ```
 
 The main menu begins with `UniEnable commands:`. Topic pages have a title such as
 `ADD - Create an activity`, followed by **Usage**, **Details**, and **Examples**.
 Each topic ends with `Type help to return to the command menu.`.
+
+<!-- @@author -->
+<!-- @@author Oliver-koh -->
+
+### Saving changes: `save`
+
+Format: `save`
+
+Retry a failed save after fixing the reported problem. Successful saving displays
+`Activities saved.` and clears the unsaved-change warning. No activity fields change.
 
 <!-- @@author -->
 <!-- @@author lukelouyu -->
@@ -796,7 +681,8 @@ Each topic ends with `Type help to return to the command menu.`.
 Format: `bye`
 
 Exit the console session after checking that any activity changes saved successfully.
-`bye` accepts no arguments and does not retry a failed save.
+`bye` accepts no arguments and does not retry a failed save. If changes remain
+unsaved, exit is blocked; fix the error and run `save` first.
 
 Input: `bye`
 
@@ -827,7 +713,7 @@ Command words must use ASCII characters. For example, entering `加入` or
 
 The app then waits for another command. Unknown ASCII command words and blank
 input keep the usual unrecognized-command warning. Non-ASCII activity names
-supplied to add or edit receive the activity-name warning instead.
+supplied to add or edit are supported; control characters still receive a name warning.
 <!-- @@author -->
 
 <!-- @@author Oliver-koh -->
@@ -839,7 +725,7 @@ state. A repeated request does not save or modify activities.
 Common causes include missing/duplicate fields, invalid dates or times, unknown
 facilities, or an activity index outside the current list.
 For `add` and `edit`, use real calendar dates and two-digit hours and minutes (for example,
-`09:30`, not `9:30`). An invalid add command also displays the expected format.
+`09:30`, not `9:30`). Use `help add` or `help edit` to check the expected format.
 Rejected add or edit input, including an invalid rating, leaves the activity list and
 stored data unchanged.
 
@@ -867,20 +753,14 @@ Extra topic words, such as `help add extra`, also show a warning and the help us
 <!-- @@author -->
 
 <!-- @@author Oliver-koh -->
-If saving fails, the change may already be in memory. Repeating the same `add`
-can create a duplicate; exiting with `bye` does not retry the save.
+If saving fails, the change remains in memory and an unsaved-changes warning
+appears after subsequent commands. Repeating an add is not a save retry.
 
-To recover before exiting:
-
-1. Run `list` and record the activities you need to keep.
-2. Fix the reported file or backup-path problem, keeping a separate copy of any
-   existing data or recovery backup.
-3. Run `list` again and choose an activity. If it is incomplete, run `mark INDEX`
-   followed by `unmark INDEX`; if completed, reverse the commands. Each actual
-   change retries saving the entire list. If the list is empty, add a temporary
-   activity with a future end time, then delete it.
-4. Check that both changes succeed without a save error before exiting. Restart
-   and run `list` to confirm the saved result.
+1. Keep the app open and fix the reported file or backup-path problem. Preserve
+   a separate copy of any existing activity file or recovery backup.
+2. Enter `save`. It writes the current list without changing any activity.
+3. Wait for `Activities saved.` and check that the unsaved warning has cleared.
+   Then use `bye`. Exit is blocked while changes remain unsaved.
 <!-- @@author -->
 
 <!-- TEAM: Each FAQ answer is maintained by the owner of the feature it describes. -->
@@ -923,14 +803,15 @@ Use `help TOPIC` with any command name below for detailed instructions, such as
 
 | Command | Purpose |
 | --- | --- |
+| `save` | Save current activities or retry a failed save |
 | `help [TOPIC]` / `bye` | Show categorized or detailed command help / exit |
-| `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Add an activity with optional ratings |
+| `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]` | Add an activity with optional ratings |
 | `list` / `list demand` | View activities by time / demand |
-| `edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Update supplied activity fields; preserve omitted fields and completion |
+| `edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]` | Update supplied activity fields; preserve omitted fields and completion |
 | `find KEYWORD` | Search activity names and retain chronological list indexes |
 | `list priority` | View all activities by combined priority score |
 | `view today` / `view tomorrow` / `view week` | Show today's, tomorrow's, or the next seven days' dashboard |
-| `overdue` / `next` | View incomplete activities that started before now / the earliest upcoming incomplete activity |
+| `overdue` / `next` | View incomplete activities that ended before now / the earliest upcoming incomplete activity |
 | `mark INDEX` / `unmark INDEX` / `delete INDEX` | Change completion / delete |
 | `facility list` / `facility LOCATION` | View all facilities / one facility |
 | `facility find type/FEATURE [status/YES\|NO\|UNKNOWN]` | Search recorded features |

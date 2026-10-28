@@ -29,15 +29,20 @@ Parser -> AddParser : parse(arguments)
 activate AddParser
 note right of AddParser
   Validate fields, date/time, and ratings.
-  ActivityNameValidator checks the supplied ASCII name.
+  ActivityParameterValidator rejects likely prefix typos.
+  ActivityNameValidator checks Unicode name safety.
   Default demand and unset ratings.
 end note
 create participant ":AddCommand" as Add
 AddParser -> Add : AddCommand(...)
 activate Add
 create participant ":Activity" as Activity
-Add -> Activity : Activity(..., false, 5, null, null)
+Add -> Activity : Activity(..., false, importance, urgency, commitment)
 activate Activity
+note right of Activity
+  Pass the parsed ratings unchanged.
+  Each omitted rating is null; a supplied rating keeps its validated value.
+end note
 Activity --> Add
 deactivate Activity
 Add --> AddParser
@@ -49,14 +54,14 @@ deactivate Parser
 
 Console -> Add : execute(activities, storage)
 activate Add
-Add -> Schedule : validate(activity, activities, null)
+Add -> Schedule : validate(activity, activities, null, allowOverlap)
 Schedule -> Activities : getCanonicalView()
 Activities --> Schedule : chronological activities
-alt duplicate activity or same-date time clash
+alt duplicate activity or unapproved time clash
   Schedule --> Add : throws UniEnableException(warning)
   Add --> Console : propagate warning
   Console -> UI : showMessage(warning)
-else no duplicate or clash
+else no duplicate and any overlap is approved
   Schedule --> Add : validation passed
   Add -> Activities : addActivity(activity)
   activate Activities

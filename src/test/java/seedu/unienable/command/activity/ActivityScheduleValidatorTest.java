@@ -27,6 +27,30 @@ class ActivityScheduleValidatorTest {
     private final Storage storage = new Storage();
 
     @Test
+    void explicitOverride_allowsConcurrentActivitiesButNeverDuplicates() throws Exception {
+        ActivityList activities = new ActivityList();
+        execute(activities, "add n/Lecture d/2099-12-01 s/09:00 e/10:00");
+        execute(activities, "add n/Reminder d/2099-12-01 s/09:30 e/10:30 overlap/ALLOW");
+        assertEquals(2, activities.getActivities().size());
+        assertThrows(UniEnableException.class, () -> execute(activities,
+                "add n/Lecture d/2099-12-01 s/09:00 e/10:00 overlap/ALLOW"));
+        execute(activities, "edit 2 s/09:15 overlap/allow");
+        assertEquals(LocalTime.parse("09:15"), activities.getByDisplayedIndex(2).getStartTime());
+        assertThrows(UniEnableException.class, () -> execute(activities, "edit 2 s/09:20"));
+        execute(activities, "mark 1");
+        execute(activities, "add n/Concurrent d/2099-12-01 s/09:45 e/10:15 overlap/ALLOW");
+        assertEquals(3, activities.getActivities().size());
+    }
+
+    @Test
+    void invalidOrUnaccompaniedOverride_isRejectedBeforeMutation() {
+        assertThrows(UniEnableException.class,
+                () -> parser.parse("add n/Study d/2099-12-01 s/09:00 e/10:00 overlap/YES"));
+        assertThrows(UniEnableException.class, () -> parser.parse("edit 1 overlap/ALLOW"));
+        assertThrows(UniEnableException.class, () -> parser.parse("edit 1 n/Study overlap/NO"));
+    }
+
+    @Test
     void duplicateIgnoresNameCaseDemandRatingsAndCompletion() throws Exception {
         ActivityList activities = new ActivityList();
         execute(activities, "add n/Study d/2099-12-01 s/10:00 e/11:00");
@@ -100,7 +124,8 @@ class ActivityScheduleValidatorTest {
         UniEnableException error = assertThrows(UniEnableException.class,
                 () -> execute(activities, "add n/Other d/2099-12-01 s/10:30 e/11:30"));
 
-        assertEquals("[WARNING] Activity clashes with index 1: Earlier (2099-12-01, 10:00-11:00).",
+        assertEquals("[WARNING] Activity clashes with index 1: Earlier (2099-12-01, 10:00-11:00)."
+                + " Add overlap/ALLOW to keep this intentional overlap.",
                 error.getMessage());
         assertEquals(2, activities.getActivities().size());
     }

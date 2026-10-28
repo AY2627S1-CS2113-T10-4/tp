@@ -55,13 +55,21 @@ public final class FacilityFeature {
      * Supported categories of facility accessibility features.
      */
     public enum Type {
+        /** A recorded lift. */
         LIFT,
+        /** A recorded ramp. */
         RAMP,
+        /** A recorded sheltered ramp. */
         SHELTERED_RAMP,
+        /** A recorded accessible washroom. */
         ACCESSIBLE_WASHROOM,
+        /** A recorded step-free entrance. */
         STEP_FREE_ENTRANCE,
+        /** A recorded resting point. */
         REST_POINT,
+        /** A recorded automatic door. */
         AUTOMATIC_DOOR,
+        /** Another recorded accessibility feature. */
         OTHER
     }
 }

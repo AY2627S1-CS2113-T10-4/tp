@@ -1,38 +1,30 @@
 # Diagram ownership index
 
-PlantUML sources are grouped by the primary feature responsibility recorded in
+PlantUML sources are grouped by the diagram contribution recorded in
 the [Developer Guide](../DeveloperGuide.md#team-contributions). Each member's folder
 contains `class/` and `sequence/` subfolders. Rendered files use the same owner,
 diagram type, and base filename under [images](../images/README.md).
-All four members' diagram folders are populated. The groups indicate primary
-feature responsibility; classes used across features can appear in several diagrams.
+All four members' diagram folders are populated. The groups indicate diagram
+responsibility; classes used across features can appear in several diagrams.
 
-The team component diagram uses `team/architecture/`. The campus connectivity
+Luke's architecture diagram uses `luke/architecture/`. The campus connectivity
 graph uses `luke/graph/`; it is separate from the class and sequence diagrams.
 
 | Folder | Responsibility |
 | --- | --- |
-| [team](#team) | Team architecture. |
-| [atharva](#atharva) | Activity creation, calendar dashboards, and categorized/topic help. |
+| [atharva](#atharva) | Activity creation, calendar dashboards, help, and name/parameter/schedule validation diagrams. |
 | [asyraf](#asyraf) | Chronological/demand listing, deletion, priority, overdue and next. |
 | [oliver](#oliver) | Completion, storage/recovery, editing and search. |
-| [luke](#luke) | Optional add ratings, facility data/queries, route connections/search and exit. |
+| [luke](#luke) | Architecture, optional add ratings, facility data/queries, route connections/search and exit. |
 
-Atharva maintains activity creation, calendar dashboards, and help diagrams in the
-`atharva` source and image folders, including their presentation of optional ratings.
-Luke still maintains the optional rating implementation. Exit is described in the
-guide without a separate diagram.
+Atharva maintains activity creation, calendar dashboards, help, and all six
+name/parameter/schedule validation diagrams. Luke maintains the architecture
+diagram and the shared validation helper code. Exit has no separate diagram.
 
 Owned PlantUML sources use single-quote author comments. Their image links and
 Developer Guide embeds sit inside the corresponding Markdown author scopes.
 Imported PNG files retain the original archive images. New and updated diagrams
 are rendered from the corresponding PlantUML sources.
-
-## Team
-
-| Source | Rendered image | Developer Guide section |
-| --- | --- | --- |
-| [ArchitectureDiagram.puml](team/architecture/ArchitectureDiagram.puml) | [PNG](../images/team/architecture/ArchitectureDiagram.png) | [Architecture](../DeveloperGuide.md#architecture) |
 
 <!-- @@author Atharva005 -->
 
@@ -43,6 +35,9 @@ are rendered from the corresponding PlantUML sources.
 | Source | Rendered image | Developer Guide section |
 | --- | --- | --- |
 | [ActivityCreationClassDiagram.puml](atharva/class/ActivityCreationClassDiagram.puml) | [PNG](../images/atharva/class/ActivityCreationClassDiagram.png) | [Adding activities](../DeveloperGuide.md#adding-activities) |
+| [ActivityNameValidatorClassDiagram.puml](atharva/class/ActivityNameValidatorClassDiagram.puml) | [PNG](../images/atharva/class/ActivityNameValidatorClassDiagram.png) | [Command and name validation](../DeveloperGuide.md#ascii-command-name-validation) |
+| [ActivityParameterValidatorClassDiagram.puml](atharva/class/ActivityParameterValidatorClassDiagram.puml) | [PNG](../images/atharva/class/ActivityParameterValidatorClassDiagram.png) | [Activity parameter validation](../DeveloperGuide.md#activity-parameter-validation) |
+| [ActivityScheduleValidatorClassDiagram.puml](atharva/class/ActivityScheduleValidatorClassDiagram.puml) | [PNG](../images/atharva/class/ActivityScheduleValidatorClassDiagram.png) | [Activity schedule validation](../DeveloperGuide.md#activity-schedule-validation) |
 | [CalendarViewClassDiagram.puml](atharva/class/CalendarViewClassDiagram.puml) | [PNG](../images/atharva/class/CalendarViewClassDiagram.png) | [Calendar dashboards](../DeveloperGuide.md#calendar-dashboards) |
 | [TopicHelpClassDiagram.puml](atharva/class/TopicHelpClassDiagram.puml) | [PNG](../images/atharva/class/TopicHelpClassDiagram.png) | [Categorized and topic help](../DeveloperGuide.md#categorized-and-topic-help) |
 
@@ -51,6 +46,9 @@ are rendered from the corresponding PlantUML sources.
 | Source | Rendered image | Developer Guide section |
 | --- | --- | --- |
 | [AddActivitySequence.puml](atharva/sequence/AddActivitySequence.puml) | [PNG](../images/atharva/sequence/AddActivitySequence.png) | [Adding activities](../DeveloperGuide.md#adding-activities) |
+| [ActivityNameValidationSequence.puml](atharva/sequence/ActivityNameValidationSequence.puml) | [PNG](../images/atharva/sequence/ActivityNameValidationSequence.png) | [Command and name validation](../DeveloperGuide.md#ascii-command-name-validation) |
+| [ActivityParameterValidationSequence.puml](atharva/sequence/ActivityParameterValidationSequence.puml) | [PNG](../images/atharva/sequence/ActivityParameterValidationSequence.png) | [Activity parameter validation](../DeveloperGuide.md#activity-parameter-validation) |
+| [ActivityScheduleValidationSequence.puml](atharva/sequence/ActivityScheduleValidationSequence.puml) | [PNG](../images/atharva/sequence/ActivityScheduleValidationSequence.png) | [Activity schedule validation](../DeveloperGuide.md#activity-schedule-validation) |
 | [CalendarViewSequence.puml](atharva/sequence/CalendarViewSequence.puml) | [PNG](../images/atharva/sequence/CalendarViewSequence.png) | [Calendar dashboards](../DeveloperGuide.md#calendar-dashboards) |
 | [TopicHelpSequence.puml](atharva/sequence/TopicHelpSequence.puml) | [PNG](../images/atharva/sequence/TopicHelpSequence.png) | [Categorized and topic help](../DeveloperGuide.md#categorized-and-topic-help) |
 
@@ -86,7 +84,9 @@ are rendered from the corresponding PlantUML sources.
 
 <!-- @@author Oliver-koh -->
 
-## Oliver
+<a id="oliver"></a>
+
+## Koh Li Wei Oliver
 
 ### Class diagrams
 
@@ -114,13 +114,17 @@ are rendered from the corresponding PlantUML sources.
 
 ## Luke
 
+### Architecture
+
+| Source | Rendered image | Developer Guide section |
+| --- | --- | --- |
+| [ArchitectureDiagram.puml](luke/architecture/ArchitectureDiagram.puml) | [PNG](../images/luke/architecture/ArchitectureDiagram.png) | [Architecture](../DeveloperGuide.md#architecture) |
+
 ### Class diagrams
 
 | Source | Rendered image | Developer Guide section |
 | --- | --- | --- |
 | [FacilityClassDiagram.puml](luke/class/FacilityClassDiagram.puml) | [PNG](../images/luke/class/FacilityClassDiagram.png) | [Facility lookup](../DeveloperGuide.md#facility-lookup) |
-| [ActivityScheduleValidatorClassDiagram.puml](luke/class/ActivityScheduleValidatorClassDiagram.puml) | [PNG](../images/luke/class/ActivityScheduleValidatorClassDiagram.png) | [Activity schedule validation](../DeveloperGuide.md#activity-schedule-validation) |
-| [ActivityNameValidatorClassDiagram.puml](luke/class/ActivityNameValidatorClassDiagram.puml) | [PNG](../images/luke/class/ActivityNameValidatorClassDiagram.png) | [ASCII command/name validation](../DeveloperGuide.md#ascii-command-name-validation) |
 | [RoutingClassDiagram.puml](luke/class/RoutingClassDiagram.puml) | [PNG](../images/luke/class/RoutingClassDiagram.png) | [Accessible route search](../DeveloperGuide.md#accessible-route-search) |
 
 ### Sequence diagrams
@@ -162,15 +166,15 @@ The campus connectivity graph uses SVG:
 java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tsvg -o ../../../images/luke/graph docs/diagrams/luke/graph/fass-accessibility-network.puml
 ```
 
-Regenerate the team architecture, including calendar dashboards, topic help,
+Regenerate Luke's architecture diagram, including calendar dashboards, topic help,
 editing/search, priority queries, and the current command packages, with:
 
 ```text
-java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tpng -o ../../../images/team/architecture docs/diagrams/team/architecture/ArchitectureDiagram.puml
+java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tpng -o ../../../images/luke/architecture docs/diagrams/luke/architecture/ArchitectureDiagram.puml
 ```
 
-This writes `docs/images/team/architecture/ArchitectureDiagram.png`. The team
-maintains this source/image pair jointly; it has no individual author override.
+This writes `docs/images/luke/architecture/ArchitectureDiagram.png`.
+Luke maintains this source/image pair under `@@author lukelouyu`.
 
 Regenerate the class and sequence groups separately so each image lands in the
 correct category. For example, these commands regenerate all six Asyraf class/sequence pairs:

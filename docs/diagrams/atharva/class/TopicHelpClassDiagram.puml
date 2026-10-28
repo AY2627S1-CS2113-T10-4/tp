@@ -44,7 +44,7 @@ note bottom of HelpCommand
   One topic uses Locale.ROOT case folding and map lookup.
   Supported topics have usage, details and examples.
   Reading help never executes the described command.
-  Add/edit pages explain ASCII-only names,
+  Add/edit pages explain Unicode names,
   duplicate/clash rejection and allowed adjacent times.
 end note
 note bottom of CommandResult

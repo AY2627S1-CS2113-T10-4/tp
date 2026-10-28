@@ -67,6 +67,27 @@ class UniEnableTest {
                 console(""));
     }
 
+    //@@author lukelouyu
+    @Test
+    void mistypedActivityParameters_warnWithoutAddingEditingOrSaving(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|false|-|-|-\n"
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+        var originalTime = Files.getLastModifiedTime(activityFile);
+
+        String output = consoleAtPath("add n/Class demm/HIGH d/2099-12-11 s/09:00 e/10:00\n"
+                + "edit 1 n/Changed impp/5\nlist\nbye\n", activityFile);
+
+        assertEquals(2, output.split("Unknown parameter", -1).length - 1, output);
+        assertFalse(output.contains("Added activity:"), output);
+        assertFalse(output.contains("Edited activity:"), output);
+        assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [ ]"), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+        assertEquals(originalTime, Files.getLastModifiedTime(activityFile));
+    }
+    //@@author
+
     //@@author Atharva005
     @Test
     void topicHelp_showsInstructionsWithoutChangingActivitiesOrExiting(@TempDir Path tempDir) throws Exception {
@@ -342,29 +363,19 @@ class UniEnableTest {
 
     //@@author lukelouyu
     @Test
-    void nonAsciiNames_rejectAddAndEditWithoutChangingSavedData(@TempDir Path tempDir) throws Exception {
-        String[] names = {"复习", "வணக்கம்", "படி", "Café", "📚 Study", "Study\u2003group", "Study\u0080"};
+    void unicodeNames_surviveAddingEditingAndRestart(@TempDir Path tempDir) throws Exception {
+        String[] names = {"复习", "வணக்கம்", "படி", "Café", "📚 Study", "Study\u2003group"};
         for (int i = 0; i < names.length; i++) {
-            Path activityFile = tempDir.resolve("unicode-" + i + ".txt");
-            byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n"
-                    .getBytes(StandardCharsets.UTF_8);
-            Files.write(activityFile, original);
-            var originalModifiedTime = Files.getLastModifiedTime(activityFile);
+            Path file = tempDir.resolve("unicode-" + i + ".txt");
             String output = consoleAtPath("add n/" + names[i] + " d/2099-12-10 s/09:00 e/10:00\n"
-                    + "edit 1 n/" + names[i] + " imp/5\nlist\nbye\n", activityFile);
-
-            String warning = "[WARNING] Please write the activity name in English (ASCII characters only).";
-            assertEquals(2, output.split(Pattern.quote(warning), -1).length - 1, output);
-            assertFalse(output.contains("Added activity:"), output);
-            assertFalse(output.contains("Edited activity:"), output);
-            assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), output);
-            assertArrayEquals(original, Files.readAllBytes(activityFile));
-            assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
-
-            String restartOutput = consoleAtPath("list\nbye\n", activityFile);
-            assertTrue(restartOutput.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), restartOutput);
-            assertFalse(restartOutput.contains("Activity data warning:"), restartOutput);
-            assertArrayEquals(original, Files.readAllBytes(activityFile));
+                    + "edit 1 n/" + names[i] + " revised imp/5\nlist\nbye\n", file);
+            assertTrue(output.contains("Added activity: " + names[i]), output);
+            assertTrue(output.contains("Edited activity: " + names[i] + " revised"), output);
+            assertFalse(output.contains("[WARNING]"), output);
+            byte[] saved = Files.readAllBytes(file);
+            String restarted = consoleAtPath("list\nbye\n", file);
+            assertTrue(restarted.contains("1. " + names[i] + " revised ("), restarted);
+            assertArrayEquals(saved, Files.readAllBytes(file));
         }
     }
     //@@author

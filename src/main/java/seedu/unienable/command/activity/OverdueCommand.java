@@ -15,7 +15,7 @@ import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.activity.ActivityListFormatter;
 
 /**
- * Lists incomplete activities whose start is strictly before the current local
+ * Lists incomplete activities whose end is strictly before the current local
  * time, in chronological order with labels for today, this week, and earlier.
  */
 public class OverdueCommand extends Command {

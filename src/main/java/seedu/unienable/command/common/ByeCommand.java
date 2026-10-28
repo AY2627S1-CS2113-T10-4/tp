@@ -8,6 +8,12 @@ import seedu.unienable.storage.Storage;
  * Displays the goodbye message and requests that the console loop exit.
  */
 public class ByeCommand extends Command {
+
+    /**
+     * Creates a command that requests a normal console exit.
+     */
+    public ByeCommand() {
+    }
     /**
      * Returns the goodbye message without changing activities or stored data.
      *

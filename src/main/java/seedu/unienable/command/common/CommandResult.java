@@ -32,10 +32,20 @@ public class CommandResult {
         this.didChangeActivities = didChangeActivities;
     }
 
+    /**
+     * Returns the complete feedback to display for this command.
+     *
+     * @return the user-facing command message.
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Returns whether the command requests that the console session end.
+     *
+     * @return true for an exit request.
+     */
     public boolean isExit() {
         return isExit;
     }

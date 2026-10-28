@@ -26,6 +26,7 @@ class ListDemandCommand {
 }
 class ActivityList {
   +getDemandView(): List<Activity>
+  +getCanonicalView(): List<Activity>
 }
 class Activity {
   +getName(): String
@@ -46,8 +47,8 @@ ListDemandCommand ..> CommandResult : read-only result
 ActivityList --> "0..*" Activity : activities
 note bottom of ActivityList
   Sort HIGH, MEDIUM, LOW; ties use date and start time.
-  Rows use demand-order indexes, not chronological indexes.
-  Run list before selecting an activity for an indexed change.
+  Row order changes; each row keeps its chronological index.
+  Indexed changes select the activity beside that number.
 end note
 note bottom of CommandResult
   No activity changes or exit are requested.

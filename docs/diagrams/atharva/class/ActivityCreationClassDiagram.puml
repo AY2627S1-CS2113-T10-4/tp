@@ -22,6 +22,9 @@ class AddCommandParser {
 class AddCommand {
   +execute(...): CommandResult
 }
+class ActivityParameterValidator <<package-private>> {
+  {static} ~validate(arguments: String): void
+}
 class ActivityNameValidator <<package-private>> {
   {static} ~validate(name: String): void
 }
@@ -52,7 +55,8 @@ enum DemandLevel {
 Command <|-- AddCommand
 AddCommandParser ..> AddCommand : creates
 AddCommandParser ..> Activity : validates ratings
-AddCommandParser ..> ActivityNameValidator : checks ASCII name
+AddCommandParser ..> ActivityNameValidator : checks Unicode name safety
+AddCommandParser ..> ActivityParameterValidator : rejects likely prefix typos
 AddCommand ..> ActivityScheduleValidator : checks before insertion
 ActivityScheduleValidator ..> ActivityList : reads chronological view
 AddCommand --> Activity : activity
@@ -65,7 +69,7 @@ note bottom of Activity
   or a whole number from 1 to 5.
 end note
 note bottom of ActivityScheduleValidator
-  Reject duplicate identities and positive time overlaps.
+  Reject duplicate identities; time overlaps require overlap/ALLOW.
   Adjacent endpoints and different dates are allowed.
   A warning prevents insertion and saving.
   Luke maintains this shared helper.

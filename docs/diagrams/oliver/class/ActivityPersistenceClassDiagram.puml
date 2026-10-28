@@ -25,6 +25,9 @@ class Storage {
   -activityFile: Path
   -warnings: List<String>
   -loadedCorruptData: boolean
+  -unsavedChanges: boolean
+  +markUnsavedChanges(): void
+  +hasUnsavedChanges(): boolean
   +load(): ActivityList
   +getWarnings(): List<String>
   +save(activities: ActivityList): void
@@ -36,6 +39,9 @@ class ActivityList {
   +setDoneAtDisplayedIndex(...): boolean
   +getActivities(): List<Activity>
 }
+class SaveCommand {
+  +execute(...): CommandResult
+}
 class Activity {
   +isDone(): boolean
   +setDone(isDone: boolean): void
@@ -43,6 +49,7 @@ class Activity {
 
 ConsoleHelper ..> CommandResult : reads change flag
 ConsoleHelper ..> Storage : saves on change
+SaveCommand ..> Storage : explicitly retries save
 Storage ..> ActivityList : restores / serialises
 ActivityList --> "0..*" Activity : activities
 
@@ -52,8 +59,12 @@ note bottom of CommandResult
 end note
 note bottom of Storage
   Retain existing Unicode names, duplicates and overlaps.
+  Reject invalid same-day time ranges with line-numbered warnings.
+  Valid historical activities remain loadable.
   New-input restrictions belong to parsers and commands.
   Validation warnings do not request a save.
+  Failed saves keep unsavedChanges set and warn after each command.
+  Only a successful save clears the flag; bye is blocked while it is set.
 end note
 @enduml
 '@@author

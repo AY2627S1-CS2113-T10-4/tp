@@ -25,6 +25,8 @@ public class LoadResult<T> {
 
     /**
      * Returns successfully loaded records.
+     *
+     * @return an immutable list of successfully loaded records.
      */
     public List<T> getRecords() {
         return records;
@@ -32,6 +34,8 @@ public class LoadResult<T> {
 
     /**
      * Returns warnings generated during loading.
+     *
+     * @return an immutable list of load warnings.
      */
     public List<String> getWarnings() {
         return warnings;
@@ -39,6 +43,8 @@ public class LoadResult<T> {
 
     /**
      * Returns whether loading generated any warnings.
+     *
+     * @return true when one or more load warnings were recorded.
      */
     public boolean hasWarnings() {
         return !warnings.isEmpty();

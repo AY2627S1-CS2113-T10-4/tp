@@ -2,32 +2,38 @@
 
 Rendered diagrams follow the same ownership and type folders as the
 [PlantUML sources](../diagrams/README.md). Each member has `class/` and `sequence/`
-subfolders. The team component diagram uses `team/architecture/`, and the campus
+subfolders. Luke's architecture diagram uses `luke/architecture/`, and the campus
 connectivity graph uses `luke/graph/`.
 The source index lists every source/image pair, the relevant Developer Guide
 section, and regeneration commands.
 
 | Folder | Class diagrams | Sequence diagrams | Other diagrams |
 | --- | --- | --- | --- |
-| [team](#team) | - | - | [Architecture](#team) |
 | [atharva](#atharva) | [Class](#atharva) | [Sequence](#atharva) | - |
 | [asyraf](#asyraf) | [Class](#asyraf) | [Sequence](#asyraf) | - |
 | [oliver](#oliver) | [Class](#oliver) | [Sequence](#oliver) | - |
-| [luke](#luke) | [Class](#luke) | [Sequence](#luke) | [Connectivity graph](#luke) |
+| [luke](#luke) | [Class](#luke) | [Sequence](#luke) | Architecture and [connectivity graph](#luke) |
 
-Atharva maintains the activity-creation class diagram in the `atharva` folder,
-including its presentation of Luke's rating fields. Class/sequence diagrams use
+Atharva maintains the activity-creation diagrams and the six name, parameter,
+and schedule validation diagrams in the `atharva` folder. Class/sequence diagrams use
 `.png`, and the campus connectivity graph uses `.svg`.
-
-## Team
-
-- [ArchitectureDiagram.png](team/architecture/ArchitectureDiagram.png) shows the
-  shared startup, command, model, storage, and output responsibilities.
 
 <!-- @@author Atharva005 -->
 
 ## Atharva
 
+- [ActivityNameValidatorClassDiagram.png](atharva/class/ActivityNameValidatorClassDiagram.png)
+  shows command-word checks and Unicode name validation.
+- [ActivityNameValidationSequence.png](atharva/sequence/ActivityNameValidationSequence.png)
+  shows valid-name and warning paths before command execution.
+- [ActivityParameterValidatorClassDiagram.png](atharva/class/ActivityParameterValidatorClassDiagram.png)
+  shows the shared prefix-typo checker used by add and edit.
+- [ActivityParameterValidationSequence.png](atharva/sequence/ActivityParameterValidationSequence.png)
+  shows a typo warning before an activity command executes.
+- [ActivityScheduleValidatorClassDiagram.png](atharva/class/ActivityScheduleValidatorClassDiagram.png)
+  shows duplicate and overlap validation before add/edit changes.
+- [ActivityScheduleValidationSequence.png](atharva/sequence/ActivityScheduleValidationSequence.png)
+  shows duplicate rejection, overlap approval, and successful validation.
 - [ActivityCreationClassDiagram.png](atharva/class/ActivityCreationClassDiagram.png)
   shows activity creation and optional rating fields.
 - [AddActivitySequence.png](atharva/sequence/AddActivitySequence.png) shows activity parsing,
@@ -68,7 +74,9 @@ including its presentation of Luke's rating fields. Class/sequence diagrams use
 
 <!-- @@author Oliver-koh -->
 
-## Oliver
+<a id="oliver"></a>
+
+## Koh Li Wei Oliver
 
 - [MarkActivityClassDiagram.png](oliver/class/MarkActivityClassDiagram.png) shows marking and the completion-change result.
 - [MarkActivitySequence.png](oliver/sequence/MarkActivitySequence.png) shows marking, repeated requests, and conditional saving.
@@ -92,10 +100,8 @@ including its presentation of Luke's rating fields. Class/sequence diagrams use
 
 ## Luke
 
-- [ActivityNameValidatorClassDiagram.png](luke/class/ActivityNameValidatorClassDiagram.png)
-  shows ASCII command-word checks and the name validator used by add/edit parsers.
-- [ActivityScheduleValidatorClassDiagram.png](luke/class/ActivityScheduleValidatorClassDiagram.png)
-  shows the shared duplicate/clash validator and its add/edit integrations.
+- [ArchitectureDiagram.png](luke/architecture/ArchitectureDiagram.png) shows
+  startup, commands, models, storage, and output responsibilities.
 - [FacilityClassDiagram.png](luke/class/FacilityClassDiagram.png) shows facility
   models, loading, feature search, and command formatting.
 - [FacilityLookupSequence.png](luke/sequence/FacilityLookupSequence.png) shows a

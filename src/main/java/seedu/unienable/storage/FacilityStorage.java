@@ -23,6 +23,12 @@ import seedu.unienable.model.enums.AccessibilityStatus;
  * Loads bundled facility reference data, preserving valid records and reporting invalid lines.
  */
 public class FacilityStorage {
+
+    /**
+     * Creates a loader for the bundled facility reference dataset.
+     */
+    public FacilityStorage() {
+    }
     /**
      * Loads facilities.txt from the classpath using UTF-8, including inside a packaged JAR.
      *
@@ -63,14 +69,14 @@ public class FacilityStorage {
                 String[] fields = line.split("\\|", -1);
                 try {
                     switch (fields[0]) {
-                    case "FACILITY":
-                        addFacility(fields, facilities, ids, names);
-                        break;
-                    case "FEATURE":
-                        featureLines.add(new FeatureLine(lineNumber, fields));
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown record type: " + fields[0]);
+                        case "FACILITY":
+                            addFacility(fields, facilities, ids, names);
+                            break;
+                        case "FEATURE":
+                            featureLines.add(new FeatureLine(lineNumber, fields));
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unknown record type: " + fields[0]);
                     }
                 } catch (IllegalArgumentException exception) {
                     warnings.add("Line " + lineNumber + ": " + exception.getMessage());

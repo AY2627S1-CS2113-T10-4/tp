@@ -67,8 +67,9 @@ class HelpCommandTest {
             {"find", "find KEYWORD", "literal substring", "find project meeting"},
             {"list", "list priority", "list demand groups HIGH, MEDIUM, then LOW", "list demand"},
             {"view", "view week", "today and the following six days", "view tomorrow"},
-            {"overdue", "overdue", "start strictly before the current time", "overdue"},
+            {"overdue", "overdue", "end strictly before the current time", "overdue"},
             {"next", "next", "start is strictly after the current time", "next"},
+            {"save", "save", "Retries a failed save", "Unsaved-change warnings"},
             {"mark", "mark INDEX", "already completed activity warns", "mark 1"},
             {"unmark", "unmark INDEX", "already incomplete activity warns", "unmark 1"},
             {"delete", "delete INDEX", "There is no undo command", "delete 1"},
@@ -97,6 +98,22 @@ class HelpCommandTest {
             assertFalse(result.didChangeActivities());
             assertTrue(activities.getActivities().isEmpty());
         }));
+    }
+
+    @Test
+    void execute_deleteHelp_matchesSupportedIndexes() throws Exception {
+        String deletion = parser.parse("help delete").execute(new ActivityList(), noWrites).getMessage();
+        assertTrue(deletion.contains("list demand retains chronological indexes"), deletion);
+        assertTrue(deletion.contains("Do not use numbering from the calendar dashboards"), deletion);
+        assertFalse(deletion.contains("Do not use numbering from list demand"), deletion);
+    }
+
+    @Test
+    void execute_routeHelp_matchesSupportedEndpoints() throws Exception {
+        String route = parser.parse("help route").execute(new ActivityList(), noWrites).getMessage();
+        assertTrue(route.contains("facility names (AS1-AS8 or CLB)"), route);
+        assertTrue(route.contains("Facility IDs such as F01 are not accepted"), route);
+        assertFalse(route.contains("facility IDs or names"), route);
     }
 
     @Test

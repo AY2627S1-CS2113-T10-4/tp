@@ -120,9 +120,9 @@ public final class RouteCommand extends Command {
      */
     private static String formatShelterStatus(ShelterStatus status) {
         return switch (status) {
-        case YES -> "Sheltered";
-        case NO -> "Unsheltered";
-        case UNKNOWN -> "Shelter unconfirmed";
+            case YES -> "Sheltered";
+            case NO -> "Unsheltered";
+            case UNKNOWN -> "Shelter unconfirmed";
         };
     }
 
