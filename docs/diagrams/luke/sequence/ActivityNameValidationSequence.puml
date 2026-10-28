@@ -1,4 +1,4 @@
-'@@author Atharva005
+'@@author lukelouyu
 @startuml
 title Validate a command word and supplied activity name
 skinparam backgroundColor white

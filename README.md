@@ -71,9 +71,11 @@ The [documentation home](docs/README.md) links the [User Guide](docs/UserGuide.m
 [project portfolios](docs/team/README.md). The [diagram index](docs/diagrams/README.md)
 maps PlantUML sources to [rendered images](docs/images/README.md) and explains how to regenerate them.
 
-Atharva contributes the class and sequence diagrams for activity name, parameter,
-and schedule validation. Luke contributes the
+Luke contributes the activity-creation class diagram, the name and parameter
+validation class/sequence pairs, and the
 [architecture diagram](docs/diagrams/luke/architecture/ArchitectureDiagram.puml).
+Atharva contributes the add sequence, calendar dashboards, topic help, and
+schedule validation diagrams. See the diagram index for each source/image pair.
 
 For documentation publication and link checks, see the
 [publication notes](docs/README.md#publication-and-link-checks).

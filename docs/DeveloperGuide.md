@@ -2,10 +2,10 @@
 
 <!--
 RESPONSIBILITY SCOPES (feature responsibility, not the most recent Git editor):
-Atharva005: activity creation, calendar dashboards, command help, and shared validation diagrams.
+Atharva005: activity creation, calendar dashboards, command help, add sequence and schedule validation diagrams.
 officialasyrafrahim: listing, deletion, priority, overdue, and next.
 Oliver-koh: completion changes, activity persistence/recovery, editing, and search.
-lukelouyu: optional add ratings, facilities, routes, exit, package moves, and the architecture diagram.
+lukelouyu: optional add ratings, facilities, routes, exit, package moves, architecture, activity-creation class and name/parameter validation diagrams.
 Sections marked TEAM are maintained jointly and have no single-author override.
 Named author comments begin a feature scope; the unnamed author comment ends it.
 -->
@@ -130,10 +130,10 @@ responsibility below.
 | Implementation sections | PlantUML sources | Rendered images |
 | --- | --- | --- |
 | [System design](#system-design) | [Architecture](diagrams/README.md#luke) | [Architecture](images/README.md#luke) |
-| [Activity creation, calendar views and help](#activity-creation-calendar-views-and-help) | [Class and sequence](diagrams/README.md#atharva) | [Class and sequence](images/README.md#atharva) |
+| [Activity creation, calendar views and help](#activity-creation-calendar-views-and-help) | [Creation class](diagrams/README.md#luke) and [add sequence/calendar/help](diagrams/README.md#atharva) | [Creation class](images/README.md#luke) and [add sequence/calendar/help](images/README.md#atharva) |
 | [Activity views and deletion](#activity-views-and-deletion) | [Class and sequence](diagrams/README.md#asyraf) | [Class and sequence](images/README.md#asyraf) |
 | [Completion, storage, editing and search](#completion-storage-editing-and-search) | [Class and sequence](diagrams/README.md#oliver) | [Class and sequence](images/README.md#oliver) |
-| [Ratings and accessibility](#ratings-and-accessibility) | [Validation](diagrams/README.md#atharva) and [accessibility](diagrams/README.md#luke) | [Validation](images/README.md#atharva) and [accessibility](images/README.md#luke) |
+| [Ratings and accessibility](#ratings-and-accessibility) | [Name/parameter validation and accessibility](diagrams/README.md#luke); [schedule validation](diagrams/README.md#atharva) | [Name/parameter validation and accessibility](images/README.md#luke); [schedule validation](images/README.md#atharva) |
 
 Each member's source and image folders use matching `class/` and `sequence/`
 subfolders. Luke's architecture diagram uses `luke/architecture/`; the campus
@@ -182,15 +182,15 @@ Storage does not apply this input restriction: historical Unicode names still
 load, display, and match find keywords in UTF-8. Edits omitting `n/` preserve them.
 
 <!-- @@author -->
-<!-- @@author Atharva005 -->
+<!-- @@author lukelouyu -->
 
-![Class diagram showing ASCII command-word and printable-ASCII activity-name validation](images/atharva/class/ActivityNameValidatorClassDiagram.png)
+![Class diagram showing ASCII command-word and printable-ASCII activity-name validation](images/luke/class/ActivityNameValidatorClassDiagram.png)
 
-Source: [ActivityNameValidatorClassDiagram.puml](diagrams/atharva/class/ActivityNameValidatorClassDiagram.puml).
+Source: [ActivityNameValidatorClassDiagram.puml](diagrams/luke/class/ActivityNameValidatorClassDiagram.puml).
 
-![Command-word and printable-ASCII activity-name validation sequence](images/atharva/sequence/ActivityNameValidationSequence.png)
+![Command-word and printable-ASCII activity-name validation sequence](images/luke/sequence/ActivityNameValidationSequence.png)
 
-Source: [ActivityNameValidationSequence.puml](diagrams/atharva/sequence/ActivityNameValidationSequence.puml).
+Source: [ActivityNameValidationSequence.puml](diagrams/luke/sequence/ActivityNameValidationSequence.puml).
 
 <!-- @@author -->
 
@@ -274,9 +274,15 @@ add diagrams include both checks and the rejection path without a save.
 console saves the list before displaying the confirmation. See the
 [user examples](UserGuide.md#adding-an-activity-add).
 
-![Class diagram showing activity creation and optional ratings](images/atharva/class/ActivityCreationClassDiagram.png)
+<!-- @@author -->
+<!-- @@author lukelouyu -->
 
-Source: [ActivityCreationClassDiagram.puml](diagrams/atharva/class/ActivityCreationClassDiagram.puml).
+![Class diagram showing activity creation and optional ratings](images/luke/class/ActivityCreationClassDiagram.png)
+
+Source: [ActivityCreationClassDiagram.puml](diagrams/luke/class/ActivityCreationClassDiagram.puml).
+
+<!-- @@author -->
+<!-- @@author Atharva005 -->
 
 Optional ratings are described in [Optional ratings integration](#optional-ratings-integration);
 saving follows the [shared persistence flow](#completion-and-persistence).
@@ -683,15 +689,15 @@ prefixes and likely typo tokens such as `dim/sum` or `dem1/HIGH` at field bounda
 remain reserved; users must reword literal name text with spaces or hyphens.
 
 <!-- @@author -->
-<!-- @@author Atharva005 -->
+<!-- @@author lukelouyu -->
 
-![Shared activity parameter validator and its add/edit parser integrations](images/atharva/class/ActivityParameterValidatorClassDiagram.png)
+![Shared activity parameter validator and its add/edit parser integrations](images/luke/class/ActivityParameterValidatorClassDiagram.png)
 
-Source: [ActivityParameterValidatorClassDiagram.puml](diagrams/atharva/class/ActivityParameterValidatorClassDiagram.puml).
+Source: [ActivityParameterValidatorClassDiagram.puml](diagrams/luke/class/ActivityParameterValidatorClassDiagram.puml).
 
-![Activity parameter validation rejecting a typo before command execution](images/atharva/sequence/ActivityParameterValidationSequence.png)
+![Activity parameter validation rejecting a typo before command execution](images/luke/sequence/ActivityParameterValidationSequence.png)
 
-Source: [ActivityParameterValidationSequence.puml](diagrams/atharva/sequence/ActivityParameterValidationSequence.puml).
+Source: [ActivityParameterValidationSequence.puml](diagrams/luke/sequence/ActivityParameterValidationSequence.puml).
 
 <!-- @@author -->
 <!-- @@author lukelouyu -->
@@ -1072,8 +1078,8 @@ Feature responsibility follows the table below. See the [team pages](team/README
 
 | Team member | Feature area | V1.0 work | V2.0 work | Diagram contribution |
 | --- | --- | --- | --- | --- |
-| [Lou Yu Luke](team/lukelouyu.md) | Ratings, shared validation and accessibility | Exit (`bye`); [facility listing, lookup, and feature search](#facility-lookup). | [Accessible routes](#accessible-route-search); [optional ratings](#optional-ratings-integration); [command/name validation](#ascii-command-name-validation); [duplicate/clash checks](#activity-schedule-validation). | [Facility lookup and routing](diagrams/README.md#luke): two class/sequence pairs. Additional diagrams: [architecture](diagrams/README.md#architecture) and [campus connectivity graph](diagrams/README.md#connectivity-graph). |
-| [Atharva Rege](team/atharva005.md) | Activity creation, calendar views and help | [Adding activities](#adding-activities) (`add`) and command help (`help`). | [Calendar dashboards](#calendar-dashboards) (`view today`, `view tomorrow`, `view week`); [topic help](#categorized-and-topic-help) (`help TOPIC`). | [Activity creation, calendar dashboards, topic help, name validation, parameter validation, and schedule validation](diagrams/README.md#atharva): six class/sequence pairs. |
+| [Lou Yu Luke](team/lukelouyu.md) | Ratings, shared validation and accessibility | Exit (`bye`); [facility listing, lookup, and feature search](#facility-lookup). | [Accessible routes](#accessible-route-search); [optional ratings](#optional-ratings-integration); [command/name validation](#ascii-command-name-validation); [duplicate/clash checks](#activity-schedule-validation). | [Activity-creation class diagram, name/parameter validation, facility lookup and routing](diagrams/README.md#luke): five class diagrams and four sequence diagrams. Additional diagrams: [architecture](diagrams/README.md#architecture) and [campus connectivity graph](diagrams/README.md#connectivity-graph). |
+| [Atharva Rege](team/atharva005.md) | Activity creation, calendar views and help | [Adding activities](#adding-activities) (`add`) and command help (`help`). | [Calendar dashboards](#calendar-dashboards) (`view today`, `view tomorrow`, `view week`); [topic help](#categorized-and-topic-help) (`help TOPIC`). | [Add sequence, calendar dashboards, topic help, and schedule validation](diagrams/README.md#atharva): seven diagrams (three class/sequence pairs plus the add sequence). |
 | [Muhammad Asyraf Bin Abdul Rahim](team/officialasyrafrahim.md) | Activity views and deletion | [Chronological/demand listing and deletion](#activity-views-and-deletion) (`list`, `list demand`, `delete`). | [Priority, overdue, and next views](#activity-views-and-deletion) (`list priority`, `overdue`, `next`). | [Chronological listing, demand listing, deletion, priority, overdue, and next](diagrams/README.md#asyraf): six class/sequence pairs. |
 | [Koh Li Wei Oliver](team/oliver-koh.md) | Completion, storage, editing and search | [Persistence and recovery](#completion-and-persistence); completion changes (`mark`, `unmark`). | [Editing](#editing-activities) (`edit`); [name search](#name-search) (`find`); explicit save retry (`save`). | [Editing, name search, marking, unmarking, and persistence](diagrams/README.md#oliver): five class/sequence pairs. |
 

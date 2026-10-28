@@ -22,7 +22,7 @@ UniEnable is a Java 25 command-line application that helps students plan dated a
 
 - **User Guide:** [Adding activities](../UserGuide.md#adding-an-activity-add), [calendar dashboards](../UserGuide.md#viewing-calendar-dashboards-view), and [command help](../UserGuide.md#viewing-command-help-help), including formats, examples, validation rules, and empty-period behavior.
 - **Developer Guide:** [Adding activities](../DeveloperGuide.md#adding-activities), [calendar dashboards](../DeveloperGuide.md#calendar-dashboards), and [categorized/topic help](../DeveloperGuide.md#categorized-and-topic-help), covering the parser-command-model flow and read-only views.
-- **UML diagrams:** Contributed six class/sequence pairs: activity creation, calendar dashboards, topic help, activity-name validation, activity-parameter validation, and activity-schedule validation. All twelve sources and rendered images are listed in [my diagram index](../diagrams/README.md#atharva). The shared validation helper implementation belongs to Luke's feature area; my contribution here includes its diagrams.
+- **UML diagrams:** Contributed the add sequence and three class/sequence pairs for calendar dashboards, topic help, and activity-schedule validation. These seven sources and rendered images are listed in [my diagram index](../diagrams/README.md#atharva). The activity-creation class diagram and name/parameter validation pairs are credited to Luke.
 
 #### Team-based tasks
 

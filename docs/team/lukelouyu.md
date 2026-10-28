@@ -22,7 +22,7 @@ UniEnable is a Java 25 command-line application that helps students plan dated a
 
 - **User Guide:** [Optional add ratings](../UserGuide.md#trying-optional-add-ratings), [facility queries](../UserGuide.md#listing-and-viewing-facilities-facility), [feature search](../UserGuide.md#finding-facilities-by-feature-facility-find), [routes](../UserGuide.md#finding-an-accessible-route-route), and [exit](../UserGuide.md#exiting-the-application-bye).
 - **Developer Guide:** [Architecture](../DeveloperGuide.md#architecture), shared validation, [ratings/accessibility](../DeveloperGuide.md#ratings-and-accessibility), data-loading contracts, and routing design. Consolidated guide sections and accessibility diagrams in [PR #35](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/35).
-- **Diagrams:** Contributed the architecture diagram, facility and routing class/sequence pairs, and the campus connectivity graph - six diagrams in total ([index](../diagrams/README.md#luke)). The six shared validation diagrams are credited to Atharva.
+- **Diagrams:** Contributed the activity-creation class diagram, name and parameter validation class/sequence pairs, architecture diagram, facility and routing class/sequence pairs, and campus connectivity graph - eleven diagrams in total ([index](../diagrams/README.md#luke)). The add sequence and schedule validation pair remain credited to Atharva.
 
 #### Team-based tasks and reviews
 
