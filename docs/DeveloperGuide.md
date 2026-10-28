@@ -369,8 +369,12 @@ For a populated period, the formatter appends:
    times on the selected date; it excludes other dates and LOW/MEDIUM demand.
 3. A rating chart with padded columns, vertical bars, and a horizontal divider
    directly below its column headings. The divider's bars align with the header
-   and data columns. Name width expands to fit the selected activity names;
-   rating columns accommodate all five marks.
+   and data columns. Name width expands up to 26 characters; longer names show
+   their first 23 characters followed by `...` in the table only. Single-space
+   padding keeps every table row within 80 characters, including separators.
+   The schedule and stored names remain complete, and rating columns accommodate
+   all five marks. `ViewCommandTest` covers the name-length boundary and long names
+   across today, tomorrow, and week dashboards.
    Commitment uses ASCII `+` to avoid the former unsupported-symbol output.
 4. Vertical IMP, URG, and COM totals; demand counts; and a legend including
    `URG x URG x (IMP + COM)`. Missing ratings display `-` and missing scores `N`.

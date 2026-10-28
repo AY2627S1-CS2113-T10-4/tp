@@ -254,7 +254,7 @@ class ViewCommandTest {
             starts[column] = lines[0].indexOf(headings[column]);
             assertTrue(starts[column] >= 0, headings[column]);
             if (column > 0) {
-                assertTrue(starts[column] - starts[column - 1] - headings[column - 1].length() >= 5);
+                assertTrue(starts[column] - starts[column - 1] - headings[column - 1].length() >= 3);
             }
         }
         String[][] expectedRows = {
@@ -262,7 +262,7 @@ class ViewCommandTest {
             {"Stretch break", "*", "!", "+", "2", "# L"},
             {"Plan tomorrow", "***", "-", "++", "N", "## M"},
             {"Project notes", "-", "!!", "-", "N", "## M"},
-            {"An activity name longer than the old heading", "*****", "!!!!!", "+++++", "250", "### H"}
+            {"An activity name longer...", "*****", "!!!!!", "+++++", "250", "### H"}
         };
         assertEquals(expectedRows.length + 2, lines.length);
         for (int row = 0; row < expectedRows.length; row++) {
@@ -271,13 +271,48 @@ class ViewCommandTest {
                 assertEquals(expected, lines[row + 2].substring(starts[column], starts[column] + expected.length()));
                 if (column + 1 < headings.length) {
                     String gap = lines[row + 2].substring(starts[column] + expected.length(), starts[column + 1]);
-                    assertTrue(gap.endsWith("     | ") && gap.replace("|", "").isBlank(), lines[row + 2]);
+                    assertTrue(gap.endsWith(" | ") && gap.replace("|", "").isBlank(), lines[row + 2]);
                 }
             }
         }
         assertTrue(chart.chars().allMatch(character -> character < 128));
         assertTrue(message.contains("Legend: * Importance; ! Urgency; + Commitment; # Demand\n"
                 + "Priority score = URG x URG x (IMP + COM)."));
+    }
+
+    @Test
+    void execute_ratingChart_limitsNameWidthWithoutChangingStoredNames() throws Exception {
+        List<String> names = List.of("Short", "A".repeat(25), "B".repeat(26),
+                "C".repeat(27), "D".repeat(200));
+        ActivityList activities = new ActivityList();
+        for (int day : new int[]{0, 1, 6}) {
+            for (String name : names) {
+                activities.addActivity(new Activity(name, TODAY.plusDays(day), START, END,
+                        DemandLevel.HIGH, false, 5, 5, 5));
+            }
+        }
+        List<Activity> original = activities.getActivities();
+
+        for (String command : List.of("view today", "view tomorrow", "view week")) {
+            CommandResult result = parser.parse(command).execute(activities, noWrites);
+            String message = result.getMessage();
+            String chart = message.substring(message.indexOf("RATING CHART\n") + "RATING CHART\n".length(),
+                    message.indexOf("\n\nRATING TOTALS"));
+            for (String line : chart.split("\n")) {
+                assertTrue(line.length() <= 80, "Rating table exceeds 80 columns: " + line.length());
+            }
+            assertTrue(chart.contains("| " + "A".repeat(25) + "  |"));
+            assertTrue(chart.contains("| " + "B".repeat(26) + " |"));
+            assertTrue(chart.contains("| " + "C".repeat(23) + "... |"));
+            assertTrue(chart.contains("| " + "D".repeat(23) + "... |"));
+            assertFalse(chart.contains("C".repeat(27)));
+            assertFalse(chart.contains("D".repeat(200)));
+            for (String name : names) {
+                assertTrue(message.contains("] " + name + "    IMP"), "Full schedule name missing");
+            }
+            assertFalse(result.didChangeActivities());
+            assertEquals(original, activities.getActivities());
+        }
     }
 
     /**

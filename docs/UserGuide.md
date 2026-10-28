@@ -294,10 +294,11 @@ Formats: `view today`, `view tomorrow`, and `view week`
   directly below its column headings. `*`, `!`, and `+` show
   importance (IMP), urgency (URG), and commitment (COM). Demand uses `# L`, `## M`,
   or `### H` for LOW, MEDIUM, or HIGH.
-- Read the table in a terminal with a monospaced font. Activity, rating, and score
-  columns have at least five spaces before the next separator; the activity column
-  expands for longer names. Rows follow the schedule's chronological order. To rank
-  activities by score, use [list priority](#viewing-priority-list-priority).
+- Read the table in a terminal with a monospaced font. Each table row fits within
+  80 characters. The activity column displays up to 26 characters, including a
+  trailing `...` for longer names. Full names remain in the schedule above the
+  table and in the saved data. Rows follow the schedule's chronological order.
+  To rank activities by score, use [list priority](#viewing-priority-list-priority).
 - An unset rating appears as `-`; an unavailable priority appears as `N`.
   With all three ratings set, the score is `URG x URG x (IMP + COM)`.
   Rating totals add the recorded values, including partially rated activities.
@@ -336,12 +337,12 @@ Remaining: 3
 High-demand activities: 1
 
 RATING CHART
-| Activity          | IMP       | URG       | COM       | PRIORITY SCORE     | DEMAND |
-|-------------------|-----------|-----------|-----------|--------------------|--------|
-| Practice quiz     | ****      | !!!!!     | +++       | 175                | ### H  |
-| Stretch break     | *         | !         | +         | 2                  | # L    |
-| Plan tomorrow     | ***       | -         | ++        | N                  | ## M   |
-| Project notes     | -         | !!        | -         | N                  | ## M   |
+| Activity      | IMP   | URG   | COM   | PRIORITY SCORE | DEMAND |
+|---------------|-------|-------|-------|----------------|--------|
+| Practice quiz | ****  | !!!!! | +++   | 175            | ### H  |
+| Stretch break | *     | !     | +     | 2              | # L    |
+| Plan tomorrow | ***   | -     | ++    | N              | ## M   |
+| Project notes | -     | !!    | -     | N              | ## M   |
 
 RATING TOTALS
 IMP 8

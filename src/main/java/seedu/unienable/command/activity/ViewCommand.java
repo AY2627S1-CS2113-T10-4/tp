@@ -24,6 +24,11 @@ public class ViewCommand extends Command {
     private static final DateTimeFormatter WEEK_FORMAT =
             DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy", Locale.ENGLISH);
 
+    /**
+     * Caps displayed names so the six-column rating table fits within 80 characters.
+     */
+    private static final int MAX_CHART_NAME_WIDTH = 26;
+
     private final Range range;
     private final Clock clock;
 
@@ -125,9 +130,9 @@ public class ViewCommand extends Command {
      * Adds a padded rating table with a header divider, rating totals, and demand distribution.
      */
     private static void appendRatingChart(StringBuilder output, List<Activity> view) {
-        int nameWidth = Math.max("Activity".length(),
-                view.stream().mapToInt(activity -> activity.getName().length()).max().orElse(0));
-        String rowFormat = "| %-" + nameWidth + "s     | %-5s     | %-5s     | %-5s     | %-14s     | %-6s |";
+        int nameWidth = Math.min(MAX_CHART_NAME_WIDTH, Math.max("Activity".length(),
+                view.stream().mapToInt(activity -> activity.getName().length()).max().orElse(0)));
+        String rowFormat = "| %-" + nameWidth + "s | %-5s | %-5s | %-5s | %-14s | %-6s |";
         String header = String.format(Locale.ENGLISH, rowFormat,
                 "Activity", "IMP", "URG", "COM", "PRIORITY SCORE", "DEMAND");
         output.append("\n\nRATING CHART\n").append(header)
@@ -160,7 +165,7 @@ public class ViewCommand extends Command {
             Integer priorityScore = activity.getPriorityScore();
             String priority = priorityScore == null ? "N" : priorityScore.toString();
             String demand = "#".repeat(demandCount(activity.getDemand())) + " " + demandCode(activity.getDemand());
-            output.append("\n").append(String.format(Locale.ENGLISH, rowFormat, activity.getName(),
+            output.append("\n").append(String.format(Locale.ENGLISH, rowFormat, chartName(activity.getName()),
                     stars(importance), exclamations(urgency), commitmentMarks(commitment), priority, demand));
         }
         output.append("\n\nRATING TOTALS\nIMP ").append(importanceTotal)
@@ -172,6 +177,16 @@ public class ViewCommand extends Command {
                 .append("\nPriority score = URG x URG x (IMP + COM).")
                 .append("\nDemand: L=#, M=##, H=###")
                 .append("\nN = priority unavailable; - = rating not set.");
+    }
+
+    /**
+     * Shortens only the rating table label; the stored and scheduled name stays complete.
+     */
+    private static String chartName(String name) {
+        if (name.length() <= MAX_CHART_NAME_WIDTH) {
+            return name;
+        }
+        return name.substring(0, MAX_CHART_NAME_WIDTH - 3) + "...";
     }
 
     private static int demandCount(DemandLevel demand) {

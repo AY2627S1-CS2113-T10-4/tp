@@ -152,6 +152,7 @@ public class HelpCommand extends Command {
                       - today and tomorrow select the corresponding full local calendar day.
                       - week includes today and the following six days, grouped by date.
                       - Dashboards include completed activities, summaries, and an aligned rating table.
+                      - Rating tables fit 80 columns; names over 26 characters are shortened with ...
                       - The summary counts HIGH-demand activities on the selected dates, including completed ones.
                       - IMP = importance (*), URG = urgency (!), COM = commitment (+).
                       - Priority score = URG x URG x (IMP + COM); N means a rating is missing.
