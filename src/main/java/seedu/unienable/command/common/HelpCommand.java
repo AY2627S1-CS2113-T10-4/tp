@@ -44,6 +44,7 @@ public class HelpCommand extends Command {
 
             HELP AND EXIT
               help [TOPIC]        Show this menu or detailed command help
+              save                Retry saving the current activities
               bye                 Exit UniEnable
 
             Run list to get the indexes for edit, mark, unmark, and delete.
@@ -303,6 +304,21 @@ public class HelpCommand extends Command {
                       help facility
                       help view
                     """.stripTrailing()),
+            Map.entry("save", """
+                    SAVE - Save current activities
+
+                    Usage:
+                      save
+
+                    Details:
+                      - Retries a failed save without adding, editing, or toggling an activity.
+                      - Fix the reported file or backup problem first.
+                      - Unsaved-change warnings clear only after a successful save.
+                      - Accepts no arguments.
+
+                    Examples:
+                      save
+                    """.stripTrailing()),
             Map.entry("bye", """
                     BYE - Exit UniEnable
 
@@ -312,6 +328,7 @@ public class HelpCommand extends Command {
                     Details:
                       - Accepts no arguments and ends the current console session.
                       - Activity changes save when made; bye does not perform another save.
+                      - Unsaved changes block exit. Fix the save error and run save before retrying bye.
                       - Reading help bye displays these instructions and keeps the app running.
 
                     Examples:

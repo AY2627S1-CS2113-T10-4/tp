@@ -22,6 +22,10 @@ import seedu.unienable.ui.Ui;
  * Handles reference-data loading and individual command execution for the console.
  */
 final class ConsoleHelper {
+    //@@author Oliver-koh
+    private static final String UNSAVED_NOTICE =
+            "[WARNING] Unsaved activity changes. Fix the save error and run 'save' before exiting.";
+    //@@author
     /**
      * Prevents instantiation of this stateless helper.
      */
@@ -91,14 +95,30 @@ final class ConsoleHelper {
             CommandResult result = parser.parse(ui.readLine()).execute(activities, storage);
             //@@author Oliver-koh
             if (result.didChangeActivities()) {
+                storage.markUnsavedChanges();
                 storage.save(activities);
+            }
+            if (result.isExit() && storage.hasUnsavedChanges()) {
+                ui.showMessage(UNSAVED_NOTICE);
+                return false;
             }
             //@@author
             ui.showMessage(result.getMessage());
+            showUnsavedNotice(ui, storage);
             return result.isExit();
         } catch (UniEnableException exception) {
             ui.showMessage(exception.getMessage());
+            showUnsavedNotice(ui, storage);
             return false;
         }
     }
+
+    //@@author Oliver-koh
+    /** Keeps unsaved state visible after queries, warnings, and unsuccessful save retries. */
+    private static void showUnsavedNotice(Ui ui, Storage storage) {
+        if (storage.hasUnsavedChanges()) {
+            ui.showMessage(UNSAVED_NOTICE);
+        }
+    }
+    //@@author
 }

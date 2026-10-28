@@ -41,6 +41,8 @@ public class Storage {
     private final Path activityFile;
     private List<String> warnings = List.of();
     private boolean loadedCorruptData;
+    /** Tracks in-memory activity changes until a complete save succeeds. */
+    private boolean unsavedChanges;
 
     /**
      * Creates storage at the default runtime location.
@@ -102,6 +104,16 @@ public class Storage {
         return List.copyOf(warnings);
     }
 
+    /** Records that the console has changed activities before attempting to save them. */
+    public void markUnsavedChanges() {
+        unsavedChanges = true;
+    }
+
+    /** Returns whether a changed activity list still needs a successful save. */
+    public boolean hasUnsavedChanges() {
+        return unsavedChanges;
+    }
+
     /**
      * Saves all activities in insertion order using UTF-8 and the nine-column format.
      *
@@ -132,6 +144,7 @@ public class Storage {
                     StandardOpenOption.WRITE);
             moveIntoPlace(temporaryFile);
             loadedCorruptData = false;
+            unsavedChanges = false;
         } catch (IOException exception) {
             throw new UniEnableException("Unable to save activities: " + exception.getMessage());
         }

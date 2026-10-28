@@ -38,6 +38,7 @@ Mark --> Console : result
 deactivate Mark
 
 opt result.didChangeActivities()
+  Console -> Storage : markUnsavedChanges()
   Console -> Storage : save(activities)
   activate Storage
   opt loadedCorruptData and file exists
@@ -60,11 +61,16 @@ opt result.didChangeActivities()
   note right of Storage
     Attempt atomic replacement;
     fall back on FileSystemException.
-    Clear the recovery flag after success.
+    Clear recovery and unsaved-change flags after success.
   end note
   Storage --> Console
   deactivate Storage
 end
+note over Console, Storage
+  If a save throws, keep unsavedChanges true and show a persistent warning.
+  Explicit save retries the current list without modifying activities.
+  A bye request is blocked until saving succeeds.
+end note
 note over Console, Mark
   Display the command result through Ui
   after any required save succeeds.

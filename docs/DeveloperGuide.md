@@ -218,7 +218,7 @@ flag unset, so the console does not save them.
 | Startup and console loop | `UniEnable` runs until `bye` or end of input. `ConsoleHelper` loads reference data, creates the parser, executes commands and saves changes. |
 | User interface | `Ui` reads and displays text. `ActivityListFormatter`, `FacilityOutputFormatter` and `FacilityDetailsFormatter` build messages; `RouteCommand` and `ViewCommand` format their own results. |
 | Parsing | `Parser` dispatches to `AddCommandParser`, `EditCommandParser`, `ListDeleteCommandParser`, `MarkCommandParser`, `FacilityCommandParser` or `RouteParser`. It checks `find`, `overdue`, `next`, `view` and `help` directly. A shared injected `Clock` makes time checks repeatable. |
-| Command execution | Subclasses implement `Command.execute(ActivityList, Storage)` and return a `CommandResult`; both shared types live in `command.common`, alongside `HelpCommand` and `ByeCommand`. |
+| Command execution | Subclasses implement `Command.execute(ActivityList, Storage)` and return a `CommandResult`; both shared types live in `command.common`, alongside `HelpCommand`, `SaveCommand`, and `ByeCommand`. |
 | Calendar dashboards and help | `ViewCommand` groups activities by date and displays completion, ratings, priority scores, and demand. `HelpCommand` provides a categorized menu and detailed pages for `help TOPIC`. |
 | Activity model | `Activity` stores details, completion and ratings and calculates priority. `ActivityList` owns the collection, supplies filtered and ordered views, and resolves displayed indexes against chronological order. |
 | Accessibility logic | `FacilityManager` handles facility queries. `ConnectionManager` delegates routes to `DijkstraShortestPath`, with a fresh `DijkstraSolver` per search. |
@@ -442,9 +442,9 @@ Source: [TopicHelpClassDiagram.puml](diagrams/atharva/class/TopicHelpClassDiagra
 adds a prompt to return to the menu. Unknown topics and extra words produce a
 `ParseException` with a warning and `Usage: help [TOPIC]`.
 
-The 14 supported topics are `add`, `edit`, `find`, `list`, `view`,
-`overdue`, `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `help`, and
-`bye`. `help list` includes the demand and priority variants; `help facility`
+The 15 supported topics are `add`, `edit`, `find`, `list`, `view`,
+`overdue`, `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `help`,
+`save`, and `bye`. `help list` includes the demand and priority variants; `help facility`
 includes feature search. The topic never executes the command it describes:
 `help delete` does not delete and `help bye` does not exit. Help remains available
 without facility or connection data and leaves both result flags unset.
@@ -989,6 +989,11 @@ Source: [CompletionAndSaveSequence.puml](diagrams/oliver/sequence/CompletionAndS
 The sequence assumes a valid index and successful file operations. Its optional
 blocks show when the console saves and when storage first creates a recovery backup.
 
+**Save recovery:** Storage tracks unsaved changes from before an automatic save
+until a save succeeds. Failed writes keep a persistent warning visible and block
+`bye`. `SaveCommand` retries the current list explicitly without mutating it.
+`ConsoleSaveRecoveryTest` covers failed saves, blocked exits, and successful retries.
+
 **Save ownership:** Commands report whether they changed activities;
 `ConsoleHelper` owns the save-and-display sequence. This gives every modifying
 command the same save-error handling and avoids writes for queries and repeated
@@ -1330,7 +1335,8 @@ with one stop and no segments. `RouteCommand` rejects that result with
 `ByeCommand.execute()` returns `Goodbye from UniEnable!` with the exit flag
 set and the activity-change flag unset. `ConsoleHelper` displays the message,
 then `UniEnable` stops the console loop. Exit does not save or retry a failed
-save; recovery must finish before the user enters `bye`.
+save. The console blocks exit while `Storage.hasUnsavedChanges()` is true;
+users fix the error and run `save` before retrying `bye`.
 
 <!-- @@author -->
 

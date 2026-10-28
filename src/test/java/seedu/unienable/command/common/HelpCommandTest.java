@@ -69,6 +69,7 @@ class HelpCommandTest {
             {"view", "view week", "today and the following six days", "view tomorrow"},
             {"overdue", "overdue", "end strictly before the current time", "overdue"},
             {"next", "next", "start is strictly after the current time", "next"},
+            {"save", "save", "Retries a failed save", "Unsaved-change warnings"},
             {"mark", "mark INDEX", "already completed activity warns", "mark 1"},
             {"unmark", "unmark INDEX", "already incomplete activity warns", "unmark 1"},
             {"delete", "delete INDEX", "There is no undo command", "delete 1"},

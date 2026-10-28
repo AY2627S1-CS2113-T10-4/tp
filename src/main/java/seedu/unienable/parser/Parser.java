@@ -18,6 +18,9 @@ import seedu.unienable.command.common.ByeCommand;
 import seedu.unienable.command.common.Command;
 import seedu.unienable.command.common.HelpCommand;
 //@@author
+//@@author Oliver-koh
+import seedu.unienable.command.common.SaveCommand;
+//@@author
 import seedu.unienable.exception.ParseException;
 
 /**
@@ -193,6 +196,11 @@ public class Parser {
             return markCommandParser.parseMark(words);
         case "unmark":
             return markCommandParser.parseUnmark(words);
+        case "save":
+            if (words.length != 1) {
+                throw new ParseException(WARNING_MESSAGE + " save does not take arguments.\nUsage: save");
+            }
+            return new SaveCommand();
         //@@author
         //@@author Atharva005
         case "help":
