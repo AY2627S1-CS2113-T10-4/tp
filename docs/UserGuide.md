@@ -206,6 +206,21 @@ Commitment: -
 Activities in this session: 1
 ```
 
+Repeating the same add command produces:
+
+```text
+[WARNING] Duplicate activity already recorded at index 1: CS2113 tutorial (2026-12-01, 10:00-11:00).
+```
+
+Adding `Other class` on that date from 10:30 to 11:30 produces:
+
+```text
+[WARNING] Activity clashes with index 1: CS2113 tutorial (2026-12-01, 10:00-11:00).
+```
+
+In both cases, the count stays at 1 and the saved file stays unchanged. Starting
+the next activity at 11:00 is allowed because the activities do not overlap.
+
 For the following examples, also enter:
 ```text
 add n/Project meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH

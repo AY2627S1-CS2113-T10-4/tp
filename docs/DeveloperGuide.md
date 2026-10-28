@@ -273,6 +273,11 @@ defaults to `MEDIUM`; each omitted rating remains `null`. The same-day end must
 follow the start and the current local time. Invalid input produces a
 `ParseException` without adding an activity.
 
+`AddCommandParser` checks supplied names through `ActivityNameValidator`.
+`AddCommand` checks the proposed activity with the shared
+[schedule validator](#activity-schedule-validation) before inserting it. The
+add diagrams include both checks and the rejection path without a save.
+
 `AddCommand` creates an initially incomplete `Activity` and appends it through
 `ActivityList.addActivity()`. Its result sets the activity-change flag, so the
 console saves the list before displaying the confirmation. See the
@@ -676,6 +681,12 @@ index, combines old and new values, and validates the replacement before calling
 `ActivityList.replaceByDisplayedIndex()`. Omitted fields and completion state stay
 unchanged. Time validation runs when a date or time is supplied; metadata-only
 edits can update historical activities. Rejected edits leave the activity intact.
+
+The edit diagrams show `ActivityNameValidator` checking a supplied name
+and `ActivityScheduleValidator` checking name/schedule changes before replacement.
+The original activity is excluded from the conflict search. Duplicate or clash
+warnings preserve the entire record and do not request a save; demand/rating-only
+edits skip schedule validation.
 
 **Design choice:** Build and validate a replacement activity before changing the
 list. This keeps a failed multi-field edit from leaving half of the requested
@@ -1290,10 +1301,15 @@ link their responsibilities, design, code and tests.
 
 | Team member | Feature area | V1.0 work | V2.0 work |
 | --- | --- | --- | --- |
-| [Lou Yu Luke](team/lukelouyu.md) | Ratings and accessibility | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2026-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
+| [Lou Yu Luke](team/lukelouyu.md) | Ratings, shared validation and accessibility | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2026-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. [Shared ASCII command/name validation](#architecture) and [duplicate/clash checks](#activity-schedule-validation). |
 | [Atharva Rege](team/atharva005.md) | Activity creation, calendar views and help | Help: `help`. [Adding an activity with name, date, times, and optional demand](#adding-activities): `add n/Tutorial d/2026-12-01 s/09:00 e/10:00 dem/HIGH`. | [Calendar dashboards](#calendar-dashboards): `view today`, `view tomorrow`, and `view week`, including summaries, high-demand counts, and aligned rating charts. [Categorized and topic help](#categorized-and-topic-help): `help [TOPIC]`. |
 | [Muhammad Asyraf Bin Abdul Rahim](team/officialasyrafrahim.md) | Activity views and deletion | [Chronological listing, demand ordering, and deletion](#activity-views-and-deletion): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#activity-views-and-deletion): `list priority`, `overdue`, and `next`. |
 | [Oliver](team/oliver-koh.md) | Completion, storage, editing and search | [Saving, backups, and recovery](#completion-storage-editing-and-search), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#completion-storage-editing-and-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
+
+Luke maintains the shared validation helpers and their regression tests and
+diagrams. Activity creation and its validation integration remain Atharva's
+responsibility; activity editing and its validation integration remain Oliver's.
+The shared checks reject invalid input before either feature changes or saves data.
 
 <!-- TEAM: All members maintain story status; feature ownership is defined in Team contributions. -->
 

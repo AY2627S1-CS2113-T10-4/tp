@@ -15,10 +15,10 @@ skinparam ArrowColor #526477
 skinparam nodesep 45
 skinparam ranksep 50
 
-component "Console bootstrap\nUniEnable\nConsoleHelper" as Console
+component "Console bootstrap\nUniEnable / ConsoleHelper\nExplicit UTF-8 output at main" as Console
 component "Console UI and formatters\nUi / ActivityListFormatter\nFacilityOutputFormatter / FacilityDetailsFormatter" as UI
-component "Parsing\nParser (dispatch, view ranges, help topics)\nAddCommandParser / EditCommandParser\nListDeleteCommandParser / MarkCommandParser\nFacilityCommandParser / RouteParser\nInjected Clock for validation and time queries" as Parsing
-component "Commands\ncommand.common: Command / CommandResult\nHelpCommand (menu and topic help) / ByeCommand\ncommand.activity: add / edit / find / mark / unmark / delete\nlist / list demand / list priority / overdue / next\nViewCommand: today / tomorrow / rolling seven days\ncommand.accessibility: facility queries / route" as Commands
+component "Parsing\nParser (ASCII command words, dispatch, view ranges, help topics)\nAddCommandParser / EditCommandParser\nActivityNameValidator: ASCII-only supplied names\nListDeleteCommandParser / MarkCommandParser\nFacilityCommandParser / RouteParser\nInjected Clock for validation and time queries" as Parsing
+component "Commands\ncommand.common: Command / CommandResult\nHelpCommand (menu and topic help) / ByeCommand\ncommand.activity: add / edit / find / mark / unmark / delete\nActivityScheduleValidator: duplicates / clashes before mutation\nlist / list demand / list priority / overdue / next\nViewCommand: today / tomorrow / rolling seven days\ncommand.accessibility: facility queries / route" as Commands
 component "Storage\nStorage: activities, ratings, completion, recovery backups\nFacilityStorage / ConnectionStorage: bundled reference data\nLoadResult<T>: records and warnings" as Storage
 component "Accessibility logic\ncommand.accessibility.connection.logic\nFacilityManager / ConnectionManager\nDijkstraShortestPath / DijkstraSolver" as Accessibility
 component "Models\nActivityList / Activity: schedules, ratings and priority scores\nFacility / FacilityFeature / Connection: reference data" as Models

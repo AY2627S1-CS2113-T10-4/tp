@@ -1,0 +1,69 @@
+'@@author Oliver-koh
+@startuml
+!pragma layout smetana
+title Activity name search design
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide empty members
+
+abstract class Command {
+  +execute(...): CommandResult
+}
+class Parser {
+  +parse(input: String): Command
+}
+class FindCommand {
+  -keyword: String
+  +FindCommand(keyword: String)
+  +execute(...): CommandResult
+}
+class ActivityList {
+  +getCanonicalView(): List<Activity>
+  +findByName(keyword: String): List<Activity>
+}
+class Activity {
+  +getName(): String
+}
+class ActivityListFormatter <<utility>> {
+  {static} +formatFindResults(...): String
+}
+class CommandResult {
+  +getMessage(): String
+  +isExit(): boolean
+  +didChangeActivities(): boolean
+}
+
+Command <|-- FindCommand
+Parser ..> FindCommand : creates after keyword validation
+FindCommand ..> ActivityList : searches names
+FindCommand ..> ActivityListFormatter : formats matches
+FindCommand ..> CommandResult : creates read-only result
+ActivityList --> "0..*" Activity : activities
+ActivityListFormatter ..> Activity : reads displayed details
+
+note bottom of Parser
+  Extract and trim the keyword.
+  Reject a blank keyword with a usage warning.
+  Only the command word is restricted to ASCII;
+  keywords may match historical Unicode names.
+end note
+note bottom of ActivityList
+  Search literal name substrings using Locale.ROOT case folding.
+  Include completed activities and retain chronological order.
+end note
+note bottom of ActivityListFormatter
+  Use indexes from the full chronological view.
+  Produce a warning when there are no matches.
+end note
+note bottom of CommandResult
+  Exit and activity-change flags are false.
+  Searching never requests saving.
+end note
+@enduml
+'@@author

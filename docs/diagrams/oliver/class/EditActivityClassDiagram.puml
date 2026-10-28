@@ -1,0 +1,74 @@
+'@@author Oliver-koh
+@startuml
+!pragma layout smetana
+title Activity editing design
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide empty members
+
+abstract class Command {
+  +execute(...): CommandResult
+}
+class Parser {
+  -clock: Clock
+  +parse(input: String): Command
+}
+class EditCommandParser {
+  -clock: Clock
+  +parse(arguments: String): EditCommand
+}
+class EditCommand {
+  -displayedIndex: int
+  -clock: Clock
+  +execute(...): CommandResult
+}
+class ActivityNameValidator <<package-private>> {
+  {static} ~validate(name: String): void
+}
+class ActivityScheduleValidator <<package-private>> {
+  {static} ~validate(...): void
+}
+class ActivityList {
+  +getByDisplayedIndex(displayedIndex: int): Activity
+  +replaceByDisplayedIndex(displayedIndex: int, replacement: Activity): void
+  +getCanonicalView(): List<Activity>
+}
+class Activity {
+  +isDone(): boolean
+}
+class CommandResult {
+  +getMessage(): String
+  +didChangeActivities(): boolean
+}
+
+Command <|-- EditCommand
+Parser ..> EditCommandParser : delegates edit
+EditCommandParser ..> EditCommand : creates with supplied-field flags
+EditCommandParser ..> ActivityNameValidator : checks supplied ASCII name
+EditCommand ..> ActivityScheduleValidator : checks name / schedule edits
+ActivityScheduleValidator ..> ActivityList : reads chronological view
+EditCommand ..> ActivityList : resolves and replaces activity
+EditCommand ..> Activity : constructs replacement
+EditCommand ..> CommandResult : requests saving
+ActivityList --> "0..*" Activity : activities
+
+note bottom of EditCommand
+  Individual edit values and supplied-field flags are omitted.
+  Omitted fields and completion are preserved.
+  Date/time edits validate the combined range before replacement.
+  Name/schedule edits reject duplicates and clashes, excluding the original.
+  Demand/rating-only edits skip schedule validation.
+  Rejected edits do not replace or save the original activity.
+end note
+note bottom of CommandResult
+  A successful edit sets didChangeActivities() to true.
+  ConsoleHelper handles saving and displaying the result.
+end note
+@enduml
+'@@author
