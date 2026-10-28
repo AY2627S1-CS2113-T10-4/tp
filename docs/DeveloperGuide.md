@@ -171,19 +171,24 @@ display correctly. Injected `UniEnable.run()` sessions use the caller's output s
 
 <a id="ascii-command-name-validation"></a>
 
-`Parser` requires ASCII command words. Add and edit accept Unicode names,
-including Chinese, Tamil, accents, and emoji. Parsers reject blank names, pipes,
-and line breaks; `ActivityNameValidator` rejects control characters and malformed
-surrogates. Names and search keywords are preserved in UTF-8.
+`Parser` requires ASCII command words. Names supplied to add and edit must use
+printable ASCII (0x20 through 0x7E) and contain a non-whitespace character.
+Parsers retain their blank-name, pipe, and line-break checks; the shared
+`ActivityNameValidator` also rejects Unicode-only whitespace as empty and rejects
+non-ASCII and non-printable characters before constructing a command. Invalid
+names produce `[WARNING] Please write the activity name in English (ASCII characters only).`
+The entire add or edit is rejected without changing model state or saved bytes.
+Storage does not apply this input restriction: historical Unicode names still
+load, display, and match find keywords in UTF-8. Edits omitting `n/` preserve them.
 
 <!-- @@author -->
 <!-- @@author Atharva005 -->
 
-![Class diagram showing ASCII command-word and Unicode activity-name validation](images/atharva/class/ActivityNameValidatorClassDiagram.png)
+![Class diagram showing ASCII command-word and printable-ASCII activity-name validation](images/atharva/class/ActivityNameValidatorClassDiagram.png)
 
 Source: [ActivityNameValidatorClassDiagram.puml](diagrams/atharva/class/ActivityNameValidatorClassDiagram.puml).
 
-![Command-word and Unicode activity-name validation sequence](images/atharva/sequence/ActivityNameValidationSequence.png)
+![Command-word and printable-ASCII activity-name validation sequence](images/atharva/sequence/ActivityNameValidationSequence.png)
 
 Source: [ActivityNameValidationSequence.puml](diagrams/atharva/sequence/ActivityNameValidationSequence.puml).
 
@@ -975,9 +980,12 @@ written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 
 <!-- @@author lukelouyu -->
 
-`UniEnableProcessTest` runs isolated JVMs to check Unicode input, UTF-8 output,
-conflict rejection, and persisted names across restarts. Invalid command words
-and unsafe name characters must warn without changing saved data.
+`ActivityNameValidatorTest` checks printable-ASCII boundaries, punctuation, and
+blank names; add/edit parser tests check the shared policy and specific warnings.
+`UniEnableProcessTest` runs isolated JVMs to check ASCII input, historical Unicode
+output, conflict rejection, and persisted names across restarts. Rejected adds
+must not create a data file, and rejected multi-field edits must preserve saved
+bytes and modification times.
 
 <!-- @@author -->
 
@@ -1174,13 +1182,20 @@ must leave the saved file unchanged.
 
 <!-- @@author lukelouyu -->
 
-#### Unicode names and UTF-8 output
+#### Printable-ASCII input and historical UTF-8 output
 
-In disposable storage, add activities named `复习`, `வணக்கம்`, `Café`, and
-`Study 🎉` on distinct future dates. Edit and search those names, then restart:
-the exact names must survive in the console and UTF-8 activity file. Control
-characters, line breaks, and blank names must warn without changing saved data.
-Non-ASCII command words still produce the English-command warning.
+In disposable storage, try adding activities named `复习`, `வணக்கம்`, `படி`,
+`Café`, and `Study 🎉`, then try those names with `edit 1 n/NAME imp/5` on an
+existing activity. Each must show the exact ASCII activity-name warning and
+leave all fields and saved bytes unchanged, including after restart. Repeat
+with an internal tab, NUL, and DEL. Blank names and delimiter violations retain
+their specific warnings. Printable ASCII names such as `Planning and/or review`
+and `C++ @ COM1 #2` must survive add, edit, search, and restart.
+
+Load a pre-existing UTF-8 activity file containing Unicode names and confirm
+that listing, searching, and restart preserve them. Edits omitting `n/` must keep
+the historical name. Non-ASCII command words still produce the separate
+English-command warning.
 `UniEnableProcessTest` verifies redirected output through the real entry point.
 
 ### Duplicate activities and time clashes

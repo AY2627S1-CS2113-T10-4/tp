@@ -30,7 +30,7 @@ activate AddParser
 note right of AddParser
   Validate fields, date/time, and ratings.
   ActivityParameterValidator rejects likely prefix typos.
-  ActivityNameValidator checks Unicode name safety.
+  ActivityNameValidator requires printable-ASCII names.
   Default demand and unset ratings.
 end note
 create participant ":AddCommand" as Add

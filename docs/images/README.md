@@ -23,7 +23,7 @@ and schedule validation diagrams in the `atharva` folder. Class/sequence diagram
 ## Atharva
 
 - [ActivityNameValidatorClassDiagram.png](atharva/class/ActivityNameValidatorClassDiagram.png)
-  shows command-word checks and Unicode name validation.
+  shows command-word checks and printable-ASCII name validation.
 - [ActivityNameValidationSequence.png](atharva/sequence/ActivityNameValidationSequence.png)
   shows valid-name and warning paths before command execution.
 - [ActivityParameterValidatorClassDiagram.png](atharva/class/ActivityParameterValidatorClassDiagram.png)

@@ -1,5 +1,6 @@
 package seedu.unienable.parser;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,6 +20,36 @@ import seedu.unienable.exception.ParseException;
  */
 class EditCommandParserTest {
     private final Parser parser = new Parser();
+
+    @TestFactory
+    Stream<DynamicTest> parse_nonAsciiOrNonPrintableReplacement_throwsExactNameWarning() {
+        String[][] names = {{"Chinese", "复习"}, {"Tamil greeting", "வணக்கம்"}, {"Tamil study", "படி"},
+            {"accent", "Café"}, {"emoji", "Study 🎉"}, {"tab", "Study\tGroup"},
+            {"NUL", "Bad\u0000Name"}, {"DEL", "Bad\u007fName"}};
+        return Stream.of(names).map(scenario -> DynamicTest.dynamicTest(scenario[0], () -> {
+            ParseException exception = assertThrows(ParseException.class,
+                    () -> parser.parse("edit 1 n/" + scenario[1] + " imp/5"));
+            assertEquals("[WARNING] Please write the activity name in English (ASCII characters only).",
+                    exception.getMessage());
+        }));
+    }
+
+    @Test
+    void parse_printableAsciiReplacement_acceptsSpacesAndPunctuation() throws Exception {
+        for (String name : new String[] {"CS2113 Tutorial", "Planning and/or review", "Lunch w/o friends",
+            "Group-2 (Lab)!", "C++ @ COM1 #2"}) {
+            assertInstanceOf(EditCommand.class, parser.parse("edit 1 n/" + name));
+        }
+    }
+
+    @Test
+    void parse_nameDelimiterViolations_preservesSpecificWarning() {
+        for (String name : new String[] {"A|B", "A\nB", "A\rB"}) {
+            ParseException exception = assertThrows(ParseException.class, () -> parser.parse("edit 1 n/" + name));
+            assertTrue(exception.getMessage().startsWith(
+                    "[WARNING] The activity name must not contain | or line breaks.\nUsage: edit"));
+        }
+    }
 
     @Test
     void parse_mistypedPrefixInName_rejectsWholeEdit() {

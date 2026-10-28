@@ -29,7 +29,7 @@ Parser -> EditParser : parse(arguments)
 activate EditParser
 note right of EditParser
   Validate supplied syntax and field values.
-  ActivityNameValidator checks supplied Unicode name safety.
+  ActivityNameValidator requires printable-ASCII replacement names.
   Group supplied values in immutable Fields; null means omitted.
 end note
 create participant "changes:EditCommand.Fields" as Changes

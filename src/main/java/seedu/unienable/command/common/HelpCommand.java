@@ -68,7 +68,7 @@ public class HelpCommand extends Command {
                     Details:
                       - n/, d/, s/, and e/ are required; prefixes may appear in any order.
                       - Names can contain spaces, but cannot be blank or contain | or line breaks.
-                      - Unicode names, including accented letters, Chinese, Tamil, and emoji, are supported.
+                      - Names use printable ASCII only: English letters, digits, spaces, and punctuation.
                       - Use a real YYYY-MM-DD date and 24-hour HH:mm times, such as 09:30.
                       - End must be after start on the same day and after the current time.
                       - Duplicate activities are rejected. Intentional overlaps require overlap/ALLOW.
@@ -93,7 +93,7 @@ public class HelpCommand extends Command {
                       - Run list first and use the activity's current chronological index.
                       - Supply at least one field; omitted fields and completion are preserved.
                       - Names, dates, times, demand, and ratings follow the same rules as add.
-                      - Replacement names support Unicode; control characters and line breaks are rejected.
+                      - Replacement names use printable ASCII only; | and line breaks are rejected.
                       - Date/time edits must leave an end after start on the same day and after now.
                       - Duplicate edits are rejected. Use overlap/ALLOW to confirm an intentional time clash.
                       - Name, demand, or rating edits alone can update historical activities.

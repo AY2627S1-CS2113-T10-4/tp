@@ -60,9 +60,9 @@ class HelpCommandTest {
     @TestFactory
     Stream<DynamicTest> execute_topics_showUsageRulesAndExamplesWithoutReferenceData() {
         String[][] cases = {
-            {"add", "add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm", "Demand defaults to MEDIUM",
+            {"add", "add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm", "Names use printable ASCII only",
                 "add n/Study d/2030-12-01 s/10:00 e/11:00"},
-            {"edit", "edit INDEX [n/NAME]", "omitted fields and completion are preserved",
+            {"edit", "edit INDEX [n/NAME]", "Replacement names use printable ASCII only",
                 "edit 1 n/Project meeting dem/HIGH"},
             {"find", "find KEYWORD", "literal substring", "find project meeting"},
             {"list", "list priority", "list demand groups HIGH, MEDIUM, then LOW", "list demand"},

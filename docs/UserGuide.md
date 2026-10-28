@@ -140,11 +140,21 @@ local time zone. An activity that has already started can still be added if it
 has not ended; an activity ending exactly now is rejected. New activities start
 incomplete.
 
-Names support Unicode, including Chinese, Tamil, accented letters, and emoji.
-They must be non-blank and cannot contain `|`, line breaks, control characters,
-or malformed surrogate pairs. Ordinary slash text such as `and/or` and `w/o`
-is allowed. Avoid field prefixes at the start of a word in a name: they are
-parsed as fields. Names are saved in UTF-8.
+Activity names must contain at least one non-whitespace character and use
+printable ASCII characters only. English letters, digits, spaces, and ordinary
+ASCII punctuation are allowed. Chinese, Tamil, accented letters, emoji, and
+non-printable characters such as tabs are rejected with:
+
+```text
+[WARNING] Please write the activity name in English (ASCII characters only).
+```
+
+The `|` character and line breaks remain forbidden and receive a separate
+delimiter warning. Ordinary slash text such as `and/or` and `w/o` is allowed.
+Avoid field prefixes at the start of a word in a name: they are parsed as fields.
+Names are saved in UTF-8. Historical saved names containing non-ASCII characters
+can still be loaded, listed, and searched; a replacement name supplied with
+`edit INDEX n/NAME` must follow the printable-ASCII rule.
 
 Likely misspellings of multi-letter prefixes, such as `demm/HIGH` or `impp/5`,
 produce a warning instead of becoming part of the name. This also applies to edit.
@@ -398,7 +408,7 @@ edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [im
 - Use an index from chronological `list` or activity `find` output and supply
   at least one field. The command updates one activity at a time.
 - Each supplied field must have a value and appear once. Names follow the same
-  Unicode, prefix, pipe, and line-break rules as `add`.
+  printable-ASCII, prefix, pipe, and line-break rules as `add`.
 - Omitted fields, including ratings, keep their existing values. An omitted
   demand does not reset to MEDIUM. Ratings accept 1 to 5; `-` cannot clear a rating.
 - If any date/time field is supplied, the combined old and new values must form
@@ -424,8 +434,9 @@ edit 1 n/CCA EXCO planning meeting com/4
 
 The confirmation begins with `Edited activity: CCA EXCO planning meeting` and
 shows the resulting fields. Completion stays `[X]`; omitted fields are preserved.
-Names follow the same Unicode and delimiter rules as add. Saved names can be
-listed, searched, and renamed in any supported script.
+Replacement names follow the same printable-ASCII and delimiter rules as add.
+Historical non-ASCII saved names can still be listed and searched. An edit that
+omits `n/` preserves the existing name.
 
 ### Searching activity names: `find`
 
@@ -712,8 +723,14 @@ Command words must use ASCII characters. For example, entering `加入` or
 ```
 
 The app then waits for another command. Unknown ASCII command words and blank
-input keep the usual unrecognized-command warning. Non-ASCII activity names
-supplied to add or edit are supported; control characters still receive a name warning.
+input keep the usual unrecognized-command warning. Non-ASCII or non-printable
+activity names supplied to `add` or `edit` receive the separate name warning:
+
+```text
+[WARNING] Please write the activity name in English (ASCII characters only).
+```
+
+Rejected commands leave activities and the saved file unchanged.
 <!-- @@author -->
 
 <!-- @@author Oliver-koh -->
