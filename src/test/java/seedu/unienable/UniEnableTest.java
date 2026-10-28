@@ -188,18 +188,19 @@ class UniEnableTest {
     @Test
     void activityRatings_surviveRestartAndCompletionChanges(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
-        String partial = "add n/Planning and/or review d/2030-10-25 s/09:00 e/10:00 imp/5 com/3";
+        String partial = "add n/Planning and/or review d/2030-10-25 s/10:00 e/11:00 imp/5 com/3";
         String firstSession = consoleAtPath(String.join("\n",
                 "add n/Study d/2030-10-25 s/09:00 e/10:00",
                 partial,
-                "ADD CoM/3 n/Project UrG/4 d/2030-10-25 iMp/5 e/10:00 DeM/hIgH s/09:00",
-                partial, "mark 2", "mark 3", "bye", ""), activityFile);
-        String partialRow = "Planning and/or review|2030-10-25|09:00|10:00|MEDIUM|";
+                "ADD CoM/3 n/Project UrG/4 d/2030-10-25 iMp/5 e/12:00 DeM/hIgH s/11:00",
+                "add n/Planning and/or review d/2030-10-25 s/12:00 e/13:00 imp/5 com/3",
+                "mark 2", "mark 3", "bye", ""), activityFile);
+        String partialRow = "Planning and/or review|2030-10-25|10:00|11:00|MEDIUM|";
         List<String> expectedRows = new ArrayList<>(List.of(
                 "Study|2030-10-25|09:00|10:00|MEDIUM|false|-|-|-",
                 partialRow + "true|5|-|3",
-                "Project|2030-10-25|09:00|10:00|HIGH|true|5|4|3",
-                partialRow + "false|5|-|3"));
+                "Project|2030-10-25|11:00|12:00|HIGH|true|5|4|3",
+                "Planning and/or review|2030-10-25|12:00|13:00|MEDIUM|false|5|-|3"));
 
         assertFalse(firstSession.contains("[WARNING]"), firstSession);
         assertEquals(4, firstSession.split("Added activity:", -1).length - 1);
@@ -207,7 +208,7 @@ class UniEnableTest {
 
         String secondSession = consoleAtPath("list\nunmark 2\nbye\n", activityFile);
 
-        assertTrue(secondSession.contains("2. Planning and/or review (2030-10-25, 09:00-10:00) [MEDIUM] [X]"));
+        assertTrue(secondSession.contains("2. Planning and/or review (2030-10-25, 10:00-11:00) [MEDIUM] [X]"));
         assertTrue(secondSession.contains("Unmarked activity: Planning and/or review"));
         expectedRows.set(1, partialRow + "false|5|-|3");
         assertEquals(expectedRows, Files.readAllLines(activityFile, StandardCharsets.UTF_8));
@@ -339,28 +340,34 @@ class UniEnableTest {
     }
     //@@author
 
+    //@@author lukelouyu
     @Test
-    void unicodeNames_surviveAddingEditingSearchingAndRestarting(@TempDir Path tempDir) throws Exception {
-        String[] names = {"\u5b66\u4e60", "Caf\u00e9", "\ud83d\udcda Study"};
+    void nonAsciiNames_rejectAddAndEditWithoutChangingSavedData(@TempDir Path tempDir) throws Exception {
+        String[] names = {"复习", "வணக்கம்", "படி", "Café", "📚 Study", "Study\u2003group", "Study\u0080"};
         for (int i = 0; i < names.length; i++) {
             Path activityFile = tempDir.resolve("unicode-" + i + ".txt");
-            String updatedName = names[i] + " revised";
+            byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n"
+                    .getBytes(StandardCharsets.UTF_8);
+            Files.write(activityFile, original);
+            var originalModifiedTime = Files.getLastModifiedTime(activityFile);
             String output = consoleAtPath("add n/" + names[i] + " d/2099-12-10 s/09:00 e/10:00\n"
-                    + "edit 1 n/" + updatedName + "\nfind " + names[i] + "\nbye\n", activityFile);
+                    + "edit 1 n/" + names[i] + " imp/5\nlist\nbye\n", activityFile);
 
-            assertTrue(output.contains("Added activity: " + names[i]), output);
-            assertTrue(output.contains("Edited activity: " + updatedName), output);
-            assertTrue(output.contains("Found 1 matching activity:"), output);
-            assertFalse(output.contains("[WARNING]"), output);
-            byte[] saved = Files.readAllBytes(activityFile);
+            String warning = "[WARNING] Please write the activity name in English (ASCII characters only).";
+            assertEquals(2, output.split(Pattern.quote(warning), -1).length - 1, output);
+            assertFalse(output.contains("Added activity:"), output);
+            assertFalse(output.contains("Edited activity:"), output);
+            assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), output);
+            assertArrayEquals(original, Files.readAllBytes(activityFile));
+            assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
 
             String restartOutput = consoleAtPath("list\nbye\n", activityFile);
-            assertTrue(restartOutput.contains("1. " + updatedName + " (2099-12-10, 09:00-10:00)"),
-                    restartOutput);
+            assertTrue(restartOutput.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), restartOutput);
             assertFalse(restartOutput.contains("Activity data warning:"), restartOutput);
-            assertArrayEquals(saved, Files.readAllBytes(activityFile));
+            assertArrayEquals(original, Files.readAllBytes(activityFile));
         }
     }
+    //@@author
 
     //@@author Oliver-koh
     @Test

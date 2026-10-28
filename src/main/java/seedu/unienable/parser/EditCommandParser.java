@@ -77,6 +77,9 @@ public class EditCommandParser {
         if (name != null && (name.contains("|") || name.indexOf('\n') >= 0 || name.indexOf('\r') >= 0)) {
             throw invalid("The activity name must not contain | or line breaks.");
         }
+        if (name != null) {
+            ActivityNameValidator.validate(name);
+        }
         LocalDate date = fields.containsKey("d") ? parseDate(fields.get("d")) : null;
         LocalTime start = fields.containsKey("s") ? parseTime(fields.get("s")) : null;
         LocalTime end = fields.containsKey("e") ? parseTime(fields.get("e")) : null;

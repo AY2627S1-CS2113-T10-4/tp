@@ -66,8 +66,11 @@ public class HelpCommand extends Command {
                     Details:
                       - n/, d/, s/, and e/ are required; prefixes may appear in any order.
                       - Names can contain spaces, but cannot be blank or contain | or line breaks.
+                      - Write names in English using ASCII characters only; accents and emoji are rejected.
                       - Use a real YYYY-MM-DD date and 24-hour HH:mm times, such as 09:30.
                       - End must be after start on the same day and after the current time.
+                      - Duplicate activities and overlapping times on the same date are rejected.
+                      - Back-to-back activities are allowed; completed activities still occupy their time.
                       - Demand defaults to MEDIUM; choose LOW, MEDIUM, or HIGH.
                       - IMP = importance; URG = urgency; COM = commitment.
                       - Ratings are optional whole numbers from 1 to 5; missing ratings display -.
@@ -88,7 +91,9 @@ public class HelpCommand extends Command {
                       - Run list first and use the activity's current chronological index.
                       - Supply at least one field; omitted fields and completion are preserved.
                       - Names, dates, times, demand, and ratings follow the same rules as add.
+                      - Replacement names must use ASCII characters only.
                       - Date/time edits must leave an end after start on the same day and after now.
+                      - Name or schedule edits cannot duplicate or overlap another activity.
                       - Name, demand, or rating edits alone can update historical activities.
                       - To change completion, use mark or unmark. Successful edits save automatically.
 

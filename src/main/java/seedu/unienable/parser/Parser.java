@@ -121,6 +121,12 @@ public class Parser {
     public Command parse(String input) throws ParseException {
         String trimmedInput = input.trim();
         String[] words = trimmedInput.split("\\s+");
+        //@@author lukelouyu
+        if (words[0].chars().anyMatch(character -> character > 0x7f)) {
+            throw new ParseException(WARNING_MESSAGE
+                    + " Please write the command in English (ASCII characters only).");
+        }
+        //@@author
         String commandWord = words[0].toLowerCase(Locale.ROOT);
 
         switch (commandWord) {

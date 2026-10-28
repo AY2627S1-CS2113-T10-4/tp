@@ -1,0 +1,49 @@
+'@@author lukelouyu
+@startuml
+!pragma layout smetana
+title ASCII command and activity name validation
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide empty members
+
+class Parser {
+  +parse(input: String): Command
+}
+class AddCommandParser {
+  +parse(arguments: String): AddCommand
+}
+class EditCommandParser {
+  +parse(arguments: String): EditCommand
+}
+class ActivityNameValidator <<package-private>> {
+  ~{static} validate(name: String): void
+}
+class ParseException <<checked exception>>
+
+Parser ..> AddCommandParser : dispatches add
+Parser ..> EditCommandParser : dispatches edit
+Parser ..> ParseException : rejects non-ASCII command words
+AddCommandParser ..> ActivityNameValidator : checks required name
+EditCommandParser ..> ActivityNameValidator : checks supplied name
+ActivityNameValidator ..> ParseException : rejects non-ASCII names
+
+note top of Parser
+  Check the command word before case conversion.
+  Report: Please write the command in English.
+  Find keywords may still match saved Unicode names.
+end note
+
+note bottom of ActivityNameValidator
+  Any character above U+007F is rejected.
+  Report: Please write the activity name in English.
+  Parsers keep blank-name and delimiter checks.
+  Storage does not apply this rule to saved history.
+end note
+@enduml
+'@@author

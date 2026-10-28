@@ -19,7 +19,6 @@ import seedu.unienable.ui.activity.ActivityListFormatter;
  * time, in chronological order with labels for today, this week, and earlier.
  */
 public class OverdueCommand extends Command {
-    // Owner: Asyraf
     private static final Logger LOGGER = Logger.getLogger(OverdueCommand.class.getName());
 
     private final Clock clock;

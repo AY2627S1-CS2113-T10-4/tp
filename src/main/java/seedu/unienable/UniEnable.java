@@ -2,6 +2,8 @@ package seedu.unienable;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Clock;
 
@@ -22,7 +24,9 @@ public class UniEnable {
      * @param args unused command-line arguments.
      */
     public static void main(String[] args) {
-        run(System.in, System.out, Path.of("data", "activities.txt"));
+        // Windows redirected stdout can use a legacy encoding even when the JVM default is UTF-8.
+        PrintStream output = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        run(System.in, output, Path.of("data", "activities.txt"));
     }
     //@@author
 

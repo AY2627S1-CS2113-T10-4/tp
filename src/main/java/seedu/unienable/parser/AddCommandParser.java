@@ -24,7 +24,6 @@ import seedu.unienable.model.enums.DemandLevel;
  * Parses the add command using named prefixes that may appear in any order.
  */
 public class AddCommandParser {
-    // Owner: Atharva
     private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)(dem|imp|urg|com|n|d|s|e)/");
     private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern TIME_PATTERN = Pattern.compile("\\d{2}:\\d{2}");
@@ -78,6 +77,7 @@ public class AddCommandParser {
         if (name.contains("|") || name.indexOf('\n') >= 0 || name.indexOf('\r') >= 0) {
             throw invalid("The activity name must not contain | or line breaks.");
         }
+        ActivityNameValidator.validate(name);
 
         LocalDate date;
         LocalTime startTime;

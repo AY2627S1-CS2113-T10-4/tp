@@ -23,13 +23,15 @@ import seedu.unienable.storage.Storage;
  */
 class AddCommandTest {
     @Test
-    void execute_twoAdds_updatesActivityListAndDisplaysCount() {
+    void execute_twoNonOverlappingAdds_updatesActivityListAndDisplaysCount() throws Exception {
         ActivityList activities = new ActivityList();
         AddCommand command = new AddCommand("Team Meeting", LocalDate.of(2026, 10, 20),
                 LocalTime.of(9, 0), LocalTime.of(10, 0), DemandLevel.MEDIUM, null, null, null);
 
         CommandResult firstResult = command.execute(activities, new Storage());
-        CommandResult secondResult = command.execute(activities, new Storage());
+        CommandResult secondResult = new AddCommand("Team Meeting", LocalDate.of(2026, 10, 20),
+                LocalTime.of(10, 0), LocalTime.of(11, 0), DemandLevel.MEDIUM, null, null, null)
+                .execute(activities, new Storage());
 
         assertEquals(2, activities.getActivities().size());
         assertEquals("Team Meeting", activities.getActivities().get(0).getName());
@@ -45,7 +47,7 @@ class AddCommandTest {
     //@@author
     //@@author lukelouyu
     @Test
-    void execute_ratedActivity_preservesRatingsAndConfirmsTheirValues() {
+    void execute_ratedActivity_preservesRatingsAndConfirmsTheirValues() throws Exception {
         Integer[][] ratings = {{5, null, 3}, {1, 5, 2}};
         String[] expectedRatings = {
             "Importance: 5\nUrgency: -\nCommitment: 3",

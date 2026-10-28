@@ -165,14 +165,30 @@ local time zone. An activity that has already started can still be added if it
 has not ended; an activity ending exactly now is rejected. New activities start
 incomplete.
 
-Names must contain at least one non-whitespace character. Chinese, accented and
-emoji names are supported. Names cannot contain `|` or line breaks.
+Names must contain at least one non-whitespace character and use ASCII characters
+only. Chinese, Tamil, accented letters and emoji are rejected with
+`[WARNING] Please write the activity name in English (ASCII characters only).`
+Names cannot contain `|` or line breaks. English letters, digits, spaces and
+ASCII punctuation are allowed; the application checks characters, not the
+language of words written with ASCII letters.
+
 Slash-containing text such as `and/or`
 and `w/o` is allowed. However, a known prefix (`n/`, `d/`, `s/`, `e/`, `dem/`,
 `imp/`, `urg/`, or `com/`)
 at the start of a whitespace-separated part of the name is treated as another
-field, so avoid these prefixes in names. Duplicate or overlapping activities are
-currently allowed.
+field, so avoid these prefixes in names.
+
+A duplicate activity has the same name (ignoring case and surrounding whitespace),
+date, start and end times as an existing activity. Changing demand, ratings or
+completion does not make it a different activity. Duplicates are rejected with
+`[WARNING] Duplicate activity already recorded at index ...`.
+
+Other activities on the same date are rejected if their times overlap, with
+`[WARNING] Activity clashes with index ...`. Both warnings identify the existing
+activity using its chronological `list` index. Completed activities still occupy
+their scheduled time. Back-to-back activities, such as 10:00-11:00 and
+11:00-12:00, and the same times on different dates are allowed. A rejected add
+does not increase the activity count or change saved data.
 
 Input:
 ```text
@@ -189,6 +205,21 @@ Urgency: -
 Commitment: -
 Activities in this session: 1
 ```
+
+Repeating the same add command produces:
+
+```text
+[WARNING] Duplicate activity already recorded at index 1: CS2113 tutorial (2026-12-01, 10:00-11:00).
+```
+
+Adding `Other class` on that date from 10:30 to 11:30 produces:
+
+```text
+[WARNING] Activity clashes with index 1: CS2113 tutorial (2026-12-01, 10:00-11:00).
+```
+
+In both cases, the count stays at 1 and the saved file stays unchanged. Starting
+the next activity at 11:00 is allowed because the activities do not overlap.
 
 For the following examples, also enter:
 ```text
@@ -469,6 +500,9 @@ edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [im
   time. A change only to name, demand, or ratings can update historical activities.
 - Validation failures leave the activity unchanged. Successful edits save
   automatically and display all resulting fields, including ratings.
+- Name or schedule edits must not duplicate or overlap another activity. The
+  activity being edited is excluded from this comparison. Rejected multi-field
+  edits leave every field and the saved file unchanged.
 - Rescheduling can change chronological indexes. Run `list` or `find` again
   before selecting another activity.
 
@@ -500,6 +534,11 @@ the resulting start must still be earlier than the resulting end.
 Both `add` and `edit` reject whitespace-only names, including Unicode spaces such
 as U+2003 EM SPACE and U+3000 IDEOGRAPHIC SPACE. Rejected input leaves the activity
 list and saved data unchanged.
+
+Replacement names supplied with `edit INDEX n/NAME` must also use ASCII characters only;
+otherwise the English-only warning appears and none of the supplied fields are
+changed. Previously saved non-ASCII names still load and can be listed, searched
+or renamed using ASCII characters.
 
 ### Searching activity names: `find`
 
@@ -626,7 +665,6 @@ These strict boundaries also apply when the current clock includes seconds.
 
 
 <!-- @@author -->
-
 
 <!-- @@author lukelouyu -->
 
@@ -779,6 +817,17 @@ empty days inside a populated week have a plain no-activities message.
 
 <!-- @@author lukelouyu -->
 Facility lists without records or recorded features use the same marker.
+
+Command words must use ASCII characters. For example, entering `加入` or
+`வணக்கம்` as a command shows:
+
+```text
+[WARNING] Please write the command in English (ASCII characters only).
+```
+
+The app then waits for another command. Unknown ASCII command words and blank
+input keep the usual unrecognized-command warning. Non-ASCII activity names
+supplied to add or edit receive the activity-name warning instead.
 <!-- @@author -->
 
 <!-- @@author Oliver-koh -->
@@ -793,6 +842,10 @@ For `add` and `edit`, use real calendar dates and two-digit hours and minutes (f
 `09:30`, not `9:30`). An invalid add command also displays the expected format.
 Rejected add or edit input, including an invalid rating, leaves the activity list and
 stored data unchanged.
+
+Duplicate and clash warnings prevent new conflicting entries. Existing duplicates
+or overlaps in saved files still load; remove unwanted entries using their current
+`list` indexes and `delete INDEX`. They are not removed automatically.
 
 <!-- @@author officialasyrafrahim -->
 `list priority`, `overdue`, and `next` accept no arguments. Extra arguments and

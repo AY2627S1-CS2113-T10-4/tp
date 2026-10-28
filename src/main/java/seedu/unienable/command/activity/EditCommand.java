@@ -108,6 +108,9 @@ public class EditCommand extends Command {
 
         Activity replacement = new Activity(updatedName, updatedDate, updatedStart, updatedEnd,
                 updatedDemand, activity.isDone(), updatedImportance, updatedUrgency, updatedCommitment);
+        if (nameSupplied || dateSupplied || startTimeSupplied || endTimeSupplied) {
+            ActivityScheduleValidator.validate(replacement, activities, activity);
+        }
         activities.replaceByDisplayedIndex(displayedIndex, replacement);
         String message = "Edited activity: " + replacement.getName() + "\n"
                 + "Date: " + replacement.getDate() + "\n"

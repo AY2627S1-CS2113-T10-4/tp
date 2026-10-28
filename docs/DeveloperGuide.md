@@ -39,6 +39,7 @@ Named author comments begin a feature scope; the unnamed author comment ends it.
     - [Completion and persistence](#completion-and-persistence)
   - [Ratings and accessibility](#ratings-and-accessibility)
     - [Optional ratings integration](#optional-ratings-integration)
+    - [Activity schedule validation](#activity-schedule-validation)
     - [Facility accessibility data (`facilities.txt`)](#facility-accessibility-data-facilitiestxt)
     - [Facility lookup](#facility-lookup)
     - [Accessibility route connections (`connections.txt`)](#accessibility-route-connections-connectionstxt)
@@ -63,6 +64,7 @@ Named author comments begin a feature scope; the unnamed author comment ends it.
   - [Prepare a separate test folder](#prepare-a-separate-test-folder)
   - [Run a session with a fixed clock](#run-a-session-with-a-fixed-clock)
   - [Activities and restart persistence](#activities-and-restart-persistence)
+  - [Duplicate activities and time clashes](#duplicate-activities-and-time-clashes)
   - [Priority and strict local-time boundaries](#priority-and-strict-local-time-boundaries)
   - [Calendar dashboards and topic help](#calendar-dashboards-and-topic-help)
   - [Invalid activity and command input](#invalid-activity-and-command-input)
@@ -169,6 +171,41 @@ and the command queries or updates a model or manager. Its `CommandResult` carri
 a message, an exit flag and an activity-change flag. `ConsoleHelper` saves only
 when activities changed, then displays the message; the exit flag ends the loop.
 
+<!-- @@author lukelouyu -->
+
+`UniEnable.main()` supplies a `PrintStream` with explicit
+`StandardCharsets.UTF_8` encoding to the console session. On Windows, the
+original `System.out` can use a legacy encoding even when the JVM's default
+charset is UTF-8, replacing characters in activity names with `?` in redirected
+output. Encoding output explicitly preserves Chinese, Tamil and emoji text in
+previously saved activities; it does not make those names valid for new input.
+The injectable `UniEnable.run()` methods continue to use the caller's output stream.
+
+<a id="ascii-command-name-validation"></a>
+
+`ActivityNameValidator` applies the shared ASCII-only name rule in
+`AddCommandParser` and `EditCommandParser` before either command can change data.
+Any character above U+007F produces
+`[WARNING] Please write the activity name in English (ASCII characters only).`
+Blank-name and pipe/newline checks keep their existing warnings. `Storage` does
+not apply this new-input rule when restoring saved history.
+
+`Parser` also rejects a non-ASCII command word before case conversion and
+dispatch. For example, `加入` or `வணக்கம்` produces
+`[WARNING] Please write the command in English (ASCII characters only).`
+ASCII unknown commands and blank input keep the unrecognized-command warning.
+This check applies to the command word; add/edit names still receive their
+name-specific warning, and find keywords can still match historical Unicode names.
+
+The diagram shows command-word validation in `Parser` and the name validator
+used by add and edit parsers:
+
+![Class diagram showing ASCII command-word and activity-name validation](images/luke/class/ActivityNameValidatorClassDiagram.png)
+
+Source: [ActivityNameValidatorClassDiagram.puml](diagrams/luke/class/ActivityNameValidatorClassDiagram.puml).
+
+<!-- @@author -->
+
 The diagram includes editing and search, completion changes, priority and time
 queries, calendar dashboards, and categorized topic help. `ViewCommand` covers
 today, tomorrow, or today and the following six days, and formats its schedule,
@@ -245,6 +282,11 @@ defaults to `MEDIUM`; each omitted rating remains `null`. The same-day end must
 follow the start and the current local time. Invalid input produces a
 `ParseException` without adding an activity.
 
+`AddCommandParser` checks supplied names through `ActivityNameValidator`.
+`AddCommand` checks the proposed activity with the shared
+[schedule validator](#activity-schedule-validation) before inserting it. The
+add diagrams include both checks and the rejection path without a save.
+
 `AddCommand` creates an initially incomplete `Activity` and appends it through
 `ActivityList.addActivity()`. Its result sets the activity-change flag, so the
 console saves the list before displaying the confirmation. See the
@@ -258,6 +300,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [ActivityCreationClassDiagram.puml](diagrams/atharva/class/ActivityCreationClassDiagram.puml).
 -->
+
+![Class diagram showing activity creation and optional ratings](images/atharva/class/ActivityCreationClassDiagram.png)
+
+Source: [ActivityCreationClassDiagram.puml](diagrams/atharva/class/ActivityCreationClassDiagram.puml).
+
 The diagram's source and image follow the activity-creation responsibility scope.
 The optional rating implementation is documented in
 [Optional ratings integration](#optional-ratings-integration).
@@ -274,6 +321,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [AddActivitySequence.puml](diagrams/atharva/sequence/AddActivitySequence.puml).
 -->
+
+![Sequence diagram showing add parsing, activity construction, and insertion](images/atharva/sequence/AddActivitySequence.png)
+
+Source: [AddActivitySequence.puml](diagrams/atharva/sequence/AddActivitySequence.puml).
+
 
 #### Calendar dashboards
 
@@ -303,6 +355,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [CalendarViewClassDiagram.puml](diagrams/atharva/class/CalendarViewClassDiagram.puml).
 -->
+
+![Calendar dashboard classes and inclusive date ranges](images/atharva/class/CalendarViewClassDiagram.png)
+
+Source: [CalendarViewClassDiagram.puml](diagrams/atharva/class/CalendarViewClassDiagram.puml).
+
 
 For a populated period, the formatter appends:
 
@@ -346,6 +403,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [CalendarViewSequence.puml](diagrams/atharva/sequence/CalendarViewSequence.puml).
 -->
 
+![Calendar dashboard sequence for empty and populated periods](images/atharva/sequence/CalendarViewSequence.png)
+
+Source: [CalendarViewSequence.puml](diagrams/atharva/sequence/CalendarViewSequence.puml).
+
+
 #### Categorized and topic help
 
 `HelpCommand` lives in `command.common`. Its default constructor selects a menu
@@ -361,6 +423,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [TopicHelpClassDiagram.puml](diagrams/atharva/class/TopicHelpClassDiagram.puml).
 -->
+
+![Categorized menu and topic help classes](images/atharva/class/TopicHelpClassDiagram.png)
+
+Source: [TopicHelpClassDiagram.puml](diagrams/atharva/class/TopicHelpClassDiagram.puml).
+
 
 `Parser` accepts zero or one topic word after `help`. For one word,
 `HelpCommand(String topic)` normalizes it with `Locale.ROOT`, looks it up, and
@@ -390,6 +457,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [TopicHelpSequence.puml](diagrams/atharva/sequence/TopicHelpSequence.puml).
 -->
+
+![Sequence for a valid topic help request](images/atharva/sequence/TopicHelpSequence.png)
+
+Source: [TopicHelpSequence.puml](diagrams/atharva/sequence/TopicHelpSequence.puml).
+
 
 <!-- @@author -->
 
@@ -423,6 +495,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [ListActivityClassDiagram.puml](diagrams/asyraf/class/ListActivityClassDiagram.puml).
 -->
 
+![Class diagram for chronological listing](images/asyraf/class/ListActivityClassDiagram.png)
+
+Source: [ListActivityClassDiagram.puml](diagrams/asyraf/class/ListActivityClassDiagram.puml).
+
+
 <!-- TODO (@officialasyrafrahim): Add the sequence diagram for chronological listing here.
 Write the PlantUML source at: docs/diagrams/asyraf/sequence/ListActivitySequence.puml
 Generate its image at: docs/images/asyraf/sequence/ListActivitySequence.png
@@ -431,6 +508,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [ListActivitySequence.puml](diagrams/asyraf/sequence/ListActivitySequence.puml).
 -->
+
+![Sequence diagram for chronological listing](images/asyraf/sequence/ListActivitySequence.png)
+
+Source: [ListActivitySequence.puml](diagrams/asyraf/sequence/ListActivitySequence.puml).
+
 
 #### Demand-ordered listing
 
@@ -451,6 +533,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [ListDemandClassDiagram.puml](diagrams/asyraf/class/ListDemandClassDiagram.puml).
 -->
 
+![Class diagram for demand-ordered listing](images/asyraf/class/ListDemandClassDiagram.png)
+
+Source: [ListDemandClassDiagram.puml](diagrams/asyraf/class/ListDemandClassDiagram.puml).
+
+
 <!-- TODO (@officialasyrafrahim): Add the sequence diagram for demand-ordered listing here.
 Write the PlantUML source at: docs/diagrams/asyraf/sequence/ListDemandSequence.puml
 Generate its image at: docs/images/asyraf/sequence/ListDemandSequence.png
@@ -459,6 +546,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [ListDemandSequence.puml](diagrams/asyraf/sequence/ListDemandSequence.puml).
 -->
+
+![Sequence diagram for demand-ordered listing](images/asyraf/sequence/ListDemandSequence.png)
+
+Source: [ListDemandSequence.puml](diagrams/asyraf/sequence/ListDemandSequence.puml).
+
 
 #### Activity deletion
 
@@ -482,12 +574,20 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [DeleteActivityClassDiagram.puml](diagrams/asyraf/class/DeleteActivityClassDiagram.puml).
 -->
 
+![Class diagram for activity deletion](images/asyraf/class/DeleteActivityClassDiagram.png)
+
+Source: [DeleteActivityClassDiagram.puml](diagrams/asyraf/class/DeleteActivityClassDiagram.puml).
+
+
 <!-- TODO (@officialasyrafrahim): Add the sequence diagram for activity deletion here.
 Keep the existing PlantUML source: docs/diagrams/asyraf/sequence/DeleteActivitySequence.puml
 Generate its image at: docs/images/asyraf/sequence/DeleteActivitySequence.png
 Uncomment the image Markdown below once the PNG is ready.
 ![Sequence diagram for activity deletion](images/asyraf/sequence/DeleteActivitySequence.png)
 -->
+
+![Sequence diagram for activity deletion](images/asyraf/sequence/DeleteActivitySequence.png)
+
 
 Source: [DeleteActivitySequence.puml](diagrams/asyraf/sequence/DeleteActivitySequence.puml).
 
@@ -544,6 +644,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [ListPriorityClassDiagram.puml](diagrams/asyraf/class/ListPriorityClassDiagram.puml).
 -->
 
+![Class diagram for priority listing](images/asyraf/class/ListPriorityClassDiagram.png)
+
+Source: [ListPriorityClassDiagram.puml](diagrams/asyraf/class/ListPriorityClassDiagram.puml).
+
+
 <!-- TODO (@officialasyrafrahim): Add the sequence diagram for priority listing here.
 Write the PlantUML source at: docs/diagrams/asyraf/sequence/ListPrioritySequence.puml
 Generate its image at: docs/images/asyraf/sequence/ListPrioritySequence.png
@@ -552,6 +657,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [ListPrioritySequence.puml](diagrams/asyraf/sequence/ListPrioritySequence.puml).
 -->
+
+![Sequence diagram for priority listing](images/asyraf/sequence/ListPrioritySequence.png)
+
+Source: [ListPrioritySequence.puml](diagrams/asyraf/sequence/ListPrioritySequence.puml).
+
 
 #### Overdue activities
 
@@ -572,6 +682,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [OverdueActivityClassDiagram.puml](diagrams/asyraf/class/OverdueActivityClassDiagram.puml).
 -->
 
+![Class diagram for overdue activities](images/asyraf/class/OverdueActivityClassDiagram.png)
+
+Source: [OverdueActivityClassDiagram.puml](diagrams/asyraf/class/OverdueActivityClassDiagram.puml).
+
+
 <!-- TODO (@officialasyrafrahim): Add the sequence diagram for overdue activities here.
 Write the PlantUML source at: docs/diagrams/asyraf/sequence/OverdueActivitySequence.puml
 Generate its image at: docs/images/asyraf/sequence/OverdueActivitySequence.png
@@ -580,6 +695,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [OverdueActivitySequence.puml](diagrams/asyraf/sequence/OverdueActivitySequence.puml).
 -->
+
+![Sequence diagram for overdue activities](images/asyraf/sequence/OverdueActivitySequence.png)
+
+Source: [OverdueActivitySequence.puml](diagrams/asyraf/sequence/OverdueActivitySequence.puml).
+
 
 #### Next activity
 
@@ -601,6 +721,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [NextActivityClassDiagram.puml](diagrams/asyraf/class/NextActivityClassDiagram.puml).
 -->
 
+![Class diagram for next activity](images/asyraf/class/NextActivityClassDiagram.png)
+
+Source: [NextActivityClassDiagram.puml](diagrams/asyraf/class/NextActivityClassDiagram.puml).
+
+
 <!-- TODO (@officialasyrafrahim): Add the sequence diagram for the next activity here.
 Write the PlantUML source at: docs/diagrams/asyraf/sequence/NextActivitySequence.puml
 Generate its image at: docs/images/asyraf/sequence/NextActivitySequence.png
@@ -609,6 +734,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [NextActivitySequence.puml](diagrams/asyraf/sequence/NextActivitySequence.puml).
 -->
+
+![Sequence diagram for next activity](images/asyraf/sequence/NextActivitySequence.png)
+
+Source: [NextActivitySequence.puml](diagrams/asyraf/sequence/NextActivitySequence.puml).
+
 
 The list parser rejects unknown variants and extra arguments. Time queries
 reject extra words. Checked exceptions keep invalid commands recoverable; `FINE`
@@ -643,11 +773,22 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [EditActivityClassDiagram.puml](diagrams/oliver/class/EditActivityClassDiagram.puml).
 -->
 
+![Activity editing class diagram](images/oliver/class/EditActivityClassDiagram.png)
+
+Source: [EditActivityClassDiagram.puml](diagrams/oliver/class/EditActivityClassDiagram.puml).
+
+
 `EditCommandParser` records which fields were supplied. `EditCommand` resolves the
 index, combines old and new values, and validates the replacement before calling
 `ActivityList.replaceByDisplayedIndex()`. Omitted fields and completion state stay
 unchanged. Time validation runs when a date or time is supplied; metadata-only
 edits can update historical activities. Rejected edits leave the activity intact.
+
+The edit diagrams show `ActivityNameValidator` checking a supplied name
+and `ActivityScheduleValidator` checking name/schedule changes before replacement.
+The original activity is excluded from the conflict search. Duplicate or clash
+warnings preserve the entire record and do not request a save; demand/rating-only
+edits skip schedule validation.
 
 **Design choice:** Build and validate a replacement activity before changing the
 list. This keeps a failed multi-field edit from leaving half of the requested
@@ -665,6 +806,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [EditActivitySequence.puml](diagrams/oliver/sequence/EditActivitySequence.puml).
 -->
+
+![Sequence diagram showing validation, activity replacement, saving, and edit confirmation](images/oliver/sequence/EditActivitySequence.png)
+
+Source: [EditActivitySequence.puml](diagrams/oliver/sequence/EditActivitySequence.puml).
+
 This sequence assumes valid input and successful file operations; rejected edits
 return before replacement or saving.
 
@@ -687,6 +833,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [FindActivityClassDiagram.puml](diagrams/oliver/class/FindActivityClassDiagram.puml).
 -->
 
+![Activity name search class diagram](images/oliver/class/FindActivityClassDiagram.png)
+
+Source: [FindActivityClassDiagram.puml](diagrams/oliver/class/FindActivityClassDiagram.puml).
+
+
 <!-- TODO (@Oliver-koh): Add the sequence diagram for name search here.
 Write the PlantUML source at: docs/diagrams/oliver/sequence/FindActivitySequence.puml
 Generate its image at: docs/images/oliver/sequence/FindActivitySequence.png
@@ -695,6 +846,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [FindActivitySequence.puml](diagrams/oliver/sequence/FindActivitySequence.puml).
 -->
+
+![Sequence diagram showing name search and formatting with full chronological indexes](images/oliver/sequence/FindActivitySequence.png)
+
+Source: [FindActivitySequence.puml](diagrams/oliver/sequence/FindActivitySequence.puml).
+
 The activity-change flag stays unset, so the console displays the result without saving.
 
 #### Marking activities
@@ -719,6 +875,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [MarkActivityClassDiagram.puml](diagrams/oliver/class/MarkActivityClassDiagram.puml).
 -->
 
+![Class diagram for marking activities](images/oliver/class/MarkActivityClassDiagram.png)
+
+Source: [MarkActivityClassDiagram.puml](diagrams/oliver/class/MarkActivityClassDiagram.puml).
+
+
 <!-- TODO (@Oliver-koh): Add the sequence diagram for marking activities here.
 Write the PlantUML source at: docs/diagrams/oliver/sequence/MarkActivitySequence.puml
 Generate its image at: docs/images/oliver/sequence/MarkActivitySequence.png
@@ -727,6 +888,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [MarkActivitySequence.puml](diagrams/oliver/sequence/MarkActivitySequence.puml).
 -->
+
+![Sequence diagram for marking activities](images/oliver/sequence/MarkActivitySequence.png)
+
+Source: [MarkActivitySequence.puml](diagrams/oliver/sequence/MarkActivitySequence.puml).
+
 
 #### Unmarking activities
 
@@ -750,6 +916,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [UnmarkActivityClassDiagram.puml](diagrams/oliver/class/UnmarkActivityClassDiagram.puml).
 -->
 
+![Class diagram for unmarking activities](images/oliver/class/UnmarkActivityClassDiagram.png)
+
+Source: [UnmarkActivityClassDiagram.puml](diagrams/oliver/class/UnmarkActivityClassDiagram.puml).
+
+
 <!-- TODO (@Oliver-koh): Add the sequence diagram for unmarking activities here.
 Write the PlantUML source at: docs/diagrams/oliver/sequence/UnmarkActivitySequence.puml
 Generate its image at: docs/images/oliver/sequence/UnmarkActivitySequence.png
@@ -758,6 +929,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [UnmarkActivitySequence.puml](diagrams/oliver/sequence/UnmarkActivitySequence.puml).
 -->
+
+![Sequence diagram for unmarking activities](images/oliver/sequence/UnmarkActivitySequence.png)
+
+Source: [UnmarkActivitySequence.puml](diagrams/oliver/sequence/UnmarkActivitySequence.puml).
+
 
 #### Completion and persistence
 
@@ -774,6 +950,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 Source: [ActivityPersistenceClassDiagram.puml](diagrams/oliver/class/ActivityPersistenceClassDiagram.puml).
 -->
 
+![Class diagram showing conditional activity saving and storage recovery state](images/oliver/class/ActivityPersistenceClassDiagram.png)
+
+Source: [ActivityPersistenceClassDiagram.puml](diagrams/oliver/class/ActivityPersistenceClassDiagram.puml).
+
+
 `Storage` loads legacy six-field rows and current nine-field rows, preserving
 optional ratings. It reports malformed rows and protects later recovery saves
 with a verified copy of the original file. `ConsoleHelper` saves only when a
@@ -789,6 +970,11 @@ Uncomment the image and source-link Markdown below once both files are ready.
 
 Source: [CompletionAndSaveSequence.puml](diagrams/oliver/sequence/CompletionAndSaveSequence.puml).
 -->
+
+![Sequence diagram showing marking an activity and saving only when its state changes](images/oliver/sequence/CompletionAndSaveSequence.png)
+
+Source: [CompletionAndSaveSequence.puml](diagrams/oliver/sequence/CompletionAndSaveSequence.puml).
+
 The sequence assumes a valid index and successful file operations. Its optional
 blocks show when the console saves and when storage first creates a recovery backup.
 
@@ -800,13 +986,7 @@ persistent, but would duplicate this policy. A new caller that bypasses the
 console must honour the result flag itself. Saving follows the in-memory change,
 so an I/O failure leaves that change in memory and requires the documented recovery.
 
-**File format:** UTF-8 pipe-separated rows are easy to inspect, require no
-serialization dependency, and keep the six-field legacy format readable alongside
-the nine-field rated format. JSON would support named fields and escaping more
-flexibly, but would add a parser and a migration decision. The current format
-instead rejects pipes and line breaks in names and requires coordinated
-loader/writer changes whenever a column is added. It provides recovery protection
-for detected corruption, rather than a versioned backup history.
+
 
 <!-- @@author -->
 
@@ -820,7 +1000,7 @@ for detected corruption, rather than a versioned backup history.
 
 ### Ratings and accessibility
 
-This section covers optional add ratings, facility reference data and queries,
+This section covers optional add ratings, shared activity schedule validation, facility reference data and queries,
 accessible route search, and the exit command.
 These features use the shared activity models and command/result flow.
 
@@ -830,9 +1010,40 @@ These features use the shared activity models and command/result flow.
 `AddCommandParser` parses each rating independently into a nullable `Integer`;
 omitting a field leaves it unset. `Activity.validateRating()` accepts `null` or
 an integer from 1 to 5, so add, edit and storage use the same validation rule.
-The class-diagram placeholder in [Adding activities](#adding-activities) marks
-where to show how ratings fit into activity creation. The priority view uses
+The class diagram in [Adding activities](#adding-activities) shows
+how ratings fit into activity creation. The priority view uses
 these ratings; editing and persistence update and preserve them.
+
+#### Activity schedule validation
+
+`ActivityScheduleValidator` is a package-private helper in `command.activity`,
+maintained under Luke's author scope. Atharva's `AddCommand` calls it before
+appending an activity. Oliver's `EditCommand` calls it before replacement when
+a name, date, start or end is supplied. The integrations retain their existing
+feature-owner markers.
+
+![Class diagram showing shared schedule validation before activity insertion or replacement](images/luke/class/ActivityScheduleValidatorClassDiagram.png)
+
+Source: [ActivityScheduleValidatorClassDiagram.puml](diagrams/luke/class/ActivityScheduleValidatorClassDiagram.puml).
+
+The helper reads `ActivityList.getCanonicalView()` without changing the list.
+It checks duplicates first: name equality ignores case and surrounding whitespace,
+while date, start and end must match exactly. Demand, ratings and completion do
+not change duplicate identity. It then checks positive-duration overlap on the
+same date: `candidate.start < existing.end && existing.start < candidate.end`.
+Equal endpoints are allowed, and completed activities participate in both checks.
+
+An edit passes the original activity reference so only that record is excluded.
+Warnings identify the conflicting chronological index and activity. A checked
+`UniEnableException` stops the command before mutation or a save request, preserving
+counts, fields, saved bytes and modification times. Demand/rating-only edits do
+not create a new schedule and skip this check. Saved duplicates and overlaps remain
+loadable; the validator does not silently delete historical data.
+
+`ActivityScheduleValidatorTest` covers duplicate identity, partial/contained/covering
+overlaps, adjacency, different dates, completion, canonical indexes, self-exclusion
+and atomic edits. `UniEnableProcessTest` verifies rejection, stable counts and
+unchanged storage across restarts through the real console entry point.
 
 #### Facility accessibility data (`facilities.txt`)
 
@@ -1131,6 +1342,38 @@ written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 | Facility reference data | `FacilityStorageTest`, `FacilityManagerTest`, `FacilityCommandParserTest` and facility command tests cover loading, exact status matching, formatting and unavailable data. |
 | Routing | `DijkstraSolverTest` checks distances and predecessors. `DijkstraShortestPathTest` checks all 81 hub pairs against a manual distance matrix, validates route segments, checks a same-hub route and rejects inaccessible shortcuts. `ConnectionManagerTest`, `RouteParserTest` and `RouteCommandTest` cover endpoint errors, disconnected/same-hub routes and output. |
 
+<!-- @@author lukelouyu -->
+
+`UniEnableProcessTest` checks the real console entry point in separate JVMs with
+`-Dstdout.encoding=US-ASCII`, reproducing character loss without depending on the
+host's output encoding. Each case sends UTF-8 input, captures output and uses an
+isolated temporary working directory. Chinese `复习`, Tamil `வணக்கம்` and `படி`,
+accented letters and emoji must produce the English-only warning for both add
+and edit. The tests require exit code 0, empty stderr, continued command handling,
+and unchanged activity bytes and modification times after rejection. Rejected
+adds in an empty folder must not create an activity file.
+
+`ParserTest` checks non-ASCII command words, ASCII unknown/blank commands and
+the separate activity-name warning. A process regression checks the exact
+bordered command warning for `加入`, Tamil, accented and emoji input, continued
+handling of `list` and `bye`, and preserved saved bytes and modification times.
+
+A positive case checks ASCII names with spaces, digits, punctuation and a slash
+through add, edit, find and restart. A separate history case loads existing
+Chinese, Tamil, accented and emoji names, verifies their exact UTF-8 output and
+preserves the file across read-only restarts. Run these process tests on Windows with:
+
+```text
+.\gradlew.bat test --tests "seedu.unienable.UniEnableProcessTest" --rerun-tasks
+```
+
+Validation on 28 October 2026 with Java 25.0.4:
+`.\gradlew.bat check shadowJar --rerun-tasks` passed all 465 tests, with no failures,
+errors or skipped tests. Both Checkstyle checks reported zero violations, and
+the configured JaCoCo coverage verification passed.
+
+<!-- @@author -->
+
 <!-- TEAM: All members maintain validation, assertions, and defensive collection contracts. -->
 
 ### Defensive programming
@@ -1199,10 +1442,15 @@ link their responsibilities, design, code and tests.
 
 | Team member | Feature area | V1.0 work | V2.0 work |
 | --- | --- | --- | --- |
-| [Lou Yu Luke](team/lukelouyu.md) | Ratings and accessibility | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2026-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. |
+| [Lou Yu Luke](team/lukelouyu.md) | Ratings, shared validation and accessibility | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2026-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. [ASCII command/name validation](#ascii-command-name-validation) and [duplicate/clash checks](#activity-schedule-validation). |
 | [Atharva Rege](team/atharva005.md) | Activity creation, calendar views and help | Help: `help`. [Adding an activity with name, date, times, and optional demand](#adding-activities): `add n/Tutorial d/2026-12-01 s/09:00 e/10:00 dem/HIGH`. | [Calendar dashboards](#calendar-dashboards): `view today`, `view tomorrow`, and `view week`, including summaries, high-demand counts, and aligned rating charts. [Categorized and topic help](#categorized-and-topic-help): `help [TOPIC]`. |
 | [Muhammad Asyraf Bin Abdul Rahim](team/officialasyrafrahim.md) | Activity views and deletion | [Chronological listing, demand ordering, and deletion](#activity-views-and-deletion): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#activity-views-and-deletion): `list priority`, `overdue`, and `next`. |
 | [Oliver](team/oliver-koh.md) | Completion, storage, editing and search | [Saving, backups, and recovery](#completion-storage-editing-and-search), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#completion-storage-editing-and-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
+
+Luke maintains the shared validation helpers and their regression tests and
+diagrams. Activity creation and its validation integration remain Atharva's
+responsibility; activity editing and its validation integration remain Oliver's.
+The shared checks reject invalid input before either feature changes or saves data.
 
 <!-- TEAM: All members maintain story status; feature ownership is defined in Team contributions. -->
 
@@ -1390,6 +1638,72 @@ CS2113 tutorial class|2026-12-01|09:00|10:00|MEDIUM|true|2|-|-
 Compare the file contents before and after the repeated mark at step 5 and the
 read-only commands below: these commands should not change the saved bytes.
 
+<!-- @@author lukelouyu -->
+
+#### Foreign language name rejection and UTF-8 output
+
+Use a fresh disposable test folder and the real JAR entry point from
+[Prepare a separate test folder](#prepare-a-separate-test-folder). Send input as
+UTF-8 so the test reaches name validation with the intended characters. Names
+supplied to add and edit must contain ASCII characters only. Each non-ASCII
+example below must show:
+
+```text
+[WARNING] Please write the activity name in English (ASCII characters only).
+```
+
+| Input or action | Expected result |
+| --- | --- |
+| `add n/வணக்கம் d/2099-12-10 s/09:00 e/10:00` | English-only warning; no activity is added. |
+| `add n/படி d/2099-12-11 s/09:00 e/10:00` | English-only warning; no activity is added. |
+| `add n/复习 d/2099-12-12 s/09:00 e/10:00` | English-only warning; no activity is added. |
+| `加入`, `வணக்கம்` or `படி` as the command word | `[WARNING] Please write the command in English (ASCII characters only).` The session continues without changing data. |
+| `bogus` or a blank line | Existing unrecognized-command warning; the session continues. |
+| Repeat with `n/Café` or `n/Study 🎉` | English-only warning for accented letters and emoji. |
+| `list`, then inspect the test folder | Empty-list warning; no `data/activities.txt` has been created. |
+| `add n/Study d/2099-12-12 s/09:00 e/10:00` | Valid ASCII name is added at index 1; the session continues after the earlier warnings. |
+| `edit 1 n/复习 imp/5`, then `edit 1 n/படி` | English-only warnings; neither the name nor any other supplied field is changed. |
+| Inspect `data/activities.txt` as UTF-8 | Only the ASCII activity below is saved. Rejected edits preserve the file bytes and modification time. |
+| `bye`, relaunch from the same folder, then `list` and `bye` | Only Study reloads, stderr stays empty, and this read-only session preserves the saved bytes. |
+
+```text
+Study|2099-12-12|09:00|10:00|MEDIUM|false|-|-|-
+```
+
+For repeatable redirected-output checks, run `UniEnableProcessTest` using the
+command in [Automated testing](#automated-testing). It writes UTF-8 input directly
+to the child JVM and forces ASCII as its initial stdout encoding, so shell input
+encoding cannot hide validation or historical-output defects. These process tests
+check the actual `main()` method; the fixed-clock driver calls an injectable
+`run()` method instead. Existing saved non-ASCII names are retained and displayed;
+the new rule restricts names supplied by add or edit.
+
+### Duplicate activities and time clashes
+
+Use another fresh test folder. Compare saved bytes and modification times before
+and after each rejected command. All warnings must allow the next command, and
+the count must increase only after a successful add.
+
+| Input or action | Expected result |
+| --- | --- |
+| `add n/CS2113 tutorial d/2099-12-01 s/10:00 e/11:00` | One activity is added; count 1. |
+| Repeat the same command | `[WARNING] Duplicate activity already recorded at index 1: CS2113 tutorial (2099-12-01, 10:00-11:00).` No change to the list or file. |
+| `add n/cs2113 tutorial d/2099-12-01 s/10:00 e/11:00 dem/HIGH imp/5` | Duplicate warning; case, demand and ratings do not bypass duplicate detection. |
+| `add n/Other d/2099-12-01 s/10:30 e/11:30` | `[WARNING] Activity clashes with index 1: CS2113 tutorial (2099-12-01, 10:00-11:00).` Count stays 1. |
+| `add n/Other d/2099-12-01 s/09:00 e/12:00` | Clash warning for the containing range; count stays 1. |
+| `add n/Next class d/2099-12-01 s/11:00 e/12:00` | Adjacent activity is accepted; count 2. |
+| `edit 2 s/10:30 e/11:30 imp/5` | Clash warning; Next class stays at 11:00-12:00 with its original ratings. |
+| `edit 2 n/CS2113 tutorial s/10:00 e/11:00` | Duplicate warning; every original field is preserved. |
+| `edit 2 s/11:00 e/12:00` | Accepted: an activity does not conflict with itself. |
+| `bye`, relaunch from the same folder, then `list` | Only CS2113 tutorial and Next class reload; rejected commands have added no records. |
+
+Repeat an overlap attempt after marking the first activity done: it still occupies
+its scheduled time. A matching time on a different date is allowed. Existing
+duplicates in older files remain visible; delete unwanted records explicitly
+using their current chronological indexes.
+
+<!-- @@author -->
+
 <!-- @@author officialasyrafrahim -->
 
 ### Priority and strict local-time boundaries
@@ -1518,8 +1832,9 @@ before and after searches and rejected edits; they must remain unchanged.
 
 In a disposable test folder, also try `add` and `edit` with a name containing only
 U+2003 EM SPACE or U+3000 IDEOGRAPHIC SPACE: both must show the blank-name warning.
-Chinese, accented and emoji names are supported and must survive adding, editing
-and restarting. Confirm that rejected commands leave the original activity and
+Chinese, Tamil, accented and emoji names supplied to add or edit must show the
+English-only warning. Existing saved non-ASCII names still load. Confirm that
+rejected commands leave the original activity and
 saved file unchanged, including after restarting.
 
 <!-- @@author -->
