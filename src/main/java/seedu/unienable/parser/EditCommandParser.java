@@ -91,10 +91,9 @@ public class EditCommandParser {
         Integer importance = parseRating(fields.get("imp"), "imp");
         Integer urgency = parseRating(fields.get("urg"), "urg");
         Integer commitment = parseRating(fields.get("com"), "com");
-        return new EditCommand(index, name, date, start, end, demand,
-                fields.containsKey("n"), fields.containsKey("d"), fields.containsKey("s"),
-                fields.containsKey("e"), fields.containsKey("dem"), importance, urgency, commitment,
-                fields.containsKey("imp"), fields.containsKey("urg"), fields.containsKey("com"), clock,
+        EditCommand.Fields changes = new EditCommand.Fields(name, date, start, end, demand,
+                importance, urgency, commitment);
+        return new EditCommand(index, changes, clock,
                 ActivityParameterValidator.allowsOverlap(fields.get("overlap")));
     }
 

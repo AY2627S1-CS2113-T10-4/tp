@@ -20,6 +20,12 @@ public class ListCommand extends Command {
     private static final Logger LOGGER = Logger.getLogger(ListCommand.class.getName());
 
     /**
+     * Creates a read-only chronological activity listing.
+     */
+    public ListCommand() {
+    }
+
+    /**
      * Returns the canonical activity list for Ui.showMessage() without changing
      * any user data.
      */

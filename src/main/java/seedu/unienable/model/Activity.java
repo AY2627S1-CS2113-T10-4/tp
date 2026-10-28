@@ -109,30 +109,55 @@ public class Activity {
     //@@author
 
     //@@author Atharva005
+    /**
+     * Returns the activity name as recorded.
+     *
+     * @return the full activity name.
+     */
     public String getName() {
         return name;
     }
     //@@author
 
     //@@author Atharva005
+    /**
+     * Returns the date on which the activity is scheduled.
+     *
+     * @return the scheduled date.
+     */
     public LocalDate getDate() {
         return date;
     }
     //@@author
 
     //@@author Atharva005
+    /**
+     * Returns the activity start time.
+     *
+     * @return the scheduled local start time.
+     */
     public LocalTime getStartTime() {
         return startTime;
     }
     //@@author
 
     //@@author Atharva005
+    /**
+     * Returns the activity end time.
+     *
+     * @return the scheduled local end time.
+     */
     public LocalTime getEndTime() {
         return endTime;
     }
     //@@author
 
     //@@author Atharva005
+    /**
+     * Returns the activity demand independently of its numeric ratings.
+     *
+     * @return the recorded demand level.
+     */
     public DemandLevel getDemand() {
         return demand;
     }

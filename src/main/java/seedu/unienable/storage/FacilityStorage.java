@@ -23,6 +23,12 @@ import seedu.unienable.model.enums.AccessibilityStatus;
  * Loads bundled facility reference data, preserving valid records and reporting invalid lines.
  */
 public class FacilityStorage {
+
+    /**
+     * Creates a loader for the bundled facility reference dataset.
+     */
+    public FacilityStorage() {
+    }
     /**
      * Loads facilities.txt from the classpath using UTF-8, including inside a packaged JAR.
      *

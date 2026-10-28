@@ -110,7 +110,11 @@ public class Storage {
         unsavedChanges = true;
     }
 
-    /** Returns whether a changed activity list still needs a successful save. */
+    /**
+     * Returns whether a changed activity list still needs a successful save.
+     *
+     * @return true until the current activity changes save successfully.
+     */
     public boolean hasUnsavedChanges() {
         return unsavedChanges;
     }

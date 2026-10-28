@@ -21,6 +21,12 @@ public class ListPriorityCommand extends Command {
     private static final Logger LOGGER = Logger.getLogger(ListPriorityCommand.class.getName());
 
     /**
+     * Creates a read-only activity listing ordered by priority.
+     */
+    public ListPriorityCommand() {
+    }
+
+    /**
      * Returns the priority-ordered activity list without changing any user data.
      */
     @Override

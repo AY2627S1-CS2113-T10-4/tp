@@ -16,6 +16,12 @@ public class MarkCommandParser {
     private static final Pattern INDEX_PATTERN = Pattern.compile("\\d+");
 
     /**
+     * Creates a parser for completion-command syntax.
+     */
+    public MarkCommandParser() {
+    }
+
+    /**
      * Parses {@code mark INDEX}.
      *
      * @param words command words beginning with mark.

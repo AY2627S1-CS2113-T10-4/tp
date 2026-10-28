@@ -30,10 +30,12 @@ activate EditParser
 note right of EditParser
   Validate supplied syntax and field values.
   ActivityNameValidator checks supplied Unicode name safety.
-  Record which fields were supplied.
+  Group supplied values in immutable Fields; null means omitted.
 end note
+create participant "changes:EditCommand.Fields" as Changes
+EditParser -> Changes : Fields(name, date, start, end, demand, importance, urgency, commitment)
 create participant ":EditCommand" as Edit
-EditParser -> Edit : EditCommand(..., clock)
+EditParser -> Edit : EditCommand(index, changes, clock, allowOverlap)
 EditParser --> Parser : editCommand
 deactivate EditParser
 Parser --> Console : editCommand

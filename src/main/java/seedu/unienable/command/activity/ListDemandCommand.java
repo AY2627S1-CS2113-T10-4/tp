@@ -20,6 +20,12 @@ public class ListDemandCommand extends Command {
     private static final Logger LOGGER = Logger.getLogger(ListDemandCommand.class.getName());
 
     /**
+     * Creates a read-only activity listing ordered by demand.
+     */
+    public ListDemandCommand() {
+    }
+
+    /**
      * Returns the demand-ordered activity list for Ui.showMessage() without
      * changing any user data.
      */

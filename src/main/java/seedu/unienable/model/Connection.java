@@ -57,6 +57,8 @@ public final class Connection {
 
     /**
      * Returns the connection ID.
+     *
+     * @return the stable connection identifier.
      */
     public int getId() {
         return id;
@@ -64,6 +66,8 @@ public final class Connection {
 
     /**
      * Returns one endpoint facility name, without implying a travel direction.
+     *
+     * @return one endpoint facility name.
      */
     public String getFrom() {
         return from;
@@ -71,6 +75,8 @@ public final class Connection {
 
     /**
      * Returns the other endpoint facility name.
+     *
+     * @return the other endpoint facility name.
      */
     public String getTo() {
         return to;
@@ -78,6 +84,8 @@ public final class Connection {
 
     /**
      * Returns the recorded distance in metres.
+     *
+     * @return the recorded distance in metres.
      */
     public int getDistanceInMetres() {
         return distanceInMetres;
@@ -85,6 +93,8 @@ public final class Connection {
 
     /**
      * Returns the recorded accessibility status.
+     *
+     * @return the recorded accessibility status.
      */
     public AccessibilityStatus getAccessibility() {
         return accessibility;
@@ -92,6 +102,8 @@ public final class Connection {
 
     /**
      * Returns the physical traversal category.
+     *
+     * @return the traversal category.
      */
     public TraversalType getType() {
         return type;
@@ -99,6 +111,8 @@ public final class Connection {
 
     /**
      * Returns the recorded shelter status.
+     *
+     * @return the recorded shelter status.
      */
     public ShelterStatus getShelter() {
         return shelter;
@@ -106,6 +120,8 @@ public final class Connection {
 
     /**
      * Returns the known barrier, or null if none was recorded.
+     *
+     * @return the recorded barrier, or null when absent.
      */
     public String getKnownBarrier() {
         return knownBarrier;
@@ -113,6 +129,8 @@ public final class Connection {
 
     /**
      * Returns the notes, or null if none were recorded.
+     *
+     * @return the recorded notes, or null when absent.
      */
     public String getNotes() {
         return notes;

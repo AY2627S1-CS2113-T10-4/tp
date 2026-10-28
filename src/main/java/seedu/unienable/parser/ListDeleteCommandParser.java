@@ -29,6 +29,12 @@ public class ListDeleteCommandParser {
     private static final Pattern INDEX_PATTERN = Pattern.compile("\\d+");
 
     /**
+     * Creates a parser for activity listing and deletion syntax.
+     */
+    public ListDeleteCommandParser() {
+    }
+
+    /**
      * Recognizes list, list demand, and list priority, case-insensitively.
      *
      * @param words command words, beginning with list.

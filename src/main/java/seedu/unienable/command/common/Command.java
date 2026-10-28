@@ -9,6 +9,12 @@ import seedu.unienable.storage.Storage;
  * Common execution contract for commands introduced by feature owners.
  */
 public abstract class Command {
+
+    /**
+     * Initializes the shared base for concrete command implementations.
+     */
+    protected Command() {
+    }
     /**
      * Executes against the shared activity collection and persistence service.
      *

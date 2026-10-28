@@ -507,7 +507,8 @@ chronological index contract as `list`.
 
 Source: [EditActivityClassDiagram.puml](diagrams/oliver/class/EditActivityClassDiagram.puml).
 
-`EditCommandParser` records which fields were supplied. `EditCommand` resolves the
+`EditCommandParser` groups supplied replacements in the immutable `EditCommand.Fields`
+record; a null component means omitted. `EditCommand` resolves the
 index, combines old and new values, and validates the replacement before calling
 `ActivityList.replaceByDisplayedIndex()`. Omitted fields and completion state stay
 unchanged. Time validation runs when a date or time is supplied; metadata-only

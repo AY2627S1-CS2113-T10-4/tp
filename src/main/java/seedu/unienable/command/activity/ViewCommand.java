@@ -37,11 +37,18 @@ public class ViewCommand extends Command {
      * The supported date ranges for a view command.
      */
     public enum Range {
-        TODAY, TOMORROW, WEEK
+        /** The current local calendar day. */
+        TODAY,
+        /** The next local calendar day. */
+        TOMORROW,
+        /** Today and the following six days. */
+        WEEK
     }
 
     /**
      * Creates a date view using the system clock.
+     *
+     * @param range date range to display.
      */
     public ViewCommand(Range range) {
         this(range, Clock.systemDefaultZone());
@@ -49,6 +56,9 @@ public class ViewCommand extends Command {
 
     /**
      * Creates a date view with an injectable clock for deterministic date selection.
+     *
+     * @param range date range to display.
+     * @param clock time source used to select the current local date.
      */
     public ViewCommand(Range range, Clock clock) {
         this.range = range;

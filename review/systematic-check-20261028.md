@@ -9,20 +9,20 @@ defects found during this review have been corrected. Changes are uncommitted.
 | Check | Result |
 | --- | --- |
 | Runtime and compiler | JDK 25.0.4 |
-| JUnit | 495 cases across 40 test suites; 0 failures, 0 errors, 0 skipped |
+| JUnit | 504 cases across 40 test suites; 0 failures, 0 errors, 0 skipped |
 | Checkstyle | 0 reported issues in main and test code |
 | Java compiler lint | 0 warnings with `-Xlint:all` |
 | Configured accessibility coverage gate | Passed its 100% line and branch requirements |
-| Whole-application coverage | 1,596/1,650 lines (96.73%); 777/846 branches (91.84%) |
+| Whole-application coverage | 1,591/1,639 lines (97.07%); 779/846 branches (92.08%) |
 | Executable JAR | Built successfully |
-| Javadoc | Generated successfully; 128 completeness warnings remain |
+| Javadoc | Generated successfully with 0 warnings |
 | UG output examples | 13 output blocks matched Java 25 sessions using a fixed clock |
-| Documentation navigation | 429 local links/anchors checked across 8 documents |
+| Documentation navigation | 460 local links/anchors checked across 12 documents |
 | Repository links | 10 GitHub link destinations checked against the working tree |
 | DG diagrams | All 40 image/source pairs current; ownership and index entries checked |
 | Git whitespace checks | Passed |
 
-The final build log is [systematic-check-verified.log](../build/systematic-check-verified.log).
+The latest build log is [quality-cleanup-check.log](../build/quality-cleanup-check.log).
 The complete application coverage report is [available here](../build/reports/audit-coverage/html/index.html).
 The standard Gradle coverage report continues to cover only the configured
 accessibility classes; it must not be interpreted as 100% coverage of the application.
@@ -51,15 +51,18 @@ their explicit enum alternatives.
 
 Storage now catches the specific date-parsing and invalid-value exceptions
 instead of catching every runtime exception while decoding a row. Existing Java
-author-marker sequences were preserved in all 14 changed Java files.
+author-marker sequences were preserved.
 
-Two maintainability opportunities remain; neither caused a failure in this review:
+The long edit constructors were simplified in the follow-up cleanup. One
+four-argument constructor now takes an immutable `EditCommand.Fields` record,
+whose null components preserve omitted values. This removes eight separate
+presence flags and the unused constructor overloads. The DG and editing diagrams
+describe this representation.
 
-- `EditCommand` has long constructors with paired field values and supplied flags.
-  A small immutable edit-fields object would reduce argument-order mistakes.
-- Add and edit parsers repeat field collection, date/time parsing, and rating
-  parsing. A shared field reader could reduce future validation drift. Such a
-  refactor should preserve their different required-field and historical-edit rules.
+Add and edit parsers still repeat field collection, date/time parsing, and rating
+parsing. Consolidating them is deferred under the request to avoid a larger
+refactor. It must preserve their different required-field and historical-edit
+rules and their command-specific warning messages.
 
 ## JUnit review
 
@@ -69,21 +72,24 @@ strict time boundaries, overlap overrides, duplicate rejection, Unicode output,
 80-column rating tables, no-op persistence, corruption backups, and failed-save
 recovery. Process tests use disposable directories, bounded waits, and cleanup.
 
-Sixteen cases were added, increasing the suite from 479 to 495. They cover the
+The initial audit added sixteen cases, increasing the suite from 479 to 495. They cover the
 storage and help defects plus malformed edit indexes/fields, invalid dates and
 times, invalid demand/ratings, and rejected partial edits preserving all existing
 fields. Existing mark/unmark parser tests now also exercise integer overflow.
-Successful edit-parser tests now assert the parsed command type. Tests that depend
+Successful edit-parser tests now assert the parsed command type. The constructor
+cleanup added nine more cases: eight single-field edits check that every other
+value and completion state is preserved; a name-only edit checks that unset
+ratings remain unset. The complete suite now contains 504 cases. Tests that depend
 on the current-time boundary use an injected clock; the new storage tests use
 JUnit temporary directories.
 
-## Remaining warnings and verification limits
+## Javadoc follow-up and verification limits
 
-Javadoc reports 128 warnings for missing comments, parameter tags, return tags,
-and implicit constructor documentation. These are generated API-documentation
-completeness findings, separate from Checkstyle errors. Some tags are optional
-under the course standard when their meaning is already clear, but documentation
-of the long edit constructors would be especially useful.
+The 128 Javadoc warnings identified by the original audit are resolved. Missing
+API descriptions, parameter/return tags, enum-value descriptions, and constructor
+documentation were completed. The existing doclint checks remain enabled; no
+warning suppression was added. The latest Java 25 build reports no compiler,
+Checkstyle, or Javadoc warnings.
 
 This review ran on Windows with Java 25. It did not run the Linux/macOS CI jobs,
 deploy GitHub Pages, or confirm that uncommitted changes exist on the remote

@@ -40,7 +40,19 @@ public class AddCommand extends Command {
         this(name, date, startTime, endTime, demand, importance, urgency, commitment, false);
     }
 
-    /** Creates an add command with explicit permission for an intentional time overlap. */
+    /**
+     * Creates an add command with explicit permission for an intentional time overlap.
+     *
+     * @param name activity name.
+     * @param date scheduled activity date.
+     * @param startTime scheduled start time.
+     * @param endTime scheduled end time.
+     * @param demand activity demand level.
+     * @param importance importance from 1 to 5, or null when unset.
+     * @param urgency urgency from 1 to 5, or null when unset.
+     * @param commitment commitment from 1 to 5, or null when unset.
+     * @param allowOverlap whether this command permits an intentional time overlap.
+     */
     public AddCommand(String name, LocalDate date, LocalTime startTime, LocalTime endTime, DemandLevel demand,
             Integer importance, Integer urgency, Integer commitment, boolean allowOverlap) {
         this.allowOverlap = allowOverlap;

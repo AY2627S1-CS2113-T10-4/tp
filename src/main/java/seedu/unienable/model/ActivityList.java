@@ -77,6 +77,8 @@ public class ActivityList {
     /**
      * Returns an immutable snapshot sorted by date, then start time, the order {@code list}
      * displays and {@code delete INDEX} resolves its index against.
+     *
+     * @return an immutable snapshot in chronological order.
      */
     public List<Activity> getCanonicalView() {
         List<Activity> view = activities.stream().sorted(CANONICAL_ORDER).toList();
@@ -87,7 +89,13 @@ public class ActivityList {
     //@@author
 
     //@@author Atharva005
-    /** Returns activities scheduled on the inclusive date range in chronological order. */
+    /**
+     * Returns activities scheduled on the inclusive date range in chronological order.
+     *
+     * @param start first included date.
+     * @param end last included date.
+     * @return activities within the inclusive date range in chronological order.
+     */
     public List<Activity> getViewBetween(LocalDate start, LocalDate end) {
         Objects.requireNonNull(start);
         Objects.requireNonNull(end);
@@ -117,6 +125,8 @@ public class ActivityList {
     //@@author officialasyrafrahim
     /**
      * Returns an immutable snapshot grouped by demand (HIGH to LOW); ties keep canonical order.
+     *
+     * @return an immutable snapshot ordered by demand and then chronology.
      */
     public List<Activity> getDemandView() {
         List<Activity> view = activities.stream().sorted(DEMAND_ORDER).toList();
@@ -271,6 +281,8 @@ public class ActivityList {
     /**
      * Returns an immutable snapshot in insertion (add) order, the storage order rather than display order;
      * use {@link #getCanonicalView()} when the ordering that the user sees is needed.
+     *
+     * @return an immutable snapshot retaining insertion order.
      */
     public List<Activity> getActivities() {
         return List.copyOf(activities);

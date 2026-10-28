@@ -7,6 +7,12 @@ import seedu.unienable.storage.Storage;
 
 /** Explicitly saves the current activities, allowing a failed automatic save to be retried. */
 public class SaveCommand extends Command {
+
+    /**
+     * Creates a command that explicitly retries activity persistence.
+     */
+    public SaveCommand() {
+    }
     /**
      * Saves without changing activities or asking the console to save a second time.
      *

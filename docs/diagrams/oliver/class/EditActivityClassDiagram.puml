@@ -25,8 +25,19 @@ class EditCommandParser {
 }
 class EditCommand {
   -displayedIndex: int
+  -fields: Fields
   -clock: Clock
   +execute(...): CommandResult
+}
+class "EditCommand.Fields" as EditFields <<record>> {
+  -name: String
+  -date: LocalDate
+  -startTime: LocalTime
+  -endTime: LocalTime
+  -demand: DemandLevel
+  -importance: Integer
+  -urgency: Integer
+  -commitment: Integer
 }
 class ActivityParameterValidator <<package-private>> {
   {static} ~validate(arguments: String): void
@@ -52,7 +63,9 @@ class CommandResult {
 
 Command <|-- EditCommand
 Parser ..> EditCommandParser : delegates edit
-EditCommandParser ..> EditCommand : creates with supplied-field flags
+EditCommandParser ..> EditCommand : creates with index, fields, clock and override
+EditCommandParser ..> EditFields : groups supplied values
+EditCommand --> EditFields : fields
 EditCommandParser ..> ActivityNameValidator : checks supplied name safety
 EditCommandParser ..> ActivityParameterValidator : rejects likely prefix typos
 EditCommand ..> ActivityScheduleValidator : checks name / schedule edits
@@ -63,7 +76,8 @@ EditCommand ..> CommandResult : requests saving
 ActivityList --> "0..*" Activity : activities
 
 note bottom of EditCommand
-  Individual edit values and supplied-field flags are omitted.
+  Fields is an immutable group of optional replacements.
+  A null component means that field was omitted.
   Omitted fields and completion are preserved.
   Date/time edits validate the combined range before replacement.
   Name/schedule edits reject duplicates and unapproved clashes, excluding the original.
