@@ -359,7 +359,7 @@ Source: [TopicHelpSequence.puml](diagrams/atharva/sequence/TopicHelpSequence.pum
 
 <!-- END OWNER: Atharva Rege (@Atharva005) -->
 
-<!-- BEGIN OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim). Add listing, deletion, priority, overdue and next documentation here. -->
+<!-- BEGIN OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim). Maintain listing, deletion, priority, overdue and next documentation here. -->
 
 <!-- @@author officialasyrafrahim -->
 
@@ -417,7 +417,7 @@ The model selects the chronological activity object and removes that object from
 the backing list. `DeleteCommand` returns its details and the remaining count,
 with the activity-change flag set. Deleting the last activity persists an empty
 list; the [UG deletion section](UserGuide.md#deleting-an-activity-delete) shows the response.
-`ConsoleHelper` saves before displaying the confirmation.
+`ConsoleHelper` marks the change as unsaved, saves, then displays the confirmation.
 
 ![Class diagram for activity deletion](images/asyraf/class/DeleteActivityClassDiagram.png)
 
