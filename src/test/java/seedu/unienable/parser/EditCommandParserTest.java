@@ -14,6 +14,12 @@ class EditCommandParserTest {
     private final Parser parser = new Parser();
 
     @Test
+    void parse_mistypedPrefixInName_rejectsWholeEdit() {
+        assertThrows(ParseException.class, () -> parser.parse("edit 1 n/Class demm/HIGH"));
+        assertThrows(ParseException.class, () -> parser.parse("edit 1 n/Class imp/5 comn/3"));
+    }
+
+    @Test
     void parse_rejectsMissingIndexOrFields() {
         assertThrows(ParseException.class, () -> parser.parse("edit"));
         assertThrows(ParseException.class, () -> parser.parse("edit 1"));

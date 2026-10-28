@@ -28,6 +28,9 @@ class EditCommand {
   -clock: Clock
   +execute(...): CommandResult
 }
+class ActivityParameterValidator <<package-private>> {
+  {static} ~validate(arguments: String): void
+}
 class ActivityNameValidator <<package-private>> {
   {static} ~validate(name: String): void
 }
@@ -51,6 +54,7 @@ Command <|-- EditCommand
 Parser ..> EditCommandParser : delegates edit
 EditCommandParser ..> EditCommand : creates with supplied-field flags
 EditCommandParser ..> ActivityNameValidator : checks supplied ASCII name
+EditCommandParser ..> ActivityParameterValidator : rejects likely prefix typos
 EditCommand ..> ActivityScheduleValidator : checks name / schedule edits
 ActivityScheduleValidator ..> ActivityList : reads chronological view
 EditCommand ..> ActivityList : resolves and replaces activity

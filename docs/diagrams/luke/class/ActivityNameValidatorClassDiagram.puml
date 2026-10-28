@@ -21,6 +21,9 @@ class AddCommandParser {
 class EditCommandParser {
   +parse(arguments: String): EditCommand
 }
+class ActivityParameterValidator <<package-private>> {
+  ~{static} validate(arguments: String): void
+}
 class ActivityNameValidator <<package-private>> {
   ~{static} validate(name: String): void
 }
@@ -31,6 +34,9 @@ Parser ..> EditCommandParser : dispatches edit
 Parser ..> ParseException : rejects non-ASCII command words
 AddCommandParser ..> ActivityNameValidator : checks required name
 EditCommandParser ..> ActivityNameValidator : checks supplied name
+AddCommandParser ..> ActivityParameterValidator : checks field spelling
+EditCommandParser ..> ActivityParameterValidator : checks field spelling
+ActivityParameterValidator ..> ParseException : rejects likely prefix typos
 ActivityNameValidator ..> ParseException : rejects non-ASCII names
 
 note top of Parser

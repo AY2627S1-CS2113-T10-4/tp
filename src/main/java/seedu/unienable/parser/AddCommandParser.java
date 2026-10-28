@@ -63,6 +63,7 @@ public class AddCommandParser {
      * @throws ParseException for absent, duplicate, unknown, or malformed arguments.
      */
     public AddCommand parse(String arguments) throws ParseException {
+        ActivityParameterValidator.validate(arguments);
         Map<String, String> fields = readFields(arguments);
         for (String required : new String[] {"n", "d", "s", "e"}) {
             if (!fields.containsKey(required)) {
@@ -127,7 +128,8 @@ public class AddCommandParser {
     /**
      * Collects prefix/value pairs while allowing whitespace inside the activity name.
      * Only known prefixes (dem, imp, urg, com, n, d, s, e) delimit values; any other
-     * slash-containing text such as "and/or" or "w/o" is kept as value content.
+     * slash-containing text such as "and/or" or "w/o" is kept as value content,
+     * except likely misspellings rejected by the shared parameter validator.
      * A known prefix like d/ that appears inside free text is still parsed as a
      * prefix, an unavoidable ambiguity of prefix-based grammars.
      */

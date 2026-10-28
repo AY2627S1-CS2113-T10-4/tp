@@ -178,6 +178,9 @@ and `w/o` is allowed. However, a known prefix (`n/`, `d/`, `s/`, `e/`, `dem/`,
 at the start of a whitespace-separated part of the name is treated as another
 field, so avoid these prefixes in names.
 
+Likely misspellings of multi-letter prefixes, such as `demm/HIGH` or `impp/5`,
+produce a warning instead of becoming part of the name. This also applies to edit.
+
 A duplicate activity has the same name (ignoring case and surrounding whitespace),
 date, start and end times as an existing activity. Changing demand, ratings or
 completion does not make it a different activity. Duplicates are rejected with

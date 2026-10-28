@@ -121,6 +121,7 @@ are rendered from the corresponding PlantUML sources.
 | [FacilityClassDiagram.puml](luke/class/FacilityClassDiagram.puml) | [PNG](../images/luke/class/FacilityClassDiagram.png) | [Facility lookup](../DeveloperGuide.md#facility-lookup) |
 | [ActivityScheduleValidatorClassDiagram.puml](luke/class/ActivityScheduleValidatorClassDiagram.puml) | [PNG](../images/luke/class/ActivityScheduleValidatorClassDiagram.png) | [Activity schedule validation](../DeveloperGuide.md#activity-schedule-validation) |
 | [ActivityNameValidatorClassDiagram.puml](luke/class/ActivityNameValidatorClassDiagram.puml) | [PNG](../images/luke/class/ActivityNameValidatorClassDiagram.png) | [ASCII command/name validation](../DeveloperGuide.md#ascii-command-name-validation) |
+| [ActivityParameterValidatorClassDiagram.puml](luke/class/ActivityParameterValidatorClassDiagram.puml) | [PNG](../images/luke/class/ActivityParameterValidatorClassDiagram.png) | [Activity parameter validation](../DeveloperGuide.md#activity-parameter-validation) |
 | [RoutingClassDiagram.puml](luke/class/RoutingClassDiagram.puml) | [PNG](../images/luke/class/RoutingClassDiagram.png) | [Accessible route search](../DeveloperGuide.md#accessible-route-search) |
 
 ### Sequence diagrams
@@ -129,6 +130,7 @@ are rendered from the corresponding PlantUML sources.
 | --- | --- | --- |
 | [FacilityLookupSequence.puml](luke/sequence/FacilityLookupSequence.puml) | [PNG](../images/luke/sequence/FacilityLookupSequence.png) | [Facility lookup](../DeveloperGuide.md#facility-lookup) |
 | [RouteSearchSequence.puml](luke/sequence/RouteSearchSequence.puml) | [PNG](../images/luke/sequence/RouteSearchSequence.png) | [Accessible route search](../DeveloperGuide.md#accessible-route-search) |
+| [ActivityParameterValidationSequence.puml](luke/sequence/ActivityParameterValidationSequence.puml) | [PNG](../images/luke/sequence/ActivityParameterValidationSequence.png) | [Activity parameter validation](../DeveloperGuide.md#activity-parameter-validation) |
 
 ### Connectivity graph
 

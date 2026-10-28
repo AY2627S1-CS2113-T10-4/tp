@@ -92,6 +92,10 @@ including its presentation of Luke's rating fields. Class/sequence diagrams use
 
 ## Luke
 
+- [ActivityParameterValidatorClassDiagram.png](luke/class/ActivityParameterValidatorClassDiagram.png)
+  shows the shared prefix-typo checker used by add and edit.
+- [ActivityParameterValidationSequence.png](luke/sequence/ActivityParameterValidationSequence.png)
+  shows a typo warning before an activity command can execute or save.
 - [ActivityNameValidatorClassDiagram.png](luke/class/ActivityNameValidatorClassDiagram.png)
   shows ASCII command-word checks and the name validator used by add/edit parsers.
 - [ActivityScheduleValidatorClassDiagram.png](luke/class/ActivityScheduleValidatorClassDiagram.png)

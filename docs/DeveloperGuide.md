@@ -39,6 +39,7 @@ Named author comments begin a feature scope; the unnamed author comment ends it.
     - [Completion and persistence](#completion-and-persistence)
   - [Ratings and accessibility](#ratings-and-accessibility)
     - [Optional ratings integration](#optional-ratings-integration)
+    - [Activity parameter validation](#activity-parameter-validation)
     - [Activity schedule validation](#activity-schedule-validation)
     - [Facility accessibility data (`facilities.txt`)](#facility-accessibility-data-facilitiestxt)
     - [Facility lookup](#facility-lookup)
@@ -283,6 +284,9 @@ follow the start and the current local time. Invalid input produces a
 `ParseException` without adding an activity.
 
 `AddCommandParser` checks supplied names through `ActivityNameValidator`.
+Both add and edit parsers use `ActivityParameterValidator` to reject one-edit
+misspellings of multi-letter fields, including adjacent swaps, before parsing
+values. See [Activity parameter validation](#activity-parameter-validation).
 `AddCommand` checks the proposed activity with the shared
 [schedule validator](#activity-schedule-validation) before inserting it. The
 add diagrams include both checks and the rejection path without a save.
@@ -1020,6 +1024,28 @@ an integer from 1 to 5, so add, edit and storage use the same validation rule.
 The class diagram in [Adding activities](#adding-activities) shows
 how ratings fit into activity creation. The priority view uses
 these ratings; editing and persistence update and preserve them.
+
+#### Activity parameter validation
+
+`ActivityParameterValidator` is a package-private shared parser helper. Add and
+edit call `validate(arguments)` before extracting fields, so likely typos cannot
+silently become part of an activity name. The helper scans prefix-like tokens,
+skips known prefixes, and compares unknown multi-letter tokens with recognised
+multi-letter prefixes. One insertion, deletion, substitution, or adjacent swap
+produces a `ParseException` suggesting the intended prefix.
+
+For example, `demm/HIGH` produces an unknown-parameter warning suggesting `dem/`.
+`ConsoleHelper` displays that warning; no add/edit command executes and neither
+activities nor saved data changes. Ordinary slash text such as `and/or` and `w/o`
+remains valid. Single-letter slash text is excluded from the typo check.
+
+![Shared activity parameter validator and its add/edit parser integrations](images/luke/class/ActivityParameterValidatorClassDiagram.png)
+
+Source: [ActivityParameterValidatorClassDiagram.puml](diagrams/luke/class/ActivityParameterValidatorClassDiagram.puml).
+
+![Activity parameter validation rejecting a typo before command execution](images/luke/sequence/ActivityParameterValidationSequence.png)
+
+Source: [ActivityParameterValidationSequence.puml](diagrams/luke/sequence/ActivityParameterValidationSequence.puml).
 
 #### Activity schedule validation
 

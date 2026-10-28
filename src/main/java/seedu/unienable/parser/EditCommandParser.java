@@ -58,6 +58,7 @@ public class EditCommandParser {
      * @throws ParseException for malformed or incomplete input
      */
     public EditCommand parse(String arguments) throws ParseException {
+        ActivityParameterValidator.validate(arguments);
         String trimmed = arguments.trim();
         if (trimmed.isEmpty()) {
             throw invalid("edit needs an activity index.");

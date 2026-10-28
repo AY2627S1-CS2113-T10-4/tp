@@ -67,6 +67,27 @@ class UniEnableTest {
                 console(""));
     }
 
+    //@@author lukelouyu
+    @Test
+    void mistypedActivityParameters_warnWithoutAddingEditingOrSaving(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("activities.txt");
+        byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|false|-|-|-\n"
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+        var originalTime = Files.getLastModifiedTime(activityFile);
+
+        String output = consoleAtPath("add n/Class demm/HIGH d/2099-12-11 s/09:00 e/10:00\n"
+                + "edit 1 n/Changed impp/5\nlist\nbye\n", activityFile);
+
+        assertEquals(2, output.split("Unknown parameter", -1).length - 1, output);
+        assertFalse(output.contains("Added activity:"), output);
+        assertFalse(output.contains("Edited activity:"), output);
+        assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [ ]"), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+        assertEquals(originalTime, Files.getLastModifiedTime(activityFile));
+    }
+    //@@author
+
     //@@author Atharva005
     @Test
     void topicHelp_showsInstructionsWithoutChangingActivitiesOrExiting(@TempDir Path tempDir) throws Exception {
