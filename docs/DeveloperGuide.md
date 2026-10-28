@@ -1067,7 +1067,7 @@ Source: [ActivityScheduleValidatorClassDiagram.puml](diagrams/luke/class/Activit
 The helper reads `ActivityList.getCanonicalView()` without changing the list.
 It checks duplicates first: name equality ignores case and surrounding whitespace,
 while date, start and end must match exactly. Demand, ratings and completion do
-not change duplicate identity. It then checks positive-duration overlap on the
+not change duplicate identity. The per-command overlap override never bypasses this check. Unless `overlap/ALLOW` was explicitly supplied, it then checks positive-duration overlap on the
 same date: `candidate.start < existing.end && existing.start < candidate.end`.
 Equal endpoints are allowed, and completed activities participate in both checks.
 
@@ -1075,7 +1075,9 @@ An edit passes the original activity reference so only that record is excluded.
 Warnings identify the conflicting chronological index and activity. A checked
 `UniEnableException` stops the command before mutation or a save request, preserving
 counts, fields, saved bytes and modification times. Demand/rating-only edits do
-not create a new schedule and skip this check. Saved duplicates and overlaps remain
+not create a new schedule and skip this check. Add/edit parsers accept
+`overlap/ALLOW` as explicit permission for an intentional time overlap; the
+flag is not persisted and must be supplied again for a conflicting schedule edit. Saved duplicates and overlaps remain
 loadable; the validator does not silently delete historical data.
 
 `ActivityScheduleValidatorTest` covers duplicate identity, partial/contained/covering

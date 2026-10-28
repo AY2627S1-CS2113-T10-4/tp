@@ -13,7 +13,7 @@ import seedu.unienable.exception.ParseException;
  */
 final class ActivityParameterValidator {
     private static final Pattern PARAMETER = Pattern.compile("(?i)(?<!\\S)([a-z]+)/");
-    private static final List<String> PREFIXES = List.of("n", "d", "s", "e", "dem", "imp", "urg", "com");
+    private static final List<String> PREFIXES = List.of("n", "d", "s", "e", "dem", "imp", "urg", "com", "overlap");
 
     /** Prevents instantiation of this shared parser helper. */
     private ActivityParameterValidator() {
@@ -40,6 +40,17 @@ final class ActivityParameterValidator {
                 }
             }
         }
+    }
+
+    /** Parses the explicit, per-command permission to keep an overlapping activity. */
+    static boolean allowsOverlap(String value) throws ParseException {
+        if (value == null) {
+            return false;
+        }
+        if (!value.equalsIgnoreCase("ALLOW")) {
+            throw new ParseException("[WARNING] The overlap/ parameter must be ALLOW.");
+        }
+        return true;
     }
 
     /** Computes edit distance with adjacent swaps for the short field-prefix tokens. */

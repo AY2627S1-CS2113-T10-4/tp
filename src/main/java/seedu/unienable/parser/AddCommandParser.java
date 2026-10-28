@@ -24,7 +24,7 @@ import seedu.unienable.model.enums.DemandLevel;
  * Parses the add command using named prefixes that may appear in any order.
  */
 public class AddCommandParser {
-    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)(dem|imp|urg|com|n|d|s|e)/");
+    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)(overlap|dem|imp|urg|com|n|d|s|e)/");
     private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern TIME_PATTERN = Pattern.compile("\\d{2}:\\d{2}");
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd")
@@ -32,7 +32,7 @@ public class AddCommandParser {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String USAGE = "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm "
-            + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]";
+            + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]";
 
     /**
      * Supplies the current time and local zone for activity end-time validation.
@@ -120,14 +120,15 @@ public class AddCommandParser {
         Integer importance = parseRating(fields.get("imp"), "imp");
         Integer urgency = parseRating(fields.get("urg"), "urg");
         Integer commitment = parseRating(fields.get("com"), "com");
-        return new AddCommand(name, date, startTime, endTime, demand, importance, urgency, commitment);
+        return new AddCommand(name, date, startTime, endTime, demand, importance, urgency, commitment,
+                ActivityParameterValidator.allowsOverlap(fields.get("overlap")));
         //@@author
         //@@author Atharva005
     }
 
     /**
      * Collects prefix/value pairs while allowing whitespace inside the activity name.
-     * Only known prefixes (dem, imp, urg, com, n, d, s, e) delimit values; any other
+     * Only known prefixes (overlap, dem, imp, urg, com, n, d, s, e) delimit values; any other
      * slash-containing text such as "and/or" or "w/o" is kept as value content,
      * except likely misspellings rejected by the shared parameter validator.
      * A known prefix like d/ that appears inside free text is still parsed as a

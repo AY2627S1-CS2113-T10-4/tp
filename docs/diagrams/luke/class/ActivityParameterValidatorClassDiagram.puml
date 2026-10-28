@@ -25,6 +25,7 @@ class ActivityParameterValidator <<package-private utility>> {
   {static} -PARAMETER: Pattern
   {static} -PREFIXES: List<String>
   {static} ~validate(arguments: String): void
+  {static} ~allowsOverlap(value: String): boolean
   {static} -isOneEditAway(token: String, prefix: String): boolean
 }
 class ParseException <<checked exception>>

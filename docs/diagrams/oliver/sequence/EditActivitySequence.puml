@@ -58,10 +58,10 @@ note over Edit, Schedule
   This path assumes a name or schedule field was supplied.
   Demand/rating-only edits skip schedule validation.
 end note
-Edit -> Schedule : validate(replacement, activities, existingActivity)
+Edit -> Schedule : validate(replacement, activities, existingActivity, allowOverlap)
 Schedule -> Activities : getCanonicalView()
 Activities --> Schedule : chronological activities
-alt duplicate activity or same-date time clash
+alt duplicate activity or unapproved time clash
   Schedule --> Edit : throws UniEnableException(warning)
   Edit --> Console : propagate warning
   Console -> UI : showMessage(warning)

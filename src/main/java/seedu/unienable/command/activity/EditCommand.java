@@ -37,6 +37,7 @@ public class EditCommand extends Command {
     private final boolean urgencySupplied;
     private final boolean commitmentSupplied;
     private final Clock clock;
+    private final boolean allowOverlap;
 
     /**
      * Creates an edit command using the system clock.
@@ -60,6 +61,19 @@ public class EditCommand extends Command {
             boolean demandSupplied, Integer importance, Integer urgency, Integer commitment,
             boolean importanceSupplied, boolean urgencySupplied, boolean commitmentSupplied,
             Clock clock) {
+        this(displayedIndex, name, date, startTime, endTime, demand, nameSupplied, dateSupplied,
+                startTimeSupplied, endTimeSupplied, demandSupplied, importance, urgency, commitment,
+                importanceSupplied, urgencySupplied, commitmentSupplied, clock, false);
+    }
+
+    /** Creates a validated replacement command with a per-command overlap override. */
+    public EditCommand(int displayedIndex, String name, LocalDate date, LocalTime startTime,
+            LocalTime endTime, DemandLevel demand, boolean nameSupplied,
+            boolean dateSupplied, boolean startTimeSupplied, boolean endTimeSupplied,
+            boolean demandSupplied, Integer importance, Integer urgency, Integer commitment,
+            boolean importanceSupplied, boolean urgencySupplied, boolean commitmentSupplied,
+            Clock clock, boolean allowOverlap) {
+        this.allowOverlap = allowOverlap;
         this.displayedIndex = displayedIndex;
         this.name = name;
         this.date = date;
@@ -109,7 +123,7 @@ public class EditCommand extends Command {
         Activity replacement = new Activity(updatedName, updatedDate, updatedStart, updatedEnd,
                 updatedDemand, activity.isDone(), updatedImportance, updatedUrgency, updatedCommitment);
         if (nameSupplied || dateSupplied || startTimeSupplied || endTimeSupplied) {
-            ActivityScheduleValidator.validate(replacement, activities, activity);
+            ActivityScheduleValidator.validate(replacement, activities, activity, allowOverlap);
         }
         activities.replaceByDisplayedIndex(displayedIndex, replacement);
         String message = "Edited activity: " + replacement.getName() + "\n"

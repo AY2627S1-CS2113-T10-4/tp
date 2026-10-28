@@ -205,7 +205,7 @@ class AddCommandParserTest {
             ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input), input);
             assertEquals("[WARNING] End time must be later than current time.\n"
                     + "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] "
-                    + "[imp/IMP] [urg/URG] [com/COM]",
+                    + "[imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]",
                     exception.getMessage());
         }
     }

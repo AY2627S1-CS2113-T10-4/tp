@@ -52,7 +52,7 @@ public class HelpCommand extends Command {
             """.stripTrailing();
 
     private static final String EDIT_USAGE = "edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] "
-            + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]";
+            + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]";
 
     /**
      * Keeps command instructions together so the parser does not duplicate help text.
@@ -62,7 +62,8 @@ public class HelpCommand extends Command {
                     ADD - Create an activity
 
                     Usage:
-                      add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]
+                      add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] \
+                    [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]
 
                     Details:
                       - n/, d/, s/, and e/ are required; prefixes may appear in any order.
@@ -70,7 +71,7 @@ public class HelpCommand extends Command {
                       - Write names in English using ASCII characters only; accents and emoji are rejected.
                       - Use a real YYYY-MM-DD date and 24-hour HH:mm times, such as 09:30.
                       - End must be after start on the same day and after the current time.
-                      - Duplicate activities and overlapping times on the same date are rejected.
+                      - Duplicate activities are rejected. Intentional overlaps require overlap/ALLOW.
                       - Back-to-back activities are allowed; completed activities still occupy their time.
                       - Demand defaults to MEDIUM; choose LOW, MEDIUM, or HIGH.
                       - IMP = importance; URG = urgency; COM = commitment.
@@ -94,7 +95,7 @@ public class HelpCommand extends Command {
                       - Names, dates, times, demand, and ratings follow the same rules as add.
                       - Replacement names must use ASCII characters only.
                       - Date/time edits must leave an end after start on the same day and after now.
-                      - Name or schedule edits cannot duplicate or overlap another activity.
+                      - Duplicate edits are rejected. Use overlap/ALLOW to confirm an intentional time clash.
                       - Name, demand, or rating edits alone can update historical activities.
                       - To change completion, use mark or unmark. Successful edits save automatically.
 

@@ -66,7 +66,7 @@ note bottom of EditCommand
   Individual edit values and supplied-field flags are omitted.
   Omitted fields and completion are preserved.
   Date/time edits validate the combined range before replacement.
-  Name/schedule edits reject duplicates and clashes, excluding the original.
+  Name/schedule edits reject duplicates and unapproved clashes, excluding the original.
   Demand/rating-only edits skip schedule validation.
   Rejected edits do not replace or save the original activity.
 end note

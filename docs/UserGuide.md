@@ -124,7 +124,7 @@ Add an incomplete activity with a date, time, and optional demand and ratings.
 Format:
 
 ```text
-add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]
+add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]
 ```
 
 `n/`, `d/`, `s/`, and `e/` are required and must each appear once with a value.
@@ -186,11 +186,14 @@ date, start and end times as an existing activity. Changing demand, ratings or
 completion does not make it a different activity. Duplicates are rejected with
 `[WARNING] Duplicate activity already recorded at index ...`.
 
-Other activities on the same date are rejected if their times overlap, with
+By default, activities on the same date are rejected if their times overlap, with
 `[WARNING] Activity clashes with index ...`. Both warnings identify the existing
 activity using its chronological `list` index. Completed activities still occupy
 their scheduled time. Back-to-back activities, such as 10:00-11:00 and
-11:00-12:00, and the same times on different dates are allowed. A rejected add
+11:00-12:00, and the same times on different dates are allowed. Add `overlap/ALLOW`
+to confirm an intentional overlap, including with a completed activity. The flag
+applies only to that command and never permits a duplicate. For example:
+`add n/Reminder d/2026-12-01 s/10:30 e/11:30 overlap/ALLOW`. A rejected add
 does not increase the activity count or change saved data.
 
 Input:
@@ -492,7 +495,7 @@ Change selected fields while preserving omitted fields and completion status.
 Format:
 
 ```text
-edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]
+edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]
 ```
 
 - Use an index from chronological `list` or activity `find` output and supply
@@ -506,7 +509,8 @@ edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [im
   time. A change only to name, demand, or ratings can update historical activities.
 - Validation failures leave the activity unchanged. Successful edits save
   automatically and display all resulting fields, including ratings.
-- Name or schedule edits must not duplicate or overlap another activity. The
+- Name or schedule edits must not duplicate another activity. Time overlaps
+  require `overlap/ALLOW` on that edit, for example `edit 2 s/10:30 overlap/ALLOW`. The
   activity being edited is excluded from this comparison. Rejected multi-field
   edits leave every field and the saved file unchanged.
 - Rescheduling can change chronological indexes. Run `list` or `find` again
@@ -939,9 +943,9 @@ Use `help TOPIC` with any command name below for detailed instructions, such as
 | --- | --- |
 | `save` | Save current activities or retry a failed save |
 | `help [TOPIC]` / `bye` | Show categorized or detailed command help / exit |
-| `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Add an activity with optional ratings |
+| `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]` | Add an activity with optional ratings |
 | `list` / `list demand` | View activities by time / demand |
-| `edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM]` | Update supplied activity fields; preserve omitted fields and completion |
+| `edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]` | Update supplied activity fields; preserve omitted fields and completion |
 | `find KEYWORD` | Search activity names and retain chronological list indexes |
 | `list priority` | View all activities by combined priority score |
 | `view today` / `view tomorrow` / `view week` | Show today's, tomorrow's, or the next seven days' dashboard |
