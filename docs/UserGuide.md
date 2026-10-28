@@ -137,7 +137,8 @@ The end time must be strictly after the start time on
 the same day; overnight activities are not supported. The activity's date and end
 time together must also be strictly after the current date/time in your computer's
 local time zone. An activity that has already started can still be added if it
-has not ended; an activity ending exactly now is rejected. New activities start
+has not ended; an activity ending exactly now is rejected. Historical activities
+cannot be added, and there is no override for this restriction. New activities start
 incomplete.
 
 Activity names must contain at least one non-whitespace character and use
@@ -413,7 +414,9 @@ edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [im
   demand does not reset to MEDIUM. Ratings accept 1 to 5; `-` cannot clear a rating.
 - If any date/time field is supplied, the combined old and new values must form
   a same-day activity with its end strictly after its start and the current local
-  time. A change only to name, demand, or ratings can update historical activities.
+  time. Activities whose existing end is at or before the current local time cannot
+  be edited at all, including name, demand, rating, or rescheduling changes.
+  Historical activities already saved remain loadable, listable, and searchable.
 - Validation failures leave the activity unchanged. Successful edits save
   automatically and display all resulting fields, including ratings.
 - Name or schedule edits must not duplicate another activity. Time overlaps
@@ -789,8 +792,8 @@ folder on each run. To transfer activities, copy this file before starting the a
 
 **Can I edit an activity?** Use `edit INDEX` with at least one field
 to update an activity while keeping omitted values and completion status.
-Date/time edits must leave an end after now; metadata-only edits can update
-historical activities.
+Date/time edits must leave an end after now. Activities ending at or before now
+cannot be edited, including metadata-only changes or moving them into the future.
 
 **Why does a search result start at index 2?** Activity `find` preserves indexes
 from the full chronological list. Use the displayed index directly for `edit`,

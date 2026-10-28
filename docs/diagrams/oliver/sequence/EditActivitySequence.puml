@@ -49,6 +49,7 @@ Activities -> Activities : getCanonicalView()
 Activities --> Edit : existingActivity
 deactivate Activities
 note over Edit, Activities
+  Reject every edit if the original end is at or before now.
   Combine supplied fields with existing values.
   Preserve completion and omitted ratings.
   If a date/time field was supplied, validate

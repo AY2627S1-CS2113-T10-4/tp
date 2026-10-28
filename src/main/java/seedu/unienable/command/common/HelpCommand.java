@@ -96,7 +96,7 @@ public class HelpCommand extends Command {
                       - Replacement names use printable ASCII only; | and line breaks are rejected.
                       - Date/time edits must leave an end after start on the same day and after now.
                       - Duplicate edits are rejected. Use overlap/ALLOW to confirm an intentional time clash.
-                      - Name, demand, or rating edits alone can update historical activities.
+                      - Activities ending at or before now cannot be edited, including name or rating changes.
                       - To change completion, use mark or unmark. Successful edits save automatically.
 
                     Examples:

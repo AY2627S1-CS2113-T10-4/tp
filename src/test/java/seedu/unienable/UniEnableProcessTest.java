@@ -22,6 +22,31 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class UniEnableProcessTest {
     @Test
+    void historicalActivities_rejectAddAndEveryEditWithoutChangingSavedData(@TempDir Path tempDir) throws Exception {
+        Path activityFile = tempDir.resolve("data/activities.txt");
+        Files.createDirectories(activityFile.getParent());
+        byte[] original = "Historical|2000-01-01|09:00|10:00|LOW|true|2|3|4\n".getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+        var originalModifiedTime = Files.getLastModifiedTime(activityFile);
+
+        String output = runSession(tempDir, "add n/Past d/2000-01-02 s/09:00 e/10:00\n"
+                + "edit 1 n/Changed dem/HIGH imp/5\nedit 1 d/2099-01-01\nlist\nfind Historical\nbye\n");
+        assertTrue(output.contains("End time must be later than current time."), output);
+        assertEquals(2, output.split(Pattern.quote(
+                "[WARNING] Activities that have ended cannot be edited."), -1).length - 1, output);
+        assertFalse(output.contains("Added activity:"), output);
+        assertFalse(output.contains("Edited activity:"), output);
+        assertTrue(output.contains("1. Historical (2000-01-01, 09:00-10:00) [LOW] [X]"), output);
+        assertTrue(output.contains("Found 1 matching activity:"), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+        assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
+
+        String restarted = runSession(tempDir, "list\nbye\n");
+        assertTrue(restarted.contains("1. Historical (2000-01-01, 09:00-10:00) [LOW] [X]"), restarted);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+    }
+
+    @Test
     void digitPrefixTypos_rejectAddAndEditWithoutWritingData(@TempDir Path tempDir) throws Exception {
         String add = "add n/Class dem1/HIGH d/2099-12-10 s/10:00 e/11:00\n";
         String warning = "[WARNING] Unknown parameter 'dem1/'. Did you mean 'dem/'?";

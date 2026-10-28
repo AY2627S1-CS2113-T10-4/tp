@@ -125,10 +125,11 @@ class EditCommandTest {
                 LocalTime.of(9, 0), LocalTime.of(10, 0), DemandLevel.HIGH, true, 5, 4, 3);
         activities.addActivity(original);
 
-        for (String command : List.of("edit 1 s/11:00", "edit 1 e/11:00", "edit 1 d/2026-10-28 e/11:00")) {
+        for (String command : List.of("edit 1 s/11:00", "edit 1 e/11:00", "edit 1 d/2026-10-28 e/11:00",
+                "edit 1 n/Changed", "edit 1 dem/LOW", "edit 1 imp/1 urg/1 com/1", "edit 1 d/2099-01-01")) {
             UniEnableException exception = assertThrows(UniEnableException.class,
                     () -> timedParser.parse(command).execute(activities, noWrites), command);
-            assertTrue(exception.getMessage().startsWith("[WARNING]"), command);
+            assertEquals("[WARNING] Activities that have ended cannot be edited.", exception.getMessage(), command);
             assertEquals(1, activities.getActivities().size());
             assertSame(original, activities.getByDisplayedIndex(1), command);
             assertEquals(5, original.getImportance());
@@ -148,6 +149,25 @@ class EditCommandTest {
         String message = parser.parse("list").execute(activities, noWrites).getMessage();
         assertTrue(message.contains("1. Meeting (2099-01-02, 09:00-10:00) [MEDIUM] [ ]"));
         assertFalse(message.contains("14:00-13:00"));
+    }
+
+    @Test
+    void execute_existingEndAtOrBeforeNow_rejectsButOngoingActivityRemainsEditable() throws Exception {
+        Parser timedParser = new Parser(Clock.fixed(Instant.parse("2026-10-28T12:00:00Z"), ZoneOffset.UTC));
+        for (LocalTime end : List.of(LocalTime.of(11, 59), LocalTime.NOON, LocalTime.of(12, 1))) {
+            Activity original = new Activity("Boundary", LocalDate.of(2026, 10, 28),
+                    LocalTime.of(11, 0), end, DemandLevel.LOW, false);
+            ActivityList current = new ActivityList(List.of(original));
+            if (end.isAfter(LocalTime.NOON)) {
+                timedParser.parse("edit 1 n/Updated").execute(current, noWrites);
+                assertEquals("Updated", current.getByDisplayedIndex(1).getName());
+            } else {
+                UniEnableException exception = assertThrows(UniEnableException.class,
+                        () -> timedParser.parse("edit 1 n/Updated").execute(current, noWrites));
+                assertEquals("[WARNING] Activities that have ended cannot be edited.", exception.getMessage());
+                assertSame(original, current.getByDisplayedIndex(1));
+            }
+        }
     }
 
     private void add(String name, String date, String start, String end, String demand)

@@ -46,7 +46,7 @@ public class EditCommand extends Command {
      *
      * @param displayedIndex chronological index of the activity to edit.
      * @param fields supplied replacements; null components preserve their existing values.
-     * @param clock time source used to validate date/time edits.
+     * @param clock time source used to reject ended activities and validate replacement times.
      * @param allowOverlap whether this edit explicitly permits an intentional overlap.
      */
     public EditCommand(int displayedIndex, Fields fields, Clock clock, boolean allowOverlap) {
@@ -63,6 +63,10 @@ public class EditCommand extends Command {
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {
         Activity activity = activities.getByDisplayedIndex(displayedIndex);
+        LocalDateTime now = LocalDateTime.now(clock);
+        if (!LocalDateTime.of(activity.getDate(), activity.getEndTime()).isAfter(now)) {
+            throw warning("Activities that have ended cannot be edited.");
+        }
         String updatedName = fields.name() == null ? activity.getName() : fields.name();
         LocalDate updatedDate = fields.date() == null ? activity.getDate() : fields.date();
         LocalTime updatedStart = fields.startTime() == null ? activity.getStartTime() : fields.startTime();
@@ -77,7 +81,7 @@ public class EditCommand extends Command {
                 throw warning("End time must be later than start time on the same day.");
             }
             LocalDateTime endDateTime = LocalDateTime.of(updatedDate, updatedEnd);
-            if (!endDateTime.isAfter(LocalDateTime.now(clock))) {
+            if (!endDateTime.isAfter(now)) {
                 throw warning("Edited activity must end after the current local time.");
             }
         }

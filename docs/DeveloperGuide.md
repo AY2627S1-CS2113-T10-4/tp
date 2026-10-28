@@ -257,7 +257,8 @@ See [Optional ratings integration](#optional-ratings-integration) for the rating
 uses the injected `Clock` to validate a real date and strict `HH:mm` times, a
 non-blank name, supported prefixes, and optional demand and ratings. Demand
 defaults to `MEDIUM`; each omitted rating remains `null`. The same-day end must
-follow the start and the current local time. Invalid input produces a
+follow the start and the current local time. Historical activities cannot be added;
+there is no override. Invalid input produces a
 `ParseException` without adding an activity.
 
 `AddCommandParser` checks supplied names through `ActivityNameValidator`.
@@ -516,8 +517,12 @@ Source: [EditActivityClassDiagram.puml](diagrams/oliver/class/EditActivityClassD
 record; a null component means omitted. `EditCommand` resolves the
 index, combines old and new values, and validates the replacement before calling
 `ActivityList.replaceByDisplayedIndex()`. Omitted fields and completion state stay
-unchanged. Time validation runs when a date or time is supplied; metadata-only
-edits can update historical activities. Rejected edits leave the activity intact.
+unchanged. Before combining fields, execution captures the injected clock once
+and rejects every edit when the existing activity ends at or before that time.
+This includes metadata-only edits and attempts to reschedule historical activities
+into the future. Date/time replacements must also end strictly after that captured
+time. Rejected edits leave the activity and saved bytes intact. Historical records
+remain loadable, listable, and searchable; this restriction applies to Add/Edit.
 
 The edit diagrams show `ActivityNameValidator` checking a supplied name
 and `ActivityScheduleValidator` checking name/schedule changes before replacement.
