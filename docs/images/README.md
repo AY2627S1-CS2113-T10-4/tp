@@ -92,6 +92,8 @@ including its presentation of Luke's rating fields. Class/sequence diagrams use
 
 ## Luke
 
+- [ActivityScheduleValidatorClassDiagram.png](luke/class/ActivityScheduleValidatorClassDiagram.png)
+  shows the shared duplicate/clash validator and its add/edit integrations.
 - [FacilityClassDiagram.png](luke/class/FacilityClassDiagram.png) shows facility
   models, loading, feature search, and command formatting.
 - [FacilityLookupSequence.png](luke/sequence/FacilityLookupSequence.png) shows a

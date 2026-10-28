@@ -73,8 +73,8 @@ class AddCommandParserTest {
     void parse_partialRatings_keepsEachOmittedRatingUnset() throws Exception {
         String[] suffixes = {"imp/1 com/5", "urg/2"};
         Integer[][] expected = {{1, null, 5}, {null, 2, null}};
-        ActivityList activities = new ActivityList();
         for (int i = 0; i < suffixes.length; i++) {
+            ActivityList activities = new ActivityList();
             parser.parse("n/Planning and/or review w/o slides d/2026-10-20 s/09:00 e/10:00 " + suffixes[i])
                     .execute(activities, new Storage());
 

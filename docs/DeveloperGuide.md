@@ -39,6 +39,7 @@ Named author comments begin a feature scope; the unnamed author comment ends it.
     - [Completion and persistence](#completion-and-persistence)
   - [Ratings and accessibility](#ratings-and-accessibility)
     - [Optional ratings integration](#optional-ratings-integration)
+    - [Activity schedule validation](#activity-schedule-validation)
     - [Facility accessibility data (`facilities.txt`)](#facility-accessibility-data-facilitiestxt)
     - [Facility lookup](#facility-lookup)
     - [Accessibility route connections (`connections.txt`)](#accessibility-route-connections-connectionstxt)
@@ -63,6 +64,7 @@ Named author comments begin a feature scope; the unnamed author comment ends it.
   - [Prepare a separate test folder](#prepare-a-separate-test-folder)
   - [Run a session with a fixed clock](#run-a-session-with-a-fixed-clock)
   - [Activities and restart persistence](#activities-and-restart-persistence)
+  - [Duplicate activities and time clashes](#duplicate-activities-and-time-clashes)
   - [Priority and strict local-time boundaries](#priority-and-strict-local-time-boundaries)
   - [Calendar dashboards and topic help](#calendar-dashboards-and-topic-help)
   - [Invalid activity and command input](#invalid-activity-and-command-input)
@@ -846,7 +848,7 @@ for detected corruption, rather than a versioned backup history.
 
 ### Ratings and accessibility
 
-This section covers optional add ratings, facility reference data and queries,
+This section covers optional add ratings, shared activity schedule validation, facility reference data and queries,
 accessible route search, and the exit command.
 These features use the shared activity models and command/result flow.
 
@@ -859,6 +861,37 @@ an integer from 1 to 5, so add, edit and storage use the same validation rule.
 The class-diagram placeholder in [Adding activities](#adding-activities) marks
 where to show how ratings fit into activity creation. The priority view uses
 these ratings; editing and persistence update and preserve them.
+
+#### Activity schedule validation
+
+`ActivityScheduleValidator` is a package-private helper in `command.activity`,
+maintained under Luke's author scope. Atharva's `AddCommand` calls it before
+appending an activity. Oliver's `EditCommand` calls it before replacement when
+a name, date, start or end is supplied. The integrations retain their existing
+feature-owner markers.
+
+![Class diagram showing shared schedule validation before activity insertion or replacement](images/luke/class/ActivityScheduleValidatorClassDiagram.png)
+
+Source: [ActivityScheduleValidatorClassDiagram.puml](diagrams/luke/class/ActivityScheduleValidatorClassDiagram.puml).
+
+The helper reads `ActivityList.getCanonicalView()` without changing the list.
+It checks duplicates first: name equality ignores case and surrounding whitespace,
+while date, start and end must match exactly. Demand, ratings and completion do
+not change duplicate identity. It then checks positive-duration overlap on the
+same date: `candidate.start < existing.end && existing.start < candidate.end`.
+Equal endpoints are allowed, and completed activities participate in both checks.
+
+An edit passes the original activity reference so only that record is excluded.
+Warnings identify the conflicting chronological index and activity. A checked
+`UniEnableException` stops the command before mutation or a save request, preserving
+counts, fields, saved bytes and modification times. Demand/rating-only edits do
+not create a new schedule and skip this check. Saved duplicates and overlaps remain
+loadable; the validator does not silently delete historical data.
+
+`ActivityScheduleValidatorTest` covers duplicate identity, partial/contained/covering
+overlaps, adjacency, different dates, completion, canonical indexes, self-exclusion
+and atomic edits. `UniEnableProcessTest` verifies rejection, stable counts and
+unchanged storage across restarts through the real console entry point.
 
 #### Facility accessibility data (`facilities.txt`)
 
@@ -1183,7 +1216,7 @@ preserves the file across read-only restarts. Run these process tests on Windows
 ```
 
 Validation on 28 October 2026 with Java 25.0.4:
-`.\gradlew.bat check shadowJar --rerun-tasks` passed all 457 tests, with no failures,
+`.\gradlew.bat check shadowJar --rerun-tasks` passed all 465 tests, with no failures,
 errors or skipped tests. Both Checkstyle checks reported zero violations, and
 the configured JaCoCo coverage verification passed.
 
@@ -1487,6 +1520,30 @@ encoding cannot hide validation or historical-output defects. These process test
 check the actual `main()` method; the fixed-clock driver calls an injectable
 `run()` method instead. Existing saved non-ASCII names are retained and displayed;
 the new rule restricts names supplied by add or edit.
+
+### Duplicate activities and time clashes
+
+Use another fresh test folder. Compare saved bytes and modification times before
+and after each rejected command. All warnings must allow the next command, and
+the count must increase only after a successful add.
+
+| Input or action | Expected result |
+| --- | --- |
+| `add n/CS2113 tutorial d/2099-12-01 s/10:00 e/11:00` | One activity is added; count 1. |
+| Repeat the same command | `[WARNING] Duplicate activity already recorded at index 1: CS2113 tutorial (2099-12-01, 10:00-11:00).` No change to the list or file. |
+| `add n/cs2113 tutorial d/2099-12-01 s/10:00 e/11:00 dem/HIGH imp/5` | Duplicate warning; case, demand and ratings do not bypass duplicate detection. |
+| `add n/Other d/2099-12-01 s/10:30 e/11:30` | `[WARNING] Activity clashes with index 1: CS2113 tutorial (2099-12-01, 10:00-11:00).` Count stays 1. |
+| `add n/Other d/2099-12-01 s/09:00 e/12:00` | Clash warning for the containing range; count stays 1. |
+| `add n/Next class d/2099-12-01 s/11:00 e/12:00` | Adjacent activity is accepted; count 2. |
+| `edit 2 s/10:30 e/11:30 imp/5` | Clash warning; Next class stays at 11:00-12:00 with its original ratings. |
+| `edit 2 n/CS2113 tutorial s/10:00 e/11:00` | Duplicate warning; every original field is preserved. |
+| `edit 2 s/11:00 e/12:00` | Accepted: an activity does not conflict with itself. |
+| `bye`, relaunch from the same folder, then `list` | Only CS2113 tutorial and Next class reload; rejected commands have added no records. |
+
+Repeat an overlap attempt after marking the first activity done: it still occupies
+its scheduled time. A matching time on a different date is allowed. Existing
+duplicates in older files remain visible; delete unwanted records explicitly
+using their current chronological indexes.
 
 <!-- @@author -->
 

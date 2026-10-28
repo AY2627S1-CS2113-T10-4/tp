@@ -176,8 +176,19 @@ Slash-containing text such as `and/or`
 and `w/o` is allowed. However, a known prefix (`n/`, `d/`, `s/`, `e/`, `dem/`,
 `imp/`, `urg/`, or `com/`)
 at the start of a whitespace-separated part of the name is treated as another
-field, so avoid these prefixes in names. Duplicate or overlapping activities are
-currently allowed.
+field, so avoid these prefixes in names.
+
+A duplicate activity has the same name (ignoring case and surrounding whitespace),
+date, start and end times as an existing activity. Changing demand, ratings or
+completion does not make it a different activity. Duplicates are rejected with
+`[WARNING] Duplicate activity already recorded at index ...`.
+
+Other activities on the same date are rejected if their times overlap, with
+`[WARNING] Activity clashes with index ...`. Both warnings identify the existing
+activity using its chronological `list` index. Completed activities still occupy
+their scheduled time. Back-to-back activities, such as 10:00-11:00 and
+11:00-12:00, and the same times on different dates are allowed. A rejected add
+does not increase the activity count or change saved data.
 
 Input:
 ```text
@@ -474,6 +485,9 @@ edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [im
   time. A change only to name, demand, or ratings can update historical activities.
 - Validation failures leave the activity unchanged. Successful edits save
   automatically and display all resulting fields, including ratings.
+- Name or schedule edits must not duplicate or overlap another activity. The
+  activity being edited is excluded from this comparison. Rejected multi-field
+  edits leave every field and the saved file unchanged.
 - Rescheduling can change chronological indexes. Run `list` or `find` again
   before selecting another activity.
 
@@ -813,6 +827,10 @@ For `add` and `edit`, use real calendar dates and two-digit hours and minutes (f
 `09:30`, not `9:30`). An invalid add command also displays the expected format.
 Rejected add or edit input, including an invalid rating, leaves the activity list and
 stored data unchanged.
+
+Duplicate and clash warnings prevent new conflicting entries. Existing duplicates
+or overlaps in saved files still load; remove unwanted entries using their current
+`list` indexes and `delete INDEX`. They are not removed automatically.
 
 <!-- @@author officialasyrafrahim -->
 `list priority`, `overdue`, and `next` accept no arguments. Extra arguments and

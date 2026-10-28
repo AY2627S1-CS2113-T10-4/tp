@@ -119,6 +119,7 @@ are rendered from the corresponding PlantUML sources.
 | Source | Rendered image | Developer Guide section |
 | --- | --- | --- |
 | [FacilityClassDiagram.puml](luke/class/FacilityClassDiagram.puml) | [PNG](../images/luke/class/FacilityClassDiagram.png) | [Facility lookup](../DeveloperGuide.md#facility-lookup) |
+| [ActivityScheduleValidatorClassDiagram.puml](luke/class/ActivityScheduleValidatorClassDiagram.puml) | [PNG](../images/luke/class/ActivityScheduleValidatorClassDiagram.png) | [Activity schedule validation](../DeveloperGuide.md#activity-schedule-validation) |
 | [RoutingClassDiagram.puml](luke/class/RoutingClassDiagram.puml) | [PNG](../images/luke/class/RoutingClassDiagram.png) | [Accessible route search](../DeveloperGuide.md#accessible-route-search) |
 
 ### Sequence diagrams

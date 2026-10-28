@@ -21,6 +21,37 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class UniEnableProcessTest {
     @Test
+    void duplicateAndClashingCommandsPreserveCountAndStoredBytes(@TempDir Path tempDir) throws Exception {
+        String setup = runSession(tempDir, "add n/CS2113 tutorial d/2099-12-01 s/10:00 e/11:00\n"
+                + "add n/Later d/2099-12-01 s/12:00 e/13:00\nbye\n");
+        assertTrue(setup.contains("Activities in this session: 2"), setup);
+        Path activityFile = tempDir.resolve("data/activities.txt");
+        byte[] original = Files.readAllBytes(activityFile);
+        var originalModifiedTime = Files.getLastModifiedTime(activityFile);
+
+        String output = runSession(tempDir, "add n/CS2113 tutorial d/2099-12-01 s/10:00 e/11:00\n"
+                + "add n/Other d/2099-12-01 s/10:30 e/11:30\n"
+                + "edit 2 n/CS2113 tutorial s/10:00 e/11:00 imp/5\n"
+                + "edit 2 n/Changed s/10:30 e/11:30 imp/5\nlist\nbye\n");
+
+        assertEquals(2, output.split(Pattern.quote("[WARNING] Duplicate activity"), -1).length - 1, output);
+        assertEquals(2, output.split(Pattern.quote("[WARNING] Activity clashes with"), -1).length - 1, output);
+        assertFalse(output.contains("Added activity:"), output);
+        assertFalse(output.contains("Edited activity:"), output);
+        assertFalse(output.contains("3. "), output);
+        assertTrue(output.contains("1. CS2113 tutorial"), output);
+        assertTrue(output.contains("2. Later"), output);
+        assertTrue(output.contains("Goodbye from UniEnable!"), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+        assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
+
+        String restartedOutput = runSession(tempDir, "list\nbye\n");
+        assertTrue(restartedOutput.contains("2. Later"), restartedOutput);
+        assertFalse(restartedOutput.contains("3. "), restartedOutput);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+    }
+
+    @Test
     void nonAsciiCommandWords_warnAndPreserveActivities(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("data/activities.txt");
         Files.createDirectories(activityFile.getParent());

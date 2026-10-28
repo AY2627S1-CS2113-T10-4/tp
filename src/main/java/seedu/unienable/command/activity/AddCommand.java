@@ -8,6 +8,7 @@ import java.time.LocalTime;
 import seedu.unienable.command.common.Command;
 import seedu.unienable.command.common.CommandResult;
 
+import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
@@ -40,10 +41,13 @@ public class AddCommand extends Command {
     }
 
     /**
-     * Inserts the activity before returning a message for Ui.showMessage().
+     * Checks the schedule before inserting the activity and reporting success.
+     *
+     * @throws UniEnableException if the activity duplicates or overlaps an existing activity.
      */
     @Override
-    public CommandResult execute(ActivityList activities, Storage storage) {
+    public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {
+        ActivityScheduleValidator.validate(activity, activities, null);
         activities.addActivity(activity);
         String message = "Added activity: " + activity.getName() + "\n"
                 + "Date: " + activity.getDate() + "\n"
