@@ -42,6 +42,48 @@ See [Calendar dashboards](#viewing-calendar-dashboards-view) for examples, or en
 To build from source on Windows, run `.\gradlew.bat shadowJar` in the project folder,
 then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 
+Try this first session in an empty launch folder. The examples use a future date;
+if you try them after that date, replace it with a date that has not ended.
+The horizontal borders are omitted from the expected outputs below.
+
+Command:
+
+```text
+add n/Study d/2099-12-10 s/09:00 e/10:00
+```
+
+Expected output:
+
+```text
+Added activity: Study
+Date: 2099-12-10
+Time: 09:00 - 10:00
+Demand: MEDIUM
+Importance: -
+Urgency: -
+Commitment: -
+Activities in this session: 1
+```
+
+Next commands, in the same session:
+
+```text
+mark 1
+list
+```
+
+Expected output, in command order:
+
+```text
+Marked activity as done: Study
+Activities (by date, start time):
+1. Study (2099-12-10, 09:00-10:00) [MEDIUM] [X]
+```
+
+The `[X]` indicates completion. Enter `bye` to exit; the next launch from the
+same folder will load this activity. The feature walkthrough below starts with
+its own empty list, independently of this first-session example.
+
 <!-- TEAM: All members maintain the cross-feature command and index conventions. -->
 ## Command Format
 
@@ -296,7 +338,7 @@ mark 1
 view today
 ```
 
-The dashboard is:
+Expected output for `view today` after those setup commands:
 
 ```text
 TODAY - Tuesday, 01 December 2026
@@ -448,11 +490,36 @@ they are independent of the earlier activity walkthrough:
 ```text
 add n/CCA EXCO meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH imp/5 urg/4 com/3
 mark 1
+```
+
+Next command:
+
+```text
 edit 1 n/CCA EXCO planning meeting com/4
 ```
 
-The confirmation begins with `Edited activity: CCA EXCO planning meeting` and
-shows the resulting fields. Completion stays `[X]`; omitted fields are preserved.
+Expected output:
+
+```text
+Edited activity: CCA EXCO planning meeting
+Date: 2026-12-02
+Time: 14:00 - 15:00
+Demand: HIGH
+Importance: 5
+Urgency: 4
+Commitment: 4
+```
+
+Command: `list`
+
+Expected output:
+
+```text
+Activities (by date, start time):
+1. CCA EXCO planning meeting (2026-12-02, 14:00-15:00) [HIGH] [X]
+```
+
+Completion stays `[X]`; the omitted demand, importance, and urgency are preserved.
 Replacement names follow the same printable-ASCII and delimiter rules as add.
 Historical non-ASCII saved names can still be listed and searched. An edit that
 omits `n/` preserves the existing name.
