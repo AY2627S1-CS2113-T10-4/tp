@@ -25,6 +25,7 @@ class ActivityParameterValidator <<package-private>> {
   ~{static} validate(arguments: String): void
 }
 class ActivityNameValidator <<package-private>> {
+  ~{static} unescapeSlashes(name: String): String
   ~{static} validate(name: String): void
 }
 class ParseException <<checked exception>>
@@ -51,6 +52,7 @@ note bottom of ActivityNameValidator
   Whitespace-only names receive the empty-name warning.
   Parsers keep blank-name and delimiter checks.
   Historical Unicode names still load and save as UTF-8.
+  Parsers decode explicitly escaped slashes after extracting fields.
 end note
 @enduml
 '@@author

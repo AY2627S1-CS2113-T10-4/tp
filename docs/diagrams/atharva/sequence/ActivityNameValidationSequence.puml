@@ -29,6 +29,9 @@ else ASCII add command
     The parser rejects blank names, pipes, CR and LF before this call.
   end note
   Fields -> Validator : validate(name)
+  note right of Fields
+    Decode escaped literal slashes after field extraction, before name validation.
+  end note
   alt whitespace only, including Unicode spaces
     Validator --> Fields : throws ParseException("Empty n/ parameter.")
     Fields --> Parser : propagate ParseException

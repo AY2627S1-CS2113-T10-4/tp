@@ -159,6 +159,12 @@ can still be loaded, listed, and searched; a replacement name supplied with
 
 Likely misspellings of multi-letter prefixes, such as `demm/HIGH`, `dem1/HIGH`, or `impp/5`,
 produce a warning instead of becoming part of the name. This also applies to edit.
+To enter literal slash text that resembles a parameter or a spelling mistake,
+put a backslash before that slash: `add n/Lunch dim\/sum d/2099-12-10 s/09:00 e/10:00`.
+The saved name is `Lunch dim/sum`. The same escape works for known prefixes,
+for example `edit 1 n/Review d\/notes`; the saved name is `Review d/notes`.
+Only `\/` is decoded, after field parsing and typo checks. Ordinary `and/or` and
+`w/o` need no escape. Search using the saved slash text, such as `find d/notes`.
 
 A duplicate activity has the same name (ignoring case and surrounding whitespace),
 date, start and end times as an existing activity. Changing demand, ratings or

@@ -15,6 +15,17 @@ final class ActivityNameValidator {
     }
 
     /**
+     * Decodes an explicitly escaped literal slash after field boundaries and typo checks are resolved.
+     * Other backslashes remain part of the name; stored names do not retain the slash escape.
+     *
+     * @param name non-null raw name field.
+     * @return name with each backslash-slash sequence replaced by a literal slash.
+     */
+    static String unescapeSlashes(String name) {
+        return name.replace("\\/", "/");
+    }
+
+    /**
      * Rejects blank names and characters outside printable ASCII before activity data changes.
      *
      * @param name non-null name supplied by the user.

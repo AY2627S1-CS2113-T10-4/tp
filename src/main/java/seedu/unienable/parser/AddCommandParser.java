@@ -71,7 +71,7 @@ public class AddCommandParser {
             }
         }
 
-        String name = fields.get("n");
+        String name = ActivityNameValidator.unescapeSlashes(fields.get("n"));
         if (name.isBlank()) {
             throw invalid("Empty n/ parameter.");
         }

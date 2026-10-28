@@ -665,6 +665,12 @@ For example, `demm/HIGH` and `dem1/HIGH` produce an unknown-parameter warning su
 `ConsoleHelper` displays that warning; no add/edit command executes and neither
 activities nor saved data changes. Ordinary slash text such as `and/or` and `w/o`
 remains valid. Single-letter slash text is excluded from the typo check.
+Names can explicitly escape a literal slash with `\/`, including in prefix-like
+text such as `dim\/sum` or `d\/notes`. The existing token patterns do not match
+these escaped slashes. After extracting fields, both parsers call
+`ActivityNameValidator.unescapeSlashes()` before validating the name and creating
+the command. Only the decoded name is stored; find keywords use the stored text.
+Unescaped typos, including `dem1/HIGH`, still produce a warning.
 
 <!-- @@author -->
 <!-- @@author Atharva005 -->
