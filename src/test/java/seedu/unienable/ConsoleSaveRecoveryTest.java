@@ -25,7 +25,21 @@ import seedu.unienable.ui.Ui;
 /** Checks that failed saves remain visible, can be retried, and cannot be lost through bye. */
 class ConsoleSaveRecoveryTest {
     @Test
-    void failedSave_blocksExitUntilExplicitRetryPersistsActivities(@TempDir Path directory) throws Exception {
+    void cleanBye_exitsWithoutWritingAgain(@TempDir Path directory) {
+        Storage storage = new Storage(directory.resolve("activities.txt")) {
+            @Override
+            public void save(ActivityList ignored) {
+                throw new AssertionError("A clean exit must not write activity data.");
+            }
+        };
+        Ui ui = new Ui(new ByteArrayInputStream("bye\n".getBytes(StandardCharsets.UTF_8)),
+                new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8));
+        assertTrue(ConsoleHelper.processNextCommand(ui, new Parser(), new ActivityList(), storage));
+        assertFalse(storage.hasUnsavedChanges());
+    }
+
+    @Test
+    void failedSave_byeRetriesPersistenceBeforeExiting(@TempDir Path directory) throws Exception {
         Path file = directory.resolve("activities.txt");
         Storage storage = new Storage(file) {
             private boolean fail = true;
@@ -40,7 +54,7 @@ class ConsoleSaveRecoveryTest {
             }
         };
         ActivityList activities = new ActivityList();
-        String input = "add n/Keep me d/2099-12-10 s/09:00 e/10:00\nlist\nbye\nsave\nbye\n";
+        String input = "add n/Keep me d/2099-12-10 s/09:00 e/10:00\nlist\nbye\n";
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         Ui ui = new Ui(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)),
                 new PrintStream(output, true, StandardCharsets.UTF_8));
@@ -50,28 +64,37 @@ class ConsoleSaveRecoveryTest {
         assertTrue(storage.hasUnsavedChanges());
         assertFalse(Files.exists(file));
         assertFalse(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
-        assertFalse(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
         assertFalse(output.toString(StandardCharsets.UTF_8).contains("Goodbye"));
 
-        assertFalse(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
+        assertTrue(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
         assertFalse(storage.hasUnsavedChanges());
         assertTrue(Files.readString(file).startsWith("Keep me|"));
-        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Activities saved."));
-        assertTrue(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Goodbye from UniEnable!"));
         assertTrue(output.toString(StandardCharsets.UTF_8).contains("Unsaved activity changes"));
     }
 
     @Test
-    void failedRetry_keepsDirtyStateAndRejectsExtraArguments(@TempDir Path directory) throws Exception {
+    void failedByeRetry_keepsDirtyStateUntilStorageIsRepaired(@TempDir Path directory) throws Exception {
         Path blocked = directory.resolve("blocked");
         Files.writeString(blocked, "not a directory");
         Storage storage = new Storage(blocked.resolve("activities.txt"));
         storage.markUnsavedChanges();
-        assertThrows(UniEnableException.class,
-                () -> new Parser().parse("save").execute(new ActivityList(), storage));
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        Ui ui = new Ui(new ByteArrayInputStream("bye\nlist\nbye\n".getBytes(StandardCharsets.UTF_8)),
+                new PrintStream(output, true, StandardCharsets.UTF_8));
+        Parser parser = new Parser();
+        ActivityList activities = new ActivityList();
+        assertFalse(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
         assertTrue(storage.hasUnsavedChanges());
-        assertThrows(ParseException.class,
-                () -> new Parser().parse("save extra"));
+        assertFalse(output.toString(StandardCharsets.UTF_8).contains("Goodbye"));
+        assertFalse(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
+        assertTrue(storage.hasUnsavedChanges());
+        Files.delete(blocked);
+        Files.createDirectory(blocked);
+        assertTrue(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
+        assertFalse(storage.hasUnsavedChanges());
+        assertTrue(Files.exists(blocked.resolve("activities.txt")));
+        assertThrows(ParseException.class, () -> parser.parse("save"));
     }
 }
 //@@author

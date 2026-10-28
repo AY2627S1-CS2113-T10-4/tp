@@ -69,7 +69,6 @@ class HelpCommandTest {
             {"view", "view week", "today and the following six days", "view tomorrow"},
             {"overdue", "overdue", "end strictly before the current time", "overdue"},
             {"next", "next", "start is strictly after the current time", "next"},
-            {"save", "save", "Retries a failed save", "Unsaved-change warnings"},
             {"mark", "mark INDEX", "already completed activity warns", "mark 1"},
             {"unmark", "unmark INDEX", "already incomplete activity warns", "unmark 1"},
             {"delete", "delete INDEX", "There is no undo command", "delete 1"},
@@ -98,6 +97,15 @@ class HelpCommandTest {
             assertFalse(result.didChangeActivities());
             assertTrue(activities.getActivities().isEmpty());
         }));
+    }
+
+    @Test
+    void removedSaveCommand_isAbsentFromHelpAndParser() {
+        String menu = new HelpCommand().execute(new ActivityList(), noWrites).getMessage();
+        assertFalse(menu.contains("\n  save "), menu);
+        for (String input : List.of("save", "save extra", "help save")) {
+            assertThrows(ParseException.class, () -> parser.parse(input), input);
+        }
     }
 
     @Test

@@ -742,7 +742,7 @@ Format: `help [TOPIC]`
 - `help TOPIC` displays that command's syntax, rules, and examples. Topic names
   ignore letter case and must be a single command name.
 - Supported topics are `add`, `edit`, `find`, `list`, `view`, `overdue`,
-  `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `save`, `help`, and `bye`.
+  `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `help`, and `bye`.
 - `help list` covers all list variants; `help facility` includes feature search.
   Enter `help list` rather than `help list demand`.
 - Help only displays instructions. For example, `help delete` removes nothing,
@@ -761,16 +761,6 @@ The main menu begins with `UniEnable commands:`. Topic pages have a title such a
 Each topic ends with `Type help to return to the command menu.`.
 
 <!-- @@author -->
-<!-- @@author Oliver-koh -->
-
-### Saving changes: `save`
-
-Format: `save`
-
-Retry a failed save after fixing the reported problem. Successful saving displays
-`Activities saved.` and clears the unsaved-change warning. No activity fields change.
-
-<!-- @@author -->
 <!-- @@author lukelouyu -->
 
 ### Exiting the application: `bye`
@@ -778,8 +768,10 @@ Retry a failed save after fixing the reported problem. Successful saving display
 Format: `bye`
 
 Exit the console session after checking that any activity changes saved successfully.
-`bye` accepts no arguments and does not retry a failed save. If changes remain
-unsaved, exit is blocked; fix the error and run `save` first.
+`bye` accepts no arguments. If changes remain unsaved after an automatic save
+failed, it retries saving before exiting. A failed retry keeps the app open;
+fix the reported file or backup-path problem and enter `bye` again. If all changes
+are already saved, `bye` exits without another write.
 
 Input: `bye`
 
@@ -861,9 +853,10 @@ appears after subsequent commands. Repeating an add is not a save retry.
 
 1. Keep the app open and fix the reported file or backup-path problem. Preserve
    a separate copy of any existing activity file or recovery backup.
-2. Enter `save`. It writes the current list without changing any activity.
-3. Wait for `Activities saved.` and check that the unsaved warning has cleared.
-   Then use `bye`. Exit is blocked while changes remain unsaved.
+2. Enter `bye`. It retries writing the current list without changing any activity.
+3. A successful retry displays `Goodbye from UniEnable!` and exits. If saving
+   still fails, the app stays open with the error and unsaved-change warning.
+   Correct the problem and enter `bye` again.
 <!-- @@author -->
 
 <!-- TEAM: Each FAQ answer is maintained by the owner of the feature it describes. -->
@@ -906,7 +899,6 @@ Use `help TOPIC` with any command name below for detailed instructions, such as
 
 | Command | Purpose |
 | --- | --- |
-| `save` | Save current activities or retry a failed save |
 | `help [TOPIC]` / `bye` | Show categorized or detailed command help / exit |
 | `add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW\|MEDIUM\|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]` | Add an activity with optional ratings |
 | `list` / `list demand` | View activities by time / demand |

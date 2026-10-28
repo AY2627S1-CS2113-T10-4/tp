@@ -201,7 +201,7 @@ Read-only commands leave the activity-change flag unset.
 | Startup and console loop | `UniEnable` runs until `bye` or end of input. `ConsoleHelper` loads reference data, creates the parser, executes commands and saves changes. |
 | User interface | `Ui` reads and displays text. `ActivityListFormatter`, `FacilityOutputFormatter` and `FacilityDetailsFormatter` build messages; `RouteCommand` and `ViewCommand` format their own results. |
 | Parsing | `Parser` dispatches to `AddCommandParser`, `EditCommandParser`, `ListDeleteCommandParser`, `MarkCommandParser`, `FacilityCommandParser` or `RouteParser`. It checks `find`, `overdue`, `next`, `view` and `help` directly. A shared injected `Clock` makes time checks repeatable. |
-| Command execution | Subclasses implement `Command.execute(ActivityList, Storage)` and return a `CommandResult`; both shared types live in `command.common`, alongside `HelpCommand`, `SaveCommand`, and `ByeCommand`. |
+| Command execution | Subclasses implement `Command.execute(ActivityList, Storage)` and return a `CommandResult`; both shared types live in `command.common`, alongside `HelpCommand` and `ByeCommand`. |
 | Calendar dashboards and help | `ViewCommand` groups activities by date and displays completion, ratings, priority scores, and demand. `HelpCommand` provides a categorized menu and detailed pages for `help TOPIC`. |
 | Activity model | `Activity` stores details, completion and ratings and calculates priority. `ActivityList` owns the collection, supplies filtered and ordered views, and resolves displayed indexes against chronological order. |
 | Accessibility logic | `FacilityManager` handles facility queries. `ConnectionManager` delegates routes to `DijkstraShortestPath`, with a fresh `DijkstraSolver` per search. |
@@ -229,7 +229,7 @@ The test tree mirrors these packages under `src/test/java/seedu/unienable`.
 
 | Package | Contents and source location |
 | --- | --- |
-| `command.common` | [`Command`, `CommandResult`, `HelpCommand`, `SaveCommand`, and `ByeCommand`](https://github.com/lukelouyu/tp/tree/master/src/main/java/seedu/unienable/command/common). |
+| `command.common` | [`Command`, `CommandResult`, `HelpCommand` and `ByeCommand`](https://github.com/lukelouyu/tp/tree/master/src/main/java/seedu/unienable/command/common). |
 | `command.activity` | [Activity commands](https://github.com/lukelouyu/tp/tree/master/src/main/java/seedu/unienable/command/activity), including `ViewCommand`. |
 | `command.accessibility.facility` | [Facility list, lookup, and feature-search commands](https://github.com/lukelouyu/tp/tree/master/src/main/java/seedu/unienable/command/accessibility/facility). |
 | `command.accessibility.connection` | [`RouteCommand`](https://github.com/lukelouyu/tp/blob/master/src/main/java/seedu/unienable/command/accessibility/connection/RouteCommand.java). |
@@ -348,9 +348,9 @@ Source: [TopicHelpClassDiagram.puml](diagrams/atharva/class/TopicHelpClassDiagra
 adds a prompt to return to the menu. Unknown topics and extra words produce a
 `ParseException` with a warning and `Usage: help [TOPIC]`.
 
-The 15 supported topics are `add`, `edit`, `find`, `list`, `view`,
+The 14 supported topics are `add`, `edit`, `find`, `list`, `view`,
 `overdue`, `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `help`,
-`save`, and `bye`. `help list` includes the demand and priority variants; `help facility`
+and `bye`. `help list` includes the demand and priority variants; `help facility`
 includes feature search. The topic never executes the command it describes:
 `help delete` does not delete and `help bye` does not exit. Help remains available
 without facility or connection data and leaves both result flags unset.
@@ -627,8 +627,10 @@ is set, then displays the result. Other callers must honour that flag themselves
 Saving follows the in-memory change, so a failed write leaves unsaved data in memory.
 
 **Save recovery:** Storage tracks unsaved changes until saving succeeds. Failed
-saves keep a warning visible and block `bye`. `SaveCommand` retries the current
-list without modifying activities and clears the warning only after success.
+saves keep a warning visible. When a command requests exit and storage is dirty,
+`ConsoleHelper` retries saving the current list before displaying the goodbye
+message. A failed retry preserves dirty state and keeps the console running.
+Read-only commands do not retry writes, and a clean exit performs no extra write.
 
 <!-- @@author -->
 
@@ -963,9 +965,10 @@ with one stop and no segments. `RouteCommand` rejects that result with
 
 `ByeCommand.execute()` returns `Goodbye from UniEnable!` with the exit flag
 set and the activity-change flag unset. `ConsoleHelper` displays the message,
-then `UniEnable` stops the console loop. Exit does not save or retry a failed
-save. The console blocks exit while `Storage.hasUnsavedChanges()` is true;
-users fix the error and run `save` before retrying `bye`.
+then `UniEnable` stops the console loop. Before displaying the goodbye message,
+`ConsoleHelper` retries persistence if `Storage.hasUnsavedChanges()` is true.
+It exits only after that retry succeeds. If writing fails, users fix the reported
+problem and enter `bye` again. Clean exits do not write the activity file.
 
 <!-- @@author -->
 
@@ -1001,7 +1004,7 @@ written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 | Activity input and commands | Parser tests cover valid and rejected syntax. `EditCommandTest` checks partial changes and atomic rejection; `FindCommandTest` checks name matching and chronological indexes. |
 | Calendar dashboards and help | `ViewCommandTest` covers date ranges, counts, empty periods, totals, 80-column rating tables, and read-only results. `HelpCommandTest` covers menus, topics, and invalid requests. |
 | Activity lists and time queries | `ListDemandCommandTest`, `ListPriorityCommandTest`, `OverdueCommandTest`, `NextCommandTest`, and `ActivityListFormatterTest` cover chronological indexes, ordering, missing scores, completion, and strict time boundaries. |
-| Activity persistence | `StorageTest` covers round trips, legacy data, malformed rows, backups and failed writes. `ConsoleSaveRecoveryTest` covers unsaved warnings, blocked exits, and explicit retry; `UniEnableTest` covers sessions and restarts. |
+| Activity persistence | `StorageTest` covers round trips, legacy data, malformed rows, backups and failed writes. `ConsoleSaveRecoveryTest` covers unsaved warnings, blocked exits, and retry on exit; `UniEnableTest` covers sessions and restarts. |
 | Facility reference data | `FacilityStorageTest`, `FacilityManagerTest`, `FacilityCommandParserTest` and facility command tests cover loading, exact status matching, formatting and unavailable data. |
 | Routing | `DijkstraSolverTest` and `DijkstraShortestPathTest` check distances, predecessors, route segments, and accessibility filtering. Manager, parser, and command tests cover endpoint errors and disconnected/same-hub routes. |
 
@@ -1081,7 +1084,7 @@ Feature responsibility follows the table below. See the [team pages](team/README
 | [Lou Yu Luke](team/lukelouyu.md) | Ratings, shared validation and accessibility | Exit (`bye`); [facility listing, lookup, and feature search](#facility-lookup). | [Accessible routes](#accessible-route-search); [optional ratings](#optional-ratings-integration); [command/name validation](#ascii-command-name-validation); [duplicate/clash checks](#activity-schedule-validation). | [Activity-creation class diagram, name/parameter validation, facility lookup and routing](diagrams/README.md#luke): five class diagrams and four sequence diagrams. Additional diagrams: [architecture](diagrams/README.md#architecture) and [campus connectivity graph](diagrams/README.md#connectivity-graph). |
 | [Atharva Rege](team/atharva005.md) | Activity creation, calendar views and help | [Adding activities](#adding-activities) (`add`) and command help (`help`). | [Calendar dashboards](#calendar-dashboards) (`view today`, `view tomorrow`, `view week`); [topic help](#categorized-and-topic-help) (`help TOPIC`). | [Add sequence, calendar dashboards, topic help, and schedule validation](diagrams/README.md#atharva): seven diagrams (three class/sequence pairs plus the add sequence). |
 | [Muhammad Asyraf Bin Abdul Rahim](team/officialasyrafrahim.md) | Activity views and deletion | [Chronological/demand listing and deletion](#activity-views-and-deletion) (`list`, `list demand`, `delete`). | [Priority, overdue, and next views](#activity-views-and-deletion) (`list priority`, `overdue`, `next`). | [Chronological listing, demand listing, deletion, priority, overdue, and next](diagrams/README.md#asyraf): six class/sequence pairs. |
-| [Koh Li Wei Oliver](team/oliver-koh.md) | Completion, storage, editing and search | [Persistence and recovery](#completion-and-persistence); completion changes (`mark`, `unmark`). | [Editing](#editing-activities) (`edit`); [name search](#name-search) (`find`); explicit save retry (`save`). | [Editing, name search, marking, unmarking, and persistence](diagrams/README.md#oliver): five class/sequence pairs. |
+| [Koh Li Wei Oliver](team/oliver-koh.md) | Completion, storage, editing and search | [Persistence and recovery](#completion-and-persistence); completion changes (`mark`, `unmark`). | [Editing](#editing-activities) (`edit`); [name search](#name-search) (`find`); failed-save retry on exit (`bye`). | [Editing, name search, marking, unmarking, and persistence](diagrams/README.md#oliver): five class/sequence pairs. |
 
 
 <!-- TEAM: All members maintain story status; feature ownership is defined in Team contributions. -->

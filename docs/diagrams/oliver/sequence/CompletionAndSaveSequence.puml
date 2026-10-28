@@ -68,7 +68,7 @@ opt result.didChangeActivities()
 end
 note over Console, Storage
   If a save throws, keep unsavedChanges true and show a persistent warning.
-  Explicit save retries the current list without modifying activities.
+  Bye retries unsaved changes before exit without modifying activities.
   A bye request is blocked until saving succeeds.
 end note
 note over Console, Mark
