@@ -1,6 +1,7 @@
 //@@author lukelouyu
 package seedu.unienable.parser;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -34,11 +35,16 @@ class ParserTest {
     }
 
     @Test
-    void nonAsciiActivityNames_keepNameSpecificWarning() {
+    void unicodeActivityNames_areAccepted() {
         for (String input : List.of("add n/复习 d/2099-12-12 s/09:00 e/10:00", "edit 1 n/படி")) {
-            ParseException error = assertThrows(ParseException.class, () -> parser.parse(input), input);
-            assertEquals("[WARNING] Please write the activity name in English (ASCII characters only).",
-                    error.getMessage(), input);
+            assertDoesNotThrow(() -> parser.parse(input), input);
+        }
+    }
+
+    @Test
+    void invalidUnicodeNames_keepDataAndConsoleDelimitersSafe() {
+        for (String name : List.of("Bad\u0080name", "Bad\ud800name", "Bad\u2028name", "\u00a0")) {
+            assertThrows(ParseException.class, () -> parser.parse("edit 1 n/" + name));
         }
     }
 }

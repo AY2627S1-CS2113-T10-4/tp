@@ -29,6 +29,9 @@ class ViewCommand {
   {static} -appendSummary(...): void
   {static} -appendRatingChart(...): void
   {static} -chartName(name: String): String
+  {static} -displayWidth(text: String): int
+  {static} -clusterWidth(cluster: String): int
+  {static} -padName(name: String, width: int): String
 }
 enum Range <<nested in ViewCommand>> {
   TODAY
@@ -67,8 +70,9 @@ note bottom of ViewCommand
   Completed activities remain included.
   An empty period returns a heading and warning only.
   Populated periods include an aligned rating table.
-  Rating table rows fit within 80 characters, including separators.
-  Table names use at most 26 characters, with ... for longer names.
+  Rating table rows fit within 80 terminal columns, including separators.
+  Table names use at most 26 columns, with ... for longer names.
+  Grapheme boundaries preserve Unicode characters and emoji sequences.
   Full names remain in schedules and stored data.
   Result flags: exit = false, changed = false.
 end note

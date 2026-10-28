@@ -97,7 +97,7 @@ including its presentation of Luke's rating fields. Class/sequence diagrams use
 - [ActivityParameterValidationSequence.png](luke/sequence/ActivityParameterValidationSequence.png)
   shows a typo warning before an activity command can execute or save.
 - [ActivityNameValidatorClassDiagram.png](luke/class/ActivityNameValidatorClassDiagram.png)
-  shows ASCII command-word checks and the name validator used by add/edit parsers.
+  shows ASCII command-word checks and Unicode name validation used by add/edit parsers.
 - [ActivityScheduleValidatorClassDiagram.png](luke/class/ActivityScheduleValidatorClassDiagram.png)
   shows the shared duplicate/clash validator and its add/edit integrations.
 - [FacilityClassDiagram.png](luke/class/FacilityClassDiagram.png) shows facility

@@ -68,7 +68,7 @@ public class HelpCommand extends Command {
                     Details:
                       - n/, d/, s/, and e/ are required; prefixes may appear in any order.
                       - Names can contain spaces, but cannot be blank or contain | or line breaks.
-                      - Write names in English using ASCII characters only; accents and emoji are rejected.
+                      - Unicode names, including accented letters, Chinese, Tamil, and emoji, are supported.
                       - Use a real YYYY-MM-DD date and 24-hour HH:mm times, such as 09:30.
                       - End must be after start on the same day and after the current time.
                       - Duplicate activities are rejected. Intentional overlaps require overlap/ALLOW.
@@ -93,7 +93,7 @@ public class HelpCommand extends Command {
                       - Run list first and use the activity's current chronological index.
                       - Supply at least one field; omitted fields and completion are preserved.
                       - Names, dates, times, demand, and ratings follow the same rules as add.
-                      - Replacement names must use ASCII characters only.
+                      - Replacement names support Unicode; control characters and line breaks are rejected.
                       - Date/time edits must leave an end after start on the same day and after now.
                       - Duplicate edits are rejected. Use overlap/ALLOW to confirm an intentional time clash.
                       - Name, demand, or rating edits alone can update historical activities.
@@ -154,7 +154,7 @@ public class HelpCommand extends Command {
                       - today and tomorrow select the corresponding full local calendar day.
                       - week includes today and the following six days, grouped by date.
                       - Dashboards include completed activities, summaries, and an aligned rating table.
-                      - Rating tables fit 80 columns; names over 26 characters are shortened with ...
+                      - Rating tables fit 80 columns; long names are shortened to 26 columns with ...
                       - The summary counts HIGH-demand activities on the selected dates, including completed ones.
                       - IMP = importance (*), URG = urgency (!), COM = commitment (+).
                       - Priority score = URG x URG x (IMP + COM); N means a rating is missing.

@@ -179,29 +179,24 @@ when activities changed, then displays the message; the exit flag ends the loop.
 original `System.out` can use a legacy encoding even when the JVM's default
 charset is UTF-8, replacing characters in activity names with `?` in redirected
 output. Encoding output explicitly preserves Chinese, Tamil and emoji text in
-previously saved activities; it does not make those names valid for new input.
+previously saved activities; new activity names use the same UTF-8 output.
 The injectable `UniEnable.run()` methods continue to use the caller's output stream.
 
 <a id="ascii-command-name-validation"></a>
 
-`ActivityNameValidator` applies the shared ASCII-only name rule in
-`AddCommandParser` and `EditCommandParser` before either command can change data.
-Any character above U+007F produces
-`[WARNING] Please write the activity name in English (ASCII characters only).`
-Blank-name and pipe/newline checks keep their existing warnings. `Storage` does
-not apply this new-input rule when restoring saved history.
+`ActivityNameValidator` accepts Unicode names, including Chinese, Tamil,
+accented letters, combining marks, and emoji. Add and edit parsers still reject
+blank names, storage delimiters, and line breaks. The shared helper rejects
+control characters and unpaired UTF-16 surrogates before any activity changes.
+Names are saved and loaded as UTF-8 without transliteration.
 
-`Parser` also rejects a non-ASCII command word before case conversion and
-dispatch. For example, `加入` or `வணக்கம்` produces
-`[WARNING] Please write the command in English (ASCII characters only).`
-ASCII unknown commands and blank input keep the unrecognized-command warning.
-This check applies to the command word; add/edit names still receive their
-name-specific warning, and find keywords can still match historical Unicode names.
+Command words remain ASCII. `Parser` rejects a non-ASCII command word with the
+English-command warning; names and find keywords support Unicode.
 
 The diagram shows command-word validation in `Parser` and the name validator
 used by add and edit parsers:
 
-![Class diagram showing ASCII command-word and activity-name validation](images/luke/class/ActivityNameValidatorClassDiagram.png)
+![Class diagram showing ASCII command-word and Unicode activity-name validation](images/luke/class/ActivityNameValidatorClassDiagram.png)
 
 Source: [ActivityNameValidatorClassDiagram.puml](diagrams/luke/class/ActivityNameValidatorClassDiagram.puml).
 
@@ -373,9 +368,10 @@ For a populated period, the formatter appends:
    times on the selected date; it excludes other dates and LOW/MEDIUM demand.
 3. A rating chart with padded columns, vertical bars, and a horizontal divider
    directly below its column headings. The divider's bars align with the header
-   and data columns. Name width expands up to 26 characters; longer names show
-   their first 23 characters followed by `...` in the table only. Single-space
-   padding keeps every table row within 80 characters, including separators.
+   and data columns. Name width expands up to 26 terminal columns; longer names are shortened
+   at grapheme boundaries followed by `...` in the table only. Wide characters
+   use two columns; combining marks and emoji sequences stay together. Single-space
+   padding keeps every table row within 80 terminal columns, including separators.
    The schedule and stored names remain complete, and rating columns accommodate
    all five marks. `ViewCommandTest` covers the name-length boundary and long names
    across today, tomorrow, and week dashboards.
@@ -1377,7 +1373,7 @@ written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 | Area | Representative tests and purpose |
 | --- | --- |
 | Activity input and commands | Parser tests cover valid and rejected syntax. `EditCommandTest` checks partial changes and atomic rejection; `FindCommandTest` checks name matching and chronological indexes. |
-| Calendar dashboards and help | `ViewCommandTest` checks inclusive seven-day ranges, high-demand counts including completed activities, local-midnight transitions, missing days, empty-period warnings, aligned ASCII tables, totals, and no writes. `HelpCommandTest` checks the categorized menu, all 14 topics, case handling, errors, and read-only results; `UniEnableTest` covers console integration and legacy-file preservation. |
+| Calendar dashboards and help | `ViewCommandTest` checks inclusive seven-day ranges, high-demand counts including completed activities, local-midnight transitions, missing days, empty-period warnings, aligned ASCII tables, totals, and no writes. `HelpCommandTest` checks the categorized menu, all 15 topics, case handling, errors, and read-only results; `UniEnableTest` covers console integration and legacy-file preservation. |
 | Priority and time views | `ActivityTest`, `ListPriorityCommandTest`, `OverdueCommandTest`, `NextCommandTest` and `ActivityListFormatterTest` cover ratings, completion, ordering, ties, indexes, empty results and time boundaries. |
 | Activity persistence | `StorageTest` covers round trips, legacy data, malformed rows, backups and failed writes. `UniEnableTest` covers sessions, warnings, restarts and saved-byte preservation. |
 | Facility reference data | `FacilityStorageTest`, `FacilityManagerTest`, `FacilityCommandParserTest` and facility command tests cover loading, exact status matching, formatting and unavailable data. |
@@ -1385,33 +1381,10 @@ written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 
 <!-- @@author lukelouyu -->
 
-`UniEnableProcessTest` checks the real console entry point in separate JVMs with
-`-Dstdout.encoding=US-ASCII`, reproducing character loss without depending on the
-host's output encoding. Each case sends UTF-8 input, captures output and uses an
-isolated temporary working directory. Chinese `复习`, Tamil `வணக்கம்` and `படி`,
-accented letters and emoji must produce the English-only warning for both add
-and edit. The tests require exit code 0, empty stderr, continued command handling,
-and unchanged activity bytes and modification times after rejection. Rejected
-adds in an empty folder must not create an activity file.
-
-`ParserTest` checks non-ASCII command words, ASCII unknown/blank commands and
-the separate activity-name warning. A process regression checks the exact
-bordered command warning for `加入`, Tamil, accented and emoji input, continued
-handling of `list` and `bye`, and preserved saved bytes and modification times.
-
-A positive case checks ASCII names with spaces, digits, punctuation and a slash
-through add, edit, find and restart. A separate history case loads existing
-Chinese, Tamil, accented and emoji names, verifies their exact UTF-8 output and
-preserves the file across read-only restarts. Run these process tests on Windows with:
-
-```text
-.\gradlew.bat test --tests "seedu.unienable.UniEnableProcessTest" --rerun-tasks
-```
-
-Validation on 28 October 2026 with Java 25.0.4:
-`.\gradlew.bat check shadowJar --rerun-tasks` passed all 465 tests, with no failures,
-errors or skipped tests. Both Checkstyle checks reported zero violations, and
-the configured JaCoCo coverage verification passed.
+`UniEnableProcessTest` runs isolated JVM sessions with UTF-8 input and an
+ASCII-configured original stdout. Unicode add/edit/search and restart cases
+verify explicit UTF-8 output and persisted names; separate command-word and
+control-character cases verify recoverable warnings without data changes.
 
 <!-- @@author -->
 
@@ -1483,7 +1456,7 @@ link their responsibilities, design, code and tests.
 
 | Team member | Feature area | V1.0 work | V2.0 work |
 | --- | --- | --- | --- |
-| [Lou Yu Luke](team/lukelouyu.md) | Ratings, shared validation and accessibility | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2026-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. [ASCII command/name validation](#ascii-command-name-validation) and [duplicate/clash checks](#activity-schedule-validation). |
+| [Lou Yu Luke](team/lukelouyu.md) | Ratings, shared validation and accessibility | Exit: `bye`. [Facility listing, lookup, and feature searches](#facility-lookup): `facility list`, `facility AS4` (or `facility F04`), and `facility find type/LIFT status/NO`. | [Accessible routes](#accessible-route-search): `route from/AS6 to/AS7`. [Optional importance, urgency, and commitment ratings on add](#optional-ratings-integration): `add n/Project d/2026-12-01 s/09:00 e/10:00 imp/5 urg/4 com/3`. [Command and name validation](#ascii-command-name-validation) and [duplicate/clash checks](#activity-schedule-validation). |
 | [Atharva Rege](team/atharva005.md) | Activity creation, calendar views and help | Help: `help`. [Adding an activity with name, date, times, and optional demand](#adding-activities): `add n/Tutorial d/2026-12-01 s/09:00 e/10:00 dem/HIGH`. | [Calendar dashboards](#calendar-dashboards): `view today`, `view tomorrow`, and `view week`, including summaries, high-demand counts, and aligned rating charts. [Categorized and topic help](#categorized-and-topic-help): `help [TOPIC]`. |
 | [Muhammad Asyraf Bin Abdul Rahim](team/officialasyrafrahim.md) | Activity views and deletion | [Chronological listing, demand ordering, and deletion](#activity-views-and-deletion): `list`, `list demand`, and `delete 1`. | [Priority, overdue, and next views](#activity-views-and-deletion): `list priority`, `overdue`, and `next`. |
 | [Oliver](team/oliver-koh.md) | Completion, storage, editing and search | [Saving, backups, and recovery](#completion-storage-editing-and-search), triggered automatically by activity changes; completion commands: `mark 1` and `unmark 1`. | [Activity editing and name search](#completion-storage-editing-and-search): `edit 1 n/CS2113 tutorial class` and `find tutorial`. |
@@ -1681,43 +1654,14 @@ read-only commands below: these commands should not change the saved bytes.
 
 <!-- @@author lukelouyu -->
 
-#### Foreign language name rejection and UTF-8 output
+#### Unicode names and UTF-8 output
 
-Use a fresh disposable test folder and the real JAR entry point from
-[Prepare a separate test folder](#prepare-a-separate-test-folder). Send input as
-UTF-8 so the test reaches name validation with the intended characters. Names
-supplied to add and edit must contain ASCII characters only. Each non-ASCII
-example below must show:
-
-```text
-[WARNING] Please write the activity name in English (ASCII characters only).
-```
-
-| Input or action | Expected result |
-| --- | --- |
-| `add n/வணக்கம் d/2099-12-10 s/09:00 e/10:00` | English-only warning; no activity is added. |
-| `add n/படி d/2099-12-11 s/09:00 e/10:00` | English-only warning; no activity is added. |
-| `add n/复习 d/2099-12-12 s/09:00 e/10:00` | English-only warning; no activity is added. |
-| `加入`, `வணக்கம்` or `படி` as the command word | `[WARNING] Please write the command in English (ASCII characters only).` The session continues without changing data. |
-| `bogus` or a blank line | Existing unrecognized-command warning; the session continues. |
-| Repeat with `n/Café` or `n/Study 🎉` | English-only warning for accented letters and emoji. |
-| `list`, then inspect the test folder | Empty-list warning; no `data/activities.txt` has been created. |
-| `add n/Study d/2099-12-12 s/09:00 e/10:00` | Valid ASCII name is added at index 1; the session continues after the earlier warnings. |
-| `edit 1 n/复习 imp/5`, then `edit 1 n/படி` | English-only warnings; neither the name nor any other supplied field is changed. |
-| Inspect `data/activities.txt` as UTF-8 | Only the ASCII activity below is saved. Rejected edits preserve the file bytes and modification time. |
-| `bye`, relaunch from the same folder, then `list` and `bye` | Only Study reloads, stderr stays empty, and this read-only session preserves the saved bytes. |
-
-```text
-Study|2099-12-12|09:00|10:00|MEDIUM|false|-|-|-
-```
-
-For repeatable redirected-output checks, run `UniEnableProcessTest` using the
-command in [Automated testing](#automated-testing). It writes UTF-8 input directly
-to the child JVM and forces ASCII as its initial stdout encoding, so shell input
-encoding cannot hide validation or historical-output defects. These process tests
-check the actual `main()` method; the fixed-clock driver calls an injectable
-`run()` method instead. Existing saved non-ASCII names are retained and displayed;
-the new rule restricts names supplied by add or edit.
+In disposable storage, add activities named `复习`, `வணக்கம்`, `Café`, and
+`Study 🎉` on distinct future dates. Edit and search those names, then restart:
+the exact names must survive in the console and UTF-8 activity file. Control
+characters, line breaks, and blank names must warn without changing saved data.
+Non-ASCII command words still produce the English-command warning.
+`UniEnableProcessTest` verifies redirected output through the real entry point.
 
 ### Duplicate activities and time clashes
 
@@ -1875,8 +1819,8 @@ before and after searches and rejected edits; they must remain unchanged.
 
 In a disposable test folder, also try `add` and `edit` with a name containing only
 U+2003 EM SPACE or U+3000 IDEOGRAPHIC SPACE: both must show the blank-name warning.
-Chinese, Tamil, accented and emoji names supplied to add or edit must show the
-English-only warning. Existing saved non-ASCII names still load. Confirm that
+Chinese, Tamil, accented and emoji names supplied to add or edit must be retained
+and saved as UTF-8. Names containing control characters must warn. Existing saved non-ASCII names still load. Confirm that
 rejected commands leave the original activity and
 saved file unchanged, including after restarting.
 

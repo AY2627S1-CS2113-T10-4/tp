@@ -17,7 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * Checks ASCII-only input and historical Unicode output through the real entry point and isolated storage.
+ * Checks Unicode activity names, ASCII command words, and UTF-8 output
+ * through the real entry point and isolated storage.
  */
 class UniEnableProcessTest {
     @Test
@@ -72,36 +73,36 @@ class UniEnableProcessTest {
     }
 
     @Test
-    void chineseNames_rejectAddAndEditWithoutChangingStoredData(@TempDir Path tempDir) throws Exception {
-        assertNameIsRejected(tempDir, "复习");
+    void chineseNames_surviveAddEditAndRestart(@TempDir Path tempDir) throws Exception {
+        assertNameIsAccepted(tempDir, "复习");
     }
 
     @Test
-    void tamilGreeting_rejectsAddAndEditWithoutChangingStoredData(@TempDir Path tempDir) throws Exception {
-        assertNameIsRejected(tempDir, "வணக்கம்");
+    void tamilGreeting_survivesAddEditAndRestart(@TempDir Path tempDir) throws Exception {
+        assertNameIsAccepted(tempDir, "வணக்கம்");
     }
 
     @Test
-    void tamilStudy_rejectsAddAndEditWithoutChangingStoredData(@TempDir Path tempDir) throws Exception {
-        assertNameIsRejected(tempDir, "படி");
+    void tamilStudy_survivesAddEditAndRestart(@TempDir Path tempDir) throws Exception {
+        assertNameIsAccepted(tempDir, "படி");
     }
 
     @Test
-    void accentedNames_rejectAddAndEditWithoutChangingStoredData(@TempDir Path tempDir) throws Exception {
-        assertNameIsRejected(tempDir, "Café");
+    void accentedNames_surviveAddEditAndRestart(@TempDir Path tempDir) throws Exception {
+        assertNameIsAccepted(tempDir, "Café");
     }
 
     @Test
-    void emojiNames_rejectAddAndEditWithoutChangingStoredData(@TempDir Path tempDir) throws Exception {
-        assertNameIsRejected(tempDir, "Study 🎉");
+    void emojiNames_surviveAddEditAndRestart(@TempDir Path tempDir) throws Exception {
+        assertNameIsAccepted(tempDir, "Study 🎉");
     }
 
     @Test
     void rejectedAdd_doesNotCreateActivityData(@TempDir Path tempDir) throws Exception {
-        String output = runSession(tempDir, "add n/复习 d/2099-12-12 s/09:00 e/10:00\n"
-                + "add n/வணக்கம் d/2099-12-12 s/09:00 e/10:00\nlist\nbye\n");
+        String output = runSession(tempDir, "add n/Bad\u0000name d/2099-12-12 s/09:00 e/10:00\n"
+                + "add n/Bad\u0080name d/2099-12-12 s/09:00 e/10:00\nlist\nbye\n");
 
-        assertEquals(2, output.split(Pattern.quote(englishNameWarning()), -1).length - 1, output);
+        assertEquals(2, output.split(Pattern.quote(invalidNameWarning()), -1).length - 1, output);
         assertFalse(output.contains("Added activity:"), output);
         assertTrue(output.contains("No activities yet."), output);
         assertTrue(output.contains("Goodbye from UniEnable!"), output);
@@ -148,35 +149,30 @@ class UniEnableProcessTest {
     }
 
     /**
-     * Checks recoverable add/edit warnings, unchanged activity bytes and preserved restart state.
+     * Checks Unicode add/edit, UTF-8 persistence, name search, and restart state.
      */
-    private static void assertNameIsRejected(Path tempDir, String name) throws Exception {
-        Path activityFile = tempDir.resolve("data/activities.txt");
-        Files.createDirectories(activityFile.getParent());
-        byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n".getBytes(StandardCharsets.UTF_8);
-        Files.write(activityFile, original);
-        var originalModifiedTime = Files.getLastModifiedTime(activityFile);
+    private static void assertNameIsAccepted(Path tempDir, String name) throws Exception {
+        String updated = name + " revised";
         String output = runSession(tempDir, "add n/" + name
-                + " d/2099-12-12 s/09:00 e/10:00\nedit 1 n/" + name + " imp/5\nlist\nbye\n");
-
-        assertEquals(2, output.split(Pattern.quote(englishNameWarning()), -1).length - 1, output);
-        assertFalse(output.contains("Added activity:"), output);
-        assertFalse(output.contains("Edited activity:"), output);
-        assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), output);
-        assertTrue(output.contains("Goodbye from UniEnable!"), output);
-        assertArrayEquals(original, Files.readAllBytes(activityFile));
-        assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
-
-        String restartedOutput = runSession(tempDir, "list\nbye\n");
-        assertTrue(restartedOutput.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), restartedOutput);
-        assertArrayEquals(original, Files.readAllBytes(activityFile));
+                + " d/2099-12-12 s/09:00 e/10:00\nedit 1 n/" + updated + " imp/5\nfind " + updated
+                + "\nbye\n");
+        assertTrue(output.contains("Added activity: " + name), output);
+        assertTrue(output.contains("Edited activity: " + updated), output);
+        assertTrue(output.contains("Found 1 matching activity:"), output);
+        assertFalse(output.contains("[WARNING]"), output);
+        Path activityFile = tempDir.resolve("data/activities.txt");
+        byte[] saved = Files.readAllBytes(activityFile);
+        assertTrue(new String(saved, StandardCharsets.UTF_8).contains(updated + "|2099-12-12"));
+        String restarted = runSession(tempDir, "list\nbye\n");
+        assertTrue(restarted.contains("1. " + updated + " (2099-12-12, 09:00-10:00)"), restarted);
+        assertArrayEquals(saved, Files.readAllBytes(activityFile));
     }
 
     /**
      * Returns the expected user-facing warning shared by the input rejection scenarios.
      */
-    private static String englishNameWarning() {
-        return "[WARNING] Please write the activity name in English (ASCII characters only).";
+    private static String invalidNameWarning() {
+        return "[WARNING] The activity name must not contain control characters or unpaired surrogates.";
     }
 
     /**

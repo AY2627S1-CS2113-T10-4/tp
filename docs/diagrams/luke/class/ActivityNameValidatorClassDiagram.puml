@@ -1,7 +1,7 @@
 '@@author lukelouyu
 @startuml
 !pragma layout smetana
-title ASCII command and activity name validation
+title Command and Unicode activity name validation
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName SansSerif
@@ -37,7 +37,7 @@ EditCommandParser ..> ActivityNameValidator : checks supplied name
 AddCommandParser ..> ActivityParameterValidator : checks field spelling
 EditCommandParser ..> ActivityParameterValidator : checks field spelling
 ActivityParameterValidator ..> ParseException : rejects likely prefix typos
-ActivityNameValidator ..> ParseException : rejects non-ASCII names
+ActivityNameValidator ..> ParseException : rejects controls / malformed surrogates
 
 note top of Parser
   Check the command word before case conversion.
@@ -46,10 +46,10 @@ note top of Parser
 end note
 
 note bottom of ActivityNameValidator
-  Any character above U+007F is rejected.
-  Report: Please write the activity name in English.
+  Unicode names are accepted, including accents, Chinese, Tamil, and emoji.
+  Reject control characters and malformed UTF-16 surrogates.
   Parsers keep blank-name and delimiter checks.
-  Storage does not apply this rule to saved history.
+  Storage reads and writes names as UTF-8.
 end note
 @enduml
 '@@author

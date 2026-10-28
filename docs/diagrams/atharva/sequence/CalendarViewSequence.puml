@@ -55,8 +55,9 @@ else selected period has activities
   View -> View : appendSummary(output, view)
   View -> View : appendRatingChart(output, view)
   note right of View
-    Table rows fit within 80 characters, including separators.
-    chartName(name) caps labels at 26 characters, using ... for longer names.
+    Table rows fit within 80 terminal columns, including separators.
+    chartName(name) caps labels at 26 columns, using ... for longer names.
+    Truncate at grapheme boundaries and pad by rendered width.
     Full names remain in schedules and stored data.
   end note
 end

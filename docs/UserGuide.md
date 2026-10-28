@@ -165,12 +165,9 @@ local time zone. An activity that has already started can still be added if it
 has not ended; an activity ending exactly now is rejected. New activities start
 incomplete.
 
-Names must contain at least one non-whitespace character and use ASCII characters
-only. Chinese, Tamil, accented letters and emoji are rejected with
-`[WARNING] Please write the activity name in English (ASCII characters only).`
-Names cannot contain `|` or line breaks. English letters, digits, spaces and
-ASCII punctuation are allowed; the application checks characters, not the
-language of words written with ASCII letters.
+Names support Unicode, including Chinese, Tamil, accented letters, and emoji.
+They must contain a non-blank character and cannot contain `|`, line breaks,
+control characters, or malformed surrogate pairs. Names are preserved in UTF-8.
 
 Slash-containing text such as `and/or`
 and `w/o` is allowed. However, a known prefix (`n/`, `d/`, `s/`, `e/`, `dem/`,
@@ -301,7 +298,7 @@ Formats: `view today`, `view tomorrow`, and `view week`
   importance (IMP), urgency (URG), and commitment (COM). Demand uses `# L`, `## M`,
   or `### H` for LOW, MEDIUM, or HIGH.
 - Read the table in a terminal with a monospaced font. Each table row fits within
-  80 characters. The activity column displays up to 26 characters, including a
+  80 terminal columns. The activity column uses up to 26 columns, including a
   trailing `...` for longer names. Full names remain in the schedule above the
   table and in the saved data. Rows follow the schedule's chronological order.
   To rank activities by score, use [list priority](#viewing-priority-list-priority).
@@ -545,10 +542,8 @@ Both `add` and `edit` reject whitespace-only names, including Unicode spaces suc
 as U+2003 EM SPACE and U+3000 IDEOGRAPHIC SPACE. Rejected input leaves the activity
 list and saved data unchanged.
 
-Replacement names supplied with `edit INDEX n/NAME` must also use ASCII characters only;
-otherwise the English-only warning appears and none of the supplied fields are
-changed. Previously saved non-ASCII names still load and can be listed, searched
-or renamed using ASCII characters.
+Replacement names follow the same Unicode and delimiter rules as add. Existing
+saved names can be listed, searched, and renamed in any supported script.
 
 ### Searching activity names: `find`
 
@@ -850,7 +845,7 @@ Command words must use ASCII characters. For example, entering `加入` or
 
 The app then waits for another command. Unknown ASCII command words and blank
 input keep the usual unrecognized-command warning. Non-ASCII activity names
-supplied to add or edit receive the activity-name warning instead.
+supplied to add or edit are supported; control characters still receive a name warning.
 <!-- @@author -->
 
 <!-- @@author Oliver-koh -->

@@ -55,7 +55,7 @@ enum DemandLevel {
 Command <|-- AddCommand
 AddCommandParser ..> AddCommand : creates
 AddCommandParser ..> Activity : validates ratings
-AddCommandParser ..> ActivityNameValidator : checks ASCII name
+AddCommandParser ..> ActivityNameValidator : checks Unicode name safety
 AddCommandParser ..> ActivityParameterValidator : rejects likely prefix typos
 AddCommand ..> ActivityScheduleValidator : checks before insertion
 ActivityScheduleValidator ..> ActivityList : reads chronological view

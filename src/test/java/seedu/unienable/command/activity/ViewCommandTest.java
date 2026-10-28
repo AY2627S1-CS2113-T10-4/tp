@@ -47,6 +47,22 @@ class ViewCommandTest {
     };
 
     @Test
+    void execute_unicodeNames_alignAndTruncateWithoutSplittingCharacters() throws Exception {
+        ActivityList activities = new ActivityList(List.of(
+                new Activity("复习".repeat(20), TODAY, START, END, DemandLevel.LOW, false),
+                new Activity("🎉".repeat(20), TODAY, START, END, DemandLevel.HIGH, false),
+                new Activity("👩‍💻".repeat(20), TODAY, START, END, DemandLevel.HIGH, false),
+                new Activity("Cafe\u0301".repeat(10), TODAY, START, END, DemandLevel.LOW, false)));
+        String message = parser.parse("view today").execute(activities, noWrites).getMessage();
+        assertTrue(message.contains("| " + "复习".repeat(5) + "复...  |"), message);
+        assertTrue(message.contains("| " + "🎉".repeat(11) + "...  |"), message);
+        assertTrue(message.contains("| " + "👩‍💻".repeat(11) + "...  |"), message);
+        assertTrue(message.contains("| " + "Cafe\u0301".repeat(5) + "Caf... |"), message);
+        assertTrue(message.contains("复习".repeat(20)), message);
+        assertTrue(message.contains("👩‍💻".repeat(20)), message);
+    }
+
+    @Test
     void execute_emptyList_warnsWithoutShowingEmptyCharts() throws Exception {
         assertEmptyViews(new ActivityList());
     }

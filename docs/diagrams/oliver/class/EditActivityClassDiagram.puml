@@ -53,7 +53,7 @@ class CommandResult {
 Command <|-- EditCommand
 Parser ..> EditCommandParser : delegates edit
 EditCommandParser ..> EditCommand : creates with supplied-field flags
-EditCommandParser ..> ActivityNameValidator : checks supplied ASCII name
+EditCommandParser ..> ActivityNameValidator : checks supplied name safety
 EditCommandParser ..> ActivityParameterValidator : rejects likely prefix typos
 EditCommand ..> ActivityScheduleValidator : checks name / schedule edits
 ActivityScheduleValidator ..> ActivityList : reads chronological view
