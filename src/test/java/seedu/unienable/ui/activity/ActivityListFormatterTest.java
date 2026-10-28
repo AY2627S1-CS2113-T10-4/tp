@@ -89,12 +89,12 @@ class ActivityListFormatterTest {
         String message = ActivityListFormatter.formatOverdueList(List.of(earlier, mondayGym, today),
                 canonicalView, LocalDateTime.parse("2026-10-13T12:00:00"));
 
-        assertEquals("Overdue activities (started before now):\n"
+        assertEquals("Overdue activities (ended before now):\n"
                 + "1. [OVERDUE EARLIER] Earlier (2026-10-05, 09:00-10:00) [LOW] [ ]\n"
                 + "2. [OVERDUE WEEK] Gym session (2026-10-12, 07:00-09:00) [HIGH] [ ]\n"
                 + "3. [OVERDUE TODAY] Today (2026-10-13, 09:00-10:00) [LOW] [ ]",
                 message);
-        assertEquals("Overdue activities (started before now):\n[WARNING] No overdue activities.",
+        assertEquals("Overdue activities (ended before now):\n[WARNING] No overdue activities.",
                 ActivityListFormatter.formatOverdueList(List.of(), canonicalView,
                         LocalDateTime.parse("2026-10-13T12:00:00")));
     }

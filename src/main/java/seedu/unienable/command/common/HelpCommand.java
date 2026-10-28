@@ -28,7 +28,7 @@ public class HelpCommand extends Command {
               view today          Show today's schedule, summary, and rating table
               view tomorrow       Show tomorrow's schedule, summary, and rating table
               view week           Show today and the following six days
-              overdue             Show incomplete activities that have started
+              overdue             Show incomplete activities that have ended
               next                Show the earliest upcoming incomplete activity
 
             COMPLETION AND DELETION
@@ -167,14 +167,14 @@ public class HelpCommand extends Command {
                       view week
                     """.stripTrailing()),
             Map.entry("overdue", """
-                    OVERDUE - Find incomplete activities that have started
+                    OVERDUE - Find incomplete activities that have ended
 
                     Usage:
                       overdue
 
                     Details:
-                      - Shows incomplete activities with a start strictly before the current time.
-                      - Includes activities still in progress; excludes completed activities.
+                      - Shows incomplete activities with an end strictly before the current time.
+                      - Excludes ongoing and completed activities, including activities ending exactly now.
                       - Results use chronological indexes and labels for today, this week, or earlier.
                       - Accepts no arguments and does not mark or modify any activity.
 

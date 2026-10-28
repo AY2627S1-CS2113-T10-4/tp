@@ -615,23 +615,23 @@ Indexes refer to the chronological 'list' order.
 
 ### Viewing overdue activities: `overdue`
 
-`overdue` shows incomplete activities whose start is strictly before the current
-local time. An activity that has started but not ended is included. Completed
-activities and activities starting exactly now or later are excluded.
+`overdue` shows incomplete activities whose end is strictly before the current
+local time. Ongoing and completed activities are excluded. An activity ending
+exactly now becomes overdue only after that time has passed.
 
 Each row keeps its chronological `list` index and adds one label:
 
 | Label | Meaning |
 | --- | --- |
-| `OVERDUE TODAY` | Starts earlier today. |
-| `OVERDUE WEEK` | Starts on an earlier day in the current Monday-to-Sunday week. |
-| `OVERDUE EARLIER` | Starts before the current week's Monday. |
+| `OVERDUE TODAY` | Ended earlier today. |
+| `OVERDUE WEEK` | Ended on an earlier day in the current Monday-to-Sunday week. |
+| `OVERDUE EARLIER` | Ended before the current week's Monday. |
 
 Using the same five-activity schedule, assume the current local time is
-2026-12-04 at 15:00. The containing week starts on Monday, 2026-11-30:
+2026-12-04 at 15:01. The containing week starts on Monday, 2026-11-30:
 
 ```text
-Overdue activities (started before now):
+Overdue activities (ended before now):
 1. [OVERDUE WEEK] CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
 2. [OVERDUE WEEK] Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
 3. [OVERDUE WEEK] Planning and/or review (2026-12-03, 10:00-11:00) [LOW] [ ]
@@ -647,7 +647,7 @@ the current local time. Activities starting exactly now and completed activities
 are skipped. Equal starts keep add order, and the row keeps its chronological
 `list` index.
 
-At the same assumed local time, 2026-12-04 at 15:00, with the same five activities:
+At the same assumed local time, 2026-12-04 at 15:01, with the same five activities:
 
 ```text
 Next activity (earliest upcoming):
@@ -663,7 +663,9 @@ For an incomplete activity scheduled 09:00-09:30 on the current date:
 | --- | --- | --- |
 | 08:59 | No | Yes, if it is the earliest future incomplete activity. |
 | Exactly 09:00 | No | No. |
-| 09:15 | Yes, even though it is still in progress. | No. |
+| 09:15 | No; the activity is ongoing. | No. |
+| Exactly 09:30 | No. | No. |
+| 09:31 | Yes, if still incomplete. | No. |
 
 A completed activity appears in neither time query. At its exact start, an
 incomplete activity appears in neither query; it remains visible in `list`.
@@ -936,7 +938,7 @@ Use `help TOPIC` with any command name below for detailed instructions, such as
 | `find KEYWORD` | Search activity names and retain chronological list indexes |
 | `list priority` | View all activities by combined priority score |
 | `view today` / `view tomorrow` / `view week` | Show today's, tomorrow's, or the next seven days' dashboard |
-| `overdue` / `next` | View incomplete activities that started before now / the earliest upcoming incomplete activity |
+| `overdue` / `next` | View incomplete activities that ended before now / the earliest upcoming incomplete activity |
 | `mark INDEX` / `unmark INDEX` / `delete INDEX` | Change completion / delete |
 | `facility list` / `facility LOCATION` | View all facilities / one facility |
 | `facility find type/FEATURE [status/YES\|NO\|UNKNOWN]` | Search recorded features |

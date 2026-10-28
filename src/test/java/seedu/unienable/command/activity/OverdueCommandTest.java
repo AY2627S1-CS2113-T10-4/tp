@@ -38,13 +38,14 @@ class OverdueCommandTest {
     };
 
     @Test
-    void execute_usesStrictStartBoundaryAndExcludesCompletedActivities() throws Exception {
+    void execute_usesStrictEndBoundaryAndExcludesCompletedActivities() throws Exception {
         add("Tomorrow", "2026-10-22", "09:00", 10);
         add("Sunday", "2026-10-18", "08:00", 9);
         add("Exact now", "2026-10-21", "12:00", 13);
         add("Monday", "2026-10-19", "08:00", 9);
         add("Today done", "2026-10-21", "09:00", 10);
-        add("Today past", "2026-10-21", "11:00", 12);
+        add("Today past", "2026-10-21", "10:30", 11);
+        add("Ending now", "2026-10-21", "11:00", 12);
         add("In progress", "2026-10-21", "11:30", 13);
         add("Future today", "2026-10-21", "13:00", 14);
         activities.getActivities().stream()
@@ -53,21 +54,36 @@ class OverdueCommandTest {
 
         String message = parser.parse("overdue").execute(activities, noWrites).getMessage();
 
-        assertTrue(message.startsWith("Overdue activities (started before now):"), message);
+        assertTrue(message.startsWith("Overdue activities (ended before now):"), message);
         assertTrue(message.contains("1. [OVERDUE EARLIER] Sunday (2026-10-18, 08:00-09:00)"),
                 message);
         assertTrue(message.contains("2. [OVERDUE WEEK] Monday (2026-10-19, 08:00-09:00)"),
                 message);
-        assertTrue(message.contains("4. [OVERDUE TODAY] Today past (2026-10-21, 11:00-12:00)"),
+        assertTrue(message.contains("4. [OVERDUE TODAY] Today past (2026-10-21, 10:30-11:00)"),
                 message);
-        assertTrue(message.contains("5. [OVERDUE TODAY] In progress (2026-10-21, 11:30-13:00)"),
-                message);
+        assertFalse(message.contains("In progress"), message);
+        assertFalse(message.contains("Ending now"), message);
         assertFalse(message.contains("Today done"), message);
         assertFalse(message.contains("Exact now"), message);
         assertFalse(message.contains("Future today"), message);
         assertFalse(message.contains("Tomorrow"), message);
         assertFalse(message.contains("[X]"), message);
         assertFalse(parser.parse("overdue").execute(activities, noWrites).didChangeActivities());
+    }
+
+    @Test
+    void execute_onlyBecomesOverdueAfterEndTime() throws Exception {
+        activities.addActivity(new Activity("Boundary", LocalDate.parse("2026-10-21"),
+                LocalTime.parse("09:00"), LocalTime.parse("09:30"), DemandLevel.LOW, false));
+        for (String time : new String[]{"09:15:00", "09:30:00", "09:30:01"}) {
+            Parser timed = new Parser(Clock.fixed(Instant.parse("2026-10-21T" + time + "Z"), ZoneOffset.UTC));
+            String message = timed.parse("overdue").execute(activities, noWrites).getMessage();
+            if (time.equals("09:30:01")) {
+                assertTrue(message.contains("1. [OVERDUE TODAY] Boundary"), message);
+            } else {
+                assertTrue(message.endsWith("[WARNING] No overdue activities."), message);
+            }
+        }
     }
 
     @Test

@@ -677,8 +677,8 @@ Source: [ListPrioritySequence.puml](diagrams/asyraf/sequence/ListPrioritySequenc
 #### Overdue activities
 
 `overdue` captures `LocalDateTime.now(clock)` once and selects incomplete
-activities whose start is strictly before that instant. Activities starting
-exactly now are excluded. Results retain chronological order and full-list indexes.
+activities whose end is strictly before that instant. Ongoing activities and
+activities ending exactly now are excluded. Results retain chronological order and full-list indexes.
 
 `formatOverdueList()` uses the same captured time to label activities as today,
 earlier in the current Monday-to-Sunday week, or earlier. An empty result displays
@@ -1634,7 +1634,7 @@ The final argument is the simulated local date/time in `Asia/Singapore`.
 For the priority scenario, enter `list priority`, `overdue`, `next`,
 `mark 3`, `next`, and `bye`. For the strict-boundary table, replace the last
 two arguments with `docs/testing/fixtures/boundary.txt 2026-11-22T08:59`, then
-repeat at `2026-11-22T09:00` and `2026-11-22T09:15`, entering `overdue`,
+repeat at `2026-11-22T09:00`, `2026-11-22T09:15`, and `2026-11-22T09:31`, entering `overdue`,
 `next`, and `bye` each time. For calendar dashboards, use
 `docs/testing/fixtures/calendar.txt 2026-10-25T12:00` and enter `view today`,
 `view tomorrow`, `view week`, `help view`, and `bye`.
@@ -1766,7 +1766,9 @@ For one incomplete activity on the same date at 09:00-09:30, check these clocks:
 | --- | --- | --- |
 | 08:59 | Empty | That activity. |
 | Exactly 09:00 | Empty | Empty. |
-| 09:15 | That activity with `OVERDUE TODAY`. | Empty. |
+| 09:15 | Empty; the activity is ongoing. | Empty. |
+| Exactly 09:30 | Empty. | Empty. |
+| 09:31 | That activity with `OVERDUE TODAY`. | Empty. |
 
 Repeat with the activity completed: both time queries are empty. Check
 Sunday/Monday, December/January and local-midnight boundaries with a non-UTC clock.

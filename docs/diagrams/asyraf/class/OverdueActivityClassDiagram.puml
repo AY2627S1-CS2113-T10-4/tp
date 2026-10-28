@@ -44,7 +44,7 @@ OverdueCommand ..> CommandResult : read-only result
 ActivityList --> "0..*" Activity : activities
 note bottom of ActivityList
   Use local now captured once by the command.
-  Select incomplete activities with start strictly before now.
+  Select incomplete activities with end strictly before now.
   Keep chronological indexes; label today, this week or earlier.
 end note
 note bottom of CommandResult

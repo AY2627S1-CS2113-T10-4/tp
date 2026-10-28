@@ -144,17 +144,17 @@ public class ActivityList {
 
     //@@author officialasyrafrahim
     /**
-     * Returns incomplete activities whose start is strictly before the supplied
+     * Returns incomplete activities whose end is strictly before the supplied
      * local time. The result keeps canonical order for stable chronological ties.
      *
-     * @param now local date and time used for the strict start boundary.
+     * @param now local date and time used for the strict end boundary.
      * @return immutable overdue view
      */
     public List<Activity> getOverdueView(LocalDateTime now) {
         Objects.requireNonNull(now);
         List<Activity> view = activities.stream()
                 .filter(activity -> !activity.isDone())
-                .filter(activity -> LocalDateTime.of(activity.getDate(), activity.getStartTime()).isBefore(now))
+                .filter(activity -> LocalDateTime.of(activity.getDate(), activity.getEndTime()).isBefore(now))
                 .sorted(CANONICAL_ORDER)
                 .toList();
         assert isSorted(view, CANONICAL_ORDER) : "Overdue view must stay in canonical order.";

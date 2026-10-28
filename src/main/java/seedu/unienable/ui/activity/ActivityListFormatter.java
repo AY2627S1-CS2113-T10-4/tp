@@ -22,7 +22,7 @@ public final class ActivityListFormatter {
 
     private static final String PRIORITY_LIST_HEADING = "Activities by priority (highest first):";
 
-    private static final String OVERDUE_LIST_HEADING = "Overdue activities (started before now):";
+    private static final String OVERDUE_LIST_HEADING = "Overdue activities (ended before now):";
 
     private static final String NEXT_HEADING = "Next activity (earliest upcoming):";
 

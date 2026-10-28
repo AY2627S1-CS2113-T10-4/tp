@@ -67,7 +67,7 @@ class HelpCommandTest {
             {"find", "find KEYWORD", "literal substring", "find project meeting"},
             {"list", "list priority", "list demand groups HIGH, MEDIUM, then LOW", "list demand"},
             {"view", "view week", "today and the following six days", "view tomorrow"},
-            {"overdue", "overdue", "start strictly before the current time", "overdue"},
+            {"overdue", "overdue", "end strictly before the current time", "overdue"},
             {"next", "next", "start is strictly after the current time", "next"},
             {"mark", "mark INDEX", "already completed activity warns", "mark 1"},
             {"unmark", "unmark INDEX", "already incomplete activity warns", "unmark 1"},
