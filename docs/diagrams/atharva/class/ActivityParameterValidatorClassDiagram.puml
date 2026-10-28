@@ -42,7 +42,7 @@ note bottom of ActivityParameterValidator
   Check one insertion, deletion, substitution, or adjacent swap
   against multi-letter prefixes using edit distance.
   Ordinary names containing and/or or w/o remain valid.
-  A backslash before a slash makes prefix-like name text literal.
+  Prefix-like name text must be reworded; no slash-escape syntax exists.
 end note
 note bottom of ParseException
   Example: Unknown parameter 'demm/'. Did you mean 'dem/'?

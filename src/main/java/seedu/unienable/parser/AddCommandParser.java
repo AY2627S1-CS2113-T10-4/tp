@@ -63,7 +63,7 @@ public class AddCommandParser {
      * @throws ParseException for absent, duplicate, unknown, or malformed arguments.
      */
     public AddCommand parse(String arguments) throws ParseException {
-        ActivityNameValidator.rejectQuotationMarks(arguments);
+        ActivityNameValidator.rejectForbiddenPunctuation(arguments);
         ActivityParameterValidator.validate(arguments);
         Map<String, String> fields = readFields(arguments);
         for (String required : new String[] {"n", "d", "s", "e"}) {
@@ -72,7 +72,7 @@ public class AddCommandParser {
             }
         }
 
-        String name = ActivityNameValidator.unescapeSlashes(fields.get("n"));
+        String name = fields.get("n");
         if (name.isBlank()) {
             throw invalid("Empty n/ parameter.");
         }

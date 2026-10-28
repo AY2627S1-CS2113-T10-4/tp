@@ -26,8 +26,7 @@ class ActivityParameterValidatorTest {
 
     @Test
     void validate_ordinarySlashTextAndModuleCodes_remainValid() {
-        for (String name : new String[] {"Planning and/or review", "Lunch w/o friends", "CS2113/notes",
-            "Discuss dim\\/sum dem1\\/HIGH d\\/notes"}) {
+        for (String name : new String[] {"Planning and/or review", "Lunch w/o friends", "CS2113/notes"}) {
             assertDoesNotThrow(() -> ActivityParameterValidator.validate("n/" + name));
         }
     }

@@ -25,8 +25,7 @@ class ActivityParameterValidator <<package-private>> {
   ~{static} validate(arguments: String): void
 }
 class ActivityNameValidator <<package-private>> {
-  ~{static} rejectQuotationMarks(input: String): void
-  ~{static} unescapeSlashes(name: String): String
+  ~{static} rejectForbiddenPunctuation(input: String): void
   ~{static} validate(name: String): void
 }
 class ParseException <<checked exception>>
@@ -53,8 +52,8 @@ note bottom of ActivityNameValidator
   Whitespace-only names receive the empty-name warning.
   Parsers keep blank-name and delimiter checks.
   Historical Unicode names still load and save as UTF-8.
-  Parsers decode explicitly escaped slashes after extracting fields.
-  Reject double quotation marks before parsing fields; apostrophes remain valid.
+  Reject backslashes, commas and both quotation marks before parsing fields.
+  Slash is allowed subject to prefix rules; no escape or quote syntax exists.
 end note
 @enduml
 '@@author

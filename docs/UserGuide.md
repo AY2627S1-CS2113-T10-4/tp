@@ -194,16 +194,17 @@ non-printable characters such as tabs are rejected with:
 
 The `|` character and line breaks remain forbidden and receive a separate
 delimiter warning. Ordinary slash text such as `and/or` and `w/o` is allowed.
-Double quotation marks (`"`) are also forbidden, including inside a name or around
-a multiword name. Quotation marks do not escape parameter prefixes. Both Add and
-Edit reject them with:
+Backslashes (`\`), commas (`,`), single quotation marks (`'`, including apostrophes),
+and double quotation marks (`"`) are forbidden. Slash (`/`) is allowed, subject to
+the prefix rules below. Combinations `/\` and `\/` are forbidden because they
+contain a backslash. There is no slash-escape or quoted-name syntax. Both Add and
+Edit reject these characters with:
 
 ```text
-[WARNING] Double quotation marks (") are not allowed in activity names.
+[WARNING] Activity names must not contain backslashes (\), commas (,), or quotation marks (' or "). Slash (/) is allowed; /\ and \/ are not.
 ```
 
-Apostrophes, as in `O'Brien's tutorial`, remain allowed. These input restrictions
-do not prevent loading historical saved names.
+These input restrictions do not prevent loading historical saved names.
 Avoid field prefixes at the start of a word in a name: they are parsed as fields.
 Names are saved in UTF-8. Historical saved names containing non-ASCII characters
 can still be loaded, listed, and searched; a replacement name supplied with
@@ -211,12 +212,10 @@ can still be loaded, listed, and searched; a replacement name supplied with
 
 Likely misspellings of multi-letter prefixes, such as `demm/HIGH`, `dem1/HIGH`, or `impp/5`,
 produce a warning instead of becoming part of the name. This also applies to edit.
-To enter literal slash text that resembles a parameter or a spelling mistake,
-put a backslash before that slash: `add n/Lunch dim\/sum d/2099-12-10 s/09:00 e/10:00`.
-The saved name is `Lunch dim/sum`. The same escape works for known prefixes,
-for example `edit 1 n/Review d\/notes`; the saved name is `Review d/notes`.
-Only `\/` is decoded, after field parsing and typo checks. Ordinary `and/or` and
-`w/o` need no escape. Search using the saved slash text, such as `find d/notes`.
+Ordinary `and/or` and `w/o` remain allowed. Prefix-like slash text, such as a
+word beginning `d/` or a likely typo such as `dim/sum`, cannot be entered literally
+at a field boundary. Reword it using spaces or hyphens, such as `dim-sum` or
+`date notes`; do not attempt to quote or backslash-escape it.
 
 A duplicate activity has the same name (ignoring case and surrounding whitespace),
 date, start and end times as an existing activity. Changing demand, ratings or

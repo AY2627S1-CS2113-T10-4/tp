@@ -18,11 +18,13 @@ class ParserTest {
 
     @Test
     void quotedActivityNames_warnBeforeInterpretingPrefixesOrTypos() {
-        for (String name : List.of("\"Discuss d/notes dem1/HIGH\"", "\"Unclosed", "A\"B", "Trailing\"")) {
+        for (String name : List.of("\"Discuss d/notes dem1/HIGH\"", "\"Unclosed", "A\"B", "Trailing\"",
+                "O'Brien", "'Meeting'", "A,B", "A\\B", "A/\\B", "A\\/B")) {
             for (String input : List.of("add n/" + name + " d/2099-12-10 s/09:00 e/10:00",
                     "edit 1 n/" + name + " imp/5")) {
                 ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input));
-                assertEquals("[WARNING] Double quotation marks (\") are not allowed in activity names.",
+                assertEquals("[WARNING] Activity names must not contain backslashes (\\), commas (,),"
+                        + " or quotation marks (' or \"). Slash (/) is allowed; /\\ and \\/ are not.",
                         exception.getMessage());
             }
         }

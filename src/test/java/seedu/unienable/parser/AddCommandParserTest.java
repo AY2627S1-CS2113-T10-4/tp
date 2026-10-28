@@ -41,13 +41,9 @@ class AddCommandParserTest {
     private final AddCommandParser parser = new AddCommandParser(FIXED_CLOCK);
 
     @Test
-    void parse_escapedSlashes_preservesLiteralNameAndRealFields() throws Exception {
-        ActivityList activities = new ActivityList();
-        parser.parse("n/Discuss dim\\/sum d\\/notes dem1\\/HIGH d/2026-12-10 s/09:00 e/10:00 dem/LOW")
-                .execute(activities, new Storage());
-        Activity activity = activities.getByDisplayedIndex(1);
-        assertEquals("Discuss dim/sum d/notes dem1/HIGH", activity.getName());
-        assertEquals(DemandLevel.LOW, activity.getDemand());
+    void parse_escapedSlashes_rejectsUnsupportedSyntax() {
+        assertThrows(ParseException.class, () -> parser.parse(
+                "n/Discuss dim\\/sum d\\/notes dem1\\/HIGH d/2026-12-10 s/09:00 e/10:00 dem/LOW"));
     }
 
     @TestFactory

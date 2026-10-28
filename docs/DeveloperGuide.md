@@ -665,20 +665,22 @@ For example, `demm/HIGH` and `dem1/HIGH` produce an unknown-parameter warning su
 `ConsoleHelper` displays that warning; no add/edit command executes and neither
 activities nor saved data changes. Ordinary slash text such as `and/or` and `w/o`
 remains valid. Single-letter slash text is excluded from the typo check.
-Names can explicitly escape a literal slash with `\/`, including in prefix-like
-text such as `dim\/sum` or `d\/notes`. The existing token patterns do not match
-these escaped slashes. After extracting fields, both parsers call
-`ActivityNameValidator.unescapeSlashes()` before validating the name and creating
-the command. Only the decoded name is stored; find keywords use the stored text.
-Unescaped typos, including `dem1/HIGH`, still produce a warning.
+Supplied names prohibit backslashes (`\`), commas (`,`), single quotation marks
+(`'`, including apostrophes), and double quotation marks (`"`). Slash (`/`) remains
+allowed subject to the prefix grammar; `/\` and `\/` are rejected because they
+contain backslashes. There is no decoding, slash escaping, or quoted-name syntax.
+Both parsers call `ActivityNameValidator.rejectForbiddenPunctuation()` on raw
+arguments before typo detection or field extraction. Direct name validation
+repeats this guard. The exact warning is:
 
-Double quotation marks are forbidden in supplied activity names; quoted names
-are not supported. Both parsers call `ActivityNameValidator.rejectQuotationMarks()`
-on raw arguments before typo detection or field extraction, so quoted text cannot
-silently be split into parameters. The exact warning is
-`[WARNING] Double quotation marks (") are not allowed in activity names.`
-Direct name validation repeats this guard. Apostrophes and historical stored
-names are unaffected. No command is created and no data is saved on rejection.
+```text
+[WARNING] Activity names must not contain backslashes (\), commas (,), or quotation marks (' or "). Slash (/) is allowed; /\ and \/ are not.
+```
+
+Historical stored names remain loadable. Rejection creates no command and saves
+no data. Ordinary slash names such as `and/or` and `w/o` remain valid. Known
+prefixes and likely typo tokens such as `dim/sum` or `dem1/HIGH` at field boundaries
+remain reserved; users must reword literal name text with spaces or hyphens.
 
 <!-- @@author -->
 <!-- @@author Atharva005 -->

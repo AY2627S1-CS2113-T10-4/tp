@@ -24,7 +24,8 @@ class UniEnableProcessTest {
     @Test
     void doubleQuotedNames_rejectAddAndEditWithoutWritingData(@TempDir Path tempDir) throws Exception {
         String add = "add n/\"Discuss d/notes dem1/HIGH\" d/2099-12-10 s/09:00 e/10:00\n";
-        String warning = "[WARNING] Double quotation marks (\") are not allowed in activity names.";
+        String warning = "[WARNING] Activity names must not contain backslashes (\\), commas (,),"
+                + " or quotation marks (' or \"). Slash (/) is allowed; /\\ and \\/ are not.";
         String emptyOutput = runSession(tempDir, add + "list\nbye\n");
         Path file = tempDir.resolve("data/activities.txt");
         assertTrue(emptyOutput.contains(warning), emptyOutput);
@@ -44,22 +45,48 @@ class UniEnableProcessTest {
     }
 
     @Test
-    void escapedLiteralSlashes_surviveAddEditFindAndRestart(@TempDir Path tempDir) throws Exception {
-        String output = runSession(tempDir, "add n/Discuss dim\\/sum dem1\\/HIGH"
+    void ordinarySlashes_surviveAddEditFindAndRestart(@TempDir Path tempDir) throws Exception {
+        String output = runSession(tempDir, "add n/Planning and/or review"
                 + " d/2099-12-10 s/09:00 e/10:00 dem/LOW\n"
-                + "edit 1 n/Review d\\/notes com\\/draft imp/5\nfind d/notes\nbye\n");
-        assertTrue(output.contains("Added activity: Discuss dim/sum dem1/HIGH"), output);
-        assertTrue(output.contains("Edited activity: Review d/notes com/draft"), output);
+                + "edit 1 n/Lunch w/o friends imp/5\nfind w/o\nbye\n");
+        assertTrue(output.contains("Added activity: Planning and/or review"), output);
+        assertTrue(output.contains("Edited activity: Lunch w/o friends"), output);
         assertTrue(output.contains("Found 1 matching activity:"), output);
         assertFalse(output.contains("[WARNING]"), output);
         Path file = tempDir.resolve("data/activities.txt");
         byte[] saved = Files.readAllBytes(file);
         assertTrue(new String(saved, StandardCharsets.UTF_8)
-                .startsWith("Review d/notes com/draft|2099-12-10|09:00|10:00|LOW|false|5|-|-"));
-        String restarted = runSession(tempDir, "list\nfind com/draft\nbye\n");
-        assertTrue(restarted.contains("1. Review d/notes com/draft"), restarted);
+                .startsWith("Lunch w/o friends|2099-12-10|09:00|10:00|LOW|false|5|-|-"));
+        String restarted = runSession(tempDir, "list\nfind w/o\nbye\n");
+        assertTrue(restarted.contains("1. Lunch w/o friends"), restarted);
         assertTrue(restarted.contains("Found 1 matching activity:"), restarted);
         assertArrayEquals(saved, Files.readAllBytes(file));
+    }
+
+    @Test
+    void forbiddenPunctuation_preservesSavedBytesAndRestart(@TempDir Path tempDir) throws Exception {
+        Path file = tempDir.resolve("data/activities.txt");
+        Files.createDirectories(file.getParent());
+        byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n".getBytes(StandardCharsets.UTF_8);
+        Files.write(file, original);
+        var modifiedTime = Files.getLastModifiedTime(file);
+        StringBuilder commands = new StringBuilder();
+        String[] names = {"A\\B", "A,B", "O'Brien", "'Meeting'", "A/\\B", "A\\/B"};
+        for (String name : names) {
+            commands.append("add n/").append(name).append(" d/2099-12-11 s/09:00 e/10:00\n")
+                    .append("edit 1 n/").append(name).append(" imp/5\n");
+        }
+        String output = runSession(tempDir, commands + "list\nbye\n");
+        String warning = "[WARNING] Activity names must not contain backslashes (\\), commas (,),"
+                + " or quotation marks (' or \"). Slash (/) is allowed; /\\ and \\/ are not.";
+        assertEquals(names.length * 2, output.split(Pattern.quote(warning), -1).length - 1, output);
+        assertFalse(output.contains("Added activity:"), output);
+        assertFalse(output.contains("Edited activity:"), output);
+        assertArrayEquals(original, Files.readAllBytes(file));
+        assertEquals(modifiedTime, Files.getLastModifiedTime(file));
+        String restarted = runSession(tempDir, "list\nbye\n");
+        assertTrue(restarted.contains("1. Existing"), restarted);
+        assertArrayEquals(original, Files.readAllBytes(file));
     }
 
     @Test

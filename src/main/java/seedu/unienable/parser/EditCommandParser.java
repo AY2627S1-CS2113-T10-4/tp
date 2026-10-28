@@ -58,7 +58,7 @@ public class EditCommandParser {
      * @throws ParseException for malformed or incomplete input
      */
     public EditCommand parse(String arguments) throws ParseException {
-        ActivityNameValidator.rejectQuotationMarks(arguments);
+        ActivityNameValidator.rejectForbiddenPunctuation(arguments);
         ActivityParameterValidator.validate(arguments);
         String trimmed = arguments.trim();
         if (trimmed.isEmpty()) {
@@ -76,9 +76,6 @@ public class EditCommandParser {
             throw invalid("At least one editable field must be supplied with overlap/ALLOW.");
         }
         String name = fields.get("n");
-        if (name != null) {
-            name = ActivityNameValidator.unescapeSlashes(name);
-        }
         if (name != null && name.isBlank()) {
             throw invalid("Empty n/ parameter.");
         }
