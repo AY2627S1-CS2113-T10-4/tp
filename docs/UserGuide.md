@@ -165,8 +165,13 @@ local time zone. An activity that has already started can still be added if it
 has not ended; an activity ending exactly now is rejected. New activities start
 incomplete.
 
-Names must contain at least one non-whitespace character. Chinese, accented and
-emoji names are supported. Names cannot contain `|` or line breaks.
+Names must contain at least one non-whitespace character and use ASCII characters
+only. Chinese, Tamil, accented letters and emoji are rejected with
+`[WARNING] Please write the activity name in English (ASCII characters only).`
+Names cannot contain `|` or line breaks. English letters, digits, spaces and
+ASCII punctuation are allowed; the application checks characters, not the
+language of words written with ASCII letters.
+
 Slash-containing text such as `and/or`
 and `w/o` is allowed. However, a known prefix (`n/`, `d/`, `s/`, `e/`, `dem/`,
 `imp/`, `urg/`, or `com/`)
@@ -501,6 +506,11 @@ Both `add` and `edit` reject whitespace-only names, including Unicode spaces suc
 as U+2003 EM SPACE and U+3000 IDEOGRAPHIC SPACE. Rejected input leaves the activity
 list and saved data unchanged.
 
+Replacement names supplied with `edit INDEX n/NAME` must also use ASCII characters only;
+otherwise the English-only warning appears and none of the supplied fields are
+changed. Previously saved non-ASCII names still load and can be listed, searched
+or renamed using ASCII characters.
+
 ### Searching activity names: `find`
 
 Find activities by a case-insensitive substring of their names.
@@ -626,7 +636,6 @@ These strict boundaries also apply when the current clock includes seconds.
 
 
 <!-- @@author -->
-
 
 <!-- @@author lukelouyu -->
 
@@ -779,6 +788,17 @@ empty days inside a populated week have a plain no-activities message.
 
 <!-- @@author lukelouyu -->
 Facility lists without records or recorded features use the same marker.
+
+Command words must use ASCII characters. For example, entering `加入` or
+`வணக்கம்` as a command shows:
+
+```text
+[WARNING] Please write the command in English (ASCII characters only).
+```
+
+The app then waits for another command. Unknown ASCII command words and blank
+input keep the usual unrecognized-command warning. Non-ASCII activity names
+supplied to add or edit receive the activity-name warning instead.
 <!-- @@author -->
 
 <!-- @@author Oliver-koh -->

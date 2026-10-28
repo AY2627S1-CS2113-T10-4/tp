@@ -339,28 +339,34 @@ class UniEnableTest {
     }
     //@@author
 
+    //@@author lukelouyu
     @Test
-    void unicodeNames_surviveAddingEditingSearchingAndRestarting(@TempDir Path tempDir) throws Exception {
-        String[] names = {"\u5b66\u4e60", "Caf\u00e9", "\ud83d\udcda Study"};
+    void nonAsciiNames_rejectAddAndEditWithoutChangingSavedData(@TempDir Path tempDir) throws Exception {
+        String[] names = {"复习", "வணக்கம்", "படி", "Café", "📚 Study", "Study\u2003group", "Study\u0080"};
         for (int i = 0; i < names.length; i++) {
             Path activityFile = tempDir.resolve("unicode-" + i + ".txt");
-            String updatedName = names[i] + " revised";
+            byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n"
+                    .getBytes(StandardCharsets.UTF_8);
+            Files.write(activityFile, original);
+            var originalModifiedTime = Files.getLastModifiedTime(activityFile);
             String output = consoleAtPath("add n/" + names[i] + " d/2099-12-10 s/09:00 e/10:00\n"
-                    + "edit 1 n/" + updatedName + "\nfind " + names[i] + "\nbye\n", activityFile);
+                    + "edit 1 n/" + names[i] + " imp/5\nlist\nbye\n", activityFile);
 
-            assertTrue(output.contains("Added activity: " + names[i]), output);
-            assertTrue(output.contains("Edited activity: " + updatedName), output);
-            assertTrue(output.contains("Found 1 matching activity:"), output);
-            assertFalse(output.contains("[WARNING]"), output);
-            byte[] saved = Files.readAllBytes(activityFile);
+            String warning = "[WARNING] Please write the activity name in English (ASCII characters only).";
+            assertEquals(2, output.split(Pattern.quote(warning), -1).length - 1, output);
+            assertFalse(output.contains("Added activity:"), output);
+            assertFalse(output.contains("Edited activity:"), output);
+            assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), output);
+            assertArrayEquals(original, Files.readAllBytes(activityFile));
+            assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
 
             String restartOutput = consoleAtPath("list\nbye\n", activityFile);
-            assertTrue(restartOutput.contains("1. " + updatedName + " (2099-12-10, 09:00-10:00)"),
-                    restartOutput);
+            assertTrue(restartOutput.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), restartOutput);
             assertFalse(restartOutput.contains("Activity data warning:"), restartOutput);
-            assertArrayEquals(saved, Files.readAllBytes(activityFile));
+            assertArrayEquals(original, Files.readAllBytes(activityFile));
         }
     }
+    //@@author
 
     //@@author Oliver-koh
     @Test

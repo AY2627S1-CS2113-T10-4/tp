@@ -15,7 +15,6 @@ import seedu.unienable.storage.Storage;
  * Deletes one activity chosen by its 1-based displayed index in the canonical list.
  */
 public class DeleteCommand extends Command {
-    // Owner: Asyraf
     private static final Logger LOGGER = Logger.getLogger(DeleteCommand.class.getName());
     private final int displayedIndex;
 

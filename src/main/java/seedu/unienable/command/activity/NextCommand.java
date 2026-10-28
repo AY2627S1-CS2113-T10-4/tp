@@ -20,7 +20,6 @@ import seedu.unienable.ui.activity.ActivityListFormatter;
  * current local time.
  */
 public class NextCommand extends Command {
-    // Owner: Asyraf
     private static final Logger LOGGER = Logger.getLogger(NextCommand.class.getName());
 
     private final Clock clock;
