@@ -1,15 +1,5 @@
 # UniEnable Developer Guide
 
-<!--
-RESPONSIBILITY SCOPES (feature responsibility, not the most recent Git editor):
-Atharva005: activity creation, calendar dashboards, command help, add sequence and schedule validation diagrams.
-officialasyrafrahim: listing, deletion, priority, overdue, and next.
-Oliver-koh: completion changes, activity persistence/recovery, editing, and search.
-lukelouyu: optional add ratings, facilities, routes, exit, package moves, architecture, activity-creation class and name/parameter validation diagrams.
-Sections marked TEAM are maintained jointly and have no single-author override.
-Named author comments begin a feature scope; the unnamed author comment ends it.
--->
-
 <!-- TEAM: All members maintain the contents, introduction and setup instructions. -->
 
 ## Table of contents
@@ -161,8 +151,8 @@ Source: [ArchitectureDiagram.puml](diagrams/luke/architecture/ArchitectureDiagra
 `UniEnable` restores activities; `ConsoleHelper` loads facilities before connections
 and creates the managers and parser. `Ui` reads input, `Parser` creates a command,
 and the command queries or updates a model or manager. Its `CommandResult` carries
-a message, an exit flag and an activity-change flag. `ConsoleHelper` saves only
-when activities changed, then displays the message; the exit flag ends the loop.
+a message, an exit flag and an activity-change flag. `ConsoleHelper` coordinates
+saving and display; exit follows the [persistence retry check](#exiting-the-application).
 
 <!-- @@author lukelouyu -->
 
@@ -171,13 +161,28 @@ display correctly. Injected `UniEnable.run()` sessions use the caller's output s
 
 <a id="ascii-command-name-validation"></a>
 
-`Parser` requires English command words. Names supplied to add and edit must use
-printable ASCII (0x20 through 0x7E) and contain a non-whitespace character.
-Parsers retain their blank-name, pipe, and line-break checks; the shared
-`ActivityNameValidator` also rejects Unicode-only whitespace as empty and rejects
-non-ASCII and non-printable characters before constructing a command. Invalid
-names produce `[WARNING] Please write the activity name in English (ASCII characters only).`
+`Parser` checks command words for ASCII before dispatch. Add and edit share
+`ActivityNameValidator`: supplied names must use printable ASCII (0x20 through
+0x7E) and contain a non-whitespace character. Names consisting only of whitespace,
+including Unicode spaces, are treated as empty. Keeping the name policy in one
+helper gives both parsers the same checks before a command can change activities.
+The [UG error-handling section](UserGuide.md#error-handling) gives the distinct
+command-word and activity-name warnings.
 
+<a id="activity-name-punctuation"></a>
+
+**Name punctuation and slash syntax:** Supplied names prohibit backslashes (`\`),
+commas (`,`), single quotation marks (`'`, including apostrophes), and double
+quotation marks (`"`); parsers also reject pipes and line breaks. Slash (`/`) is
+allowed subject to the field-prefix grammar. Ordinary name text such as `and/or`
+and `w/o` is valid, while `/\` and `\/` are forbidden because they contain a
+backslash. The grammar provides neither slash escaping nor quoted-name syntax.
+Raw arguments are checked only for pipes and line breaks. After field extraction,
+`validate(name)` checks name punctuation; date, time, demand and rating parsers
+validate their own values so errors identify the field that failed.
+Quotes and backslashes do not provide an escape syntax for prefix-like text.
+See [parameter validation](#activity-parameter-validation) for reserved tokens and
+the [UG adding rules](UserGuide.md#adding-an-activity-add) for the punctuation warning.
 
 <!-- @@author -->
 <!-- @@author lukelouyu -->
@@ -246,18 +251,14 @@ See [Optional ratings integration](#optional-ratings-integration) for the rating
 
 #### Adding activities
 
-`Parser` delegates the arguments after `add` to `AddCommandParser`. The parser
-uses the injected `Clock` to validate a real date and strict `HH:mm` times, a
-non-blank name, supported prefixes, and optional demand and ratings. Demand
-defaults to `MEDIUM`; each omitted rating remains `null`. The same-day end must
-follow the start and the current local time. Historical activities cannot be added;
-there is no override. Invalid input produces a
-`ParseException` without adding an activity.
+`Parser` delegates `add` arguments to `AddCommandParser`, which validates fields,
+dates, and times before constructing a command. Demand defaults to `MEDIUM`;
+omitted ratings remain `null`. Using the injected `Clock`, every add requires
+the same-day end to follow both the start and the current local time. Historical
+activities are always rejected. Invalid input raises `ParseException` before insertion.
 
-`AddCommandParser` checks supplied names through `ActivityNameValidator`.
-Both add and edit parsers use `ActivityParameterValidator` to reject one-edit
-misspellings of multi-letter fields, including adjacent swaps, before parsing
-values. See [Activity parameter validation](#activity-parameter-validation).
+`AddCommandParser` delegates to the shared [name checks](#ascii-command-name-validation)
+and [parameter validation](#activity-parameter-validation) before constructing a command.
 `AddCommand` checks the proposed activity with the shared
 [schedule validator](#activity-schedule-validation) before inserting it. The
 add diagrams include both checks and the rejection path without a save.
@@ -339,14 +340,14 @@ Source: [TopicHelpClassDiagram.puml](diagrams/atharva/class/TopicHelpClassDiagra
 `Parser` accepts zero or one topic word after `help`. For one word,
 `HelpCommand(String topic)` normalizes it with `Locale.ROOT`, looks it up, and
 adds a prompt to return to the menu. Unknown topics and extra words produce a
-`ParseException` with a warning and `Usage: help [TOPIC]`.
+`ParseException`; the [UG help section](UserGuide.md#viewing-command-help-help)
+describes supported requests and [error handling](UserGuide.md#error-handling)
+shows the warning and usage response.
 
-The 14 supported topics are `add`, `edit`, `find`, `list`, `view`,
-`overdue`, `next`, `mark`, `unmark`, `delete`, `facility`, `route`, `help`,
-and `bye`. `help list` includes the demand and priority variants; `help facility`
-includes feature search. The topic never executes the command it describes:
-`help delete` does not delete and `help bye` does not exit. Help remains available
-without facility or connection data and leaves both result flags unset.
+The 14 topics share this lookup; command variants belong to their parent topic.
+Help describes commands without executing them, works without reference data,
+and leaves both result flags unset. The [UG topic list](UserGuide.md#viewing-command-help-help)
+is the command reference.
 
 The sequence below illustrates `help view`.
 
@@ -375,7 +376,8 @@ ties retain insertion order. It is a separate, unmodifiable snapshot, so listing
 does not reorder the backing collection or request a save.
 
 Displayed indexes start at 1 and form the common index contract for delete,
-edit, mark, and unmark. An empty view displays `[WARNING] No activities yet.`.
+edit, mark, and unmark. Empty-result output is documented in the
+[UG listing section](UserGuide.md#listing-activities-list-and-list-demand).
 
 ![Class diagram for chronological listing](images/asyraf/class/ListActivityClassDiagram.png)
 
@@ -413,8 +415,8 @@ the full chronological view. Zero, an empty list, and out-of-range indexes raise
 
 The model selects the chronological activity object and removes that object from
 the backing list. `DeleteCommand` returns its details and the remaining count,
-with the activity-change flag set. The last deletion uses
-`There is no activity recorded` and still requests saving the now-empty list.
+with the activity-change flag set. Deleting the last activity persists an empty
+list; the [UG deletion section](UserGuide.md#deleting-an-activity-delete) shows the response.
 `ConsoleHelper` saves before displaying the confirmation.
 
 ![Class diagram for activity deletion](images/asyraf/class/DeleteActivityClassDiagram.png)
@@ -437,8 +439,8 @@ full chronological view for indexes, so sorted results do not renumber activitie
 URG * URG * (IMP + COM)
 ```
 
-Squaring urgency gives it greater weight; importance and commitment contribute
-equally. Ratings are user-assigned and do not increase automatically with time.
+The formula gives urgency greater weight by squaring it, while importance and
+commitment contribute equally. Ratings do not increase automatically over time.
 
 The score is available only when all three ratings are set, ranges from 2 to 250,
 and is independent of demand and completion. Missing ratings display `-` and
@@ -460,8 +462,9 @@ activities whose end is strictly before that instant. Ongoing activities and
 activities ending exactly now are excluded. Results retain chronological order and full-list indexes.
 
 `formatOverdueList()` uses the same captured time to label activities as today,
-earlier in the current Monday-to-Sunday week, or earlier. An empty result displays
-`[WARNING] No overdue activities.`. The query changes no completion state or file.
+earlier in the current Monday-to-Sunday week, or earlier. The query is read-only;
+the [UG overdue section](UserGuide.md#viewing-overdue-activities-overdue) shows
+the labels and empty-result warning.
 
 ![Class diagram for overdue activities](images/asyraf/class/OverdueActivityClassDiagram.png)
 
@@ -479,7 +482,8 @@ equal starts retain insertion order. Completed activities and starts exactly now
 are excluded.
 
 `formatNext()` receives the full chronological view to keep the selected index.
-An empty `Optional` produces `[WARNING] No upcoming incomplete activities.`.
+An empty `Optional` produces the no-result warning documented in the
+[UG next-activity section](UserGuide.md#viewing-the-next-activity-next).
 This command does not mark, reschedule, or save an activity.
 
 ![Class diagram for next activity](images/asyraf/class/NextActivityClassDiagram.png)
@@ -512,16 +516,15 @@ chronological index contract as `list`.
 
 Source: [EditActivityClassDiagram.puml](diagrams/oliver/class/EditActivityClassDiagram.puml).
 
-`EditCommandParser` groups supplied replacements in the immutable `EditCommand.Fields`
-record; a null component means omitted. `EditCommand` resolves the
-index, combines old and new values, and validates the replacement before calling
-`ActivityList.replaceByDisplayedIndex()`. Omitted fields and completion state stay
-unchanged. Before combining fields, execution captures the injected clock once
-and rejects every edit when the existing activity ends at or before that time.
-This includes metadata-only edits and attempts to reschedule historical activities
-into the future. Date/time replacements must also end strictly after that captured
-time. Rejected edits leave the activity and saved bytes intact. Historical records
-remain loadable, listable, and searchable; this restriction applies to Add/Edit.
+`EditCommandParser` groups replacements in immutable `EditCommand.Fields`, with
+null components representing omitted fields. `EditCommand` resolves the index
+and captures the injected clock once. An existing end at or before that time
+blocks every edit, including metadata-only changes and rescheduling into the future.
+For an eligible activity, it combines old and new values and validates the result
+before `ActivityList.replaceByDisplayedIndex()`. Date/time replacements must end
+strictly after the captured time; omitted fields and completion are preserved.
+Rejection leaves the activity unchanged. Record loading follows the separate
+[stored-name compatibility contract](#historical-name-compatibility).
 
 The edit diagrams show `ActivityNameValidator` checking a supplied name
 and `ActivityScheduleValidator` checking name/schedule changes before replacement.
@@ -605,7 +608,18 @@ NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM
 `DONE` is `true` or `false`; an unset rating is `-`. Legacy six-field rows
 omit the ratings and load with those values unset. Saves always write nine fields.
 Malformed rows, including an end time at or before the start, produce
-line-numbered warnings. Valid historical activities remain loadable.
+line-numbered warnings.
+
+<a id="historical-name-compatibility"></a>
+
+**Stored-name compatibility:** Storage preserves existing Unicode names in UTF-8
+for loading, display, and search, including valid records dated in the past.
+[New-input restrictions](#ascii-command-name-validation)
+apply to supplied names, rather than deserialization. Eligible edits omitting the
+name retain it, subject to the [ended-activity rule](#editing-activities).
+See [UG data storage](UserGuide.md#data-storage) for file handling and
+[UG adding rules](UserGuide.md#adding-an-activity-add) for supplied versus saved names.
+
 Before a save following corruption
 or a read failure, storage preserves and verifies the original bytes in
 `activities.txt.corrupt.bak`; a failed backup prevents replacement of the original.
@@ -656,32 +670,31 @@ these ratings; editing and persistence update and preserve them.
 #### Activity parameter validation
 
 `ActivityParameterValidator` is a package-private shared parser helper. Add and
-edit call `validate(arguments)` before extracting fields, so likely typos cannot
-silently become part of an activity name. The helper scans alphanumeric prefix-like tokens,
+edit call `validate(arguments)` before extracting fields to identify likely
+prefix mistakes before other field checks obscure their cause. The helper scans alphanumeric prefix-like tokens,
 skips known prefixes, and compares unknown multi-letter tokens with recognised
 multi-letter prefixes. One insertion, deletion, substitution, or adjacent swap
 produces a `ParseException` suggesting the intended prefix.
 
-For example, `demm/HIGH` and `dem1/HIGH` produce an unknown-parameter warning suggesting `dem/`.
-`ConsoleHelper` displays that warning; no add/edit command executes and neither
-activities nor saved data changes. Ordinary slash text such as `and/or` and `w/o`
-remains valid. Single-letter slash text is excluded from the typo check.
-Supplied names prohibit backslashes (`\`), commas (`,`), single quotation marks
-(`'`, including apostrophes), and double quotation marks (`"`). Slash (`/`) remains
-allowed subject to the prefix grammar; `/\` and `\/` are rejected because they
-contain backslashes. There is no decoding, slash escaping, or quoted-name syntax.
-Both parsers call `ActivityNameValidator.rejectForbiddenPunctuation()` on raw
-arguments before typo detection or field extraction. Direct name validation
-repeats this guard. The exact warning is:
+Only recognised prefixes separate fields. An unrecognised token remains in the
+preceding field's value, so its position determines the outcome: `xyz/HIGH` after
+an end time causes time validation to fail, while the same text in the name
+field becomes part of the name and leaves demand at its default. The suggestion
+helper rejects likely typos such as `demm/HIGH` and `dem1/HIGH` in either position
+and suggests `dem/`. It provides a more specific diagnosis than the downstream
+field error and also prevents name-field mistakes from being silently accepted.
+`ConsoleHelper` displays the parsing error without executing a command.
 
-```text
-[WARNING] Activity names must not contain backslashes (\), commas (,), or quotation marks (' or "). Slash (/) is allowed; /\ and \/ are not.
-```
-
-Historical stored names remain loadable. Rejection creates no command and saves
-no data. Ordinary slash names such as `and/or` and `w/o` remain valid. Known
-prefixes and likely typo tokens such as `dim/sum` or `dem1/HIGH` at field boundaries
-remain reserved; users must reword literal name text with spaces or hyphens.
+This heuristic also rejects literal name text such as `dim/sum` at a field
+boundary because `dim` is one substitution from `dem`. Single-letter slash text
+is excluded from this check. Known prefixes and likely typo tokens remain
+reserved, so literal names that collide with them must be reworded. The team
+prioritizes specific, actionable feedback for its target users over accepting
+these colliding names; rewording provides a recovery path for false positives.
+This is a product tradeoff rather than a storage-format requirement. The
+[shared punctuation and slash rules](#activity-name-punctuation) define the
+remaining name syntax; the [UG adding section](UserGuide.md#adding-an-activity-add)
+documents the restriction and user-facing alternatives.
 
 <!-- @@author -->
 <!-- @@author lukelouyu -->
@@ -706,7 +719,8 @@ when a name, date, start time, or end time is supplied.
 The helper reads `ActivityList.getCanonicalView()` without changing the list.
 It checks duplicates first: name equality ignores case and surrounding whitespace,
 while date, start and end must match exactly. Demand, ratings and completion do
-not change duplicate identity. The overlap override never bypasses this check.
+not change duplicate identity. Duplicate checks always apply, including when
+an overlap is explicitly allowed.
 Without `overlap/ALLOW`, it checks positive-duration overlap on the same date:
 `candidate.start < existing.end && existing.start < candidate.end`.
 Equal endpoints are allowed, and completed activities participate in both checks.
@@ -714,11 +728,11 @@ Equal endpoints are allowed, and completed activities participate in both checks
 An edit passes the original activity reference so only that record is excluded.
 Warnings identify the conflicting chronological index and activity. A checked
 `UniEnableException` stops the command before mutation or a save request, preserving
-counts, fields, saved bytes and modification times. Demand/rating-only edits do
+the activity list and persisted state. Demand/rating-only edits do
 not create a new schedule and skip this check. Add/edit parsers accept
 `overlap/ALLOW` as explicit permission for an intentional time overlap; the
 flag is not persisted and must be supplied again for a conflicting schedule edit.
-Saved duplicates and overlaps remain loadable; the validator preserves historical data.
+Existing records are handled by the [persistence layer](#completion-and-persistence).
 
 <!-- @@author -->
 <!-- @@author Atharva005 -->
@@ -831,7 +845,9 @@ facility IDs exactly; command input ignores case.
 A missing or unreadable resource raises `UniEnableException` and uses the
 fallback described in [Architecture](#architecture). Invalid command filters
 raise `ParseException`. An unknown hub produces a warning with supported names;
-a valid search with no matches returns `[WARNING] No matching facilities found.`
+a valid search with no matches returns a no-result warning. See the
+[UG facility-search section](UserGuide.md#finding-facilities-by-feature-facility-find)
+for the command syntax and response.
 
 #### Accessibility route connections (`connections.txt`)
 
@@ -915,8 +931,7 @@ Source: [RoutingClassDiagram.puml](diagrams/luke/class/RoutingClassDiagram.puml)
 2. `RouteParser` creates a `RouteCommand`, which queries `ConnectionManager`.
    Hub names are matched ignoring case; facility IDs are not route endpoints.
 3. A fresh `DijkstraSolver` tracks distances and predecessors for each query.
-   It uses a priority queue to relax shorter paths and `long` totals to avoid
-   overflowing a segment's `int` range.
+   It uses a priority queue to relax shorter paths and accumulates distances in `long` totals.
 4. Predecessors reconstruct the stops and segments, or an unreachable destination
    produces `Optional.empty()`. The command formats the route without saving activities.
 
@@ -946,22 +961,26 @@ without disabling successfully loaded facility queries.
 `RouteParser` reports malformed prefixes or missing endpoints through
 `ParseException`. Unknown or blank graph endpoints raise `IllegalArgumentException`,
 which `RouteCommand` converts to a checked `UniEnableException` with usage text.
-Known but disconnected endpoints return a `[WARNING] No confirmed accessible route
-recorded` message; this describes the local dataset rather than proving that
-no accessible route exists on campus.
+Known but disconnected endpoints produce a no-route warning about the recorded
+dataset. This result describes the local graph rather than campus-wide availability.
+The [UG route section](UserGuide.md#finding-an-accessible-route-route) explains the
+data scope and route behavior.
 
 For the same known hub at both ends, the graph returns a zero-distance route
-with one stop and no segments. `RouteCommand` rejects that result with
-`[WARNING] Sorry, the source and destination are the same.`
+with one stop and no segments. `RouteCommand` rejects that result as a
+same-endpoint request; the [UG route section](UserGuide.md#finding-an-accessible-route-route)
+gives the corresponding warning.
 
 #### Exiting the application
 
-`ByeCommand.execute()` returns `Goodbye from UniEnable!` with the exit flag
-set and the activity-change flag unset. `ConsoleHelper` displays the message,
+`ByeCommand.execute()` returns an exit result with the activity-change flag
+unset. `ConsoleHelper` displays the message,
 then `UniEnable` stops the console loop. Before displaying the goodbye message,
 `ConsoleHelper` retries persistence if `Storage.hasUnsavedChanges()` is true.
 It exits only after that retry succeeds. If writing fails, users fix the reported
 problem and enter `bye` again. Clean exits do not write the activity file.
+See the [UG exit section](UserGuide.md#exiting-the-application-bye) for the response
+and [recovery steps](UserGuide.md#error-handling).
 
 <!-- @@author -->
 
@@ -1003,12 +1022,12 @@ written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 
 <!-- @@author lukelouyu -->
 
-`ActivityNameValidatorTest` checks printable-ASCII boundaries, punctuation, and
-blank names; add/edit parser tests check the shared policy and specific warnings.
-`UniEnableProcessTest` runs isolated JVMs to check ASCII input, historical Unicode
-output, conflict rejection, and persisted names across restarts. Rejected adds
-must not create a data file, and rejected multi-field edits must preserve saved
-bytes and modification times.
+`ActivityNameValidatorTest` checks the [shared name policy](#ascii-command-name-validation),
+including character boundaries, punctuation, and blank names; add/edit parser
+tests check its integration and warning selection. `UniEnableProcessTest` runs
+isolated JVMs to cover command/name rejection, UTF-8 output for stored names,
+parameter and schedule validation, persistence across restarts, and rejection
+without partial changes or unintended file creation.
 
 <!-- @@author -->
 
@@ -1024,8 +1043,10 @@ as described in the setup section. They support debugging rather than input vali
 
 <!-- @@author Oliver-koh -->
 
-`Storage` rejects invalid same-day time ranges while retaining valid historical
-activities. It distinguishes invalid records from read failures, using backups for
+`Storage` validates saved time ranges separately from
+[new-input rules](#ascii-command-name-validation) and
+[stored-name compatibility](#historical-name-compatibility).
+It distinguishes invalid records from read failures, using backups for
 recovery writes and temporary files for saves. Recoverable errors let the console
 continue; failed saves may leave unsaved changes in memory, so follow the
 [recovery steps](UserGuide.md#error-handling) before exiting.
@@ -1040,11 +1061,9 @@ Reference-data failures use the [architecture fallback](#architecture).
 
 <!-- TEAM: Add and edit validation spans activity-creation and editing responsibilities. -->
 
-Add and edit
-[reject blank names, including Unicode whitespace](UserGuide.md#editing-an-activity-edit) with
-`[WARNING]` without changing data; loaders retain their handling of
-historical names. Parser tests and `UniEnableTest` check validation, unchanged
-file bytes and restarts.
+Parser tests and `UniEnableTest` check the shared
+[input-validation contract](#ascii-command-name-validation), rejection without
+state changes, and restart behavior.
 
 <!-- TEAM: All members maintain product scope and the team responsibility table. -->
 
@@ -1144,9 +1163,8 @@ Feature responsibility follows the table below. See the [team pages](team/README
 
 ## Non-Functional Requirements
 
-These are acceptance constraints for maintenance and release testing. The checks
-below describe how to verify them; they do not claim every platform has already
-been tested or establish an unmeasured performance benchmark.
+Use these checks for maintenance and release acceptance, recording results
+separately for each platform tested.
 
 | ID | Requirement | Acceptance check |
 | --- | --- | --- |
@@ -1161,8 +1179,8 @@ been tested or establish an unmeasured performance benchmark.
 
 The supported runtime assumes a writable local data directory and one running
 instance per activity file. Concurrent editing and synchronization across devices
-are outside the current scope. Timing targets require a separately recorded
-workload, hardware, and measurement procedure before they can be claimed.
+are outside the current scope. Performance targets require a measured workload,
+hardware, and procedure; this guide sets no timing benchmark.
 
 ## Glossary
 
@@ -1207,19 +1225,19 @@ must leave the saved file unchanged.
 
 #### Printable-ASCII input and historical UTF-8 output
 
-In disposable storage, try adding activities named `复习`, `வணக்கம்`, `படி`,
-`Café`, and `Study 🎉`, then try those names with `edit 1 n/NAME imp/5` on an
-existing activity. Each must show the exact ASCII activity-name warning and
-leave all fields and saved bytes unchanged, including after restart. Repeat
-with an internal tab, NUL, and DEL. Blank names and delimiter violations retain
-their specific warnings. Printable ASCII names such as `Planning and/or review`
-and `C++ @ COM1 #2` must survive add, edit, search, and restart.
+Exercise the [input-validation contract](#ascii-command-name-validation) in disposable
+storage using Chinese (`复习`), Tamil (`வணக்கம்`, `படி`), accented (`Café`), and emoji
+(`Study 🎉`) names in both add and multi-field edit requests. Repeat with an
+internal tab, NUL, DEL, blank names, and forbidden punctuation. Check rejection
+without partial changes and confirm the original activities after restart.
+Include a non-ASCII command word to check warning selection against the
+[UG error-handling examples](UserGuide.md#error-handling).
 
-Load a pre-existing UTF-8 activity file containing Unicode names and confirm
-that listing, searching, and restart preserve them. Edits omitting `n/` must keep
-the historical name. Non-ASCII command words still produce the separate
-English-command warning.
-`UniEnableProcessTest` verifies redirected output through the real entry point.
+Use accepted ASCII names such as `Planning and/or review` and `C++ @ COM1 #2` to
+exercise add, edit, search, and restart. Exercise
+[stored-name compatibility](#historical-name-compatibility) with a pre-existing
+UTF-8 fixture, including an eligible edit that omits the name. `UniEnableProcessTest`
+covers these scenarios through the real entry point with redirected output.
 
 ### Duplicate activities and time clashes
 
@@ -1245,6 +1263,13 @@ unfinished activities whose end time has passed; `next` must select the earliest
 unfinished activity whose start time is still ahead. Ongoing activities appear
 in neither query. Automated fixed-clock tests cover exact start/end boundaries.
 
+To prepare past records for manual testing, close the app and edit the disposable
+`data/activities.txt` to contain valid records whose dates/times have passed, then
+restart. Keep each end later than its start on the same day. Historical records
+cannot be created through add or by editing an ended activity. Alternatively,
+run the fixed-clock `OverdueCommandTest`, `NextCommandTest`, and `ViewCommandTest`
+instead of changing the computer clock.
+
 <!-- @@author -->
 
 <!-- @@author Atharva005 -->
@@ -1258,6 +1283,11 @@ today through six days ahead and exclude the seventh day. Compare summaries,
 HIGH-demand counts, and rating totals against the activities entered.
 
 Check empty periods, empty days within a populated week, and year rollover.
+For year rollover, run `ViewCommandTest` with its fixed-clock scenarios; for a
+manual check at year-end, close the app, prepare the disposable activity file
+with valid records on both sides of the year boundary, then restart. The selected
+dates still follow the actual local clock. Add/edit cannot supply past dates as
+a way to simulate another current date.
 Rating table rows must fit within 80 terminal columns; labels are shortened to
 at most 26 columns with `...`, while full names remain in the schedule. Dashboard row numbers
 belong to the selected period. `help` and `help TOPIC` must work without saving

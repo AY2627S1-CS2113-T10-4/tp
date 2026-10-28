@@ -17,8 +17,8 @@ class ParserTest {
     private final Parser parser = new Parser();
 
     @Test
-    void quotedActivityNames_warnBeforeInterpretingPrefixesOrTypos() {
-        for (String name : List.of("\"Discuss d/notes dem1/HIGH\"", "\"Unclosed", "A\"B", "Trailing\"",
+    void forbiddenNamePunctuation_keepsNameWarning() {
+        for (String name : List.of("\"Discuss notes\"", "\"Unclosed", "A\"B", "Trailing\"",
                 "O'Brien", "'Meeting'", "A,B", "A\\B", "A/\\B", "A\\/B")) {
             for (String input : List.of("add n/" + name + " d/2099-12-10 s/09:00 e/10:00",
                     "edit 1 n/" + name + " imp/5")) {
@@ -26,6 +26,30 @@ class ParserTest {
                 assertEquals("[WARNING] Activity names must not contain backslashes (\\), commas (,),"
                         + " or quotation marks (' or \"). Slash (/) is allowed; /\\ and \\/ are not.",
                         exception.getMessage());
+            }
+        }
+    }
+
+    @Test
+    void punctuationInOtherFields_reportsThatField() {
+        String[][] cases = {{"imp/1,5", "imp/ rating must be a whole number"},
+            {"urg/'3'", "urg/ rating must be a whole number"},
+            {"com/3\\4", "com/ rating must be a whole number"},
+            {"d/'2099-12-10'", "Invalid date"}, {"s/\"09:00\"", "Invalid time"}};
+        for (String[] scenario : cases) {
+            String base = "n/Meeting d/2099-12-10 s/09:00 e/10:00";
+            String prefix = scenario[0].substring(0, scenario[0].indexOf('/'));
+            if (prefix.equals("d")) {
+                base = base.replace("d/2099-12-10", scenario[0]);
+            } else if (prefix.equals("s")) {
+                base = base.replace("s/09:00", scenario[0]);
+            } else {
+                base += " " + scenario[0];
+            }
+            for (String command : List.of("add " + base, "edit 1 " + base)) {
+                ParseException error = assertThrows(ParseException.class, () -> parser.parse(command));
+                org.junit.jupiter.api.Assertions.assertTrue(error.getMessage().contains(scenario[1]),
+                        error.getMessage());
             }
         }
     }

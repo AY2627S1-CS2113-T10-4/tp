@@ -24,13 +24,13 @@ alt command word contains non-ASCII characters
 else ASCII add command
   Parser -> Fields : parse(arguments)
   note right of Fields
-    Reject backslashes, commas and both quotation marks before extracting fields.
+    Reject pipes and line breaks in raw arguments before extracting fields.
     Slash escaping and quoted-name syntax are not supported.
   end note
   Fields -> Fields : readFields(arguments)
   note right of Fields
     Parameter spelling and required fields must be valid.
-    The parser rejects blank names, pipes, CR and LF before this call.
+    Validate forbidden punctuation in the extracted name, not other field values.
   end note
   Fields -> Validator : validate(name)
   alt whitespace only, including Unicode spaces

@@ -23,7 +23,7 @@ import org.junit.jupiter.api.io.TempDir;
 class UniEnableProcessTest {
     @Test
     void doubleQuotedNames_rejectAddAndEditWithoutWritingData(@TempDir Path tempDir) throws Exception {
-        String add = "add n/\"Discuss d/notes dem1/HIGH\" d/2099-12-10 s/09:00 e/10:00\n";
+        String add = "add n/\"Discuss notes\" d/2099-12-10 s/09:00 e/10:00\n";
         String warning = "[WARNING] Activity names must not contain backslashes (\\), commas (,),"
                 + " or quotation marks (' or \"). Slash (/) is allowed; /\\ and \\/ are not.";
         String emptyOutput = runSession(tempDir, add + "list\nbye\n");
@@ -35,7 +35,7 @@ class UniEnableProcessTest {
         byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n".getBytes(StandardCharsets.UTF_8);
         Files.write(file, original);
         var modifiedTime = Files.getLastModifiedTime(file);
-        String output = runSession(tempDir, add + "edit 1 n/\"Changed d/notes\" imp/5\nlist\nbye\n");
+        String output = runSession(tempDir, add + "edit 1 n/\"Changed notes\" imp/5\nlist\nbye\n");
         assertEquals(2, output.split(Pattern.quote(warning), -1).length - 1, output);
         assertFalse(output.contains("Added activity:"), output);
         assertFalse(output.contains("Edited activity:"), output);

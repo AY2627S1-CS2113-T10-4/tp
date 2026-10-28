@@ -1,15 +1,5 @@
 # UniEnable User Guide
 
-<!--
-RESPONSIBILITY SCOPES (feature responsibility, not the most recent Git editor):
-Atharva005: activity creation, calendar dashboards, and command help.
-officialasyrafrahim: listing, deletion, priority, overdue, and next.
-Oliver-koh: completion changes, activity persistence/recovery, editing, and search.
-lukelouyu: optional add ratings, facilities, routes, and exit.
-Sections marked TEAM are maintained jointly and have no single-author override.
-Named author comments begin a feature scope; the unnamed author comment ends it.
--->
-
 <!-- TEAM: All members maintain the introduction and navigation. -->
 ## Introduction
 
@@ -33,7 +23,9 @@ See [Calendar dashboards](#viewing-calendar-dashboards-view) for examples, or en
 <!-- TEAM: All members maintain installation and startup instructions. -->
 ## Quick Start
 
-1. Install Java 25 and obtain `unienable.jar`.
+1. Install Java 25. Download or clone the source from the
+   [GitHub repository](https://github.com/lukelouyu/tp) and build `unienable.jar`
+   using the commands below.
 2. Open a terminal in the folder containing the JAR.
 3. Run `java -jar unienable.jar`.
 4. Enter a command and press Enter; use `help` to view the built-in command list.
@@ -83,6 +75,9 @@ Activities (by date, start time):
 The `[X]` indicates completion. Enter `bye` to exit; the next launch from the
 same folder will load this activity. The feature walkthrough below starts with
 its own empty list, independently of this first-session example.
+To reproduce that walkthrough, exit the app, copy the JAR into a different empty
+directory, and launch it from that directory. Keep the first session's data in
+its original directory.
 
 <!-- TEAM: All members maintain the cross-feature command and index conventions. -->
 ## Command Format
@@ -520,8 +515,9 @@ Activities (by date, start time):
 
 Completion stays `[X]`; the omitted demand, importance, and urgency are preserved.
 Replacement names follow the same printable-ASCII and delimiter rules as add.
-Historical non-ASCII saved names can still be listed and searched. An edit that
-omits `n/` preserves the existing name.
+Previously saved non-ASCII names can still be listed and searched. For an activity
+eligible for editing (its end is still in the future), omitting `n/` preserves
+the saved name. This does not allow editing an activity that has already ended.
 
 ### Searching activity names: `find`
 
@@ -709,6 +705,25 @@ If the source and destination are the same hub, including names that differ only
 in letter case, the command shows
 `[WARNING] Sorry, the source and destination are the same.`
 
+When both endpoints are known hubs but no path connects them using only
+connections marked YES for accessibility, the command displays the following
+two-line warning. `START` and `END` are replaced by the actual endpoints:
+
+```text
+[WARNING] No confirmed accessible route recorded from START to END.
+Only connections marked YES for accessibility are used.
+```
+
+The sample-data disclaimer is appended after this warning:
+
+```text
+Sample reference data.
+Verify with current campus information before you rely on it.
+```
+
+This means the local dataset has no recorded accessible path between those hubs;
+it does not establish that no accessible route exists on campus.
+
 Input: `route from/as6 to/as7`
 
 Output:
@@ -784,6 +799,8 @@ Output: `Goodbye from UniEnable!`
 Invalid input usually produces `[WARNING]` and the app waits for another command.
 Empty activity views, searches with no matches, and
 unavailable route results also include `[WARNING]` on the no-result message.
+See [route results](#finding-an-accessible-route-route) for the no-recorded-path
+warning and its meaning.
 
 <!-- @@author Atharva005 -->
 For `view week`, this warning applies only when the whole selected period is empty;

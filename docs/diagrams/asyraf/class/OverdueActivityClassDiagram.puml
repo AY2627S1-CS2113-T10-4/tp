@@ -45,7 +45,10 @@ ActivityList --> "0..*" Activity : activities
 note bottom of ActivityList
   Use local now captured once by the command.
   Select incomplete activities with end strictly before now.
-  Keep chronological indexes; label today, this week or earlier.
+  Keep chronological indexes.
+end note
+note bottom of ActivityListFormatter
+  Label today, this week or earlier.
 end note
 note bottom of CommandResult
   No activity changes or exit are requested.

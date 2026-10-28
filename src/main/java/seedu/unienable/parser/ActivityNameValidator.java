@@ -15,10 +15,10 @@ final class ActivityNameValidator {
     }
 
     /**
-     * Rejects forbidden punctuation before prefix-like text can be interpreted as fields.
+     * Rejects forbidden punctuation in an extracted activity name.
      * Slash escaping and quoted-name syntax are not supported.
      *
-     * @param input raw add/edit arguments or an extracted activity name.
+     * @param input extracted activity name.
      * @throws ParseException if a backslash, comma, or quotation mark is present.
      */
     static void rejectForbiddenPunctuation(String input) throws ParseException {
