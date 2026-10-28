@@ -1902,7 +1902,7 @@ records contributors to that starter foundation.
 UniEnable's facility and connection datasets were compiled with reference to
 the [NUS FASS *Access Routes / Faculty Map*](https://osa.nus.edu.sg/wp-content/uploads/2025/03/250224-FASS-Access-Route-Faculty-Map.pdf),
 updated 24 February 2025. The map is an effort led by the Student Accessibility
-Unit (SAU), Office of Student Affairs, National University of Singapore.
+Unit (SAU), Office of Student Affairs (OSA), National University of Singapore (NUS).
 
 The PlantUML connectivity graph is UniEnable's own schematic representation of
 its text datasets. The linked NUS PDF provides the original campus map.
