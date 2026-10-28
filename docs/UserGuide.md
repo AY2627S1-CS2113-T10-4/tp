@@ -56,8 +56,8 @@ then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 - Enter each command on one line, including all optional fields.
 - Dates use `YYYY-MM-DD`, such as `2026-12-01`; times use 24-hour `HH:mm`.
 - Activity indexes start at 1. Change commands (`delete`, `edit`, `mark`, and `unmark`)
-  use indexes from chronological `list` output. `list demand` numbers can differ,
-  while `find`, `list priority`, `overdue`, and `next` retain full chronological
+  use indexes from chronological `list` output. `list demand`,
+  `find`, `list priority`, `overdue`, and `next` retain full chronological
   indexes, even when some indexes are missing from the results. Run `list` before
   changing an activity; adding, deleting, or rescheduling can change indexes.
 - Calendar dashboards (`view today`, `view tomorrow`, and `view week`) number only
@@ -253,11 +253,13 @@ Input: `list demand`
 Output:
 ```text
 Activities by demand (HIGH to LOW):
-Note: Do not use indexes from 'list demand' for deletion.
-Run 'list' to find the correct index for 'delete INDEX'.
-1. Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
-2. CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
+Indexes refer to the chronological 'list' order.
+2. Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
+1. CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
 ```
+
+Demand sorting changes row order while keeping the indexes from `list`.
+For example, `mark 2`, `unmark 2`, `edit 2 imp/5`, and `delete 2` select Project meeting.
 
 An empty list shows `[WARNING] No activities yet.` beneath the heading
 (and demand-view notice).

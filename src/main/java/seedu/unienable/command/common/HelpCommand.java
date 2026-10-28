@@ -128,7 +128,7 @@ public class HelpCommand extends Command {
 
                     Details:
                       - list shows date/start-time order; identical times keep insertion order.
-                      - list demand groups HIGH, MEDIUM, then LOW and uses its own numbering.
+                      - list demand groups HIGH, MEDIUM, then LOW and keeps chronological indexes.
                       - Run list before edit, mark, unmark, or delete to confirm the correct index.
                       - list priority sorts highest scores first and keeps chronological indexes.
                       - Priority score = URG x URG x (IMP + COM).

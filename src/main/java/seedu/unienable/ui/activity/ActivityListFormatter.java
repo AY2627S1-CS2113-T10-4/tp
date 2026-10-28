@@ -30,11 +30,10 @@ public final class ActivityListFormatter {
             "Indexes refer to the chronological 'list' order.";
 
     /**
-     * Explains that deletion indexes refer to the chronological list, not the demand view.
+     * Explains which chronological indexes activity-changing commands use.
      */
     private static final String DEMAND_LIST_INDEX_NOTICE =
-            "Note: Do not use indexes from 'list demand' for deletion.\n"
-            + "Run 'list' to find the correct index for 'delete INDEX'.";
+            "Indexes refer to the chronological 'list' order.";
 
     /**
      * Warns that a requested activity view has no entries.
@@ -71,10 +70,20 @@ public final class ActivityListFormatter {
      * The notice appears before the activities or the empty-list placeholder.
      *
      * @param activities activities in demand display order.
+     * @param canonicalView full chronological activity view.
      * @return the heading, deletion-index notice and formatted activities
      */
-    public static String formatDemandList(List<Activity> activities) {
-        return format(DEMAND_LIST_HEADING + "\n" + DEMAND_LIST_INDEX_NOTICE, activities);
+    public static String formatDemandList(List<Activity> activities, List<Activity> canonicalView) {
+        StringBuilder output = new StringBuilder(DEMAND_LIST_HEADING)
+                .append("\n").append(DEMAND_LIST_INDEX_NOTICE);
+        if (activities.isEmpty()) {
+            return output.append("\n").append(EMPTY_MESSAGE).toString();
+        }
+        for (Activity activity : activities) {
+            output.append("\n").append(chronologicalIndex(activity, canonicalView)).append(". ")
+                    .append(describe(activity));
+        }
+        return output.toString();
     }
 
     /**

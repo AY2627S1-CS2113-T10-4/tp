@@ -27,7 +27,7 @@ public class ListDemandCommand extends Command {
     public CommandResult execute(ActivityList activities, Storage storage) {
         List<Activity> view = activities.getDemandView();
         LOGGER.fine(() -> "Displayed " + view.size() + " activities grouped by demand.");
-        String message = ActivityListFormatter.formatDemandList(view);
+        String message = ActivityListFormatter.formatDemandList(view, activities.getCanonicalView());
         return new CommandResult(message, false);
     }
 }

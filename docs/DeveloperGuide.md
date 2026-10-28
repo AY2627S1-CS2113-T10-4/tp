@@ -516,13 +516,16 @@ Source: [ListActivitySequence.puml](diagrams/asyraf/sequence/ListActivitySequenc
 
 #### Demand-ordered listing
 
-`list demand` selects `getDemandView()` and calls `formatDemandList()`. Demand
-sorts HIGH, MEDIUM, LOW, with date/start-time ordering for ties. Completion state
+`list demand` selects `getDemandView()` and passes it with `getCanonicalView()`
+to `formatDemandList()`. Demand sorts HIGH, MEDIUM, LOW, with date/start-time
+ordering for ties. Completion state
 does not filter the view, and listing leaves stored activities unchanged.
 
-These rows have their own demand-order numbering. The formatter includes a
-notice to run `list` before selecting the chronological index for deletion.
-Use that same chronological index for other indexed changes.
+The formatter uses `chronologicalIndex()` to retain each activity's index from
+the full chronological view, just as the priority view does. The notice explains
+this shared index contract, so mark, unmark, edit, and delete select the activity
+beside the displayed number even when demand sorting changes the row order.
+`ListDemandCommandTest` covers this sequence through the real parser.
 
 <!-- TODO (@officialasyrafrahim): Add the class diagram for demand-ordered listing here.
 Write the PlantUML source at: docs/diagrams/asyraf/class/ListDemandClassDiagram.puml
@@ -1545,7 +1548,7 @@ workload, hardware, and measurement procedure before they can be claimed.
 | Ratings | Independent importance, urgency, and commitment values from 1 to 5. An omitted value is unset, stored as `-`. |
 | Priority score | `URG * URG * (IMP + COM)`, available only when all three ratings are set. |
 | Canonical view | Activities sorted by date and start time, retaining insertion order for ties. |
-| Displayed index | A one-based position in chronological `list`, used by edit, delete, mark, and unmark and retained by find, priority, overdue, and next. Demand output and calendar dashboards number their selected rows separately. |
+| Displayed index | A one-based position in chronological `list`, used by edit, delete, mark, and unmark and retained by demand, find, priority, overdue, and next. Calendar dashboards number their selected rows separately. |
 | Seven-day dashboard | `view week`: today through today plus six days, including completed activities and grouped by date. |
 | Hub | A supported facility name: AS1 to AS8 or CLB in the bundled dataset. |
 | Facility ID | A stable lookup identifier, F01 to F09. Route endpoints use hub names instead. |
