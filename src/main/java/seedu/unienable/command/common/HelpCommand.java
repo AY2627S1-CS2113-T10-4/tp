@@ -238,7 +238,8 @@ public class HelpCommand extends Command {
 
                     Details:
                       - Run list and choose the current chronological index, starting at 1.
-                      - Do not use numbering from list demand or the calendar dashboards.
+                      - list demand retains chronological indexes; run list to confirm the current index.
+                      - Do not use numbering from the calendar dashboards.
                       - Removes that activity and saves the remaining list automatically.
                       - Remaining indexes can change; run list again before another indexed command.
                       - There is no undo command. A missing or invalid index leaves activities unchanged.
@@ -276,7 +277,8 @@ public class HelpCommand extends Command {
                       route from/START to/END
 
                     Details:
-                      - Supply two different facility IDs or names, with from/ before to/.
+                      - Supply two different facility names (AS1-AS8 or CLB), with from/ before to/.
+                      - Facility IDs such as F01 are not accepted as route endpoints.
                       - Results show the route segments and total recorded distance in metres.
                       - Same endpoints, unknown facilities, or no confirmed accessible path produce warnings.
                       - Routes need loaded connection data and do not change activities.

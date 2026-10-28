@@ -2,13 +2,23 @@ package seedu.unienable.command.activity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.unienable.exception.UniEnableException;
+import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
+import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
@@ -59,6 +69,26 @@ class EditCommandTest {
         assertEquals(5, activity.getImportance());
         assertEquals(4, activity.getUrgency());
         assertEquals(3, activity.getCommitment());
+    }
+
+    @Test
+    void execute_rejectedPartialTimeEdits_preserveAllHistoricalFields() throws Exception {
+        Parser timedParser = new Parser(Clock.fixed(Instant.parse("2026-10-28T12:00:00Z"), ZoneOffset.UTC));
+        Activity original = new Activity("Historical", LocalDate.of(2000, 1, 1),
+                LocalTime.of(9, 0), LocalTime.of(10, 0), DemandLevel.HIGH, true, 5, 4, 3);
+        activities.addActivity(original);
+
+        for (String command : List.of("edit 1 s/11:00", "edit 1 e/11:00", "edit 1 d/2026-10-28 e/11:00")) {
+            UniEnableException exception = assertThrows(UniEnableException.class,
+                    () -> timedParser.parse(command).execute(activities, noWrites), command);
+            assertTrue(exception.getMessage().startsWith("[WARNING]"), command);
+            assertEquals(1, activities.getActivities().size());
+            assertSame(original, activities.getByDisplayedIndex(1), command);
+            assertEquals(5, original.getImportance());
+            assertEquals(4, original.getUrgency());
+            assertEquals(3, original.getCommitment());
+            assertTrue(original.isDone());
+        }
     }
 
     @Test

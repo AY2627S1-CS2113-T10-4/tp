@@ -10,6 +10,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
@@ -174,11 +175,14 @@ public class Storage {
             LocalDate date = LocalDate.parse(fields[1], DATE_FORMAT);
             LocalTime startTime = LocalTime.parse(fields[2], TIME_FORMAT);
             LocalTime endTime = LocalTime.parse(fields[3], TIME_FORMAT);
+            if (!endTime.isAfter(startTime)) {
+                throw new IllegalArgumentException("end time must be later than start time on the same day.");
+            }
             DemandLevel demand = DemandLevel.valueOf(fields[4].toUpperCase(Locale.ROOT));
             boolean done = parseDone(fields[5]);
             return new Activity(fields[0], date, startTime, endTime, demand, done,
                     importance, urgency, commitment);
-        } catch (RuntimeException exception) {
+        } catch (DateTimeParseException | IllegalArgumentException exception) {
             throw new IllegalArgumentException("invalid date, time, demand, or completion value.");
         }
     }

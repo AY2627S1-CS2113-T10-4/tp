@@ -101,6 +101,22 @@ class HelpCommandTest {
     }
 
     @Test
+    void execute_deleteHelp_matchesSupportedIndexes() throws Exception {
+        String deletion = parser.parse("help delete").execute(new ActivityList(), noWrites).getMessage();
+        assertTrue(deletion.contains("list demand retains chronological indexes"), deletion);
+        assertTrue(deletion.contains("Do not use numbering from the calendar dashboards"), deletion);
+        assertFalse(deletion.contains("Do not use numbering from list demand"), deletion);
+    }
+
+    @Test
+    void execute_routeHelp_matchesSupportedEndpoints() throws Exception {
+        String route = parser.parse("help route").execute(new ActivityList(), noWrites).getMessage();
+        assertTrue(route.contains("facility names (AS1-AS8 or CLB)"), route);
+        assertTrue(route.contains("Facility IDs such as F01 are not accepted"), route);
+        assertFalse(route.contains("facility IDs or names"), route);
+    }
+
+    @Test
     void parse_help_acceptsMixedCaseAndWhitespace() throws Exception {
         String[][] cases = {
             {"  HeLp  ", ""},

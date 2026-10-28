@@ -59,6 +59,8 @@ note bottom of CommandResult
 end note
 note bottom of Storage
   Retain existing Unicode names, duplicates and overlaps.
+  Reject invalid same-day time ranges with line-numbered warnings.
+  Valid historical activities remain loadable.
   New-input restrictions belong to parsers and commands.
   Validation warnings do not request a save.
   Failed saves keep unsavedChanges set and warn after each command.

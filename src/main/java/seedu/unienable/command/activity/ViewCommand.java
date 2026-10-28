@@ -158,10 +158,10 @@ public class ViewCommand extends Command {
                 commitmentTotal += commitment;
             }
             switch (activity.getDemand()) {
-            case LOW -> low++;
-            case MEDIUM -> medium++;
-            case HIGH -> high++;
-            default -> throw new IllegalStateException("Unexpected demand level.");
+                case LOW -> low++;
+                case MEDIUM -> medium++;
+                case HIGH -> high++;
+                default -> throw new IllegalStateException("Unexpected demand level.");
             }
             Integer priorityScore = activity.getPriorityScore();
             String priority = priorityScore == null ? "N" : priorityScore.toString();
@@ -244,17 +244,17 @@ public class ViewCommand extends Command {
 
     private static int demandCount(DemandLevel demand) {
         return switch (demand) {
-        case LOW -> 1;
-        case MEDIUM -> 2;
-        case HIGH -> 3;
+            case LOW -> 1;
+            case MEDIUM -> 2;
+            case HIGH -> 3;
         };
     }
 
     private static String demandCode(DemandLevel demand) {
         return switch (demand) {
-        case LOW -> "L";
-        case MEDIUM -> "M";
-        case HIGH -> "H";
+            case LOW -> "L";
+            case MEDIUM -> "M";
+            case HIGH -> "H";
         };
     }
 

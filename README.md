@@ -52,8 +52,7 @@ Use a separate directory for manual tests.
 * Test and coverage reports are written to `build/reports/tests/test/index.html`
   and `build/reports/jacoco/test/html/index.html`.
 * The [manual testing instructions](docs/DeveloperGuide.md#instructions-for-manual-testing)
-  include restart/recovery scenarios and a runnable fixed-clock driver for
-  date-sensitive queries.
+  cover activity commands, date-sensitive views, and restart/recovery scenarios.
 * If you are new to JUnit, refer to the [JUnit Tutorial at se-education.org/guides](https://se-education.org/guides/tutorials/junit.html).
 
 ## Checkstyle
@@ -70,7 +69,11 @@ The project uses [GitHub actions](https://github.com/features/actions) for CI. W
 The [documentation home](docs/README.md) links the [User Guide](docs/UserGuide.md),
 [Developer Guide](docs/DeveloperGuide.md), [About Us](docs/AboutUs.md), and
 [project portfolios](docs/team/README.md). The [diagram index](docs/diagrams/README.md)
-maps PlantUML sources to rendered images and explains how to regenerate them.
+maps PlantUML sources to [rendered images](docs/images/README.md) and explains how to regenerate them.
+
+Atharva contributes the class and sequence diagrams for activity name, parameter,
+and schedule validation. Luke contributes the
+[architecture diagram](docs/diagrams/luke/architecture/ArchitectureDiagram.puml).
 
 For documentation publication and link checks, see the
 [publication notes](docs/README.md#publication-and-link-checks).

@@ -1,8 +1,8 @@
-' TEAM: Architecture is maintained jointly; feature sources retain their author scopes.
+'@@author lukelouyu
 @startuml
 !pragma layout smetana
 
-title UniEnable team architecture
+title UniEnable architecture
 top to bottom direction
 skinparam backgroundColor white
 skinparam shadowing false
@@ -36,3 +36,4 @@ Accessibility ..> Models : read reference data
 Storage ..> Models : load records / save activities
 
 @enduml
+'@@author
