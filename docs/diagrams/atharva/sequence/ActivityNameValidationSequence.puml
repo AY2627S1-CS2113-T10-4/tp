@@ -23,6 +23,10 @@ alt command word contains non-ASCII characters
   Console -> UI : showMessage(warning)
 else ASCII add command
   Parser -> Fields : parse(arguments)
+  note right of Fields
+    Reject double quotation marks before typo checks or field extraction.
+    Quoted-name syntax is not supported.
+  end note
   Fields -> Fields : readFields(arguments)
   note right of Fields
     Parameter spelling and required fields must be valid.

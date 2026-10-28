@@ -152,6 +152,16 @@ non-printable characters such as tabs are rejected with:
 
 The `|` character and line breaks remain forbidden and receive a separate
 delimiter warning. Ordinary slash text such as `and/or` and `w/o` is allowed.
+Double quotation marks (`"`) are also forbidden, including inside a name or around
+a multiword name. Quotation marks do not escape parameter prefixes. Both Add and
+Edit reject them with:
+
+```text
+[WARNING] Double quotation marks (") are not allowed in activity names.
+```
+
+Apostrophes, as in `O'Brien's tutorial`, remain allowed. These input restrictions
+do not prevent loading historical saved names.
 Avoid field prefixes at the start of a word in a name: they are parsed as fields.
 Names are saved in UTF-8. Historical saved names containing non-ASCII characters
 can still be loaded, listed, and searched; a replacement name supplied with
@@ -454,7 +464,8 @@ Find activities by a case-insensitive substring of their names.
 Format: `find KEYWORD`
 
 - Supply a non-blank name substring. Multiple words form one literal phrase;
-  do not add quotation marks unless the quotes are part of the name.
+  do not wrap the keyword in quotation marks. Quotes are literal search text and
+  are useful only when matching historical saved names that already contain them.
 - Searches include completed and incomplete activities. They search names,
   rather than dates, demand levels or ratings, and do not interpret regular expressions.
 - Matches appear chronologically with indexes from the **full** chronological

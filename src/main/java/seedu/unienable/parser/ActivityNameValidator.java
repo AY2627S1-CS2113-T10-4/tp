@@ -26,12 +26,26 @@ final class ActivityNameValidator {
     }
 
     /**
+     * Rejects unsupported double-quoted input before prefixes inside it can be interpreted as fields.
+     * Apostrophes remain valid name punctuation.
+     *
+     * @param input raw add/edit arguments or an extracted activity name.
+     * @throws ParseException if a double quotation mark is present.
+     */
+    static void rejectQuotationMarks(String input) throws ParseException {
+        if (input.indexOf('"') >= 0) {
+            throw new ParseException("[WARNING] Double quotation marks (\") are not allowed in activity names.");
+        }
+    }
+
+    /**
      * Rejects blank names and characters outside printable ASCII before activity data changes.
      *
      * @param name non-null name supplied by the user.
      * @throws ParseException if the name is blank or contains a character outside 0x20 through 0x7E.
      */
     static void validate(String name) throws ParseException {
+        rejectQuotationMarks(name);
         if (name.codePoints().allMatch(point -> Character.isWhitespace(point) || Character.isSpaceChar(point))) {
             throw new ParseException("[WARNING] Empty n/ parameter.");
         }

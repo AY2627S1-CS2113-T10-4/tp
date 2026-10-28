@@ -672,6 +672,14 @@ these escaped slashes. After extracting fields, both parsers call
 the command. Only the decoded name is stored; find keywords use the stored text.
 Unescaped typos, including `dem1/HIGH`, still produce a warning.
 
+Double quotation marks are forbidden in supplied activity names; quoted names
+are not supported. Both parsers call `ActivityNameValidator.rejectQuotationMarks()`
+on raw arguments before typo detection or field extraction, so quoted text cannot
+silently be split into parameters. The exact warning is
+`[WARNING] Double quotation marks (") are not allowed in activity names.`
+Direct name validation repeats this guard. Apostrophes and historical stored
+names are unaffected. No command is created and no data is saved on rejection.
+
 <!-- @@author -->
 <!-- @@author Atharva005 -->
 

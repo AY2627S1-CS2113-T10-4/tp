@@ -15,7 +15,7 @@ class ActivityNameValidatorTest {
     @Test
     void validate_printableAsciiNames_acceptsSpacesAndPunctuation() {
         for (String name : new String[] {"A", "CS2113 Tutorial", "Planning and/or review", "Lunch w/o friends",
-            "Group-2 (Lab)!", "C++ @ COM1 #2", " ~ "}) {
+            "Group-2 (Lab)!", "C++ @ COM1 #2", "O'Brien's tutorial", " ~ "}) {
             assertDoesNotThrow(() -> ActivityNameValidator.validate(name), name);
         }
     }
@@ -27,6 +27,15 @@ class ActivityNameValidatorTest {
             "Bad\u2028Name", "Bad\u2029Name", "Bad\ud800Name", "Bad\udfffName"}) {
             ParseException exception = assertThrows(ParseException.class, () -> ActivityNameValidator.validate(name));
             assertEquals("[WARNING] Please write the activity name in English (ASCII characters only).",
+                    exception.getMessage());
+        }
+    }
+
+    @Test
+    void validate_doubleQuotationMarks_throwsSpecificWarning() {
+        for (String name : new String[] {"\"Meeting\"", "A\"B", "\"Unclosed", "Trailing\""}) {
+            ParseException exception = assertThrows(ParseException.class, () -> ActivityNameValidator.validate(name));
+            assertEquals("[WARNING] Double quotation marks (\") are not allowed in activity names.",
                     exception.getMessage());
         }
     }

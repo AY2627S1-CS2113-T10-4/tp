@@ -58,6 +58,7 @@ public class EditCommandParser {
      * @throws ParseException for malformed or incomplete input
      */
     public EditCommand parse(String arguments) throws ParseException {
+        ActivityNameValidator.rejectQuotationMarks(arguments);
         ActivityParameterValidator.validate(arguments);
         String trimmed = arguments.trim();
         if (trimmed.isEmpty()) {

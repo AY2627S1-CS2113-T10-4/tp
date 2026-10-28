@@ -22,6 +22,28 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class UniEnableProcessTest {
     @Test
+    void doubleQuotedNames_rejectAddAndEditWithoutWritingData(@TempDir Path tempDir) throws Exception {
+        String add = "add n/\"Discuss d/notes dem1/HIGH\" d/2099-12-10 s/09:00 e/10:00\n";
+        String warning = "[WARNING] Double quotation marks (\") are not allowed in activity names.";
+        String emptyOutput = runSession(tempDir, add + "list\nbye\n");
+        Path file = tempDir.resolve("data/activities.txt");
+        assertTrue(emptyOutput.contains(warning), emptyOutput);
+        assertFalse(emptyOutput.contains("Added activity:"), emptyOutput);
+        assertFalse(Files.exists(file));
+        Files.createDirectories(file.getParent());
+        byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n".getBytes(StandardCharsets.UTF_8);
+        Files.write(file, original);
+        var modifiedTime = Files.getLastModifiedTime(file);
+        String output = runSession(tempDir, add + "edit 1 n/\"Changed d/notes\" imp/5\nlist\nbye\n");
+        assertEquals(2, output.split(Pattern.quote(warning), -1).length - 1, output);
+        assertFalse(output.contains("Added activity:"), output);
+        assertFalse(output.contains("Edited activity:"), output);
+        assertTrue(output.contains("1. Existing"), output);
+        assertArrayEquals(original, Files.readAllBytes(file));
+        assertEquals(modifiedTime, Files.getLastModifiedTime(file));
+    }
+
+    @Test
     void escapedLiteralSlashes_surviveAddEditFindAndRestart(@TempDir Path tempDir) throws Exception {
         String output = runSession(tempDir, "add n/Discuss dim\\/sum dem1\\/HIGH"
                 + " d/2099-12-10 s/09:00 e/10:00 dem/LOW\n"

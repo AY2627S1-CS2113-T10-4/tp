@@ -17,6 +17,18 @@ class ParserTest {
     private final Parser parser = new Parser();
 
     @Test
+    void quotedActivityNames_warnBeforeInterpretingPrefixesOrTypos() {
+        for (String name : List.of("\"Discuss d/notes dem1/HIGH\"", "\"Unclosed", "A\"B", "Trailing\"")) {
+            for (String input : List.of("add n/" + name + " d/2099-12-10 s/09:00 e/10:00",
+                    "edit 1 n/" + name + " imp/5")) {
+                ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input));
+                assertEquals("[WARNING] Double quotation marks (\") are not allowed in activity names.",
+                        exception.getMessage());
+            }
+        }
+    }
+
+    @Test
     void nonAsciiCommandWords_showEnglishOnlyWarning() {
         for (String input : List.of("加入", "加入 extra", "வணக்கம்", "படி", "café", "🎉", "he李lp", "lİst")) {
             ParseException error = assertThrows(ParseException.class, () -> parser.parse(input), input);
