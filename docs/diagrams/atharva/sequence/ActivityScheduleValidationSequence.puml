@@ -23,18 +23,16 @@ User -> UI : add ...
 UI --> Console : input
 
 Console -> Add : execute(activities, storage)
-Add -> Validator : validate(candidate, activities, null, allowOverlap)
+Add -> Validator : validate(...)
 Validator -> Activities : getCanonicalView()
 Activities --> Validator : chronological activities
 note over Validator, Activities
-  Duplicate identity: equal date, start and end,
-  and equal names ignoring case and surrounding whitespace.
-  Demand, ratings and completion do not change duplicate identity.
-  Inspect records in chronological order to report the first conflicting index.
+  Check duplicate identity first.
+  Use full chronological indexes.
 end note
 
 alt duplicate identity exists
-  Validator --> Add : throws UniEnableException(duplicate warning)
+  Validator --> Add : duplicate warning
   Add --> Console : propagate warning
   Console -> UI : showMessage(warning)
   UI --> User : warning
@@ -43,10 +41,10 @@ else no duplicate
     Validator --> Add : validation passed
   else same-date positive overlap exists
     note over Validator, Activities
-      candidate.start < existing.end AND existing.start < candidate.end.
-      Equal endpoints are allowed; completed activities still participate.
+      Check positive time overlap.
+      Touching endpoints are allowed.
     end note
-    Validator --> Add : throws UniEnableException(clash warning and overlap/ALLOW hint)
+    Validator --> Add : clash warning and overlap/ALLOW hint
     Add --> Console : propagate warning
     Console -> UI : showMessage(warning)
     UI --> User : warning
@@ -59,11 +57,10 @@ opt validation passed
   Add -> Activities : addActivity(candidate)
   Activities --> Add : activity inserted
   Add --> Console : CommandResult(message, false, true)
-  ref over Console, UI
-  automatic save and display
+  ref over User, Console
   CompletionAndSaveSequence
+  result, activities, storage
 end ref
-  UI --> User : confirmation or save warning
   note over Console, Activities
     The shared automatic-save and display flow follows insertion.
     Validation itself performs no mutation or file I/O.
@@ -71,9 +68,11 @@ end ref
 end
 
 note over Add, Validator
-  EditCommand passes the original activity as replacedActivity and excludes only that object.
-  Name/schedule edits validate before replaceByDisplayedIndex(); demand/rating-only edits skip this check.
-  overlap/ALLOW skips only clash checking. Duplicate identities always remain rejected.
+  An edit excludes its original activity.
+  Name/schedule edits validate before replacement.
+  Demand/rating-only edits skip conflict checking.
+  overlap/ALLOW permits clashes.
+  Duplicate checks always apply.
 end note
 @enduml
 '@@author

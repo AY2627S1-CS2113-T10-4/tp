@@ -53,10 +53,9 @@ note over Console, Activities
   ConsoleHelper saves the updated activities,
   then displays the result.
 end note
-ref over Console, UI
-  automatic save and display
+ref over User, Console
   CompletionAndSaveSequence
+  result, activities, storage
 end ref
-UI --> User : confirmation or save warning
 @enduml
 '@@author

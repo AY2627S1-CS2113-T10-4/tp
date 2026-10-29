@@ -33,10 +33,8 @@ Parser -> AddParser : AddCommandParser(clock)
 Parser -> AddParser : parse(arguments)
 activate AddParser
 note right of AddParser
-  Validate fields, date/time, and ratings.
-  ActivityParameterValidator rejects likely prefix typos.
-  ActivityNameValidator requires printable-ASCII names.
-  Default demand and unset ratings.
+  Validate fields, name and future end.
+  Apply defaults and optional ratings.
 end note
 create participant ":AddCommand" as Add
 AddParser -> Add : AddCommand(...)
@@ -70,11 +68,10 @@ else no duplicate and any overlap is approved
   Activities --> Add
   deactivate Activities
   Add --> Console : result (didChangeActivities = true)
-  ref over Console, UI
-  automatic save and display
+  ref over User, Console
   CompletionAndSaveSequence
+  result, activities, storage
 end ref
-  UI --> User : confirmation or save warning
 end
 deactivate Add
 note over Console, Activities

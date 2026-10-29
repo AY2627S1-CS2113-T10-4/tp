@@ -1,6 +1,6 @@
 '@@author Oliver-koh
 @startuml
-title Mark an activity and save if changed
+title Save and display an executed command
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName SansSerif
@@ -14,72 +14,44 @@ hide footbox
 actor "User" as User
 participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
-participant ":MarkCommand" as Mark
-participant "activities:ActivityList" as Activities
 participant "storage:Storage" as Storage
+participant "activities:ActivityList" as Activities
 
-Console -> UI : readLine()
-User -> UI : mark 1
-UI --> Console : input
-
-note over Console, Mark
-  Parser has already created MarkCommand(1).
+note over Console, Activities
+  Entry: a command has returned its CommandResult.
+  Parsing and command execution are outside this interaction.
 end note
-Console -> Mark : execute(activities, storage)
-activate Mark
-Mark -> Activities : getByDisplayedIndex(1)
-activate Activities
-Activities --> Mark : selected activity
-deactivate Activities
-Mark -> Activities : setDoneAtDisplayedIndex(1, true)
-activate Activities
-note right of Activities
-  Resolve the canonical index again.
-  Return false if already done;
-  otherwise set done and return true.
-end note
-Activities --> Mark : changed
-deactivate Activities
-Mark --> Console : result
-deactivate Mark
-
 opt result.didChangeActivities()
   Console -> Storage : markUnsavedChanges()
-  Console -> Storage : save(activities)
-  activate Storage
-  opt loadedCorruptData and file exists
-    Storage -> Storage : backupCorruptFile()
-    note right of Storage
-      Copy the original bytes and verify
-      the .corrupt.bak file before writing.
-    end note
-  end
-  Storage -> Activities : getActivities()
-  activate Activities
-  Activities --> Storage : insertion-order snapshot
-  deactivate Activities
-  note right of Storage
-    Write nine-field UTF-8 records
-    to a temporary file.
-  end note
-  Storage -> Storage : moveIntoPlace(temporaryFile)
-  note right of Storage
-    Replace the activity file.
-    Clear recovery and dirty flags after success.
-  end note
-  Storage --> Console
-  deactivate Storage
 end
 note over Console, Storage
-  If a save throws, keep unsavedChanges true and show a persistent warning.
-  Bye retries unsaved changes before exit without modifying activities.
-  A bye request is blocked until saving succeeds.
+  A write is required after an activity change,
+  or when an exit request has unsaved changes.
 end note
-note over Console, Mark
-  Display the command result through Ui
-  after any required save succeeds.
-end note
-Console -> UI : showMessage(result.getMessage())
-UI --> User : confirmation or unchanged-state warning
+alt a required save fails
+  Console -> Storage : save(activities)
+  Storage --> Console : throws UniEnableException
+  Console -> UI : showMessage(save error)
+  UI --> User : save error
+  Console -> UI : showMessage(unsaved notice)
+  UI --> User : changes remain unsaved; session stays open
+else save succeeds or no write is required
+  opt write required
+    Console -> Storage : save(activities)
+    opt recovery backup required
+      Storage -> Storage : preserve and verify original file
+    end
+    Storage -> Activities : getActivities()
+    Activities --> Storage : insertion-order snapshot
+    Storage -> Storage : write temporary file; replace activity file
+    Storage --> Console : saved; dirty flag cleared
+  end
+  Console -> UI : showMessage(result.getMessage())
+  UI --> User : command result
+  opt unsaved changes remain after a read-only command
+    Console -> UI : showMessage(unsaved notice)
+    UI --> User : persistent unsaved notice
+  end
+end
 @enduml
 '@@author

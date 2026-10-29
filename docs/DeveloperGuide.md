@@ -38,7 +38,7 @@ Retained and adapted material includes the Gradle wrapper and build conventions,
 Checkstyle configuration, GitHub Actions CI structure, and the original
 README/setup and documentation scaffolding. The team updated the build for
 Java 25 and developed UniEnable's activity and accessibility features and guides.
-The inherited [contributors list](../CONTRIBUTORS.md)
+The inherited [contributors list](https://github.com/AY2627S1-CS2113-T10-4/tp/blob/master/CONTRIBUTORS.md)
 records contributors to that starter foundation.
 
 UniEnable's facility and connection datasets were compiled with reference to
@@ -497,6 +497,11 @@ A failed save leaves the change in memory and keeps the unsaved warning visible.
 `bye` retries dirty data and closes only after saving succeeds; clean exits make
 no extra write. Read-only commands do not retry writes. See the
 [UG storage and recovery instructions](UserGuide.md#error-handling).
+
+The shared sequence below begins after a command returns its `CommandResult`.
+Add, edit and delete reference this interaction for saving and display; it does
+not execute another command. The separate [marking sequence](#marking-activities)
+shows how a completion command produces its result.
 
 ![Persistence classes](images/oliver/class/ActivityPersistenceClassDiagram.png)
 
@@ -986,11 +991,24 @@ covers these scenarios through the real entry point with redirected output.
 
 ### Duplicate activities and time clashes
 
-Repeat an add with the same name (ignoring case), date, and times; then try an
-overlapping add or edit without an override. Both must warn without changing data.
-Repeat the clash with `overlap/ALLOW`: it must succeed. Duplicates remain rejected.
-Adjacent time ranges and equal times on different dates must be accepted.
-Completed activities still occupy their scheduled time.
+Use a fresh test folder. Enter these commands one at a time, keeping the dates
+in the future:
+
+```text
+add n/Session d/2099-12-10 s/09:00 e/10:00
+add n/session d/2099-12-10 s/09:00 e/10:00 overlap/ALLOW
+add n/Practice d/2099-12-10 s/09:30 e/10:30
+add n/Practice d/2099-12-10 s/09:30 e/10:30 overlap/ALLOW
+edit 2 s/09:45 e/10:45
+edit 2 s/09:45 e/10:45 overlap/ALLOW
+list
+```
+
+The second command is a duplicate and the third a clash; both are rejected.
+The fourth adds Practice. The first edit is rejected and the second succeeds.
+The final list contains only Session (1) and Practice (2). Adjacent ranges and
+equal times on different dates are accepted; completed records still occupy
+their scheduled time.
 
 <!-- @@author -->
 
@@ -998,22 +1016,46 @@ Completed activities still occupy their scheduled time.
 
 ### Priority and strict local-time boundaries
 
-Add activities with complete and missing ratings. `list priority` must sort
-complete scores from highest to lowest, place `NA` scores last, and retain the
-indexes from `list`. Marking an activity removes it from `next` and `overdue`
-but leaves it in the priority list.
+With the app closed in a fresh test folder, create `data/activities.txt` with
+these records. The first date must be past and the other dates future:
 
-Use dates and times relative to the current local time. `overdue` must show only
-unfinished activities whose end time has passed; `next` must select the earliest
-unfinished activity whose start time is still ahead. Ongoing activities appear
-in neither query. Automated fixed-clock tests cover exact start/end boundaries.
+```text
+Old|2000-01-01|09:00|10:00|LOW|false|1|5|1
+Future rated|2099-12-10|09:00|10:00|HIGH|false|3|4|2
+Future unrated|2099-12-11|11:00|12:00|LOW|false|-|-|-
+```
 
-To prepare past records for manual testing, close the app and edit the disposable
-`data/activities.txt` to contain valid records whose dates/times have passed, then
-restart. Keep each end later than its start on the same day. Historical records
-cannot be created through add or by editing an ended activity. Alternatively,
-run the fixed-clock `OverdueCommandTest`, `NextCommandTest`, and `ViewCommandTest`
-instead of changing the computer clock.
+Start the app, then enter:
+
+```text
+list priority
+next
+overdue
+mark 2
+next
+mark 1
+overdue
+unmark 1
+overdue
+edit 1 imp/5
+edit 1 d/2099-12-12
+```
+
+Priority order is indexes 2 (80), 1 (50), then 3 (`NA`). The first `next` selects
+2; after marking it, `next` selects 3. Priority listing still includes completed
+activities. `overdue` initially shows Old (1), becomes empty after `mark 1`, and
+shows Old again after `unmark 1`. Both edits are rejected because the original
+activity has ended, including the attempt to move it into the future.
+
+Historical records must be prepared while the app is closed; add/edit cannot
+create them. Ongoing activities appear in neither time query. To verify exact
+start/end boundaries without changing the computer clock, run from the project root:
+
+```text
+.\gradlew.bat test --tests "seedu.unienable.command.activity.OverdueCommandTest" --tests "seedu.unienable.command.activity.NextCommandTest"
+```
+
+On macOS/Linux, replace `.\gradlew.bat` with `./gradlew`.
 
 <!-- @@author -->
 
@@ -1021,22 +1063,47 @@ instead of changing the computer clock.
 
 ### Calendar dashboards and topic help
 
-Add activities dated today, tomorrow, and six and seven days from today, with
-mixed demand levels, completion states, and ratings. `view today` and
-`view tomorrow` must show only their selected dates; `view week` must include
-today through six days ahead and exclude the seventh day. Compare summaries,
-HIGH-demand counts, and rating totals against the activities entered.
+Use a fresh test folder and close the app. Prepare `data/activities.txt` below,
+replacing `<TODAY>`, `<TOMORROW>`, `<DAY_6>` and `<DAY_7>` with actual dates in
+`YYYY-MM-DD` format: today, tomorrow, six days ahead and seven days ahead. Refresh
+the dates if the test crosses midnight. File preparation allows testing past
+times on the current date without bypassing add/edit restrictions.
 
-Check empty periods, empty days within a populated week, and year rollover.
-For year rollover, run `ViewCommandTest` with its fixed-clock scenarios; for a
-manual check at year-end, close the app, prepare the disposable activity file
-with valid records on both sides of the year boundary, then restart. The selected
-dates still follow the actual local clock. Add/edit cannot supply past dates as
-a way to simulate another current date.
-Rating table rows must fit within 80 terminal columns; labels are shortened to
-at most 26 columns with `...`, while full names remain in the schedule. Dashboard row numbers
-belong to the selected period. `help` and `help TOPIC` must work without saving
-or executing the command being described.
+```text
+Today|<TODAY>|09:00|10:00|HIGH|false|3|4|2
+Tomorrow|<TOMORROW>|11:00|12:00|LOW|true|-|-|-
+Day six|<DAY_6>|13:00|14:00|MEDIUM|false|2|3|4
+Day seven|<DAY_7>|15:00|16:00|LOW|false|-|-|-
+```
+
+Start the app and enter:
+
+```text
+view today
+view tomorrow
+view week
+help
+help view
+help edit
+```
+
+The daily views show Today and Tomorrow respectively. The week includes the first
+three records and excludes Day seven: three activities, one completed and one
+HIGH-demand activity. Rating totals are importance 5, urgency 7 and commitment 6.
+Help displays the menu or requested topic without executing it or changing data.
+In a separate empty folder, the three view commands should show empty-period
+warnings without a summary or rating table.
+
+Rating rows fit 80 terminal columns. Long table labels shorten to at most 26
+columns with `...`, while schedules retain full names. Dashboard numbers belong
+to the selected period. For a repeatable year rollover check, run:
+
+```text
+.\gradlew.bat test --tests "seedu.unienable.command.activity.ViewCommandTest"
+```
+
+This suite uses fixed clocks; it does not change the computer clock. On
+macOS/Linux, replace `.\gradlew.bat` with `./gradlew`.
 
 <!-- @@author -->
 
@@ -1044,18 +1111,54 @@ or executing the command being described.
 
 ### Invalid activity and command input
 
-Try missing/duplicate fields, an invalid date or time, ratings outside 1-5,
-an out-of-range index, and extra arguments to help or view. Each case must
-produce a warning, preserve activities and saved data, and accept the next command.
+In a fresh test folder, enter:
+
+```text
+add n/Valid d/2099-12-10 s/09:00 e/10:00
+add n/Missing
+add n/Meeting, Week 3 d/2099-12-11 s/09:00 e/10:00
+edit 1 imp/1,5
+edit 1 n/Changed imp/0
+help add extra
+view year
+delete 0
+list
+```
+
+Only the first add succeeds. Check the missing-field, name-punctuation,
+integer-rating, rating-range, help, view and index warnings respectively.
+`imp/1,5` must identify a rating error. The failed multi-field edit must preserve
+the name Valid. The final list contains that one original activity, and the
+session accepts another command after each rejection.
 
 <!-- @@author Oliver-koh -->
 
 ### Editing and name search
 
-Edit one field and confirm that omitted fields and completion are preserved.
-Reschedule the activity and refresh its index; search results must retain the
-new full-list index. A rejected multi-field edit must apply no changes. Delete
-all activities, restart, and confirm the empty-list and no-match messages.
+Start in a fresh test folder with future dates and enter:
+
+```text
+add n/Study d/2099-12-10 s/09:00 e/10:00 dem/LOW imp/3 urg/4 com/2
+add n/Consultation d/2099-12-11 s/11:00 e/12:00
+mark 1
+edit 1 n/Revision dem/HIGH
+find revision
+edit 1 d/2099-12-12 s/13:00 e/14:00
+find revision
+edit 2 n/Should stay unchanged imp/0
+list
+delete 2
+delete 1
+find Revision
+bye
+```
+
+The first search shows completed Revision at index 1 with its ratings preserved.
+Rescheduling moves it after Consultation, so the second search uses index 2.
+The invalid rating rejects the entire subsequent edit; the name remains Revision.
+Both deletions leave an empty list and the last search has no matches. Restart
+from the same folder and run `list`: the empty state must persist. All edits in
+this scenario target an activity whose original end is still in the future.
 
 <!-- @@author -->
 
@@ -1081,17 +1184,28 @@ must include the sample-data notice and leave the activity file unchanged.
 
 ### Legacy data, corruption warnings, and save failures
 
-With the app closed, create a disposable `data/activities.txt` containing:
+With the app closed in a fresh test folder, create `data/activities.txt` containing:
 
 ```text
 Legacy|2000-01-01|09:00|10:00|LOW|true
 Broken row
 ```
 
-Startup must warn about line 2 while loading Legacy with unset ratings.
-After a successful activity change, the recovery backup must match the original
-file and the saved file must contain valid nine-field rows. A blocked backup
-path must prevent replacement of the original file. Follow the
-[User Guide recovery steps](UserGuide.md#error-handling) before exiting after a failed save.
+Start the app, enter `unmark 1`, then `bye`. Startup warns about line 2 and loads
+Legacy with unset ratings. Unmarking a past activity is allowed. The recovery
+backup `data/activities.txt.corrupt.bak` must match the original two-line file;
+the saved file must contain one nine-field Legacy record with completion `false`.
+Restart: Legacy remains incomplete and the malformed-row warning is gone.
+
+For the blocked-backup variant, start again in a separate fresh folder with the
+same original two-line file. Before launch, create a **directory** named
+`data/activities.txt.corrupt.bak` and put a file such as `keep.txt` inside it.
+Start the app and enter `unmark 1`: saving must fail, preserving the original
+activity file and showing an unsaved notice. `list` still shows the in-memory
+incomplete activity. Entering `bye` while the backup remains blocked must keep
+the session open. Move the blocking directory to a safe separate location, then
+enter `bye` again; saving should succeed and exit. Restart and verify the change.
+Follow the [UG recovery instructions](UserGuide.md#error-handling) when preserving
+existing files and backups.
 
 <!-- @@author -->

@@ -1,7 +1,7 @@
 '@@author Oliver-koh
 @startuml
 !pragma layout smetana
-title Activity editing design
+title Activity editing collaborators
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName SansSerif
@@ -17,78 +17,41 @@ abstract class Command {
   +execute(...): CommandResult
 }
 class Parser {
-  -clock: Clock
   +parse(input: String): Command
 }
 class EditCommandParser {
-  -clock: Clock
   +parse(arguments: String): EditCommand
 }
 class EditCommand {
-  -displayedIndex: int
-  -fields: Fields
-  -clock: Clock
   +execute(...): CommandResult
 }
-class "EditCommand.Fields" as EditFields <<record>> {
-  -name: String
-  -date: LocalDate
-  -startTime: LocalTime
-  -endTime: LocalTime
-  -demand: DemandLevel
-  -importance: Integer
-  -urgency: Integer
-  -commitment: Integer
-}
-class ActivityParameterValidator <<package-private>> {
-  {static} ~validate(arguments: String): void
-}
-class ActivityNameValidator <<package-private>> {
-  {static} ~validate(name: String): void
-}
-class ActivityScheduleValidator <<package-private>> {
+class "EditCommand.Fields" as EditFields <<record>>
+class ActivityScheduleValidator {
   {static} ~validate(...): void
 }
 class ActivityList {
-  +getByDisplayedIndex(displayedIndex: int): Activity
-  +replaceByDisplayedIndex(displayedIndex: int, replacement: Activity): void
-  +getCanonicalView(): List<Activity>
+  +getByDisplayedIndex(...): Activity
+  +replaceByDisplayedIndex(...): void
 }
-class Activity {
-  +isDone(): boolean
-}
-class CommandResult {
-  +getMessage(): String
-  +didChangeActivities(): boolean
-}
+class Activity
 
 Command <|-- EditCommand
-Parser ..> EditCommandParser : delegates edit
-EditCommandParser ..> EditCommand : creates with index, fields, clock and override
-EditCommandParser ..> EditFields : groups supplied values
+Parser ..> EditCommandParser : delegates
+EditCommandParser ..> EditCommand : creates
+EditCommandParser ..> EditFields : collects changes
 EditCommand --> EditFields : fields
-EditCommandParser ..> ActivityNameValidator : checks supplied name safety
-EditCommandParser ..> ActivityParameterValidator : rejects likely prefix typos
-EditCommand ..> ActivityScheduleValidator : checks name / schedule edits
-ActivityScheduleValidator ..> ActivityList : reads chronological view
-EditCommand ..> ActivityList : resolves and replaces activity
-EditCommand ..> Activity : constructs replacement
-EditCommand ..> CommandResult : requests saving
+EditCommand ..> ActivityScheduleValidator : checks conflicts
+EditCommand ..> ActivityList : selects / replaces
+EditCommand ..> Activity : builds replacement
+ActivityScheduleValidator ..> ActivityList : reads current schedule
 ActivityList --> "0..*" Activity : activities
-
-note bottom of EditCommand
-  Fields is an immutable group of optional replacements.
-  A null component means that field was omitted.
-  Omitted fields and completion are preserved.
-  Reject every edit when the original activity ends at or before now.
-  Date/time edits validate the combined range before replacement.
-  Name/schedule edits reject duplicates and unapproved clashes, excluding the original.
-  Demand/rating-only edits skip schedule validation.
-  Rejected edits do not replace or save the original activity.
+note bottom of EditFields
+  Immutable optional replacements.
+  Omitted fields keep their current values.
 end note
-note bottom of CommandResult
-  A successful edit sets didChangeActivities() to true.
-  ConsoleHelper handles saving and displaying the result.
+note bottom of EditCommand
+  Check eligibility and validate the replacement
+  before changing the selected activity.
 end note
 @enduml
 '@@author
