@@ -10,14 +10,20 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
 participant ":RouteCommand" as Command
-participant "manager:ConnectionManager" as Manager
-participant "graph:DijkstraShortestPath" as Graph
+participant ":ConnectionManager" as Manager
+participant ":DijkstraShortestPath" as Graph
+
+Console -> UI : readLine()
+User -> UI : enter route command
+UI --> Console : input
 
 note over Console, Command
-  RouteParser has already created a valid RouteCommand.
-  This example has a reachable destination.
+  RouteParser has created the command.
+  Example: reachable route from AS6 to AS7.
 end note
 Console -> Command : execute(activities, storage)
 activate Command
@@ -25,8 +31,8 @@ Command -> Manager : findRoute(from, to)
 activate Manager
 Manager -> Graph : findRoute(from, to)
 activate Graph
-create participant "solver:DijkstraSolver" as Solver
-Graph -> Solver : DijkstraSolver(names.size())
+create participant ":DijkstraSolver" as Solver
+Graph -> Solver : DijkstraSolver(...)
 Graph -> Solver : dijkstra(adjacency, source)
 activate Solver
 note over Graph, Solver
@@ -39,29 +45,24 @@ Graph -> Solver : getDistance(destination)
 activate Solver
 Solver --> Graph : distance
 deactivate Solver
-loop current vertex differs from source
-  Graph -> Solver : getPreviousConnection(current)
-  activate Solver
-  Solver --> Graph : connection
-  deactivate Solver
-  Graph -> Solver : getPrevious(current)
-  activate Solver
-  Solver --> Graph : predecessor index
-  deactivate Solver
-end
-note over Graph, Solver
-  Reverse collected stops and connections;
-  construct Route(stops, segments, distance).
+Graph -> Graph : reconstruct route
+note right of Graph
+  Read solver predecessors.
+  Reverse stops and segments.
 end note
 Graph --> Manager : Optional.of(route)
 deactivate Graph
 Manager --> Command : Optional.of(route)
 deactivate Manager
 Command -> Command : formatRoute(route)
-Command -> Command : appendDisclaimer(message)
+note right of Command
+  Append the sample-data notice.
+end note
 Command --> Console : result (didChangeActivities = false)
 deactivate Command
 note over Console, Command
   Display the result through Ui; no activity save.
 end note
+Console -> UI : showMessage(...)
+UI --> User : route result
 @enduml
