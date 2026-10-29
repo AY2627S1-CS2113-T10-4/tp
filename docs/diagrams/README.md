@@ -7,15 +7,15 @@ diagram type, and base filename under [images](../images/README.md).
 All four members' diagram folders are populated. The groups indicate diagram
 responsibility; classes used across features can appear in several diagrams.
 
-Luke's architecture diagram uses `luke/architecture/`. The campus connectivity
+Lou Yu Luke's architecture diagram uses `luke/architecture/`. The campus connectivity
 graph uses `luke/graph/`; it is separate from the class and sequence diagrams.
 
 | Folder | Responsibility |
 | --- | --- |
-| [atharva](#atharva) | Add sequence, calendar dashboards, help, and schedule validation diagrams. |
-| [asyraf](#asyraf) | Chronological/demand listing, deletion, priority, overdue and next. |
-| [oliver](#oliver) | Completion, storage/recovery, editing and search. |
-| [luke](#luke) | Activity-creation class diagram, name/parameter validation, architecture, optional add ratings, accessibility and exit. |
+| [atharva](#atharva) | Atharva Rege — add sequence, calendar dashboards, help, and schedule validation diagrams. |
+| [asyraf](#asyraf) | Muhammad Asyraf Bin Abdul Rahim — chronological/demand listing, deletion, priority, overdue and next. |
+| [oliver](#oliver) | Koh Li Wei Oliver — completion, storage/recovery, editing and search. |
+| [luke](#luke) | Lou Yu Luke — activity-creation class diagram, name/parameter validation, architecture, optional add ratings, accessibility and exit. |
 
 The activity-creation class diagram, name and parameter validation pairs,
 architecture diagram, and shared validation helper are documented alongside the
@@ -30,7 +30,7 @@ are rendered from the corresponding PlantUML sources.
 
 <!-- @@author Atharva005 -->
 
-## Atharva
+## Atharva Rege
 
 ### Class diagrams
 
@@ -53,7 +53,7 @@ are rendered from the corresponding PlantUML sources.
 
 <!-- @@author officialasyrafrahim -->
 
-## Asyraf
+## Muhammad Asyraf Bin Abdul Rahim
 
 ### Class diagrams
 
@@ -109,7 +109,7 @@ are rendered from the corresponding PlantUML sources.
 
 <!-- @@author lukelouyu -->
 
-## Luke
+## Lou Yu Luke
 
 ### Architecture
 
