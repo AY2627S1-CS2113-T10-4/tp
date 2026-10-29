@@ -181,9 +181,10 @@ cannot be added, and there is no override for this restriction. New activities s
 incomplete.
 
 Activity names must contain at least one non-whitespace character and use
-printable ASCII characters only. English letters, digits, spaces, and ordinary
-ASCII punctuation are allowed. Chinese, Tamil, accented letters, emoji, and
-non-printable characters such as tabs are rejected with:
+printable ASCII characters only. English letters, digits, spaces, and ASCII
+punctuation are allowed except for the explicitly forbidden characters described
+below. Chinese, Tamil, Hindi, Telugu, Korean and Japanese characters, accented
+letters, emoji, and non-printable characters such as tabs are rejected with:
 
 ```text
 [WARNING] Please write the activity name in English (ASCII characters only).
