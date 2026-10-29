@@ -73,7 +73,6 @@ note bottom of ActivityScheduleValidator
   Reject duplicate identities; time overlaps require overlap/ALLOW.
   Adjacent endpoints and different dates are allowed.
   A warning prevents insertion and saving.
-  Luke maintains this shared helper.
 end note
 @enduml
 '@@author

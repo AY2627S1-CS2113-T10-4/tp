@@ -17,10 +17,11 @@ graph uses `luke/graph/`; it is separate from the class and sequence diagrams.
 | [oliver](#oliver) | Completion, storage/recovery, editing and search. |
 | [luke](#luke) | Activity-creation class diagram, name/parameter validation, architecture, optional add ratings, accessibility and exit. |
 
-Luke maintains the activity-creation class diagram, the name and parameter
-validation class/sequence pairs, the architecture diagram, and shared validation
-helper code. Atharva maintains the add sequence, calendar dashboards, help, and
-schedule validation pair. Exit has no separate diagram.
+The activity-creation class diagram, name and parameter validation pairs,
+architecture diagram, and shared validation helper are documented alongside the
+corresponding implementation. The add sequence, calendar dashboards, help, and
+schedule validation pair are documented in their respective sections. Exit has
+no separate diagram.
 
 Owned PlantUML sources use single-quote author comments. Their image links and
 Developer Guide embeds sit inside the corresponding Markdown author scopes.
@@ -175,7 +176,7 @@ java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tpng -o ../../../images/luke/ar
 ```
 
 This writes `docs/images/luke/architecture/ArchitectureDiagram.png`.
-Luke maintains this source/image pair under `@@author lukelouyu`.
+This source/image pair is maintained under `@@author lukelouyu`.
 
 Regenerate the class and sequence groups separately so each image lands in the
 correct category. For example, these commands regenerate all six Asyraf class/sequence pairs:
