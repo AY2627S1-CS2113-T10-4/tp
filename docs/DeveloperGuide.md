@@ -548,7 +548,8 @@ omitted add ratings stay unset. Ratings are stored unchanged and used by the
 
 #### Activity parameter validation
 
-Before field extraction, add and edit use `ActivityParameterValidator` to suggest
+Before field extraction, add and edit use `ActivityParameterValidator` to reject
+known long-form aliases such as `urgency/` and `priority/`, and to suggest
 corrections for unknown alphanumeric prefixes. It detects one insertion, deletion,
 substitution or adjacent swap between multi-letter tokens; `demm/` and `dem1/`
 suggest `dem/`. Known prefixes and single-letter tokens are skipped.

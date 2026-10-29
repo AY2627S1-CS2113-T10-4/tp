@@ -69,6 +69,13 @@ class EditCommandParserTest {
     }
 
     @Test
+    void parse_unsupportedLongRatingPrefix_rejectsWholeEdit() {
+        ParseException exception = assertThrows(ParseException.class,
+                () -> parser.parse("edit 1 n/Updated urgency/5"));
+        assertEquals("[WARNING] Unknown parameter 'urgency/'. Did you mean 'urg/'?", exception.getMessage());
+    }
+
+    @Test
     void parse_rejectsMissingIndexOrFields() {
         assertThrows(ParseException.class, () -> parser.parse("edit"));
         assertThrows(ParseException.class, () -> parser.parse("edit 1"));

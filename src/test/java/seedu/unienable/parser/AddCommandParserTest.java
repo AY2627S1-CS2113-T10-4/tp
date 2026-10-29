@@ -88,6 +88,15 @@ class AddCommandParserTest {
     }
 
     @Test
+    void parse_unsupportedLongRatingPrefixes_areRejected() {
+        for (String field : new String[] {"urgency/5", "importance/5", "commitment/5", "priority/3"}) {
+            ParseException error = assertThrows(ParseException.class,
+                    () -> parser.parse("n/Lab " + field + " d/2026-12-10 s/09:00 e/10:00"));
+            assertTrue(error.getMessage().contains("Unknown parameter '" + field.split("/")[0] + "/'"));
+        }
+    }
+
+    @Test
     void parse_outOfOrderFieldsAndMultiWordName_addsActivity() throws Exception {
         ActivityList activities = new ActivityList();
         Command command = parser.parse("CoM/3 dEm/hIgH E/11:45 iMp/5 N/Group Meeting "

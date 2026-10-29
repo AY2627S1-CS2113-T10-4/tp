@@ -29,9 +29,10 @@ Fields -> Validator : validate(arguments)
 activate Validator
 loop each alphanumeric prefix-like token
   Validator -> Validator : skip known prefixes and single-letter tokens
+  Validator -> Validator : reject known long-form aliases
   Validator -> Validator : isOneEditAway(token, prefix)
 end
-alt a likely typo exists (demm/ is one edit from dem/)
+alt an unsupported alias or likely typo exists
   Validator --> Fields : throws ParseException(warning)
   Fields --> Parser : propagate ParseException
   Parser --> Console : propagate ParseException

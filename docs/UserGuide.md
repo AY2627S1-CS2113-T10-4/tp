@@ -166,7 +166,10 @@ Optional ratings:
 
 Supply all, some, or none of the ratings. To leave one unset, omit its prefix;
 do not enter a literal `-`. Empty values, duplicate prefixes, ratings outside
-1 to 5, decimals, and text are rejected.
+1 to 5, decimals, and text are rejected. Use the short prefixes shown above:
+long-form aliases such as `urgency/`, `importance/`, `commitment/`, and
+`priority/` are rejected instead of becoming part of the activity name.
+Ordinary slash text such as `and/or` and `w/o` remains valid in names.
 
 <!-- @@author -->
 

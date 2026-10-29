@@ -25,6 +25,7 @@ class EditCommandParser {
 class ActivityParameterValidator <<package-private utility>> {
   {static} -PARAMETER: Pattern
   {static} -PREFIXES: List<String>
+  {static} -UNSUPPORTED_PREFIXES: List<String>
   {static} ~validate(arguments: String): void
   {static} ~allowsOverlap(value: String): boolean
   {static} -isOneEditAway(token: String, prefix: String): boolean
@@ -42,6 +43,7 @@ note bottom of ActivityParameterValidator
   Skip recognised prefixes and single-letter slash text.
   Check one insertion, deletion, substitution, or adjacent swap
   against multi-letter prefixes using edit distance.
+  Reject plausible long-form aliases such as urgency/ and priority/.
   Ordinary names containing and/or or w/o remain valid.
   Prefix-like name text must be reworded; no slash-escape syntax exists.
 end note

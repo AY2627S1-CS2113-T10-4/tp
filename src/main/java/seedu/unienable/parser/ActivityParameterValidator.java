@@ -14,6 +14,7 @@ import seedu.unienable.exception.ParseException;
 final class ActivityParameterValidator {
     private static final Pattern PARAMETER = Pattern.compile("(?i)(?<!\\S)([a-z0-9]+)/");
     private static final List<String> PREFIXES = List.of("n", "d", "s", "e", "dem", "imp", "urg", "com", "overlap");
+    private static final List<String> UNSUPPORTED_PREFIXES = List.of("urgency", "importance", "commitment", "priority");
 
     /** Prevents instantiation of this shared parser helper. */
     private ActivityParameterValidator() {
@@ -32,6 +33,16 @@ final class ActivityParameterValidator {
             String token = matcher.group(1).toLowerCase(Locale.ROOT);
             if (PREFIXES.contains(token)) {
                 continue;
+            }
+            if (UNSUPPORTED_PREFIXES.contains(token)) {
+                String replacement = switch (token) {
+                    case "urgency" -> "urg";
+                    case "importance" -> "imp";
+                    case "commitment" -> "com";
+                    default -> null;
+                };
+                String suggestion = replacement == null ? "" : " Did you mean '" + replacement + "/'?";
+                throw new ParseException("[WARNING] Unknown parameter '" + token + "/'." + suggestion);
             }
             for (String prefix : PREFIXES) {
                 if (prefix.length() > 1 && token.length() > 1 && isOneEditAway(token, prefix)) {
