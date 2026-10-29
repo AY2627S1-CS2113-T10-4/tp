@@ -103,7 +103,7 @@ details inside your block; maintain sections marked `SHARED` jointly.
 | --- | --- | --- | --- |
 | Shared | [Shared design](#shared-design) | [shared/](diagrams/shared) | [shared/](images/shared) |
 | [Atharva](team/atharva005.md) | [Atharva: Activity creation and help](#atharva-activity-creation-and-help) | Awaiting contribution | Awaiting contribution |
-| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion) | [asyraf/](diagrams/asyraf) | [asyraf/](images/asyraf) |
+| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion) | Awaiting contribution | Awaiting contribution |
 | [Oliver](team/oliver-koh.md) | [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search) | [oliver/](diagrams/oliver) | [oliver/](images/oliver) |
 | [Luke](team/lukelouyu.md) | [Luke: Ratings and accessibility](#luke-ratings-and-accessibility) | [luke/](diagrams/luke) | [luke/](images/luke) |
 
@@ -181,24 +181,6 @@ Documentation to be completed by Atharva.
 ### Asyraf: Activity views and deletion
 
 Documentation to be completed by Asyraf.
-
-#### Diagrams
-
-![Class diagram showing chronological and demand ordering of activities](images/asyraf/ActivityOrderingClassDiagram.png)
-
-Source: [ActivityOrderingClassDiagram.puml](diagrams/asyraf/ActivityOrderingClassDiagram.puml).
-
-![Sequence diagram showing deletion through the canonical displayed index](images/asyraf/DeleteActivitySequence.png)
-
-Source: [DeleteActivitySequence.puml](diagrams/asyraf/DeleteActivitySequence.puml).
-
-![Class diagram showing priority scoring and overdue/next query relationships](images/asyraf/PriorityAndTimeViewsClassDiagram.png)
-
-Source: [PriorityAndTimeViewsClassDiagram.puml](diagrams/asyraf/PriorityAndTimeViewsClassDiagram.puml).
-
-![Sequence diagram showing priority and time-based activity queries](images/asyraf/PriorityAndTimeViewsSequence.png)
-
-Source: [PriorityAndTimeViewsSequence.puml](diagrams/asyraf/PriorityAndTimeViewsSequence.puml).
 
 <!-- END OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim) -->
 

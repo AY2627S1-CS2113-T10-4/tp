@@ -3,13 +3,14 @@
 PlantUML sources are grouped by the primary feature responsibility recorded in
 the [Developer Guide](../DeveloperGuide.md#team-contributions). Rendered files use
 the same owner folder and base filename under [images](../images/README.md).
-All team members' diagram folders are populated with their current sources.
+Luke's and shared diagrams are populated. Other members can add their owner
+folders when contributing diagrams; empty directories are not tracked.
 
 | Folder | Responsibility |
 | --- | --- |
 | [shared](shared) | Application architecture and the combined activity-creation/rating model. |
 | `atharva` (not yet populated) | Activity creation and help documentation. |
-| [asyraf](asyraf) | Listing, deletion and priority/time queries. |
+| `asyraf` (not yet populated) | Listing, deletion and priority/time queries. |
 | [oliver](oliver) | Completion, storage/recovery, editing and search. |
 | [luke](luke) | Optional add ratings, facility data/queries, route connections/search and exit. |
 
@@ -30,12 +31,7 @@ Awaiting member-provided diagrams.
 
 ## Asyraf
 
-| Source | Rendered image | Developer Guide section |
-| --- | --- | --- |
-| [ActivityOrderingClassDiagram.puml](asyraf/ActivityOrderingClassDiagram.puml) | [PNG](../images/asyraf/ActivityOrderingClassDiagram.png) | [Activity views and deletion](../DeveloperGuide.md#asyraf-activity-views-and-deletion) |
-| [DeleteActivitySequence.puml](asyraf/DeleteActivitySequence.puml) | [PNG](../images/asyraf/DeleteActivitySequence.png) | [Activity views and deletion](../DeveloperGuide.md#asyraf-activity-views-and-deletion) |
-| [PriorityAndTimeViewsClassDiagram.puml](asyraf/PriorityAndTimeViewsClassDiagram.puml) | [PNG](../images/asyraf/PriorityAndTimeViewsClassDiagram.png) | [Activity views and deletion](../DeveloperGuide.md#asyraf-activity-views-and-deletion) |
-| [PriorityAndTimeViewsSequence.puml](asyraf/PriorityAndTimeViewsSequence.puml) | [PNG](../images/asyraf/PriorityAndTimeViewsSequence.png) | [Activity views and deletion](../DeveloperGuide.md#asyraf-activity-views-and-deletion) |
+Awaiting member-provided diagrams.
 
 ## Oliver
 

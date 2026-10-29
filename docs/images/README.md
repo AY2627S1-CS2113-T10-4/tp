@@ -8,10 +8,10 @@ section, and regeneration commands.
 | --- | --- |
 | [shared](shared) | Shared architecture and the combined activity-creation/rating model. |
 | `atharva` (not yet populated) | Atharva's images. |
-| [asyraf](asyraf) | Asyraf's images. |
+| `asyraf` (not yet populated) | Asyraf's images. |
 | [oliver](oliver) | Oliver's images. |
 | [luke](luke) | Facilities, campus connectivity and route search. |
 
 Luke's rating fields also appear in the shared creation diagram. Other members
-All class and sequence diagrams use `.png`, and the campus connectivity graph
-uses `.svg`.
+can add their image folders with their contributions. Class/sequence diagrams
+use `.png`, and the campus connectivity graph uses `.svg`.
