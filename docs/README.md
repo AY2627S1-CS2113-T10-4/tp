@@ -29,3 +29,5 @@ After deployment, open the User Guide, Developer Guide, About Us, portfolios,
 diagram index, and image index from the published home page. Follow a source-code
 link, a dataset link, an index link, and an image link from the Developer Guide;
 check diagram legibility at normal desktop and narrow viewport widths.
+
+Pages deployment requires GitHub Actions to be enabled for the team repository.
