@@ -50,10 +50,8 @@ end note
 Delete --> Console : result (didChangeActivities = true)
 deactivate Delete
 note over Console, Activities
-  ConsoleHelper marks the change as unsaved,
-  saves the updated activities, then displays
-  the result. A failed save keeps the unsaved
-  notice for a later bye retry.
+  ConsoleHelper saves the updated activities,
+  then displays the result.
 end note
 ref over User, Console
   CompletionAndSaveSequence
