@@ -185,6 +185,19 @@ Whitespace-only names, including Unicode spaces, are empty. Add and edit use
 Both `/\` and `\/` contain a forbidden backslash. Quoting and slash escaping are
 unsupported; [prefix-like text](#activity-parameter-validation) may still be reserved.
 
+<a id="name-character-set-rationale"></a>
+
+**Why the name character set is restricted.** Supplied activity names use a
+conservative whitelist. The restricted punctuation (backslashes, single and
+double quotes, commas) carries special meaning in other grammars—escaping,
+quoting, or field separation—so accepting it would add ambiguous edge cases in
+parsing, storage, and any future data exchange. Keeping these characters out
+shrinks the input space, which avoids unnecessary error analysis and incorrect
+results, lowers the chance of bugs, and makes the parser and storage simpler to
+implement and maintain. The cost is that a few names must be reworded; this is a
+simplicity and robustness choice rather than a requirement of the current `|`
+delimiter.
+
 Raw add/edit arguments are checked only for pipes and line breaks. Extracted
 names receive the name checks; other fields use their own validators so errors
 identify the field that failed. The [UG adding rules](UserGuide.md#adding-an-activity-add)
@@ -225,10 +238,6 @@ components; the table above gives their Java package locations.
 <!-- @@author -->
 
 ## Implementation
-
-The sections below explain the main collaborations and constraints. Detailed
-command examples belong in the UG. Sequence diagrams begin with a **User** actor;
-some focus on one stage of a command and state which surrounding steps are omitted.
 
 <!-- @@author Atharva005 -->
 
@@ -418,6 +427,21 @@ Demand/rating-only edits skip conflict validation but still require an unended
 activity. The replacement is validated before mutation, so a rejected edit is
 atomic. Refresh indexes after a successful edit.
 
+<a id="ended-activity-edit-rationale"></a>
+
+**Why ended activities cannot be edited.** Editing is restricted to activities
+that have not yet ended, so one rule—"ended means locked"—keeps the edit logic
+to a single state. Allowing edits to ended activities would require extra
+branches for every field: metadata changes would need rules for altering a past
+record, and rescheduling into the future would move an entry between the
+historical and future states, releasing its old time slot and re-checking the
+new one for conflicts. Each branch expands both the implementation and the test
+matrix (activity state × edited field × validation), creating more places for
+bugs. Locking ended activities avoids that state-transition complexity, making
+the rule easy to implement correctly, review, and maintain. Re-doing a past
+activity is handled explicitly by adding a new one, which also preserves the
+historical record.
+
 ![Editing classes](images/oliver/class/EditActivityClassDiagram.png)
 
 [Enlarge diagram](images/oliver/class/EditActivityClassDiagram.png) | [PlantUML source](diagrams/oliver/class/EditActivityClassDiagram.puml).
@@ -458,8 +482,8 @@ already-complete activity produces a warning. Other fields are preserved.
 
 `UnmarkCommand` uses the same index and change-flag contract to clear completion.
 An already-incomplete activity produces a warning without saving. Completion
-commands can act on past records; the ended-activity edit restriction applies
-to `edit`.
+commands can act on past records; the
+[ended-activity edit restriction](#ended-activity-edit-rationale) applies to `edit`.
 
 ![Unmarking classes](images/oliver/class/UnmarkActivityClassDiagram.png)
 
@@ -486,7 +510,7 @@ line-numbered warnings, including invalid time ranges.
 **Stored-name compatibility:** Valid historical records and existing Unicode
 names load, display and remain searchable. New-input restrictions apply to supplied
 names. An eligible edit that omits the name retains it, subject to the
-[ended-activity rule](#editing-activities). Loading alone does not rewrite files.
+[ended-activity rule](#ended-activity-edit-rationale). Loading alone does not rewrite files.
 
 **Saving and recovery:** `ConsoleHelper` marks changes dirty and saves before
 showing a successful command result. Storage writes a temporary file, then replaces
@@ -538,8 +562,11 @@ Only recognized prefixes split fields. Other tokens stay in the preceding value:
 after an end time they can cause a misleading time error, while in the name they
 can be accepted as text. Early suggestions identify the likely cause before
 those field checks. The tradeoff is a false positive such as `dim/sum` at a field
-boundary. The team prioritizes actionable feedback over these colliding names;
-users must reword them. This is a product choice, not a storage requirement.
+boundary. Specific, actionable feedback takes priority over accepting these
+colliding names; rewording provides a recovery path for false positives.
+This is a product choice, not a storage requirement. The
+[name-character restriction rationale](#name-character-set-rationale) explains
+the separate punctuation policy.
 
 <!-- @@author -->
 
