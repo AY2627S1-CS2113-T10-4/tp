@@ -1,0 +1,55 @@
+'@@author Oliver-koh
+@startuml
+title Mark an activity as completed
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #526477
+skinparam ParticipantBackgroundColor #EDF3F8
+skinparam ParticipantBorderColor #526477
+skinparam sequenceMessageAlign center
+hide footbox
+
+actor "User" as User
+participant "ui:Ui" as UI
+participant "ConsoleHelper" as Console
+participant "command:MarkCommand" as Query
+participant "activities:ActivityList" as Activities
+participant "activity:Activity" as Activity
+participant "storage:Storage" as Storage
+
+Console -> UI : readLine()
+User -> UI : mark 1
+UI --> Console : input
+
+note over Console, Query
+  Syntax has been parsed and index 1 is valid.
+  File operations are assumed to succeed.
+end note
+Console -> Query : execute(activities, storage)
+Query -> Activities : getByDisplayedIndex(1)
+Activities --> Query : activity
+Query -> Activities : setDoneAtDisplayedIndex(1, true)
+Activities -> Activities : getByDisplayedIndex(1)
+Activities -> Activity : isDone()
+Activity --> Activities : current completion
+alt completion already equals true
+  Activities --> Query : changed = false
+else completion differs
+  Activities -> Activity : setDone(true)
+  Activities --> Query : changed = true
+end
+Query --> Console : CommandResult(message, false, changed)
+opt result.didChangeActivities()
+  Console -> Storage : save(activities)
+  Storage --> Console : saved
+end
+Console -> UI : showMessage(result.getMessage())
+UI --> User : result message
+note over Console, UI
+  No change returns an already-in-that-state warning.
+  Invalid indexes are reported without changing or saving data.
+end note
+@enduml
+'@@author

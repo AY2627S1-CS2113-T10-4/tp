@@ -1,0 +1,57 @@
+'@@author Oliver-koh
+@startuml
+title Save and display an executed command
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ParticipantBackgroundColor #EDF3F8
+skinparam ParticipantBorderColor #526477
+skinparam ArrowColor #526477
+skinparam sequenceMessageAlign center
+hide footbox
+
+actor "User" as User
+participant "ui:Ui" as UI
+participant "ConsoleHelper" as Console
+participant "storage:Storage" as Storage
+participant "activities:ActivityList" as Activities
+
+note over Console, Activities
+  Entry: a command has returned its CommandResult.
+  Parsing and command execution are outside this interaction.
+end note
+opt result.didChangeActivities()
+  Console -> Storage : markUnsavedChanges()
+end
+note over Console, Storage
+  A write is required after an activity change,
+  or when an exit request has unsaved changes.
+end note
+alt a required save fails
+  Console -> Storage : save(activities)
+  Storage --> Console : throws UniEnableException
+  Console -> UI : showMessage(save error)
+  UI --> User : save error
+  Console -> UI : showMessage(unsaved notice)
+  UI --> User : changes remain unsaved; session stays open
+else save succeeds or no write is required
+  opt write required
+    Console -> Storage : save(activities)
+    opt recovery backup required
+      Storage -> Storage : preserve and verify original file
+    end
+    Storage -> Activities : getActivities()
+    Activities --> Storage : insertion-order snapshot
+    Storage -> Storage : write temporary file; replace activity file
+    Storage --> Console : saved; dirty flag cleared
+  end
+  Console -> UI : showMessage(result.getMessage())
+  UI --> User : command result
+  opt unsaved changes remain after a read-only command
+    Console -> UI : showMessage(unsaved notice)
+    UI --> User : persistent unsaved notice
+  end
+end
+@enduml
+'@@author

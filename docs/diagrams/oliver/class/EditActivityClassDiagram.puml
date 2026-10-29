@@ -1,0 +1,57 @@
+'@@author Oliver-koh
+@startuml
+!pragma layout smetana
+title Activity editing collaborators
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide circle
+hide empty members
+
+abstract class Command {
+  +execute(...): CommandResult
+}
+class Parser {
+  +parse(input: String): Command
+}
+class EditCommandParser {
+  +parse(arguments: String): EditCommand
+}
+class EditCommand {
+  +execute(...): CommandResult
+}
+class "EditCommand.Fields" as EditFields <<record>>
+class ActivityScheduleValidator {
+  {static} ~validate(...): void
+}
+class ActivityList {
+  +getByDisplayedIndex(...): Activity
+  +replaceByDisplayedIndex(...): void
+}
+class Activity
+
+Command <|-- EditCommand
+Parser ..> EditCommandParser : delegates
+EditCommandParser ..> EditCommand : creates
+EditCommandParser ..> EditFields : collects changes
+EditCommand --> EditFields : fields
+EditCommand ..> ActivityScheduleValidator : checks conflicts
+EditCommand ..> ActivityList : selects / replaces
+EditCommand ..> Activity : builds replacement
+ActivityScheduleValidator ..> ActivityList : reads current schedule
+ActivityList --> "0..*" Activity : activities
+note bottom of EditFields
+  Immutable optional replacements.
+  Omitted fields keep their current values.
+end note
+note bottom of EditCommand
+  Check eligibility and validate the replacement
+  before changing the selected activity.
+end note
+@enduml
+'@@author
