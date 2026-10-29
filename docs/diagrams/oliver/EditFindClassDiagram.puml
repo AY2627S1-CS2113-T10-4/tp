@@ -1,0 +1,66 @@
+@startuml
+!pragma layout smetana
+title Activity editing and name search
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide empty members
+
+abstract class Command {
+  +execute(...): CommandResult
+}
+class Parser {
+  -clock: Clock
+  +parse(input: String): Command
+}
+class EditCommandParser {
+  -clock: Clock
+  +parse(arguments: String): EditCommand
+}
+class EditCommand {
+  -displayedIndex: int
+  -clock: Clock
+  +execute(...): CommandResult
+}
+class FindCommand {
+  -keyword: String
+  +execute(...): CommandResult
+}
+class ActivityList {
+  +getByDisplayedIndex(displayedIndex: int): Activity
+  +replaceByDisplayedIndex(displayedIndex: int, replacement: Activity): void
+  +getCanonicalView(): List<Activity>
+  +findByName(keyword: String): List<Activity>
+}
+class Activity
+class ActivityListFormatter <<utility>> {
+  {static} +formatFindResults(...): String
+}
+
+Command <|-- EditCommand
+Command <|-- FindCommand
+Parser ..> EditCommandParser : delegates edit
+EditCommandParser ..> EditCommand : creates
+Parser ..> FindCommand : creates
+EditCommand ..> ActivityList : reads / replaces
+EditCommand ..> Activity : creates
+FindCommand ..> ActivityList : searches names
+FindCommand ..> ActivityListFormatter : formats results
+ActivityList --> "0..*" Activity : activities
+
+note bottom of EditCommand
+  Optional values and supplied-field flags are omitted.
+  Omitted fields and completion are preserved.
+  A successful edit requests saving through ConsoleHelper.
+end note
+
+note bottom of ActivityListFormatter
+  Find results keep indexes from the full chronological list.
+  Searching does not request saving.
+end note
+@enduml

@@ -103,8 +103,8 @@ details inside your block; maintain sections marked `SHARED` jointly.
 | --- | --- | --- | --- |
 | Shared | [Shared design](#shared-design) | [shared/](diagrams/shared) | [shared/](images/shared) |
 | [Atharva](team/atharva005.md) | [Atharva: Activity creation and help](#atharva-activity-creation-and-help) | Awaiting contribution | Awaiting contribution |
-| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion) | Awaiting contribution | Awaiting contribution |
-| [Oliver](team/oliver-koh.md) | [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search) | Awaiting contribution | Awaiting contribution |
+| [Asyraf](team/officialasyrafrahim.md) | [Asyraf: Activity views and deletion](#asyraf-activity-views-and-deletion) | [asyraf/](diagrams/asyraf) | [asyraf/](images/asyraf) |
+| [Oliver](team/oliver-koh.md) | [Oliver: Completion, storage, editing and search](#oliver-completion-storage-editing-and-search) | [oliver/](diagrams/oliver) | [oliver/](images/oliver) |
 | [Luke](team/lukelouyu.md) | [Luke: Ratings and accessibility](#luke-ratings-and-accessibility) | [luke/](diagrams/luke) | [luke/](images/luke) |
 
 The combined activity-creation class diagram belongs to `shared` because it
@@ -182,6 +182,24 @@ Documentation to be completed by Atharva.
 
 Documentation to be completed by Asyraf.
 
+#### Diagrams
+
+![Class diagram showing chronological and demand ordering of activities](images/asyraf/ActivityOrderingClassDiagram.png)
+
+Source: [ActivityOrderingClassDiagram.puml](diagrams/asyraf/ActivityOrderingClassDiagram.puml).
+
+![Sequence diagram showing deletion through the canonical displayed index](images/asyraf/DeleteActivitySequence.png)
+
+Source: [DeleteActivitySequence.puml](diagrams/asyraf/DeleteActivitySequence.puml).
+
+![Class diagram showing priority scoring and overdue/next query relationships](images/asyraf/PriorityAndTimeViewsClassDiagram.png)
+
+Source: [PriorityAndTimeViewsClassDiagram.puml](diagrams/asyraf/PriorityAndTimeViewsClassDiagram.puml).
+
+![Sequence diagram showing priority and time-based activity queries](images/asyraf/PriorityAndTimeViewsSequence.png)
+
+Source: [PriorityAndTimeViewsSequence.puml](diagrams/asyraf/PriorityAndTimeViewsSequence.puml).
+
 <!-- END OWNER: Muhammad Asyraf Bin Abdul Rahim (@officialasyrafrahim) -->
 
 <!-- BEGIN OWNER: Oliver (@Oliver-koh). Add completion, storage/recovery, editing and search documentation here. -->
@@ -189,6 +207,28 @@ Documentation to be completed by Asyraf.
 ### Oliver: Completion, storage, editing and search
 
 Documentation to be completed by Oliver.
+
+#### Diagrams
+
+![Class diagram showing activity persistence and storage recovery](images/oliver/ActivityPersistenceClassDiagram.png)
+
+Source: [ActivityPersistenceClassDiagram.puml](diagrams/oliver/ActivityPersistenceClassDiagram.puml).
+
+![Sequence diagram showing completion marking and conditional saving](images/oliver/CompletionAndSaveSequence.png)
+
+Source: [CompletionAndSaveSequence.puml](diagrams/oliver/CompletionAndSaveSequence.puml).
+
+![Class diagram showing activity editing, search, and their shared models](images/oliver/EditFindClassDiagram.png)
+
+Source: [EditFindClassDiagram.puml](diagrams/oliver/EditFindClassDiagram.puml).
+
+![Sequence diagram showing activity editing and conditional saving](images/oliver/EditActivitySequence.png)
+
+Source: [EditActivitySequence.puml](diagrams/oliver/EditActivitySequence.puml).
+
+![Sequence diagram showing activity name search](images/oliver/FindActivitySequence.png)
+
+Source: [FindActivitySequence.puml](diagrams/oliver/FindActivitySequence.puml).
 
 <!-- END OWNER: Oliver (@Oliver-koh) -->
 

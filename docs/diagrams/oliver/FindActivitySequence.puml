@@ -1,0 +1,61 @@
+@startuml
+title Find activities using chronological indexes
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ParticipantBackgroundColor #EDF3F8
+skinparam ParticipantBorderColor #526477
+skinparam ArrowColor #526477
+skinparam sequenceMessageAlign center
+hide footbox
+
+participant "ConsoleHelper" as Console
+participant "parser:Parser" as Parser
+participant "activities:ActivityList" as Activities
+participant "ActivityListFormatter" as Formatter
+participant "ui:Ui" as UI
+
+Console -> Parser : parse(input)
+activate Parser
+note right of Parser
+  Extract and trim the keyword.
+  Reject a blank keyword.
+end note
+create participant ":FindCommand" as Find
+Parser -> Find : FindCommand(keyword)
+Parser --> Console : findCommand
+deactivate Parser
+
+Console -> Find : execute(activities, storage)
+activate Find
+Find -> Activities : getCanonicalView()
+activate Activities
+Activities --> Find : canonicalView
+deactivate Activities
+Find -> Activities : findByName(keyword)
+activate Activities
+Activities -> Activities : getCanonicalView()
+note right of Activities
+  Match name substrings using Locale.ROOT case folding.
+  Include completed and incomplete activities.
+end note
+Activities --> Find : chronological matches
+deactivate Activities
+Find -> Formatter : formatFindResults(keyword, matches, canonicalView)
+activate Formatter
+note right of Formatter
+  Map each match to its full-list index + 1.
+  If there are no matches, build the no-match message.
+end note
+Formatter --> Find : message
+deactivate Formatter
+Find --> Console : result (didChangeActivities = false)
+deactivate Find
+Console -> UI : showMessage(result.getMessage())
+
+note over Console, UI
+  The activity-change flag is false, so ConsoleHelper
+  does not call Storage.save(). Activity data is unchanged.
+end note
+@enduml
