@@ -40,8 +40,6 @@ note over Console, UI
   Extra topic words are rejected before construction.
   An unknown topic causes the constructor to throw ParseException.
   Help and rejected input never request saving or exit.
-  Non-ASCII command words are rejected before dispatch.
-  Add/edit help includes printable-ASCII names and duplicate/clash rules.
 end note
 @enduml
 '@@author

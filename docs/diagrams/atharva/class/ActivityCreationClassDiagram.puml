@@ -1,0 +1,58 @@
+'@@author Atharva005
+@startuml
+!pragma layout smetana
+title Activity creation and ratings
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide empty members
+
+abstract class Command {
+  +execute(...): CommandResult
+}
+class AddCommandParser {
+  -clock: Clock
+  +parse(arguments: String): AddCommand
+}
+class AddCommand {
+  +execute(...): CommandResult
+}
+class ActivityList {
+  +addActivity(activity: Activity): void
+}
+class Activity {
+  -name: String
+  -date: LocalDate
+  -startTime: LocalTime
+  -endTime: LocalTime
+  -importance: Integer
+  -urgency: Integer
+  -commitment: Integer
+  -isDone: boolean
+  {static} +validateRating(rating: Integer): void
+}
+enum DemandLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+Command <|-- AddCommand
+AddCommandParser ..> AddCommand : creates
+AddCommandParser ..> Activity : validates ratings
+AddCommand --> Activity : activity
+AddCommand ..> ActivityList : appends to
+ActivityList --> "0..*" Activity : activities
+Activity --> "1" DemandLevel : demand
+
+note bottom of Activity
+  Each rating is independently null (unset)
+  or a whole number from 1 to 5.
+end note
+@enduml
+'@@author
