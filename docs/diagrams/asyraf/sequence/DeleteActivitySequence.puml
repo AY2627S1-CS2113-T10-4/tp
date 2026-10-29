@@ -11,9 +11,15 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
 participant ":DeleteCommand" as Delete
 participant "activities:ActivityList" as Activities
+
+Console -> UI : readLine()
+User -> UI : delete 1
+UI --> Console : input
 
 note over Console, Delete
   Parser has already created DeleteCommand(1).
@@ -49,5 +55,9 @@ note over Console, Activities
   the result. A failed save keeps the unsaved
   notice for a later bye retry.
 end note
+ref over User, Console
+  CompletionAndSaveSequence
+  result, activities, storage
+end ref
 @enduml
 '@@author

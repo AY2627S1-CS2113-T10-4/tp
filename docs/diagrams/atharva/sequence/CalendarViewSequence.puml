@@ -11,10 +11,15 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
 participant "parser:Parser" as Parser
 participant "activities:ActivityList" as Activities
-participant "ui:Ui" as UI
+
+Console -> UI : readLine()
+User -> UI : view week
+UI --> Console : input
 
 Console -> Parser : parse(input)
 activate Parser
@@ -38,7 +43,7 @@ activate Activities
 Activities -> Activities : getCanonicalView()
 Activities --> View : chronological activities in range
 deactivate Activities
-View -> View : format(start, end, view)
+View -> View : format(...)
 alt selected period is empty
   note right of View
     Return the period heading and warning only.
@@ -46,19 +51,17 @@ alt selected period is empty
   end note
 else selected period has activities
   loop one day, or seven days for WEEK
-    View -> View : appendDay(output, date, view)
+    View -> View : appendDay(...)
     note right of View
       Empty days inside a populated week
       have a plain no-activities message.
     end note
   end
-  View -> View : appendSummary(output, view)
-  View -> View : appendRatingChart(output, view)
+  View -> View : appendSummary(...)
+  View -> View : appendRatingChart(...)
   note right of View
-    Table rows fit within 80 terminal columns, including separators.
-    chartName(name) caps labels at 26 columns, using ... for longer names.
-    Truncate at grapheme boundaries and pad by rendered width.
-    Full names remain in schedules and stored data.
+    Format aligned ratings and demand summaries.
+    Shorten table labels; retain full schedule names.
   end note
 end
 View --> Console : CommandResult(message, false)
@@ -67,6 +70,7 @@ note over Console, UI
   didChangeActivities() is false: no Storage.save().
   Dashboard row numbers belong to the selected period.
 end note
-Console -> UI : showMessage(result.getMessage())
+Console -> UI : showMessage(...)
+UI --> User : result message
 @enduml
 '@@author
