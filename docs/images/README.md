@@ -21,6 +21,8 @@ and schedule validation diagrams are in `atharva`. Class/sequence diagrams use
 
 <!-- @@author Atharva005 -->
 
+<a id="atharva"></a>
+
 ## Atharva Rege
 
 - [ActivityScheduleValidatorClassDiagram.png](atharva/class/ActivityScheduleValidatorClassDiagram.png)
@@ -40,6 +42,8 @@ and schedule validation diagrams are in `atharva`. Class/sequence diagrams use
 <!-- @@author -->
 
 <!-- @@author officialasyrafrahim -->
+
+<a id="asyraf"></a>
 
 ## Muhammad Asyraf Bin Abdul Rahim
 
@@ -88,6 +92,8 @@ and schedule validation diagrams are in `atharva`. Class/sequence diagrams use
 <!-- @@author -->
 
 <!-- @@author lukelouyu -->
+
+<a id="luke"></a>
 
 ## Lou Yu Luke
 
