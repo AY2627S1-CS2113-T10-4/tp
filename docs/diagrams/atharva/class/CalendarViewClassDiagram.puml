@@ -10,6 +10,7 @@ skinparam classAttributeIconSize 0
 skinparam classBackgroundColor #EDF3F8
 skinparam classBorderColor #526477
 skinparam ArrowColor #526477
+hide circle
 hide empty members
 
 abstract class Command {
@@ -33,7 +34,7 @@ class ViewCommand {
   {static} -clusterWidth(cluster: String): int
   {static} -padName(name: String, width: int): String
 }
-enum Range <<nested in ViewCommand>> {
+enum "ViewCommand.Range" as Range <<enumeration>> {
   TODAY
   TOMORROW
   WEEK

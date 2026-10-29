@@ -11,11 +11,16 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant ConsoleHelper as Console
 participant "add:AddCommand" as Add
 participant ActivityScheduleValidator as Validator
 participant "activities:ActivityList" as Activities
-participant "ui:Ui" as UI
+
+Console -> UI : readLine()
+User -> UI : add ...
+UI --> Console : input
 
 Console -> Add : execute(activities, storage)
 Add -> Validator : validate(candidate, activities, null, allowOverlap)
@@ -32,6 +37,7 @@ alt duplicate identity exists
   Validator --> Add : throws UniEnableException(duplicate warning)
   Add --> Console : propagate warning
   Console -> UI : showMessage(warning)
+  UI --> User : warning
 else no duplicate
   alt allowOverlap is true
     Validator --> Add : validation passed
@@ -43,6 +49,7 @@ else no duplicate
     Validator --> Add : throws UniEnableException(clash warning and overlap/ALLOW hint)
     Add --> Console : propagate warning
     Console -> UI : showMessage(warning)
+    UI --> User : warning
   else no clash
     Validator --> Add : validation passed
   end
@@ -52,6 +59,11 @@ opt validation passed
   Add -> Activities : addActivity(candidate)
   Activities --> Add : activity inserted
   Add --> Console : CommandResult(message, false, true)
+  ref over Console, UI
+  automatic save and display
+  CompletionAndSaveSequence
+end ref
+  UI --> User : confirmation or save warning
   note over Console, Activities
     The shared automatic-save and display flow follows insertion.
     Validation itself performs no mutation or file I/O.

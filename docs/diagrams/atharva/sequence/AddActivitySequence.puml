@@ -11,11 +11,16 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
 participant "parser:Parser" as Parser
 participant "activities:ActivityList" as Activities
 participant "ActivityScheduleValidator" as Schedule
-participant "ui:Ui" as UI
+
+Console -> UI : readLine()
+User -> UI : add ...
+UI --> Console : input
 
 Console -> Parser : parse(input)
 activate Parser
@@ -36,15 +41,11 @@ end note
 create participant ":AddCommand" as Add
 AddParser -> Add : AddCommand(...)
 activate Add
-create participant ":Activity" as Activity
-Add -> Activity : Activity(..., false, importance, urgency, commitment)
-activate Activity
-note right of Activity
-  Pass the parsed ratings unchanged.
-  Each omitted rating is null; a supplied rating keeps its validated value.
+Add -> Add : create incomplete Activity
+note right of Add
+  Preserve supplied ratings.
+  Omitted ratings remain unset.
 end note
-Activity --> Add
-deactivate Activity
 Add --> AddParser
 deactivate Add
 AddParser --> Parser : addCommand
@@ -54,13 +55,14 @@ deactivate Parser
 
 Console -> Add : execute(activities, storage)
 activate Add
-Add -> Schedule : validate(activity, activities, null, allowOverlap)
+Add -> Schedule : validate(...)
 Schedule -> Activities : getCanonicalView()
 Activities --> Schedule : chronological activities
 alt duplicate activity or unapproved time clash
   Schedule --> Add : throws UniEnableException(warning)
   Add --> Console : propagate warning
   Console -> UI : showMessage(warning)
+  UI --> User : warning
 else no duplicate and any overlap is approved
   Schedule --> Add : validation passed
   Add -> Activities : addActivity(activity)
@@ -68,6 +70,11 @@ else no duplicate and any overlap is approved
   Activities --> Add
   deactivate Activities
   Add --> Console : result (didChangeActivities = true)
+  ref over Console, UI
+  automatic save and display
+  CompletionAndSaveSequence
+end ref
+  UI --> User : confirmation or save warning
 end
 deactivate Add
 note over Console, Activities

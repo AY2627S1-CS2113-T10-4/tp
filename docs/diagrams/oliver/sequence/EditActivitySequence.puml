@@ -11,12 +11,16 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
 participant "parser:Parser" as Parser
 participant "activities:ActivityList" as Activities
 participant "ActivityScheduleValidator" as Schedule
-participant "storage:Storage" as Storage
-participant "ui:Ui" as UI
+
+Console -> UI : readLine()
+User -> UI : edit 1 ...
+UI --> Console : input
 
 Console -> Parser : parse(input)
 activate Parser
@@ -32,10 +36,9 @@ note right of EditParser
   ActivityNameValidator requires printable-ASCII replacement names.
   Group supplied values in immutable Fields; null means omitted.
 end note
-create participant "changes:EditCommand.Fields" as Changes
-EditParser -> Changes : Fields(name, date, start, end, demand, importance, urgency, commitment)
+EditParser -> EditParser : collect supplied Fields
 create participant ":EditCommand" as Edit
-EditParser -> Edit : EditCommand(index, changes, clock, allowOverlap)
+EditParser -> Edit : EditCommand(...)
 EditParser --> Parser : editCommand
 deactivate EditParser
 Parser --> Console : editCommand
@@ -55,22 +58,22 @@ note over Edit, Activities
   If a date/time field was supplied, validate
   the resulting range and end-after-now rule.
 end note
-create participant "replacement:Activity" as Replacement
-Edit -> Replacement : Activity(...)
+Edit -> Edit : build replacement Activity
 note over Edit, Schedule
   This path assumes a name or schedule field was supplied.
   Demand/rating-only edits skip schedule validation.
 end note
-Edit -> Schedule : validate(replacement, activities, existingActivity, allowOverlap)
+Edit -> Schedule : validate(...)
 Schedule -> Activities : getCanonicalView()
 Activities --> Schedule : chronological activities
 alt duplicate activity or unapproved time clash
   Schedule --> Edit : throws UniEnableException(warning)
   Edit --> Console : propagate warning
   Console -> UI : showMessage(warning)
+  UI --> User : warning
 else validation succeeds (original activity excluded)
   Schedule --> Edit : validation passed
-  Edit -> Activities : replaceByDisplayedIndex(displayedIndex, replacement)
+  Edit -> Activities : replaceByDisplayedIndex(...)
   activate Activities
   Activities -> Activities : getByDisplayedIndex(displayedIndex)
   note right of Activities
@@ -80,19 +83,17 @@ else validation succeeds (original activity excluded)
   Activities --> Edit
   deactivate Activities
   Edit --> Console : result (didChangeActivities = true)
-  Console -> Storage : save(activities)
-  activate Storage
-  Storage -> Activities : getActivities()
-  Activities --> Storage : insertion-order snapshot
-  Storage --> Console
-  deactivate Storage
-  Console -> UI : showMessage(result.getMessage())
+  ref over Console, UI
+    automatic save and display
+    CompletionAndSaveSequence
+  end ref
+  UI --> User : confirmation or save warning
 end
 deactivate Edit
 
 note over Console, UI
   Successful I/O is assumed on the valid path.
-  Rejected edits preserve every field, count and saved byte.
+  Rejected edits preserve the activity and stored data.
   Storage handles file writing and recovery backups.
 end note
 @enduml

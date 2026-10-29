@@ -11,10 +11,15 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
 participant "parser:Parser" as Parser
 participant "activities:ActivityList" as Activities
-participant "ui:Ui" as UI
+
+Console -> UI : readLine()
+User -> UI : view week
+UI --> Console : input
 
 Console -> Parser : parse(input)
 activate Parser
@@ -68,5 +73,6 @@ note over Console, UI
   Dashboard row numbers belong to the selected period.
 end note
 Console -> UI : showMessage(result.getMessage())
+UI --> User : result message
 @enduml
 '@@author

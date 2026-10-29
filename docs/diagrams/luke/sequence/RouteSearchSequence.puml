@@ -10,10 +10,16 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
 participant ":RouteCommand" as Command
 participant "manager:ConnectionManager" as Manager
 participant "graph:DijkstraShortestPath" as Graph
+
+Console -> UI : readLine()
+User -> UI : route from/AS6 to/AS7
+UI --> Console : input
 
 note over Console, Command
   RouteParser has already created a valid RouteCommand.
@@ -64,4 +70,6 @@ deactivate Command
 note over Console, Command
   Display the result through Ui; no activity save.
 end note
+Console -> UI : showMessage(result.getMessage())
+UI --> User : result message and sample-data disclaimer
 @enduml
