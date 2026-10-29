@@ -166,7 +166,10 @@ Optional ratings:
 
 Supply all, some, or none of the ratings. To leave one unset, omit its prefix;
 do not enter a literal `-`. Empty values, duplicate prefixes, ratings outside
-1 to 5, decimals, and text are rejected.
+1 to 5, decimals, and text are rejected. Use the short prefixes shown above:
+long-form aliases such as `urgency/`, `importance/`, `commitment/`, and
+`priority/` are rejected instead of becoming part of the activity name.
+Ordinary slash text such as `and/or` and `w/o` remains valid in names.
 
 <!-- @@author -->
 
@@ -181,16 +184,18 @@ cannot be added, and there is no override for this restriction. New activities s
 incomplete.
 
 Activity names must contain at least one non-whitespace character and use
-printable ASCII characters only. English letters, digits, spaces, and ordinary
-ASCII punctuation are allowed. Chinese, Tamil, accented letters, emoji, and
-non-printable characters such as tabs are rejected with:
+printable ASCII characters only. English letters, digits, spaces, and ASCII
+punctuation are allowed except for the explicitly forbidden characters described
+below. Chinese, Tamil, Hindi, Telugu, Korean and Japanese characters, accented
+letters, emoji, and non-printable characters such as tabs are rejected with:
 
 ```text
 [WARNING] Please write the activity name in English (ASCII characters only).
 ```
 
-The `|` character and line breaks remain forbidden and receive a separate
-delimiter warning. Ordinary slash text such as `and/or` and `w/o` is allowed.
+The `|` character and line breaks remain forbidden and receive a general command-
+parameter delimiter warning, regardless of which field contains them. Ordinary
+slash text such as `and/or` and `w/o` is allowed.
 Backslashes (`\`), commas (`,`), single quotation marks (`'`, including apostrophes),
 and double quotation marks (`"`) are forbidden. Slash (`/`) is allowed, subject to
 the prefix rules below. Combinations `/\` and `\/` are forbidden because they

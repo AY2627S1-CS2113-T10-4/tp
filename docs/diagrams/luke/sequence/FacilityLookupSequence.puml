@@ -1,3 +1,4 @@
+'@@author lukelouyu
 @startuml
 title Search facilities by recorded feature status
 skinparam backgroundColor white
@@ -10,10 +11,16 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
 participant ":FacilityFindCommand" as Find
 participant "manager:FacilityManager" as Manager
 participant "FacilityOutputFormatter" as Formatter
+
+Console -> UI : readLine()
+User -> UI : facility find type/LIFT status/NO
+UI --> Console : input
 
 note over Console, Find
   After parsing: facility find type/LIFT status/NO
@@ -41,4 +48,6 @@ deactivate Find
 note over Console, Find
   Display the result through Ui; no activity save.
 end note
+Console -> UI : showMessage(result.getMessage())
+UI --> User : result message and sample-data disclaimer
 @enduml

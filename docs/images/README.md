@@ -2,26 +2,28 @@
 
 Rendered diagrams follow the same ownership and type folders as the
 [PlantUML sources](../diagrams/README.md). Each member has `class/` and `sequence/`
-subfolders. Luke's architecture diagram uses `luke/architecture/`, and the campus
+subfolders. Lou Yu Luke's architecture diagram uses `luke/architecture/`, and the campus
 connectivity graph uses `luke/graph/`.
 The source index lists every source/image pair, the relevant Developer Guide
 section, and regeneration commands.
 
 | Folder | Class diagrams | Sequence diagrams | Other diagrams |
 | --- | --- | --- | --- |
-| [atharva](#atharva) | [Class](#atharva) | [Sequence](#atharva) | - |
-| [asyraf](#asyraf) | [Class](#asyraf) | [Sequence](#asyraf) | - |
-| [oliver](#oliver) | [Class](#oliver) | [Sequence](#oliver) | - |
-| [luke](#luke) | [Class](#luke) | [Sequence](#luke) | Architecture and [connectivity graph](#luke) |
+| [atharva](#atharva) | Atharva Rege: [Class](#atharva) | [Sequence](#atharva) | - |
+| [asyraf](#asyraf) | Muhammad Asyraf Bin Abdul Rahim: [Class](#asyraf) | [Sequence](#asyraf) | - |
+| [oliver](#oliver) | Koh Li Wei Oliver: [Class](#oliver) | [Sequence](#oliver) | - |
+| [luke](#luke) | Lou Yu Luke: [Class](#luke) | [Sequence](#luke) | Architecture and [connectivity graph](#luke) |
 
-Luke maintains the activity-creation class diagram and name/parameter validation
-pairs in the `luke` folder. Atharva maintains the add sequence, calendar, help,
-and schedule validation diagrams in `atharva`. Class/sequence diagrams use
+Lou Yu Luke's activity-creation class diagram and name/parameter validation
+pairs are in the `luke` folder. Atharva Rege's add sequence, calendar, help,
+and schedule validation diagrams are in `atharva`. Class/sequence diagrams use
 `.png`, and the campus connectivity graph uses `.svg`.
 
 <!-- @@author Atharva005 -->
 
-## Atharva
+<a id="atharva"></a>
+
+## Atharva Rege
 
 - [ActivityScheduleValidatorClassDiagram.png](atharva/class/ActivityScheduleValidatorClassDiagram.png)
   shows duplicate and overlap validation before add/edit changes.
@@ -41,7 +43,9 @@ and schedule validation diagrams in `atharva`. Class/sequence diagrams use
 
 <!-- @@author officialasyrafrahim -->
 
-## Asyraf
+<a id="asyraf"></a>
+
+## Muhammad Asyraf Bin Abdul Rahim
 
 ### Class diagrams
 
@@ -76,7 +80,7 @@ and schedule validation diagrams in `atharva`. Class/sequence diagrams use
 - [ActivityPersistenceClassDiagram.png](oliver/class/ActivityPersistenceClassDiagram.png)
   shows conditional saving and storage recovery state.
 - [CompletionAndSaveSequence.png](oliver/sequence/CompletionAndSaveSequence.png) shows
-  marking an activity and saving only when it changes.
+  shared saving and result display after command execution, including save failures.
 - [EditActivityClassDiagram.png](oliver/class/EditActivityClassDiagram.png) shows edit
   parsing, chronological index resolution, replacement, and saving requests.
 - [EditActivitySequence.png](oliver/sequence/EditActivitySequence.png) shows validation,
@@ -89,7 +93,9 @@ and schedule validation diagrams in `atharva`. Class/sequence diagrams use
 
 <!-- @@author lukelouyu -->
 
-## Luke
+<a id="luke"></a>
+
+## Lou Yu Luke
 
 - [ActivityCreationClassDiagram.png](luke/class/ActivityCreationClassDiagram.png)
   shows activity creation and optional rating fields.
