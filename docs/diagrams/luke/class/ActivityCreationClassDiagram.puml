@@ -10,6 +10,7 @@ skinparam classAttributeIconSize 0
 skinparam classBackgroundColor #EDF3F8
 skinparam classBorderColor #526477
 skinparam ArrowColor #526477
+hide circle
 hide empty members
 
 abstract class Command {
@@ -46,7 +47,7 @@ class Activity {
   -isDone: boolean
   {static} +validateRating(rating: Integer): void
 }
-enum DemandLevel {
+enum DemandLevel <<enumeration>> {
   LOW
   MEDIUM
   HIGH

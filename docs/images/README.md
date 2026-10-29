@@ -76,7 +76,7 @@ and schedule validation diagrams in `atharva`. Class/sequence diagrams use
 - [ActivityPersistenceClassDiagram.png](oliver/class/ActivityPersistenceClassDiagram.png)
   shows conditional saving and storage recovery state.
 - [CompletionAndSaveSequence.png](oliver/sequence/CompletionAndSaveSequence.png) shows
-  marking an activity and saving only when it changes.
+  shared saving and result display after command execution, including save failures.
 - [EditActivityClassDiagram.png](oliver/class/EditActivityClassDiagram.png) shows edit
   parsing, chronological index resolution, replacement, and saving requests.
 - [EditActivitySequence.png](oliver/sequence/EditActivitySequence.png) shows validation,

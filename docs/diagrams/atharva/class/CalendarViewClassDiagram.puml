@@ -1,7 +1,7 @@
 '@@author Atharva005
 @startuml
 !pragma layout smetana
-title Calendar dashboard design
+title Calendar dashboard collaborators
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName SansSerif
@@ -10,71 +10,41 @@ skinparam classAttributeIconSize 0
 skinparam classBackgroundColor #EDF3F8
 skinparam classBorderColor #526477
 skinparam ArrowColor #526477
+hide circle
 hide empty members
 
 abstract class Command {
-  +execute(activities: ActivityList, storage: Storage): CommandResult
+  +execute(...): CommandResult
 }
 class Parser {
-  -clock: Clock
   +parse(input: String): Command
 }
 class ViewCommand {
   -clock: Clock
-  {static} -MAX_CHART_NAME_WIDTH: int = 26
-  +ViewCommand(range: Range, clock: Clock)
-  +execute(activities: ActivityList, storage: Storage): CommandResult
-  -format(start: LocalDate, end: LocalDate, view: List<Activity>): String
-  {static} -appendDay(...): void
-  {static} -appendSummary(...): void
-  {static} -appendRatingChart(...): void
-  {static} -chartName(name: String): String
-  {static} -displayWidth(text: String): int
-  {static} -clusterWidth(cluster: String): int
-  {static} -padName(name: String, width: int): String
+  +execute(...): CommandResult
 }
-enum Range <<nested in ViewCommand>> {
+enum "ViewCommand.Range" as Range <<enumeration>> {
   TODAY
   TOMORROW
   WEEK
 }
 class ActivityList {
-  +getViewBetween(start: LocalDate, end: LocalDate): List<Activity>
-  +getCanonicalView(): List<Activity>
+  +getViewBetween(...): List<Activity>
 }
 class Activity {
   +getDate(): LocalDate
   +isDone(): boolean
   +getPriorityScore(): Integer
 }
-class CommandResult {
-  +getMessage(): String
-  +isExit(): boolean
-  +didChangeActivities(): boolean
-}
-
 Command <|-- ViewCommand
-Parser ..> ViewCommand : creates with session clock
-ViewCommand --> Range : range (selected period)
-ViewCommand ..> ActivityList : inclusive date query
-ViewCommand ..> Activity : reads details and ratings
-ViewCommand ..> CommandResult : creates read-only result
+Parser ..> ViewCommand : creates with range and clock
+ViewCommand --> Range : selected period
+ViewCommand ..> ActivityList : queries inclusive dates
+ViewCommand ..> Activity : reads schedule and ratings
 ActivityList --> "0..*" Activity : activities
-
-note bottom of Range
-  TODAY: today only.
-  TOMORROW: tomorrow only.
-  WEEK: today through today + 6 days.
-end note
 note bottom of ViewCommand
-  Completed activities remain included.
-  An empty period returns a heading and warning only.
-  Populated periods include an aligned rating table.
-  Rating table rows fit within 80 terminal columns, including separators.
-  Table names use at most 26 columns, with ... for longer names.
-  Grapheme boundaries preserve Unicode characters and emoji sequences.
-  Full names remain in schedules and stored data.
-  Result flags: exit = false, changed = false.
+  Groups activities by date and formats summaries.
+  Returns a read-only CommandResult.
 end note
 @enduml
 '@@author

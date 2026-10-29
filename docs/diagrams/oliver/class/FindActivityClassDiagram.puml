@@ -1,7 +1,7 @@
 '@@author Oliver-koh
 @startuml
 !pragma layout smetana
-title Activity name search design
+title Find Activities - Class Diagram
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName SansSerif
@@ -10,6 +10,7 @@ skinparam classAttributeIconSize 0
 skinparam classBackgroundColor #EDF3F8
 skinparam classBorderColor #526477
 skinparam ArrowColor #526477
+hide circle
 hide empty members
 
 abstract class Command {
