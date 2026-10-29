@@ -47,8 +47,16 @@ class EditCommandParserTest {
         for (String name : new String[] {"A|B", "A\nB", "A\rB"}) {
             ParseException exception = assertThrows(ParseException.class, () -> parser.parse("edit 1 n/" + name));
             assertTrue(exception.getMessage().startsWith(
-                    "[WARNING] The activity name must not contain | or line breaks.\nUsage: edit"));
+                    "[WARNING] The | character and line breaks are not allowed in command parameters.\nUsage: edit"));
         }
+    }
+
+    @Test
+    void parse_delimiterInRating_reportsGeneralParameterWarning() {
+        ParseException exception = assertThrows(ParseException.class,
+                () -> parser.parse("edit 1 imp/1|2"));
+        assertTrue(exception.getMessage().startsWith(
+                "[WARNING] The | character and line breaks are not allowed in command parameters."));
     }
 
     @Test

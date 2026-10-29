@@ -190,8 +190,9 @@ letters, emoji, and non-printable characters such as tabs are rejected with:
 [WARNING] Please write the activity name in English (ASCII characters only).
 ```
 
-The `|` character and line breaks remain forbidden and receive a separate
-delimiter warning. Ordinary slash text such as `and/or` and `w/o` is allowed.
+The `|` character and line breaks remain forbidden and receive a general command-
+parameter delimiter warning, regardless of which field contains them. Ordinary
+slash text such as `and/or` and `w/o` is allowed.
 Backslashes (`\`), commas (`,`), single quotation marks (`'`, including apostrophes),
 and double quotation marks (`"`) are forbidden. Slash (`/`) is allowed, subject to
 the prefix rules below. Combinations `/\` and `\/` are forbidden because they
