@@ -1,9 +1,10 @@
 package seedu.unienable.command.activity;
 
+//@@author Oliver-koh
 import java.util.List;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
@@ -18,7 +19,7 @@ public class FindCommand extends Command {
     /**
      * Creates a name-search command.
      *
-     * @param keyword trimmed, non-blank name substring
+     * @param keyword trimmed, non-blank name substring.
      */
     public FindCommand(String keyword) {
         this.keyword = keyword;
@@ -35,3 +36,4 @@ public class FindCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author

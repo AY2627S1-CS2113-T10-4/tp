@@ -1,0 +1,55 @@
+'@@author Atharva005
+@startuml
+!pragma layout smetana
+title Categorized menu and topic help design
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide empty members
+
+abstract class Command {
+  +execute(activities: ActivityList, storage: Storage): CommandResult
+}
+class Parser {
+  +parse(input: String): Command
+}
+class HelpCommand {
+  {static} -OVERVIEW: String
+  {static} -TOPIC_HELP: Map<String, String>
+  -message: String
+  +HelpCommand()
+  +HelpCommand(topic: String)
+  +execute(activities: ActivityList, storage: Storage): CommandResult
+}
+class CommandResult {
+  +getMessage(): String
+  +isExit(): boolean
+  +didChangeActivities(): boolean
+}
+class ParseException
+
+Command <|-- HelpCommand
+Parser ..> HelpCommand : creates menu or topic command
+Parser ..> ParseException : rejects non-ASCII command words / extra words
+HelpCommand ..> ParseException : rejects unknown topic
+HelpCommand ..> CommandResult : wraps help text
+
+note bottom of HelpCommand
+  No topic selects the menu with five categories.
+  One topic uses Locale.ROOT case folding and map lookup.
+  Supported topics have usage, details and examples.
+  Reading help never executes the described command.
+  Add/edit pages explain printable-ASCII name input,
+  duplicate/clash rejection and allowed adjacent times.
+end note
+note bottom of CommandResult
+  Help leaves exit and activity-change flags false.
+  ActivityList and Storage are not read or modified.
+end note
+@enduml
+'@@author

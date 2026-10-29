@@ -12,15 +12,20 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+
+//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.FacilityManager;
+//@@author
 import seedu.unienable.exception.UniEnableException;
-import seedu.unienable.logic.FacilityManager;
 import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+//@@author lukelouyu
 /**
  * Checks facility reference loading, malformed-record recovery, and I/O ownership.
  */
@@ -251,3 +256,4 @@ class FacilityStorageTest {
                 new String[]{"F_FEATURE_OTHER_UNKNOWN", "F", "FACILITY|F01|AS1|\nFEATURE|F01|OTHER|UNKNOWN|Note",
                     "1", "0", "F01|AS1|null|OTHER|UNKNOWN|Note", ""});
     }}
+//@@author

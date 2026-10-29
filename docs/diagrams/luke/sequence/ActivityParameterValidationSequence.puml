@@ -1,0 +1,54 @@
+'@@author lukelouyu
+@startuml
+title Check activity parameters before creating a command
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ParticipantBackgroundColor #EDF3F8
+skinparam ParticipantBorderColor #526477
+skinparam ArrowColor #526477
+skinparam sequenceMessageAlign center
+hide footbox
+
+participant ConsoleHelper as Console
+participant "parser:Parser" as Parser
+participant "activityParser:AddCommandParser" as Fields
+participant ActivityParameterValidator as Validator
+participant "ui:Ui" as UI
+
+Console -> Parser : parse("add n/Class demm/HIGH ...")
+Parser -> Fields : parse(arguments)
+activate Fields
+Fields -> Validator : validate(arguments)
+activate Validator
+loop each alphanumeric prefix-like token
+  Validator -> Validator : skip known prefixes and single-letter tokens
+  Validator -> Validator : isOneEditAway(token, prefix)
+end
+alt a likely typo exists (demm/ is one edit from dem/)
+  Validator --> Fields : throws ParseException(warning)
+  Fields --> Parser : propagate ParseException
+  Parser --> Console : propagate ParseException
+  Console -> UI : showMessage(warning)
+  note over Console, Fields
+    No activity command executes.
+    Nothing is added, edited, or saved.
+  end note
+else no likely typo
+  Validator --> Fields : validation passed
+  Fields -> Fields : readFields(arguments), validate values
+  Fields --> Parser : validated command
+  Parser --> Console : command
+  note over Console, Fields
+    Normal command execution follows successful parsing.
+    Ordinary slash text such as and/or and w/o remains in the name.
+  end note
+end
+deactivate Validator
+deactivate Fields
+note over Fields, Validator
+  EditCommandParser uses the same validation before reading edit fields.
+end note
+@enduml
+'@@author

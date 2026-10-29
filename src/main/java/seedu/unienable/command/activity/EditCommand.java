@@ -1,13 +1,14 @@
 package seedu.unienable.command.activity;
 
+//@@author Oliver-koh
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Objects;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
 import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
@@ -19,59 +20,39 @@ import seedu.unienable.storage.Storage;
  */
 public class EditCommand extends Command {
     private final int displayedIndex;
-    private final String name;
-    private final LocalDate date;
-    private final LocalTime startTime;
-    private final LocalTime endTime;
-    private final DemandLevel demand;
-    private final Integer importance;
-    private final Integer urgency;
-    private final Integer commitment;
-    private final boolean nameSupplied;
-    private final boolean dateSupplied;
-    private final boolean startTimeSupplied;
-    private final boolean endTimeSupplied;
-    private final boolean demandSupplied;
-    private final boolean importanceSupplied;
-    private final boolean urgencySupplied;
-    private final boolean commitmentSupplied;
+    private final Fields fields;
     private final Clock clock;
+    private final boolean allowOverlap;
 
-    /** Creates an edit command using the system clock. */
-    public EditCommand(int displayedIndex, String name, LocalDate date, LocalTime startTime,
-                       LocalTime endTime, DemandLevel demand, boolean nameSupplied,
-                       boolean dateSupplied, boolean startTimeSupplied, boolean endTimeSupplied,
-                       boolean demandSupplied, Integer importance, Integer urgency, Integer commitment,
-                       boolean importanceSupplied, boolean urgencySupplied, boolean commitmentSupplied) {
-        this(displayedIndex, name, date, startTime, endTime, demand, nameSupplied, dateSupplied,
-                startTimeSupplied, endTimeSupplied, demandSupplied, importance, urgency, commitment,
-                importanceSupplied, urgencySupplied, commitmentSupplied, Clock.systemDefaultZone());
+    /**
+     * Groups optional edit values; null means omitted and preserves the existing value.
+     * Rating fields cannot be explicitly cleared by the edit command.
+     *
+     * @param name replacement name, or null when omitted.
+     * @param date replacement date, or null when omitted.
+     * @param startTime replacement start time, or null when omitted.
+     * @param endTime replacement end time, or null when omitted.
+     * @param demand replacement demand, or null when omitted.
+     * @param importance replacement importance, or null when omitted.
+     * @param urgency replacement urgency, or null when omitted.
+     * @param commitment replacement commitment, or null when omitted.
+     */
+    public record Fields(String name, LocalDate date, LocalTime startTime, LocalTime endTime,
+            DemandLevel demand, Integer importance, Integer urgency, Integer commitment) {
     }
 
-    /** Creates an edit command with an injectable clock for deterministic validation. */
-    public EditCommand(int displayedIndex, String name, LocalDate date, LocalTime startTime,
-                       LocalTime endTime, DemandLevel demand, boolean nameSupplied,
-                       boolean dateSupplied, boolean startTimeSupplied, boolean endTimeSupplied,
-                       boolean demandSupplied, Integer importance, Integer urgency, Integer commitment,
-                       boolean importanceSupplied, boolean urgencySupplied, boolean commitmentSupplied,
-                       Clock clock) {
+    /**
+     * Creates an edit command from parsed fields and an injectable time source.
+     *
+     * @param displayedIndex chronological index of the activity to edit.
+     * @param fields supplied replacements; null components preserve their existing values.
+     * @param clock time source used to reject ended activities and validate replacement times.
+     * @param allowOverlap whether this edit explicitly permits an intentional overlap.
+     */
+    public EditCommand(int displayedIndex, Fields fields, Clock clock, boolean allowOverlap) {
+        this.allowOverlap = allowOverlap;
         this.displayedIndex = displayedIndex;
-        this.name = name;
-        this.date = date;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.demand = demand;
-        this.importance = importance;
-        this.urgency = urgency;
-        this.commitment = commitment;
-        this.nameSupplied = nameSupplied;
-        this.dateSupplied = dateSupplied;
-        this.startTimeSupplied = startTimeSupplied;
-        this.endTimeSupplied = endTimeSupplied;
-        this.demandSupplied = demandSupplied;
-        this.importanceSupplied = importanceSupplied;
-        this.urgencySupplied = urgencySupplied;
-        this.commitmentSupplied = commitmentSupplied;
+        this.fields = Objects.requireNonNull(fields);
         this.clock = Objects.requireNonNull(clock);
     }
 
@@ -82,27 +63,34 @@ public class EditCommand extends Command {
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {
         Activity activity = activities.getByDisplayedIndex(displayedIndex);
-        String updatedName = nameSupplied ? name : activity.getName();
-        LocalDate updatedDate = dateSupplied ? date : activity.getDate();
-        LocalTime updatedStart = startTimeSupplied ? startTime : activity.getStartTime();
-        LocalTime updatedEnd = endTimeSupplied ? endTime : activity.getEndTime();
-        DemandLevel updatedDemand = demandSupplied ? demand : activity.getDemand();
-        Integer updatedImportance = importanceSupplied ? importance : activity.getImportance();
-        Integer updatedUrgency = urgencySupplied ? urgency : activity.getUrgency();
-        Integer updatedCommitment = commitmentSupplied ? commitment : activity.getCommitment();
+        LocalDateTime now = LocalDateTime.now(clock);
+        if (!LocalDateTime.of(activity.getDate(), activity.getEndTime()).isAfter(now)) {
+            throw warning("Activities that have ended cannot be edited.");
+        }
+        String updatedName = fields.name() == null ? activity.getName() : fields.name();
+        LocalDate updatedDate = fields.date() == null ? activity.getDate() : fields.date();
+        LocalTime updatedStart = fields.startTime() == null ? activity.getStartTime() : fields.startTime();
+        LocalTime updatedEnd = fields.endTime() == null ? activity.getEndTime() : fields.endTime();
+        DemandLevel updatedDemand = fields.demand() == null ? activity.getDemand() : fields.demand();
+        Integer updatedImportance = fields.importance() == null ? activity.getImportance() : fields.importance();
+        Integer updatedUrgency = fields.urgency() == null ? activity.getUrgency() : fields.urgency();
+        Integer updatedCommitment = fields.commitment() == null ? activity.getCommitment() : fields.commitment();
 
-        if (dateSupplied || startTimeSupplied || endTimeSupplied) {
+        if (fields.date() != null || fields.startTime() != null || fields.endTime() != null) {
             if (!updatedEnd.isAfter(updatedStart)) {
                 throw warning("End time must be later than start time on the same day.");
             }
             LocalDateTime endDateTime = LocalDateTime.of(updatedDate, updatedEnd);
-            if (!endDateTime.isAfter(LocalDateTime.now(clock))) {
+            if (!endDateTime.isAfter(now)) {
                 throw warning("Edited activity must end after the current local time.");
             }
         }
 
         Activity replacement = new Activity(updatedName, updatedDate, updatedStart, updatedEnd,
                 updatedDemand, activity.isDone(), updatedImportance, updatedUrgency, updatedCommitment);
+        if (fields.name() != null || fields.date() != null || fields.startTime() != null || fields.endTime() != null) {
+            ActivityScheduleValidator.validate(replacement, activities, activity, allowOverlap);
+        }
         activities.replaceByDisplayedIndex(displayedIndex, replacement);
         String message = "Edited activity: " + replacement.getName() + "\n"
                 + "Date: " + replacement.getDate() + "\n"
@@ -122,3 +110,4 @@ public class EditCommand extends Command {
         return new UniEnableException("[WARNING] " + message);
     }
 }
+//@@author

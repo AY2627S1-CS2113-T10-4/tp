@@ -13,22 +13,71 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Locale;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 
-import seedu.unienable.command.Command;
+//@@author lukelouyu
+import seedu.unienable.command.common.Command;
+//@@author
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
 
-/** Tests order-independent add parsing, optional ratings and existing input validation. */
+//@@author Atharva005
+/**
+ * Tests order-independent add parsing, optional ratings and existing input validation.
+ */
 class AddCommandParserTest {
-    /** Fixes now at 16:00 on 14 October 2026 in Singapore for repeatable validation. */
+    /**
+     * Fixes now at 16:00 on 14 October 2026 in Singapore for repeatable validation.
+     */
     private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-10-14T08:00:00Z"),
             ZoneId.of("Asia/Singapore"));
     private final AddCommandParser parser = new AddCommandParser(FIXED_CLOCK);
+
+    @Test
+    void parse_escapedSlashes_rejectsUnsupportedSyntax() {
+        assertThrows(ParseException.class, () -> parser.parse(
+                "n/Discuss dim\\/sum d\\/notes dem1\\/HIGH d/2026-12-10 s/09:00 e/10:00 dem/LOW"));
+    }
+
+    @TestFactory
+    Stream<DynamicTest> parse_nonAsciiOrNonPrintableName_throwsExactNameWarning() {
+        String[][] names = {{"Chinese", "复习"}, {"Tamil greeting", "வணக்கம்"}, {"Tamil study", "படி"},
+            {"accent", "Café"}, {"emoji", "Study 🎉"}, {"tab", "Study\tGroup"},
+            {"NUL", "Bad\u0000Name"}, {"DEL", "Bad\u007fName"}};
+        return Stream.of(names).map(scenario -> DynamicTest.dynamicTest(scenario[0], () -> {
+            ParseException exception = assertThrows(ParseException.class,
+                    () -> parser.parse("n/" + scenario[1] + " d/2026-12-10 s/09:00 e/10:00"));
+            assertEquals("[WARNING] Please write the activity name in English (ASCII characters only).",
+                    exception.getMessage());
+        }));
+    }
+
+    @Test
+    void parse_nameDelimiterViolations_preservesSpecificWarning() {
+        for (String name : new String[] {"A|B", "A\nB", "A\rB"}) {
+            ParseException exception = assertThrows(ParseException.class,
+                    () -> parser.parse("n/" + name + " d/2026-12-10 s/09:00 e/10:00"));
+            assertTrue(exception.getMessage().startsWith(
+                    "[WARNING] The activity name must not contain | or line breaks.\nUsage: add"));
+        }
+    }
+
+    @Test
+    void parse_mistypedOptionalPrefix_warnsInsteadOfSavingItInName() {
+        for (String typo : new String[]{"demm/HIGH", "dme/HIGH", "impp/5", "ur/3", "comm/4",
+            "dem1/HIGH", "1dem/HIGH", "de1/HIGH", "imp2/5", "ur3/3", "co4/4"}) {
+            ParseException error = assertThrows(ParseException.class,
+                    () -> parser.parse("n/Class " + typo + " d/2026-12-10 s/09:00 e/10:00"));
+            assertTrue(error.getMessage().contains("Unknown parameter"));
+        }
+    }
 
     @Test
     void parse_outOfOrderFieldsAndMultiWordName_addsActivity() throws Exception {
@@ -60,12 +109,14 @@ class AddCommandParserTest {
         assertNull(result.getCommitment());
     }
 
+    //@@author
+    //@@author lukelouyu
     @Test
     void parse_partialRatings_keepsEachOmittedRatingUnset() throws Exception {
         String[] suffixes = {"imp/1 com/5", "urg/2"};
         Integer[][] expected = {{1, null, 5}, {null, 2, null}};
-        ActivityList activities = new ActivityList();
         for (int i = 0; i < suffixes.length; i++) {
+            ActivityList activities = new ActivityList();
             parser.parse("n/Planning and/or review w/o slides d/2026-10-20 s/09:00 e/10:00 " + suffixes[i])
                     .execute(activities, new Storage());
 
@@ -76,7 +127,8 @@ class AddCommandParserTest {
             assertEquals(expected[i][2], result.getCommitment());
         }
     }
-
+    //@@author
+    //@@author lukelouyu
     @Test
     void parse_invalidRatings_rejectsEachPrefix() {
         for (String prefix : new String[] {"imp", "urg", "com"}) {
@@ -87,6 +139,8 @@ class AddCommandParserTest {
             }
         }
     }
+    //@@author
+    //@@author Atharva005
 
     @Test
     void parse_emptyOrDuplicateFields_rejectsEveryKnownPrefix() {
@@ -115,6 +169,15 @@ class AddCommandParserTest {
         parser.parse("n/Lunch w/o friends d/2026-10-20 s/09:00 e/10:00")
                 .execute(activities, new Storage());
         assertEquals("Lunch w/o friends", activities.getActivities().get(0).getName());
+    }
+
+    @Test
+    void parse_unicodeBlankName_throwsParseException() {
+        for (String name : new String[] {"\u2003", "\u3000", " \u2003\t\u3000 "}) {
+            ParseException exception = assertThrows(ParseException.class,
+                    () -> parser.parse("n/" + name + " d/2026-10-20 s/09:00 e/10:00"));
+            assertTrue(exception.getMessage().contains("Empty n/ parameter."));
+        }
     }
 
     @Test
@@ -175,7 +238,7 @@ class AddCommandParserTest {
             ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input), input);
             assertEquals("[WARNING] End time must be later than current time.\n"
                     + "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] "
-                    + "[imp/IMP] [urg/URG] [com/COM]",
+                    + "[imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]",
                     exception.getMessage());
         }
     }
@@ -206,3 +269,4 @@ class AddCommandParserTest {
         }
     }
 }
+//@@author

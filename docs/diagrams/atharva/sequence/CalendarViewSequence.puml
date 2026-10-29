@@ -1,0 +1,72 @@
+'@@author Atharva005
+@startuml
+title Display a daily or seven-day calendar dashboard
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ParticipantBackgroundColor #EDF3F8
+skinparam ParticipantBorderColor #526477
+skinparam ArrowColor #526477
+skinparam sequenceMessageAlign center
+hide footbox
+
+participant "ConsoleHelper" as Console
+participant "parser:Parser" as Parser
+participant "activities:ActivityList" as Activities
+participant "ui:Ui" as UI
+
+Console -> Parser : parse(input)
+activate Parser
+note right of Parser
+  Accept exactly today, tomorrow or week.
+  Reject missing, unknown or extra range arguments.
+end note
+create participant "view:ViewCommand" as View
+Parser -> View : ViewCommand(range, clock)
+Parser --> Console : viewCommand
+deactivate Parser
+
+Console -> View : execute(activities, storage)
+activate View
+note right of View
+  Capture LocalDate.now(clock) once.
+  Resolve the inclusive start and end dates.
+end note
+View -> Activities : getViewBetween(start, end)
+activate Activities
+Activities -> Activities : getCanonicalView()
+Activities --> View : chronological activities in range
+deactivate Activities
+View -> View : format(start, end, view)
+alt selected period is empty
+  note right of View
+    Return the period heading and warning only.
+    Do not append a summary or rating table.
+  end note
+else selected period has activities
+  loop one day, or seven days for WEEK
+    View -> View : appendDay(output, date, view)
+    note right of View
+      Empty days inside a populated week
+      have a plain no-activities message.
+    end note
+  end
+  View -> View : appendSummary(output, view)
+  View -> View : appendRatingChart(output, view)
+  note right of View
+    Table rows fit within 80 terminal columns, including separators.
+    chartName(name) caps labels at 26 columns, using ... for longer names.
+    Truncate at grapheme boundaries and pad by rendered width.
+    Full names remain in schedules and stored data.
+  end note
+end
+View --> Console : CommandResult(message, false)
+deactivate View
+note over Console, UI
+  didChangeActivities() is false: no Storage.save().
+  Dashboard row numbers belong to the selected period.
+end note
+Console -> UI : showMessage(result.getMessage())
+@enduml
+'@@author

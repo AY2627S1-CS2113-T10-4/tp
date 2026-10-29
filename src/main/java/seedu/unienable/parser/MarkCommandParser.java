@@ -2,11 +2,12 @@ package seedu.unienable.parser;
 
 import java.util.regex.Pattern;
 
-import seedu.unienable.command.Command;
 import seedu.unienable.command.activity.MarkCommand;
 import seedu.unienable.command.activity.UnmarkCommand;
+import seedu.unienable.command.common.Command;
 import seedu.unienable.exception.ParseException;
 
+//@@author Oliver-koh
 /**
  * Parses the mark and unmark activity commands.
  */
@@ -15,9 +16,15 @@ public class MarkCommandParser {
     private static final Pattern INDEX_PATTERN = Pattern.compile("\\d+");
 
     /**
+     * Creates a parser for completion-command syntax.
+     */
+    public MarkCommandParser() {
+    }
+
+    /**
      * Parses {@code mark INDEX}.
      *
-     * @param words command words beginning with mark
+     * @param words command words beginning with mark.
      * @return a mark command
      * @throws ParseException when the syntax is invalid
      */
@@ -28,7 +35,7 @@ public class MarkCommandParser {
     /**
      * Parses {@code unmark INDEX}.
      *
-     * @param words command words beginning with unmark
+     * @param words command words beginning with unmark.
      * @return an unmark command
      * @throws ParseException when the syntax is invalid
      */
@@ -50,3 +57,4 @@ public class MarkCommandParser {
         }
     }
 }
+//@@author

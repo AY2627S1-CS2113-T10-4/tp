@@ -2,13 +2,14 @@ package seedu.unienable.parser;
 
 import java.util.regex.Pattern;
 
-import seedu.unienable.command.Command;
 import seedu.unienable.command.activity.DeleteCommand;
 import seedu.unienable.command.activity.ListCommand;
 import seedu.unienable.command.activity.ListDemandCommand;
 import seedu.unienable.command.activity.ListPriorityCommand;
+import seedu.unienable.command.common.Command;
 import seedu.unienable.exception.ParseException;
 
+//@@author officialasyrafrahim
 /**
  * Parses the list, list demand, list priority, and delete commands.
  * Only syntax is validated here: whether an index is a plain ASCII integer without a sign.
@@ -26,6 +27,12 @@ public class ListDeleteCommandParser {
      * which would otherwise accept a leading plus sign (e.g. "+3").
      */
     private static final Pattern INDEX_PATTERN = Pattern.compile("\\d+");
+
+    /**
+     * Creates a parser for activity listing and deletion syntax.
+     */
+    public ListDeleteCommandParser() {
+    }
 
     /**
      * Recognizes list, list demand, and list priority, case-insensitively.
@@ -87,3 +94,4 @@ public class ListDeleteCommandParser {
         }
     }
 }
+//@@author

@@ -2,25 +2,26 @@ package seedu.unienable.command.activity;
 
 import java.util.logging.Logger;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+//@@author officialasyrafrahim
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
 import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
+
 /**
  * Deletes one activity chosen by its 1-based displayed index in the canonical list.
  */
 public class DeleteCommand extends Command {
-    // Owner: Asyraf
     private static final Logger LOGGER = Logger.getLogger(DeleteCommand.class.getName());
     private final int displayedIndex;
 
     /**
      * Creates a command that will delete one activity when executed.
      *
-     * @param displayedIndex 1-based index shown by {@code list}, resolved by the model
+     * @param displayedIndex 1-based index shown by {@code list}, resolved by the model.
      */
     public DeleteCommand(int displayedIndex) {
         this.displayedIndex = displayedIndex;
@@ -48,3 +49,4 @@ public class DeleteCommand extends Command {
         return new CommandResult(message, false, true);
     }
 }
+//@@author

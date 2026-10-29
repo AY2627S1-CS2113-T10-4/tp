@@ -18,12 +18,13 @@ import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.enums.DemandLevel;
 
+//@@author Oliver-koh
 /**
  * Parses the V2.0 edit command using optional activity and rating fields.
  */
 public class EditCommandParser {
     private static final Pattern INDEX_PATTERN = Pattern.compile("\\d+");
-    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)(dem|imp|urg|com|n|d|s|e)/");
+    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)(overlap|dem|imp|urg|com|n|d|s|e)/");
     private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern TIME_PATTERN = Pattern.compile("\\d{2}:\\d{2}");
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd")
@@ -31,16 +32,20 @@ public class EditCommandParser {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String USAGE = "Usage: edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] "
-            + "[e/HH:mm] [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]";
+            + "[e/HH:mm] [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]";
 
     private final Clock clock;
 
-    /** Creates a parser using the system clock. */
+    /**
+     * Creates a parser using the system clock.
+     */
     public EditCommandParser() {
         this(Clock.systemDefaultZone());
     }
 
-    /** Creates a parser with a supplied clock for deterministic validation. */
+    /**
+     * Creates a parser with a supplied clock for deterministic validation.
+     */
     EditCommandParser(Clock clock) {
         this.clock = Objects.requireNonNull(clock);
     }
@@ -48,11 +53,15 @@ public class EditCommandParser {
     /**
      * Parses an edit command after the leading {@code edit} word.
      *
-     * @param arguments index followed by one or more editable fields
+     * @param arguments index followed by one or more editable fields.
      * @return validated edit command
      * @throws ParseException for malformed or incomplete input
      */
     public EditCommand parse(String arguments) throws ParseException {
+        if (arguments.contains("|") || arguments.indexOf('\n') >= 0 || arguments.indexOf('\r') >= 0) {
+            throw invalid("The activity name must not contain | or line breaks.");
+        }
+        ActivityParameterValidator.validate(arguments);
         String trimmed = arguments.trim();
         if (trimmed.isEmpty()) {
             throw invalid("edit needs an activity index.");
@@ -65,12 +74,18 @@ public class EditCommandParser {
         }
 
         Map<String, String> fields = readFields(trimmed.substring(separator).trim());
+        if (fields.size() == 1 && fields.containsKey("overlap")) {
+            throw invalid("At least one editable field must be supplied with overlap/ALLOW.");
+        }
         String name = fields.get("n");
         if (name != null && name.isBlank()) {
             throw invalid("Empty n/ parameter.");
         }
         if (name != null && (name.contains("|") || name.indexOf('\n') >= 0 || name.indexOf('\r') >= 0)) {
             throw invalid("The activity name must not contain | or line breaks.");
+        }
+        if (name != null) {
+            ActivityNameValidator.validate(name);
         }
         LocalDate date = fields.containsKey("d") ? parseDate(fields.get("d")) : null;
         LocalTime start = fields.containsKey("s") ? parseTime(fields.get("s")) : null;
@@ -79,10 +94,10 @@ public class EditCommandParser {
         Integer importance = parseRating(fields.get("imp"), "imp");
         Integer urgency = parseRating(fields.get("urg"), "urg");
         Integer commitment = parseRating(fields.get("com"), "com");
-        return new EditCommand(index, name, date, start, end, demand,
-                fields.containsKey("n"), fields.containsKey("d"), fields.containsKey("s"),
-                fields.containsKey("e"), fields.containsKey("dem"), importance, urgency, commitment,
-                fields.containsKey("imp"), fields.containsKey("urg"), fields.containsKey("com"), clock);
+        EditCommand.Fields changes = new EditCommand.Fields(name, date, start, end, demand,
+                importance, urgency, commitment);
+        return new EditCommand(index, changes, clock,
+                ActivityParameterValidator.allowsOverlap(fields.get("overlap")));
     }
 
     private int parseIndex(String token) throws ParseException {
@@ -182,3 +197,4 @@ public class EditCommandParser {
         return new ParseException("[WARNING] " + message + "\n" + USAGE);
     }
 }
+//@@author

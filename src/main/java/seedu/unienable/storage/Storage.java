@@ -10,6 +10,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 
+//@@author Oliver-koh
 /**
  * Reads six-column V1.0 records and nine-column rated records; saves nine columns.
  * The saved format is {@code NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM}.
@@ -40,6 +42,8 @@ public class Storage {
     private final Path activityFile;
     private List<String> warnings = List.of();
     private boolean loadedCorruptData;
+    /** Tracks in-memory activity changes until a complete save succeeds. */
+    private boolean unsavedChanges;
 
     /**
      * Creates storage at the default runtime location.
@@ -101,6 +105,20 @@ public class Storage {
         return List.copyOf(warnings);
     }
 
+    /** Records that the console has changed activities before attempting to save them. */
+    public void markUnsavedChanges() {
+        unsavedChanges = true;
+    }
+
+    /**
+     * Returns whether a changed activity list still needs a successful save.
+     *
+     * @return true until the current activity changes save successfully.
+     */
+    public boolean hasUnsavedChanges() {
+        return unsavedChanges;
+    }
+
     /**
      * Saves all activities in insertion order using UTF-8 and the nine-column format.
      *
@@ -131,6 +149,7 @@ public class Storage {
                     StandardOpenOption.WRITE);
             moveIntoPlace(temporaryFile);
             loadedCorruptData = false;
+            unsavedChanges = false;
         } catch (IOException exception) {
             throw new UniEnableException("Unable to save activities: " + exception.getMessage());
         }
@@ -160,11 +179,14 @@ public class Storage {
             LocalDate date = LocalDate.parse(fields[1], DATE_FORMAT);
             LocalTime startTime = LocalTime.parse(fields[2], TIME_FORMAT);
             LocalTime endTime = LocalTime.parse(fields[3], TIME_FORMAT);
+            if (!endTime.isAfter(startTime)) {
+                throw new IllegalArgumentException("end time must be later than start time on the same day.");
+            }
             DemandLevel demand = DemandLevel.valueOf(fields[4].toUpperCase(Locale.ROOT));
             boolean done = parseDone(fields[5]);
             return new Activity(fields[0], date, startTime, endTime, demand, done,
                     importance, urgency, commitment);
-        } catch (RuntimeException exception) {
+        } catch (DateTimeParseException | IllegalArgumentException exception) {
             throw new IllegalArgumentException("invalid date, time, demand, or completion value.");
         }
     }
@@ -239,3 +261,4 @@ public class Storage {
         }
     }
 }
+//@@author

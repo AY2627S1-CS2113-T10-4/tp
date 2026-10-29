@@ -1,0 +1,44 @@
+'@@author officialasyrafrahim
+@startuml
+title Overdue activity query
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #526477
+skinparam ParticipantBackgroundColor #EDF3F8
+skinparam ParticipantBorderColor #526477
+skinparam sequenceMessageAlign center
+hide footbox
+
+participant "ConsoleHelper" as Console
+participant "parser:Parser" as Parser
+participant "activities:ActivityList" as Activities
+participant "ActivityListFormatter" as Formatter
+participant "ui:Ui" as UI
+
+Console -> Parser : parse("overdue")
+create participant "command:OverdueCommand" as Query
+Parser -> Query : OverdueCommand(clock)
+Parser --> Console : command
+Console -> Query : execute(activities, storage)
+note right of Query
+  Capture LocalDateTime.now(clock) once.
+end note
+Query -> Activities : getCanonicalView()
+Activities --> Query : canonicalView
+Query -> Activities : getOverdueView(now)
+note right of Activities
+  Use local now captured once by the command.
+  Select incomplete activities with end strictly before now.
+end note
+Activities --> Query : view
+Query -> Formatter : formatOverdueList(view, canonicalView, now)
+Formatter --> Query : formatted rows or empty-state warning
+Query --> Console : CommandResult(message, false)
+note over Console, UI
+  didChangeActivities() is false: do not call Storage.save().
+end note
+Console -> UI : showMessage(result.getMessage())
+@enduml
+'@@author

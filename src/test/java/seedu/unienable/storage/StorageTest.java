@@ -21,6 +21,7 @@ import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 
+//@@author Oliver-koh
 /**
  * Tests legacy compatibility, rated activity persistence and protection of existing files.
  */
@@ -145,6 +146,36 @@ class StorageTest {
     }
 
     @Test
+    void load_invalidTimeRanges_warnsAndPreservesOriginalBeforeRecoverySave() throws Exception {
+        String valid = "Historical|2000-01-01|09:00|10:00|LOW|false";
+        String[] ranges = {"09:00|09:00", "10:00|09:00"};
+        for (int range = 0; range < ranges.length; range++) {
+            for (boolean rated : new boolean[] {false, true}) {
+                Path file = tempDir.resolve("invalid-range-" + range + "-" + rated + ".txt");
+                String invalid = "Invalid|2000-01-02|" + ranges[range] + "|HIGH|false"
+                        + (rated ? "|5|4|3" : "");
+                String original = valid + "\n" + invalid + "\n";
+                Files.writeString(file, original, StandardCharsets.UTF_8);
+                Storage storage = new Storage(file);
+
+                ActivityList loaded = storage.load();
+
+                assertEquals(List.of("Historical"), loaded.getActivities().stream().map(Activity::getName).toList(),
+                        invalid);
+                assertEquals(1, storage.getWarnings().size(), invalid);
+                assertTrue(storage.getWarnings().getFirst().startsWith("Line 2:"), invalid);
+                assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
+
+                storage.save(loaded);
+
+                assertEquals(valid + "|-|-|-\n", Files.readString(file, StandardCharsets.UTF_8));
+                assertArrayEquals(original.getBytes(StandardCharsets.UTF_8),
+                        Files.readAllBytes(file.resolveSibling(file.getFileName() + ".corrupt.bak")));
+            }
+        }
+    }
+
+    @Test
     void save_afterMalformedLoad_preservesOriginalInBackupBeforeRepairingFile() throws Exception {
         Path file = tempDir.resolve("activities.txt");
         String original = "Valid|2026-10-18|09:00|11:00|HIGH|false\n"
@@ -209,3 +240,4 @@ class StorageTest {
         assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
     }
 }
+//@@author

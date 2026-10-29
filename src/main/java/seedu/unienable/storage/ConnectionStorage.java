@@ -18,6 +18,7 @@ import seedu.unienable.model.enums.AccessibilityStatus;
 import seedu.unienable.model.enums.ShelterStatus;
 import seedu.unienable.model.enums.TraversalType;
 
+//@@author lukelouyu
 /**
  * Loads bidirectional connection reference data against an explicitly supplied facility collection.
  * Stored endpoints are facility names, not facility IDs; their order is preserved without implying direction.
@@ -28,7 +29,7 @@ public class ConnectionStorage {
     /**
      * Takes a snapshot of known facility names without loading the facility dataset again.
      *
-     * @param facilities already loaded facilities against which endpoints are validated
+     * @param facilities already loaded facilities against which endpoints are validated.
      */
     public ConnectionStorage(List<Facility> facilities) {
         Set<String> names = new HashSet<>();
@@ -52,7 +53,7 @@ public class ConnectionStorage {
      * Parses a caller-owned reader without closing it. Empty optional fields become null.
      * Tags, enum values, and endpoint names are matched exactly; endpoint text is not rewritten.
      *
-     * @param source reader containing connection records
+     * @param source reader containing connection records.
      * @return valid records and warnings carrying physical line numbers
      * @throws UniEnableException if reading fails; partial data is not returned as a successful load
      */
@@ -172,3 +173,4 @@ public class ConnectionStorage {
         return exception;
     }
 }
+//@@author

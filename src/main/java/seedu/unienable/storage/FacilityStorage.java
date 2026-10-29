@@ -18,10 +18,17 @@ import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+//@@author lukelouyu
 /**
  * Loads bundled facility reference data, preserving valid records and reporting invalid lines.
  */
 public class FacilityStorage {
+
+    /**
+     * Creates a loader for the bundled facility reference dataset.
+     */
+    public FacilityStorage() {
+    }
     /**
      * Loads facilities.txt from the classpath using UTF-8, including inside a packaged JAR.
      *
@@ -40,7 +47,7 @@ public class FacilityStorage {
      * For each facility and feature type, the first valid status is retained. Later conflicting
      * records are skipped with warnings; matching statuses may retain separate notes.
      *
-     * @param source reader containing facility and feature records
+     * @param source reader containing facility and feature records.
      * @return valid facilities and warnings carrying physical source line numbers
      * @throws UniEnableException if reading fails; partial data is not returned as a successful load
      */
@@ -62,14 +69,14 @@ public class FacilityStorage {
                 String[] fields = line.split("\\|", -1);
                 try {
                     switch (fields[0]) {
-                    case "FACILITY":
-                        addFacility(fields, facilities, ids, names);
-                        break;
-                    case "FEATURE":
-                        featureLines.add(new FeatureLine(lineNumber, fields));
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown record type: " + fields[0]);
+                        case "FACILITY":
+                            addFacility(fields, facilities, ids, names);
+                            break;
+                        case "FEATURE":
+                            featureLines.add(new FeatureLine(lineNumber, fields));
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unknown record type: " + fields[0]);
                     }
                 } catch (IllegalArgumentException exception) {
                     warnings.add("Line " + lineNumber + ": " + exception.getMessage());
@@ -226,3 +233,4 @@ public class FacilityStorage {
         }
     }
 }
+//@@author

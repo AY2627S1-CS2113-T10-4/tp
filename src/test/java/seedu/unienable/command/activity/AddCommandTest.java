@@ -9,22 +9,29 @@ import java.time.LocalTime;
 
 import org.junit.jupiter.api.Test;
 
-import seedu.unienable.command.CommandResult;
+//@@author lukelouyu
+import seedu.unienable.command.common.CommandResult;
+//@@author
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
 
-/** Tests that AddCommand changes state before reporting success. */
+//@@author Atharva005
+/**
+ * Tests that AddCommand changes state before reporting success.
+ */
 class AddCommandTest {
     @Test
-    void execute_twoAdds_updatesActivityListAndDisplaysCount() {
+    void execute_twoNonOverlappingAdds_updatesActivityListAndDisplaysCount() throws Exception {
         ActivityList activities = new ActivityList();
         AddCommand command = new AddCommand("Team Meeting", LocalDate.of(2026, 10, 20),
-                LocalTime.of(9, 0), LocalTime.of(10, 0), DemandLevel.MEDIUM);
+                LocalTime.of(9, 0), LocalTime.of(10, 0), DemandLevel.MEDIUM, null, null, null);
 
         CommandResult firstResult = command.execute(activities, new Storage());
-        CommandResult secondResult = command.execute(activities, new Storage());
+        CommandResult secondResult = new AddCommand("Team Meeting", LocalDate.of(2026, 10, 20),
+                LocalTime.of(10, 0), LocalTime.of(11, 0), DemandLevel.MEDIUM, null, null, null)
+                .execute(activities, new Storage());
 
         assertEquals(2, activities.getActivities().size());
         assertEquals("Team Meeting", activities.getActivities().get(0).getName());
@@ -37,8 +44,10 @@ class AddCommandTest {
         assertTrue(firstResult.didChangeActivities());
     }
 
+    //@@author
+    //@@author lukelouyu
     @Test
-    void execute_ratedActivity_preservesRatingsAndConfirmsTheirValues() {
+    void execute_ratedActivity_preservesRatingsAndConfirmsTheirValues() throws Exception {
         Integer[][] ratings = {{5, null, 3}, {1, 5, 2}};
         String[] expectedRatings = {
             "Importance: 5\nUrgency: -\nCommitment: 3",
@@ -62,4 +71,7 @@ class AddCommandTest {
             assertTrue(result.didChangeActivities());
         }
     }
+    //@@author
+    //@@author Atharva005
 }
+//@@author

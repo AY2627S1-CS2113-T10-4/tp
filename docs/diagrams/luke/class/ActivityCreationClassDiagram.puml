@@ -1,0 +1,78 @@
+'@@author lukelouyu
+@startuml
+!pragma layout smetana
+title Activity creation and ratings
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide empty members
+
+abstract class Command {
+  +execute(...): CommandResult
+}
+class AddCommandParser {
+  -clock: Clock
+  +parse(arguments: String): AddCommand
+}
+class AddCommand {
+  +execute(...): CommandResult
+}
+class ActivityParameterValidator <<package-private>> {
+  {static} ~validate(arguments: String): void
+}
+class ActivityNameValidator <<package-private>> {
+  {static} ~validate(name: String): void
+}
+class ActivityScheduleValidator <<package-private>> {
+  {static} ~validate(...): void
+}
+class ActivityList {
+  +addActivity(activity: Activity): void
+  +getCanonicalView(): List<Activity>
+}
+class Activity {
+  -name: String
+  -date: LocalDate
+  -startTime: LocalTime
+  -endTime: LocalTime
+  -importance: Integer
+  -urgency: Integer
+  -commitment: Integer
+  -isDone: boolean
+  {static} +validateRating(rating: Integer): void
+}
+enum DemandLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+Command <|-- AddCommand
+AddCommandParser ..> AddCommand : creates
+AddCommandParser ..> Activity : validates ratings
+AddCommandParser ..> ActivityNameValidator : requires printable-ASCII names
+AddCommandParser ..> ActivityParameterValidator : rejects likely prefix typos
+AddCommand ..> ActivityScheduleValidator : checks before insertion
+ActivityScheduleValidator ..> ActivityList : reads chronological view
+AddCommand --> Activity : activity
+AddCommand ..> ActivityList : appends to
+ActivityList --> "0..*" Activity : activities
+Activity --> "1" DemandLevel : demand
+
+note bottom of Activity
+  Each rating is independently null (unset)
+  or a whole number from 1 to 5.
+end note
+note bottom of ActivityScheduleValidator
+  Reject duplicate identities; time overlaps require overlap/ALLOW.
+  Adjacent endpoints and different dates are allowed.
+  A warning prevents insertion and saving.
+  Luke maintains this shared helper.
+end note
+@enduml
+'@@author

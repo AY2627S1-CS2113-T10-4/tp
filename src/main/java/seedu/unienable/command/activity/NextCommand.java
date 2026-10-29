@@ -1,5 +1,6 @@
 package seedu.unienable.command.activity;
 
+//@@author officialasyrafrahim
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -7,8 +8,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
@@ -19,7 +20,6 @@ import seedu.unienable.ui.activity.ActivityListFormatter;
  * current local time.
  */
 public class NextCommand extends Command {
-    // Owner: Asyraf
     private static final Logger LOGGER = Logger.getLogger(NextCommand.class.getName());
 
     private final Clock clock;
@@ -34,7 +34,7 @@ public class NextCommand extends Command {
     /**
      * Creates a next command with an injectable clock for deterministic tests.
      *
-     * @param clock time source used for the next boundary
+     * @param clock time source used for the next boundary.
      */
     public NextCommand(Clock clock) {
         this.clock = Objects.requireNonNull(clock);
@@ -54,3 +54,4 @@ public class NextCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author

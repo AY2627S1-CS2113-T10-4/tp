@@ -1,0 +1,59 @@
+'@@author lukelouyu
+@startuml
+!pragma layout smetana
+title Command and printable-ASCII activity name validation
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide empty members
+
+class Parser {
+  +parse(input: String): Command
+}
+class AddCommandParser {
+  +parse(arguments: String): AddCommand
+}
+class EditCommandParser {
+  +parse(arguments: String): EditCommand
+}
+class ActivityParameterValidator <<package-private>> {
+  ~{static} validate(arguments: String): void
+}
+class ActivityNameValidator <<package-private>> {
+  ~{static} rejectForbiddenPunctuation(input: String): void
+  ~{static} validate(name: String): void
+}
+class ParseException <<checked exception>>
+
+Parser ..> AddCommandParser : dispatches add
+Parser ..> EditCommandParser : dispatches edit
+Parser ..> ParseException : rejects non-ASCII command words
+AddCommandParser ..> ActivityNameValidator : checks required name
+EditCommandParser ..> ActivityNameValidator : checks supplied name
+AddCommandParser ..> ActivityParameterValidator : checks field spelling
+EditCommandParser ..> ActivityParameterValidator : checks field spelling
+ActivityParameterValidator ..> ParseException : rejects likely prefix typos
+ActivityNameValidator ..> ParseException : rejects non-printable / non-ASCII input
+
+note top of Parser
+  Check the command word before case conversion.
+  Report: Please write the command in English.
+  Find keywords may still match saved Unicode names.
+end note
+
+note bottom of ActivityNameValidator
+  Supplied names must use printable ASCII (0x20-0x7E).
+  Reject non-ASCII names, control characters and DEL.
+  Whitespace-only names receive the empty-name warning.
+  Parsers keep blank-name and delimiter checks.
+  Historical Unicode names still load and save as UTF-8.
+  Reject backslashes, commas and both quotation marks in the extracted name.
+  Slash is allowed subject to prefix rules; no escape or quote syntax exists.
+end note
+@enduml
+'@@author

@@ -19,12 +19,12 @@ import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.enums.DemandLevel;
 
+//@@author Atharva005
 /**
  * Parses the add command using named prefixes that may appear in any order.
  */
 public class AddCommandParser {
-    // Owner: Atharva
-    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)(dem|imp|urg|com|n|d|s|e)/");
+    private static final Pattern PREFIX = Pattern.compile("(?i)(?<!\\S)(overlap|dem|imp|urg|com|n|d|s|e)/");
     private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern TIME_PATTERN = Pattern.compile("\\d{2}:\\d{2}");
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd")
@@ -32,9 +32,11 @@ public class AddCommandParser {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String USAGE = "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm "
-            + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM]";
+            + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]";
 
-    /** Supplies the current time and local zone for activity end-time validation. */
+    /**
+     * Supplies the current time and local zone for activity end-time validation.
+     */
     private final Clock clock;
 
     /**
@@ -61,6 +63,10 @@ public class AddCommandParser {
      * @throws ParseException for absent, duplicate, unknown, or malformed arguments.
      */
     public AddCommand parse(String arguments) throws ParseException {
+        if (arguments.contains("|") || arguments.indexOf('\n') >= 0 || arguments.indexOf('\r') >= 0) {
+            throw invalid("The activity name must not contain | or line breaks.");
+        }
+        ActivityParameterValidator.validate(arguments);
         Map<String, String> fields = readFields(arguments);
         for (String required : new String[] {"n", "d", "s", "e"}) {
             if (!fields.containsKey(required)) {
@@ -69,9 +75,13 @@ public class AddCommandParser {
         }
 
         String name = fields.get("n");
+        if (name.isBlank()) {
+            throw invalid("Empty n/ parameter.");
+        }
         if (name.contains("|") || name.indexOf('\n') >= 0 || name.indexOf('\r') >= 0) {
             throw invalid("The activity name must not contain | or line breaks.");
         }
+        ActivityNameValidator.validate(name);
 
         LocalDate date;
         LocalTime startTime;
@@ -108,16 +118,22 @@ public class AddCommandParser {
                 throw invalid("Demand must be LOW, MEDIUM, or HIGH.");
             }
         }
+        //@@author
+        //@@author lukelouyu
         Integer importance = parseRating(fields.get("imp"), "imp");
         Integer urgency = parseRating(fields.get("urg"), "urg");
         Integer commitment = parseRating(fields.get("com"), "com");
-        return new AddCommand(name, date, startTime, endTime, demand, importance, urgency, commitment);
+        return new AddCommand(name, date, startTime, endTime, demand, importance, urgency, commitment,
+                ActivityParameterValidator.allowsOverlap(fields.get("overlap")));
+        //@@author
+        //@@author Atharva005
     }
 
     /**
      * Collects prefix/value pairs while allowing whitespace inside the activity name.
-     * Only known prefixes (dem, imp, urg, com, n, d, s, e) delimit values; any other
-     * slash-containing text such as "and/or" or "w/o" is kept as value content.
+     * Only known prefixes (overlap, dem, imp, urg, com, n, d, s, e) delimit values; any other
+     * slash-containing text such as "and/or" or "w/o" is kept as value content,
+     * except likely misspellings rejected by the shared parameter validator.
      * A known prefix like d/ that appears inside free text is still parsed as a
      * prefix, an unavoidable ambiguity of prefix-based grammars.
      */
@@ -154,6 +170,8 @@ public class AddCommandParser {
         }
     }
 
+    //@@author
+    //@@author lukelouyu
     /**
      * Parses a supplied whole-number rating using the model's shared range rule.
      * Missing fields remain unset; empty supplied fields are rejected by the field reader.
@@ -175,6 +193,8 @@ public class AddCommandParser {
             throw invalid("The " + prefix + "/ rating must be a whole number from 1 to 5.");
         }
     }
+    //@@author
+    //@@author Atharva005
 
     private LocalTime parseTime(String value) {
         if (!TIME_PATTERN.matcher(value).matches()) {
@@ -187,3 +207,4 @@ public class AddCommandParser {
         return new ParseException("[WARNING] " + message + "\n" + USAGE);
     }
 }
+//@@author

@@ -14,6 +14,7 @@ import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
 
+//@@author Oliver-koh
 /**
  * Tests marking activities through the canonical displayed-index contract.
  */
@@ -40,6 +41,7 @@ class MarkCommandTest {
         var result = new MarkCommand(1).execute(activities, new Storage());
 
         assertFalse(result.didChangeActivities());
+        assertTrue(result.getMessage().startsWith("[WARNING] Activity is already marked"));
         assertTrue(result.getMessage().contains("already marked"));
     }
 
@@ -57,3 +59,4 @@ class MarkCommandTest {
                 LocalTime.of(hour + 1, 0), DemandLevel.MEDIUM, done);
     }
 }
+//@@author

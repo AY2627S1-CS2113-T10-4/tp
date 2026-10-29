@@ -14,6 +14,7 @@ import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 
+//@@author officialasyrafrahim
 /**
  * Checks priority scoring, ordering, completed activities, unavailable scores,
  * and full chronological indexes for the list priority command.
@@ -34,7 +35,7 @@ class ListPriorityCommandTest {
         assertFalse(result.isExit());
         assertFalse(result.didChangeActivities());
         assertTrue(result.getMessage().startsWith("Activities by priority (highest first):"));
-        assertTrue(result.getMessage().endsWith("No activities yet."));
+        assertTrue(result.getMessage().endsWith("[WARNING] No activities yet."));
     }
 
     @Test
@@ -73,3 +74,4 @@ class ListPriorityCommandTest {
                 importance, urgency, commitment));
     }
 }
+//@@author

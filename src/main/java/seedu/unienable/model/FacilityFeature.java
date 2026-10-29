@@ -2,6 +2,7 @@ package seedu.unienable.model;
 
 import seedu.unienable.model.enums.AccessibilityStatus;
 
+//@@author lukelouyu
 /**
  * One immutable accessibility feature recorded at a facility.
  */
@@ -13,9 +14,9 @@ public final class FacilityFeature {
     /**
      * Creates a reference-data object without parsing or normalizing the supplied values.
      *
-     * @param type feature category
-     * @param status recorded accessibility status; UNKNOWN means unconfirmed
-     * @param notes optional notes, or null
+     * @param type feature category.
+     * @param status recorded accessibility status; UNKNOWN means unconfirmed.
+     * @param notes optional notes, or null.
      */
     public FacilityFeature(Type type, AccessibilityStatus status, String notes) {
         this.type = type;
@@ -54,13 +55,22 @@ public final class FacilityFeature {
      * Supported categories of facility accessibility features.
      */
     public enum Type {
+        /** A recorded lift. */
         LIFT,
+        /** A recorded ramp. */
         RAMP,
+        /** A recorded sheltered ramp. */
         SHELTERED_RAMP,
+        /** A recorded accessible washroom. */
         ACCESSIBLE_WASHROOM,
+        /** A recorded step-free entrance. */
         STEP_FREE_ENTRANCE,
+        /** A recorded resting point. */
         REST_POINT,
+        /** A recorded automatic door. */
         AUTOMATIC_DOOR,
+        /** Another recorded accessibility feature. */
         OTHER
     }
 }
+//@@author

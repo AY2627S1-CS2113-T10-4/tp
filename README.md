@@ -1,6 +1,13 @@
 # UniEnable
 
-UniEnable is a Java command-line team project for managing activities and looking up hub accessibility information. This baseline provides shared infrastructure for incremental v1.0 development.
+UniEnable is a Java 25 command-line application for managing dated activities and
+checking campus accessibility reference information. It supports activity editing,
+search, completion, demand and priority views, calendar dashboards, automatic
+persistence with corruption recovery, facility queries, and accessible route search.
+
+Read the [User Guide](docs/UserGuide.md) for commands and examples, or the
+[Developer Guide](docs/DeveloperGuide.md) for design, requirements, diagrams,
+and testing instructions. Accessibility results use bundled sample data.
 
 ## Setting up in Intellij
 
@@ -18,23 +25,39 @@ Prerequisites: JDK 25 (use the exact version), update Intellij to the most recen
 
 ## Build automation using Gradle
 
-* This project uses Gradle for build automation and dependency management. It includes a basic build script as well (i.e. the `build.gradle` file).
+* This project uses the included Gradle wrapper for build automation and dependency management.
 * If you are new to Gradle, refer to the [Gradle Tutorial at se-education.org/guides](https://se-education.org/guides/tutorials/gradle.html).
+
+Use JDK 25 for both Java and Gradle; confirm with `java -version` and the
+wrapper's `--version` command. Run commands from the repository root:
+
+| Purpose | Windows PowerShell | macOS / Linux |
+| --- | --- | --- |
+| Run the console | `.\gradlew.bat run --console=plain` | `./gradlew run --console=plain` |
+| Run JUnit tests | `.\gradlew.bat test` | `./gradlew test` |
+| Run all configured checks | `.\gradlew.bat check` | `./gradlew check` |
+| Build the executable JAR | `.\gradlew.bat shadowJar` | `./gradlew shadowJar` |
+
+The first build downloads Gradle and dependencies. Once built, launch with
+`java -ea -jar build/libs/unienable.jar`. Use `help` for syntax and `bye` to exit.
+Activity data is stored in `data/activities.txt` relative to the launch directory.
+Use a separate directory for manual tests.
 
 ## Testing
 
-### I/O redirection tests
-
-* This starter does not contain a `text-ui-test` directory or runner scripts.
-
-### JUnit tests
-
-* A skeleton JUnit test (`src/test/java/seedu/unienable/UniEnableTest.java`) is provided with this project template.
+* The [JUnit suite](src/test/java/seedu/unienable) covers parsers, commands, models,
+  persistence/recovery, accessibility data and routing, formatting, and console integration.
+* `check` runs JUnit, Checkstyle, and the configured JaCoCo coverage verification.
+  Coverage thresholds apply to the accessibility classes listed in `build.gradle`.
+* Test and coverage reports are written to `build/reports/tests/test/index.html`
+  and `build/reports/jacoco/test/html/index.html`.
+* The [manual testing instructions](docs/DeveloperGuide.md#instructions-for-manual-testing)
+  cover activity commands, date-sensitive views, and restart/recovery scenarios.
 * If you are new to JUnit, refer to the [JUnit Tutorial at se-education.org/guides](https://se-education.org/guides/tutorials/junit.html).
 
 ## Checkstyle
 
-* A sample CheckStyle rule configuration is provided in this project.
+* Checkstyle enforces the project's Java style using `config/checkstyle/checkstyle.xml`.
 * If you are new to Checkstyle, refer to the [Checkstyle Tutorial at se-education.org/guides](https://se-education.org/guides/tutorials/checkstyle.html).
 
 ## CI using GitHub Actions
@@ -43,12 +66,23 @@ The project uses [GitHub actions](https://github.com/features/actions) for CI. W
 
 ## Documentation
 
-`/docs` folder contains a skeleton version of the project documentation.
+The [documentation home](docs/README.md) links the [User Guide](docs/UserGuide.md),
+[Developer Guide](docs/DeveloperGuide.md), [About Us](docs/AboutUs.md), and
+[project portfolios](docs/team/README.md). The [diagram index](docs/diagrams/README.md)
+maps PlantUML sources to [rendered images](docs/images/README.md) and explains how to regenerate them.
 
-Steps for publishing documentation to the public: 
-1. If you are using this project template for an individual project, go your fork on GitHub.<br>
-   If you are using this project template for a team project, go to the team fork on GitHub.
-1. Click on the `settings` tab.
-1. Scroll down to the `GitHub Pages` section.
-1. Set the `source` as `master branch /docs folder`.
-1. Optionally, use the `choose a theme` button to choose a theme for your documentation.
+Luke contributes the activity-creation class diagram, the name and parameter
+validation class/sequence pairs, and the
+[architecture diagram](docs/diagrams/luke/architecture/ArchitectureDiagram.puml).
+Atharva contributes the add sequence, calendar dashboards, topic help, and
+schedule validation diagrams. See the diagram index for each source/image pair.
+
+For documentation publication and link checks, see the
+[publication notes](docs/README.md#publication-and-link-checks).
+
+## Acknowledgements
+
+This project adapts the [CS2113 team-project starter](https://github.com/NUS-CS2113-AY2627-S1/tp)
+and its [SE-EDU Duke](https://github.com/se-edu/duke) foundation.
+The [Developer Guide acknowledgements](docs/DeveloperGuide.md#acknowledgements)
+describe the inherited infrastructure and the source of the campus reference data.

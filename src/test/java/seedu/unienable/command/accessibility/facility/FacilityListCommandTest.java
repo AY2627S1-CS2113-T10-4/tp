@@ -4,14 +4,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
-import seedu.unienable.logic.FacilityManager;
+
+//@@author lukelouyu
+import seedu.unienable.command.accessibility.connection.logic.FacilityManager;
+//@@author
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.Facility;
 import seedu.unienable.parser.Parser;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
 
+//@@author lukelouyu
 /**
  * Checks read-only execution and empty metadata for facility list commands.
  */
@@ -30,7 +35,22 @@ class FacilityListCommandTest {
         var command = new Parser(manager).parse("facility list");
         var result = command.execute(activities, noWrites);
         assertFalse(result.isExit());
+        assertFalse(result.didChangeActivities());
+        assertTrue(result.getMessage().contains("[WARNING] No accessibility features recorded."));
         assertTrue(result.getMessage().endsWith(AccessibilityDisclaimer.TEXT));
         assertTrue(activities.getActivities().isEmpty());
     }
+
+    @Test
+    void execute_noFacilities_warnsWithoutRequestingSave() throws Exception {
+        var command = new Parser(new FacilityManager(List.of())).parse("facility list");
+
+        var result = command.execute(new ActivityList(), new Storage());
+
+        assertTrue(result.getMessage().contains("[WARNING] No facilities recorded."));
+        assertTrue(result.getMessage().endsWith(AccessibilityDisclaimer.TEXT));
+        assertFalse(result.isExit());
+        assertFalse(result.didChangeActivities());
+    }
 }
+//@@author

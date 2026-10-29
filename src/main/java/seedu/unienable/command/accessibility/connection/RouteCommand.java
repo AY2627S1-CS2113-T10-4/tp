@@ -5,11 +5,11 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+import seedu.unienable.command.accessibility.connection.logic.ConnectionManager;
+import seedu.unienable.command.accessibility.connection.logic.DijkstraShortestPath.Route;
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
 import seedu.unienable.exception.UniEnableException;
-import seedu.unienable.logic.ConnectionManager;
-import seedu.unienable.logic.DijkstraShortestPath.Route;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.Connection;
 import seedu.unienable.model.enums.ShelterStatus;
@@ -17,6 +17,7 @@ import seedu.unienable.model.enums.TraversalType;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
 
+//@@author lukelouyu
 /**
  * Displays the shortest recorded route using connections explicitly marked accessible.
  * The command only reads connection reference data; it never changes activities or storage.
@@ -61,7 +62,8 @@ public final class RouteCommand extends Command {
         }
 
         if (route.isEmpty()) {
-            String message = "No confirmed accessible route recorded from " + from.strip() + " to " + to.strip()
+            String message = "[WARNING] No confirmed accessible route recorded from " + from.strip()
+                    + " to " + to.strip()
                     + ".\nOnly connections marked YES for accessibility are used.";
             return new CommandResult(appendDisclaimer(message), false);
         }
@@ -118,9 +120,9 @@ public final class RouteCommand extends Command {
      */
     private static String formatShelterStatus(ShelterStatus status) {
         return switch (status) {
-        case YES -> "Sheltered";
-        case NO -> "Unsheltered";
-        case UNKNOWN -> "Shelter unconfirmed";
+            case YES -> "Sheltered";
+            case NO -> "Unsheltered";
+            case UNKNOWN -> "Shelter unconfirmed";
         };
     }
 
@@ -131,3 +133,4 @@ public final class RouteCommand extends Command {
         return message + "\n\n" + AccessibilityDisclaimer.TEXT;
     }
 }
+//@@author

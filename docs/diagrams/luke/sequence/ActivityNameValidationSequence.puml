@@ -1,0 +1,63 @@
+'@@author lukelouyu
+@startuml
+title Validate a command word and supplied activity name
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ParticipantBackgroundColor #EDF3F8
+skinparam ParticipantBorderColor #526477
+skinparam ArrowColor #526477
+skinparam sequenceMessageAlign center
+hide footbox
+
+participant ConsoleHelper as Console
+participant "parser:Parser" as Parser
+participant "fields:AddCommandParser" as Fields
+participant ActivityNameValidator as Validator
+participant "ui:Ui" as UI
+
+Console -> Parser : parse(input)
+alt command word contains non-ASCII characters
+  Parser --> Console : throws ParseException(command warning)
+  Console -> UI : showMessage(warning)
+else ASCII add command
+  Parser -> Fields : parse(arguments)
+  note right of Fields
+    Reject pipes and line breaks in raw arguments before extracting fields.
+    Slash escaping and quoted-name syntax are not supported.
+  end note
+  Fields -> Fields : readFields(arguments)
+  note right of Fields
+    Parameter spelling and required fields must be valid.
+    Validate forbidden punctuation in the extracted name, not other field values.
+  end note
+  Fields -> Validator : validate(name)
+  alt whitespace only, including Unicode spaces
+    Validator --> Fields : throws ParseException("Empty n/ parameter.")
+    Fields --> Parser : propagate ParseException
+    Parser --> Console : propagate ParseException
+    Console -> UI : showMessage(warning)
+  else character outside printable ASCII (0x20-0x7E)
+    Validator --> Fields : throws ParseException(ASCII activity-name warning)
+    Fields --> Parser : propagate ParseException
+    Parser --> Console : propagate ParseException
+    Console -> UI : showMessage(warning)
+  else valid printable-ASCII name
+    Validator --> Fields : validation passed
+    note right of Fields
+      Validate remaining date, time, demand, rating and override values.
+      Spaces and ordinary ASCII punctuation are accepted.
+    end note
+    Fields --> Parser : validated AddCommand
+    Parser --> Console : command
+  end
+end
+
+note over Fields, Validator
+  EditCommandParser uses the same validator only when n/ is supplied.
+  A parsing warning prevents command execution and changes no activity data.
+  Historical Unicode names load from storage without this input validation.
+end note
+@enduml
+'@@author

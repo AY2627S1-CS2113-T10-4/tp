@@ -1,24 +1,24 @@
 package seedu.unienable.command.activity;
 
+//@@author officialasyrafrahim
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-import seedu.unienable.command.Command;
-import seedu.unienable.command.CommandResult;
+import seedu.unienable.command.common.Command;
+import seedu.unienable.command.common.CommandResult;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 import seedu.unienable.ui.activity.ActivityListFormatter;
 
 /**
- * Lists incomplete activities whose start is strictly before the current local
+ * Lists incomplete activities whose end is strictly before the current local
  * time, in chronological order with labels for today, this week, and earlier.
  */
 public class OverdueCommand extends Command {
-    // Owner: Asyraf
     private static final Logger LOGGER = Logger.getLogger(OverdueCommand.class.getName());
 
     private final Clock clock;
@@ -33,7 +33,7 @@ public class OverdueCommand extends Command {
     /**
      * Creates an overdue command with an injectable clock for deterministic tests.
      *
-     * @param clock time source used for the overdue boundary
+     * @param clock time source used for the overdue boundary.
      */
     public OverdueCommand(Clock clock) {
         this.clock = Objects.requireNonNull(clock);
@@ -52,3 +52,4 @@ public class OverdueCommand extends Command {
         return new CommandResult(message, false);
     }
 }
+//@@author
