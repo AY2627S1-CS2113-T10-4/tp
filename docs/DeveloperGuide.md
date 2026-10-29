@@ -177,6 +177,10 @@ Whitespace-only names, including Unicode spaces, are empty. Add and edit use
 `ActivityNameValidator`; loading uses the separate
 [stored-name compatibility rule](#historical-name-compatibility).
 
+**Why names use printable ASCII.** Restricting new activity names to printable
+ASCII keeps the supported input set small and predictable, reducing the character
+cases that validation and testing must cover.
+
 <a id="activity-name-punctuation"></a>
 
 **Name punctuation and slash syntax:** Names prohibit backslashes (`\`), commas
@@ -414,33 +418,23 @@ returns an empty-result warning. See the [UG time queries](UserGuide.md#viewing-
 
 #### Editing activities
 
-`EditCommandParser` records supplied values in immutable `EditCommand.Fields`.
-`EditCommand` resolves the canonical index and captures the clock once. If the
-original activity ends at or before that time, every edit is rejected, including
-metadata-only changes and rescheduling into the future.
+`EditCommandParser` collects changes in immutable `EditCommand.Fields`.
+`EditCommand` selects the activity by its chronological index and checks the
+clock once. Activities ending at or before now reject every edit, including
+metadata changes and rescheduling into the future.
 
-For an eligible activity, the command combines supplied and existing values,
-preserving omitted fields and completion. Date/time changes must produce a
-same-day range ending after both the start and now. Name/schedule changes also
-use the shared conflict validator, excluding only the original record.
-Demand/rating-only edits skip conflict validation but still require an unended
-activity. The replacement is validated before mutation, so a rejected edit is
-atomic. Refresh indexes after a successful edit.
+Omitted fields and completion stay unchanged. Date/time edits must end after
+both the start and now, on the same day. Name/schedule edits also check for
+duplicates and clashes, excluding the original activity; demand/rating-only
+edits skip this check. Validation finishes before replacement, so rejected edits
+change nothing. Refresh indexes after a successful edit.
 
 <a id="ended-activity-edit-rationale"></a>
 
-**Why ended activities cannot be edited.** Editing is restricted to activities
-that have not yet ended, so one rule—"ended means locked"—keeps the edit logic
-to a single state. Allowing edits to ended activities would require extra
-branches for every field: metadata changes would need rules for altering a past
-record, and rescheduling into the future would move an entry between the
-historical and future states, releasing its old time slot and re-checking the
-new one for conflicts. Each branch expands both the implementation and the test
-matrix (activity state × edited field × validation), creating more places for
-bugs. Locking ended activities avoids that state-transition complexity, making
-the rule easy to implement correctly, review, and maintain. Re-doing a past
-activity is handled explicitly by adding a new one, which also preserves the
-historical record.
+**Why ended activities cannot be edited.** One edit rule keeps validation and
+testing simpler: ended activities are locked for editing. This avoids separate
+rules for changing historical details or moving records back into the future.
+To repeat a past activity, add a new one and preserve the original record.
 
 ![Editing classes](images/oliver/class/EditActivityClassDiagram.png)
 
@@ -450,17 +444,19 @@ historical record.
 
 [Enlarge diagram](images/oliver/sequence/EditActivitySequence.png) | [PlantUML source](diagrams/oliver/sequence/EditActivitySequence.puml).
 
-#### Name search
+<a id="name-search"></a>
+
+#### Find Activities
 
 `FindCommand` delegates case-insensitive literal substring matching to
 `ActivityList.findByName()`. The formatter receives matches and the canonical
 view to retain full-list indexes. Searching changes no state and requests no save.
 
-![Name search classes](images/oliver/class/FindActivityClassDiagram.png)
+![Find Activities - Class Diagram](images/oliver/class/FindActivityClassDiagram.png)
 
 [Enlarge diagram](images/oliver/class/FindActivityClassDiagram.png) | [PlantUML source](diagrams/oliver/class/FindActivityClassDiagram.puml).
 
-![Name search sequence](images/oliver/sequence/FindActivitySequence.png)
+![Find Activities - Sequence Diagram](images/oliver/sequence/FindActivitySequence.png)
 
 [Enlarge diagram](images/oliver/sequence/FindActivitySequence.png) | [PlantUML source](diagrams/oliver/sequence/FindActivitySequence.puml).
 
@@ -545,28 +541,23 @@ shows how a completion command produces its result.
 
 #### Optional ratings integration
 
-Add and edit parse importance, urgency and commitment independently. Each value
-is unset or an integer from 1 to 5, enforced by `Activity.validateRating()`.
-Supplied values pass unchanged into the model and storage; omitted add values
-stay unset. The [priority view](#priority-listing) uses all three ratings.
+`Activity.validateRating()` accepts unset values or integers from 1 to 5 for
+importance, urgency and commitment. Add and edit handle each rating independently;
+omitted add ratings stay unset. Ratings are stored unchanged and used by the
+[priority view](#priority-listing).
 
 #### Activity parameter validation
 
-Before extracting fields, add and edit call `ActivityParameterValidator` to
-identify likely prefix mistakes. It compares unknown alphanumeric, multi-letter
-tokens with recognized multi-letter prefixes. One insertion, deletion,
-substitution or adjacent swap produces a suggestion; `demm/` and `dem1/` suggest
-`dem/`. Known prefixes and single-letter tokens are skipped.
+Before field extraction, add and edit use `ActivityParameterValidator` to suggest
+corrections for unknown alphanumeric prefixes. It detects one insertion, deletion,
+substitution or adjacent swap between multi-letter tokens; `demm/` and `dem1/`
+suggest `dem/`. Known prefixes and single-letter tokens are skipped.
 
-Only recognized prefixes split fields. Other tokens stay in the preceding value:
-after an end time they can cause a misleading time error, while in the name they
-can be accepted as text. Early suggestions identify the likely cause before
-those field checks. The tradeoff is a false positive such as `dim/sum` at a field
-boundary. Specific, actionable feedback takes priority over accepting these
-colliding names; rewording provides a recovery path for false positives.
-This is a product choice, not a storage requirement. The
-[name-character restriction rationale](#name-character-set-rationale) explains
-the separate punctuation policy.
+Unrecognized tokens remain in the preceding field, potentially causing misleading
+errors or becoming part of a name. Early detection gives more specific feedback,
+but can reject literal text such as `dim/sum` at a field boundary. Actionable
+feedback takes priority; affected names must be reworded. This tradeoff is separate
+from the [name-character restrictions](#name-character-set-rationale).
 
 <!-- @@author -->
 
@@ -586,18 +577,26 @@ the separate punctuation policy.
 
 #### Activity schedule validation
 
-`ActivityScheduleValidator` checks duplicates before overlaps. Duplicate identity
-uses the same date, start, end, and a name equal ignoring case and surrounding
-whitespace. Demand, ratings and completion do not affect identity. Duplicate
-checks always apply.
+`ActivityScheduleValidator` checks duplicates first, then time overlaps.
 
-An overlap exists when `candidate.start < existing.end` and
-`existing.start < candidate.end` on the same date. Equal endpoints are allowed;
-completed records still participate. `overlap/ALLOW` permits only the time clash,
-is not stored, and must be supplied again for a conflicting schedule edit.
-Add validates before insertion; eligible name/schedule edits validate before
-replacement and exclude the original record. The helper reads a snapshot and
-performs no mutation or I/O.
+| Check | Rule |
+| --- | --- |
+| Duplicate | Same date, start, end and name, ignoring name case and surrounding spaces. Demand, ratings and completion do not affect identity. Always rejected. |
+| Time overlap | Same-date ranges overlap when `candidate.start < existing.end` and `existing.start < candidate.end`. Touching endpoints are allowed. Completed activities still participate. |
+| `overlap/ALLOW` | Permits a time clash, but never a duplicate. It is not stored; supply it again for a conflicting schedule edit. |
+| When validation runs | Before adding an activity or replacing an eligible activity's name/schedule. Edits exclude the original record; demand/rating-only edits skip this check. |
+
+For an existing activity from **09:00 to 10:00**, these examples use different
+names to isolate the time-overlap check:
+
+| Proposed time | Date relative to existing activity | Result |
+| --- | --- | --- |
+| 09:30–10:30 | Same date | Overlap; requires `overlap/ALLOW`. |
+| 10:00–11:00 | Same date | Allowed: endpoints only touch. |
+| 09:00–10:00 | Different date | Allowed: no time clash. |
+
+The helper reads a snapshot without changing data or performing I/O. Other
+add/edit validation rules still apply.
 
 <!-- @@author -->
 
@@ -750,23 +749,39 @@ On macOS or Linux, replace `.\gradlew.bat` with `./gradlew`. Test results are
 written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 `build/reports/jacoco/test/html/index.html` after `check` or `jacocoTestReport`.
 
-| Area | Representative tests and purpose |
-| --- | --- |
-| Activity input and commands | Parser tests cover valid and rejected syntax. `EditCommandTest` checks partial changes and atomic rejection; `FindCommandTest` checks name matching and chronological indexes. |
-| Calendar dashboards and help | `ViewCommandTest` covers date ranges, counts, empty periods, totals, 80-column rating tables, and read-only results. `HelpCommandTest` covers menus, topics, and invalid requests. |
-| Activity lists and time queries | `ListDemandCommandTest`, `ListPriorityCommandTest`, `OverdueCommandTest`, `NextCommandTest`, and `ActivityListFormatterTest` cover chronological indexes, ordering, missing scores, completion, and strict time boundaries. |
-| Activity persistence | `StorageTest` covers round trips, legacy data, malformed rows, backups and failed writes. `ConsoleSaveRecoveryTest` covers unsaved warnings, blocked exits, and retry on exit; `UniEnableTest` covers sessions and restarts. |
-| Facility reference data | `FacilityStorageTest`, `FacilityManagerTest`, `FacilityCommandParserTest` and facility command tests cover loading, exact status matching, formatting and unavailable data. |
-| Routing | `DijkstraSolverTest` and `DijkstraShortestPathTest` check distances, predecessors, route segments, and accessibility filtering. Manager, parser, and command tests cover endpoint errors and disconnected/same-hub routes. |
+| Area | Representative tests | Main checks |
+| --- | --- | --- |
+| Command input | Parser tests | Valid syntax and rejected input. |
+| Editing | `EditCommandTest` | Partial edits; rejected edits leave all fields unchanged. |
+| Finding activities | `FindCommandTest` | Name matching and chronological indexes. |
+| Calendar dashboards | `ViewCommandTest` | Date ranges, empty periods, counts, totals, 80-column rating tables and read-only results. |
+| Help | `HelpCommandTest` | Menu, topic pages and invalid requests. |
+| Demand and priority lists | `ListDemandCommandTest`, `ListPriorityCommandTest` | Ordering, chronological indexes, missing scores and completion states. |
+| Time queries | `OverdueCommandTest`, `NextCommandTest` | Selection rules and exact start/end boundaries. |
+| Activity formatting | `ActivityListFormatterTest` | Displayed indexes, ordering and result formatting. |
+| Storage | `StorageTest` | Save/load round trips, legacy rows, malformed data, backups and failed writes. |
+| Save recovery | `ConsoleSaveRecoveryTest` | Unsaved warnings, blocked exits and saving again on exit. |
+| Application sessions | `UniEnableTest` | Command sessions and persistence across restarts. |
+| Facility data | `FacilityStorageTest`, `FacilityManagerTest` | Loading records and matching feature statuses exactly. |
+| Facility commands | `FacilityCommandParserTest`, facility command tests | Input parsing, output formatting and unavailable data. |
+| Route calculation | `DijkstraSolverTest`, `DijkstraShortestPathTest` | Distances, predecessors, route segments and accessibility filtering. |
+| Route requests | Manager, parser and command tests | Invalid endpoints, disconnected hubs and same-hub requests. |
 
 <!-- @@author lukelouyu -->
 
-`ActivityNameValidatorTest` checks the [shared name policy](#ascii-command-name-validation),
-including character boundaries, punctuation, and blank names; add/edit parser
-tests check its integration and warning selection. `UniEnableProcessTest` runs
-isolated JVMs to cover command/name rejection, UTF-8 output for stored names,
-parameter and schedule validation, persistence across restarts, and rejection
-without partial changes or unintended file creation.
+These tests check input validation at three levels:
+
+| Level | Tests | What they verify |
+| --- | --- | --- |
+| Individual validator | `ActivityNameValidatorTest` | The [name rules](#ascii-command-name-validation): allowed character boundaries, forbidden punctuation and blank names. |
+| Command parsing | Add/edit parser tests | Both parsers apply the shared rules and report the appropriate warning. |
+| Complete application | `UniEnableProcessTest` | Commands work through the real entry point, including input rejection, parameter and schedule checks, UTF-8 display of stored names, and persistence across restarts. |
+
+`UniEnableProcessTest` starts a separate Java process (JVM), sends commands and
+checks the output and saved files. This tests the application's main
+execution path rather than calling a validator directly. It also checks that
+rejected commands leave activities unchanged and do not create an activity file
+unnecessarily.
 
 <!-- @@author -->
 
@@ -774,11 +789,25 @@ without partial changes or unintended file creation.
 
 ### Defensive programming
 
-Parsers reject malformed command syntax; commands and models validate resulting
-values, displayed-index bounds and rating ranges. Recoverable failures use checked
-exceptions. Defensive collection copies protect activity views and reference
-data. Assertions check internal ordering and deletion invariants; enable them
-as described in the setup section. They support debugging rather than input validation.
+Input is validated before data changes: parsers check syntax, while commands and
+models check values, indexes and rating ranges. Checked exceptions report
+recoverable errors so the user can correct the input and continue.
+
+For activity names, add and edit apply the shared
+[name-input policy](#ascii-command-name-validation), illustrated below:
+
+| Input example | Validation and rationale |
+| --- | --- |
+| `n/学习`, `n/படி`, `n/पढ़ाई`, `n/చదువు`, `n/공부`, `n/勉強`, `n/Study 🎉`, `n/Café` | These foreign-language characters (Chinese, Tamil, Hindi, Telugu, Korean and Japanese), emoji and accented characters are outside printable ASCII.<br>Supporting more character sets requires broader testing of input handling and terminal display.<br>Restricting new names to printable ASCII keeps the supported input predictable and the validation scope manageable. See the [design rationale](#ascii-command-name-validation).<br>Existing Unicode names remain loadable under the separate [stored-name rules](#historical-name-compatibility). |
+| `n/Meeting, Week 3`, `n/Student's meeting` | Commas and apostrophes are forbidden. Rejecting unsupported punctuation before changes prevents partial updates and reduces ambiguous input; see the [name-character rationale](#name-character-set-rationale). |
+| `n/"Study"`, `n/Study\notes` | Double quotes and backslashes are forbidden; quoted names and escaping are unsupported. |
+| `n/Study\|Review` or a name containing a line break | Pipes and line breaks conflict with record boundaries. |
+| A blank name or one containing a tab, NUL or DEL | Names must be nonblank and contain only printable characters. |
+| `n/Planning and/or review` (accepted) | Ordinary slash text is allowed, subject to the [prefix rules](#activity-parameter-validation). |
+
+Collection copies protect shared data from external changes. Assertions help
+detect internal ordering and deletion errors during debugging. Input validation
+remains responsible for checking user commands.
 
 <!-- @@author Oliver-koh -->
 
@@ -811,10 +840,10 @@ state changes, and restart behavior.
 
 ### Target users and value proposition
 
-UniEnable targets tertiary students with ASD, ADHD, or mobility constraints who
-are adapting to university routines. It combines commitment planning and campus
-reference queries in a keyboard-operated terminal application, with activities
-stored locally.
+| Aspect | Description |
+| --- | --- |
+| Target users | Tertiary students with ASD, ADHD, or mobility constraints who are adapting to university routines. |
+| Value proposition | A keyboard-operated terminal application that combines commitment planning with campus reference queries and stores activities locally. |
 
 ### Current boundaries
 

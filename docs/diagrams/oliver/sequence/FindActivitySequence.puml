@@ -1,6 +1,6 @@
 '@@author Oliver-koh
 @startuml
-title Find activities using chronological indexes
+title Find Activities - Sequence Diagram
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName SansSerif

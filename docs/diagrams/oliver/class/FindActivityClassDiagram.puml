@@ -1,7 +1,7 @@
 '@@author Oliver-koh
 @startuml
 !pragma layout smetana
-title Activity name search design
+title Find Activities - Class Diagram
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName SansSerif
