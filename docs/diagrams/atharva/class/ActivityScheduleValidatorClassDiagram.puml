@@ -1,0 +1,59 @@
+'@@author Atharva005
+@startuml
+!pragma layout smetana
+title Activity schedule validation before add or edit
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #EDF3F8
+skinparam classBorderColor #526477
+skinparam ArrowColor #526477
+hide circle
+hide empty members
+
+class AddCommand {
+  +execute(...): CommandResult
+}
+class EditCommand {
+  +execute(...): CommandResult
+}
+class ActivityScheduleValidator <<package-private>> {
+  ~{static} validate(...): void
+}
+class ActivityList {
+  +getCanonicalView(): List<Activity>
+  +addActivity(activity: Activity): void
+  +replaceByDisplayedIndex(...): void
+}
+class Activity {
+  +getName(): String
+  +getDate(): LocalDate
+  +getStartTime(): LocalTime
+  +getEndTime(): LocalTime
+}
+class UniEnableException <<checked exception>>
+
+AddCommand ..> ActivityScheduleValidator : checks before append
+EditCommand ..> ActivityScheduleValidator : checks before replacement
+ActivityScheduleValidator ..> ActivityList : reads chronological view
+ActivityScheduleValidator ..> Activity : compares proposed / existing
+ActivityScheduleValidator ..> UniEnableException : throws warning
+ActivityList --> "0..*" Activity : activities
+
+note bottom of ActivityScheduleValidator
+  validate(candidate: Activity, activities: ActivityList,
+           replacedActivity: Activity, allowOverlap: boolean)
+
+  Duplicate: same name ignoring case/outer spaces,
+  and identical date, start and end.
+  Clash: same date and positive time overlap.
+  Explicit overlap/ALLOW skips only the clash check.
+  Duplicate identities are always rejected.
+  Touching endpoints are allowed.
+  An edit excludes only its original record.
+  Validation performs no mutation or file I/O.
+end note
+@enduml
+'@@author
