@@ -36,7 +36,7 @@ class ParseException
 
 Command <|-- HelpCommand
 Parser ..> HelpCommand : creates menu or topic command
-Parser ..> ParseException : rejects extra words
+Parser ..> ParseException : rejects non-ASCII command words / extra words
 HelpCommand ..> ParseException : rejects unknown topic
 HelpCommand ..> CommandResult : wraps help text
 
@@ -45,6 +45,8 @@ note bottom of HelpCommand
   One topic uses Locale.ROOT case folding and map lookup.
   Supported topics have usage, details and examples.
   Reading help never executes the described command.
+  Add/edit pages explain printable-ASCII name input,
+  duplicate/clash rejection and allowed adjacent times.
 end note
 note bottom of CommandResult
   Help leaves exit and activity-change flags false.
