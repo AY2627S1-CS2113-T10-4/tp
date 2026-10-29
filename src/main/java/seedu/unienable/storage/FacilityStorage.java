@@ -66,25 +66,43 @@ public class FacilityStorage {
                 if (line.isBlank() || line.stripLeading().startsWith("#")) {
                     continue;
                 }
-                String[] fields = line.split("\\|", -1);
-                try {
-                    switch (fields[0]) {
-                        case "FACILITY":
-                            addFacility(fields, facilities, ids, names);
-                            break;
-                        case "FEATURE":
-                            featureLines.add(new FeatureLine(lineNumber, fields));
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unknown record type: " + fields[0]);
-                    }
-                } catch (IllegalArgumentException exception) {
-                    warnings.add("Line " + lineNumber + ": " + exception.getMessage());
-                }
+                parseRecord(line.split("\\|", -1), lineNumber, facilities, ids, names,
+                        featureLines, warnings);
             }
         } catch (IOException exception) {
             throw readFailure(exception);
         }
+        attachFeatures(featureLines, facilities, warnings);
+        return new LoadResult<>(buildFacilities(facilities), warnings);
+    }
+
+    /**
+     * Parses one physical record and records any validation warning with its line number.
+     */
+    private void parseRecord(String[] fields, int lineNumber,
+            Map<String, FacilityBuilder> facilities, Set<String> ids, Set<String> names,
+            List<FeatureLine> featureLines, List<String> warnings) {
+        try {
+            switch (fields[0]) {
+                case "FACILITY":
+                    addFacility(fields, facilities, ids, names);
+                    break;
+                case "FEATURE":
+                    featureLines.add(new FeatureLine(lineNumber, fields));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown record type: " + fields[0]);
+            }
+        } catch (IllegalArgumentException exception) {
+            warnings.add("Line " + lineNumber + ": " + exception.getMessage());
+        }
+    }
+
+    /**
+     * Resolves deferred feature records after all facility declarations are available.
+     */
+    private void attachFeatures(List<FeatureLine> featureLines,
+            Map<String, FacilityBuilder> facilities, List<String> warnings) {
         for (FeatureLine featureLine : featureLines) {
             try {
                 addFeature(featureLine.fields(), facilities);
@@ -92,11 +110,17 @@ public class FacilityStorage {
                 warnings.add("Line " + featureLine.number() + ": " + exception.getMessage());
             }
         }
+    }
+
+    /**
+     * Converts mutable builders into the immutable facility records returned to callers.
+     */
+    private List<Facility> buildFacilities(Map<String, FacilityBuilder> facilities) {
         List<Facility> records = new ArrayList<>();
         for (FacilityBuilder facility : facilities.values()) {
             records.add(new Facility(facility.id, facility.name, facility.description, facility.features));
         }
-        return new LoadResult<>(records, warnings);
+        return records;
     }
 
     /**
