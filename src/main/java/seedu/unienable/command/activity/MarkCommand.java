@@ -34,11 +34,11 @@ public class MarkCommand extends Command {
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {
         Activity activity = activities.getByDisplayedIndex(displayedIndex);
-        boolean changed = activities.setDoneAtDisplayedIndex(displayedIndex, true);
-        String message = changed
+        boolean isChanged = activities.setDoneAtDisplayedIndex(displayedIndex, true);
+        String message = isChanged
                 ? "Marked activity as done: " + activity.getName()
                 : "[WARNING] Activity is already marked as done: " + activity.getName();
-        return new CommandResult(message, false, changed);
+        return new CommandResult(message, false, isChanged);
     }
 }
 //@@author

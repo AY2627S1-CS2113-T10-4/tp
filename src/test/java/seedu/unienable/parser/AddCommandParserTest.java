@@ -65,8 +65,16 @@ class AddCommandParserTest {
             ParseException exception = assertThrows(ParseException.class,
                     () -> parser.parse("n/" + name + " d/2026-12-10 s/09:00 e/10:00"));
             assertTrue(exception.getMessage().startsWith(
-                    "[WARNING] The activity name must not contain | or line breaks.\nUsage: add"));
+                    "[WARNING] The | character and line breaks are not allowed in command parameters.\nUsage: add"));
         }
+    }
+
+    @Test
+    void parse_delimiterInDemand_reportsGeneralParameterWarning() {
+        ParseException exception = assertThrows(ParseException.class,
+                () -> parser.parse("n/Lab d/2026-12-10 s/09:00 e/10:00 dem/LOW|HIGH"));
+        assertTrue(exception.getMessage().startsWith(
+                "[WARNING] The | character and line breaks are not allowed in command parameters."));
     }
 
     @Test
@@ -76,6 +84,15 @@ class AddCommandParserTest {
             ParseException error = assertThrows(ParseException.class,
                     () -> parser.parse("n/Class " + typo + " d/2026-12-10 s/09:00 e/10:00"));
             assertTrue(error.getMessage().contains("Unknown parameter"));
+        }
+    }
+
+    @Test
+    void parse_unsupportedLongRatingPrefixes_areRejected() {
+        for (String field : new String[] {"urgency/5", "importance/5", "commitment/5", "priority/3"}) {
+            ParseException error = assertThrows(ParseException.class,
+                    () -> parser.parse("n/Lab " + field + " d/2026-12-10 s/09:00 e/10:00"));
+            assertTrue(error.getMessage().contains("Unknown parameter '" + field.split("/")[0] + "/'"));
         }
     }
 

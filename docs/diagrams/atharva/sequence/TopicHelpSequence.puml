@@ -11,9 +11,14 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
 participant "parser:Parser" as Parser
-participant "ui:Ui" as UI
+
+Console -> UI : readLine()
+User -> UI : help view
+UI --> Console : input
 
 Console -> Parser : parse("help view")
 create participant "help:HelpCommand" as Help
@@ -27,6 +32,7 @@ Parser --> Console : helpCommand
 Console -> Help : execute(activities, storage)
 Help --> Console : CommandResult(message, false)
 Console -> UI : showMessage(result.getMessage())
+UI --> User : result message
 
 note over Console, UI
   This sequence assumes one known topic.

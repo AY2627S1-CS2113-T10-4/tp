@@ -1,3 +1,4 @@
+'@@author lukelouyu
 @startuml
 !pragma layout smetana
 title Facility reference data and queries
@@ -9,6 +10,7 @@ skinparam classAttributeIconSize 0
 skinparam classBackgroundColor #EDF3F8
 skinparam classBorderColor #526477
 skinparam ArrowColor #526477
+hide circle
 hide empty members
 
 class FacilityStorage {

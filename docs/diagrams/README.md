@@ -7,20 +7,21 @@ diagram type, and base filename under [images](../images/README.md).
 All four members' diagram folders are populated. The groups indicate diagram
 responsibility; classes used across features can appear in several diagrams.
 
-Luke's architecture diagram uses `luke/architecture/`. The campus connectivity
+Lou Yu Luke's architecture diagram uses `luke/architecture/`. The campus connectivity
 graph uses `luke/graph/`; it is separate from the class and sequence diagrams.
 
 | Folder | Responsibility |
 | --- | --- |
-| [atharva](#atharva) | Add sequence, calendar dashboards, help, and schedule validation diagrams. |
-| [asyraf](#asyraf) | Chronological/demand listing, deletion, priority, overdue and next. |
-| [oliver](#oliver) | Completion, storage/recovery, editing and search. |
-| [luke](#luke) | Activity-creation class diagram, name/parameter validation, architecture, optional add ratings, accessibility and exit. |
+| [atharva](#atharva) | Atharva Rege — add sequence, calendar dashboards, help, and schedule validation diagrams. |
+| [asyraf](#asyraf) | Muhammad Asyraf Bin Abdul Rahim — chronological/demand listing, deletion, priority, overdue and next. |
+| [oliver](#oliver) | Koh Li Wei Oliver — completion, storage/recovery, editing and search. |
+| [luke](#luke) | Lou Yu Luke — activity-creation class diagram, name/parameter validation, architecture, optional add ratings, accessibility and exit. |
 
-Luke maintains the activity-creation class diagram, the name and parameter
-validation class/sequence pairs, the architecture diagram, and shared validation
-helper code. Atharva maintains the add sequence, calendar dashboards, help, and
-schedule validation pair. Exit has no separate diagram.
+The activity-creation class diagram, name and parameter validation pairs,
+architecture diagram, and shared validation helper are documented alongside the
+corresponding implementation. The add sequence, calendar dashboards, help, and
+schedule validation pair are documented in their respective sections. Exit has
+no separate diagram.
 
 Owned PlantUML sources use single-quote author comments. Their image links and
 Developer Guide embeds sit inside the corresponding Markdown author scopes.
@@ -29,7 +30,9 @@ are rendered from the corresponding PlantUML sources.
 
 <!-- @@author Atharva005 -->
 
-## Atharva
+<a id="atharva"></a>
+
+## Atharva Rege
 
 ### Class diagrams
 
@@ -52,7 +55,9 @@ are rendered from the corresponding PlantUML sources.
 
 <!-- @@author officialasyrafrahim -->
 
-## Asyraf
+<a id="asyraf"></a>
+
+## Muhammad Asyraf Bin Abdul Rahim
 
 ### Class diagrams
 
@@ -108,7 +113,9 @@ are rendered from the corresponding PlantUML sources.
 
 <!-- @@author lukelouyu -->
 
-## Luke
+<a id="luke"></a>
+
+## Lou Yu Luke
 
 ### Architecture
 
@@ -175,7 +182,7 @@ java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tpng -o ../../../images/luke/ar
 ```
 
 This writes `docs/images/luke/architecture/ArchitectureDiagram.png`.
-Luke maintains this source/image pair under `@@author lukelouyu`.
+This source/image pair is maintained under `@@author lukelouyu`.
 
 Regenerate the class and sequence groups separately so each image lands in the
 correct category. For example, these commands regenerate all six Asyraf class/sequence pairs:
