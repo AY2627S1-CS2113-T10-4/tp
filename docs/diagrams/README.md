@@ -30,6 +30,8 @@ are rendered from the corresponding PlantUML sources.
 
 <!-- @@author Atharva005 -->
 
+<a id="atharva"></a>
+
 ## Atharva Rege
 
 ### Class diagrams
@@ -52,6 +54,8 @@ are rendered from the corresponding PlantUML sources.
 <!-- @@author -->
 
 <!-- @@author officialasyrafrahim -->
+
+<a id="asyraf"></a>
 
 ## Muhammad Asyraf Bin Abdul Rahim
 
@@ -108,6 +112,8 @@ are rendered from the corresponding PlantUML sources.
 <!-- @@author -->
 
 <!-- @@author lukelouyu -->
+
+<a id="luke"></a>
 
 ## Lou Yu Luke
 
