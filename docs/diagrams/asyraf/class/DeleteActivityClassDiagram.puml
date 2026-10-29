@@ -52,8 +52,8 @@ note bottom of ActivityList
   An invalid index leaves the list unchanged.
 end note
 note bottom of CommandResult
-  Successful deletion requests saving, including the final deletion.
-  ConsoleHelper saves before displaying the confirmation.
+  Successful deletion reports an activity change, including the final deletion.
+  ConsoleHelper marks it unsaved, saves, then displays the confirmation.
 end note
 @enduml
 '@@author
