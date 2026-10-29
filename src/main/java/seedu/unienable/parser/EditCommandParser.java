@@ -59,7 +59,7 @@ public class EditCommandParser {
      */
     public EditCommand parse(String arguments) throws ParseException {
         if (arguments.contains("|") || arguments.indexOf('\n') >= 0 || arguments.indexOf('\r') >= 0) {
-            throw invalid("The activity name must not contain | or line breaks.");
+            throw invalid("The | character and line breaks are not allowed in command parameters.");
         }
         ActivityParameterValidator.validate(arguments);
         String trimmed = arguments.trim();

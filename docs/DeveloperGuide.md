@@ -548,7 +548,8 @@ omitted add ratings stay unset. Ratings are stored unchanged and used by the
 
 #### Activity parameter validation
 
-Before field extraction, add and edit use `ActivityParameterValidator` to suggest
+Before field extraction, add and edit use `ActivityParameterValidator` to reject
+known long-form aliases such as `urgency/` and `priority/`, and to suggest
 corrections for unknown alphanumeric prefixes. It detects one insertion, deletion,
 substitution or adjacent swap between multi-letter tokens; `demm/` and `dem1/`
 suggest `dem/`. Known prefixes and single-letter tokens are skipped.
@@ -1231,8 +1232,10 @@ this scenario target an activity whose original end is still in the future.
 | `route from/AS6 to/AS7` | AS6 -> AS1 -> AS4 -> AS7, 200 metres. |
 | `route from/AS6 to/AS6` | Same-endpoint warning. |
 
-Unknown hubs, invalid filters, and reversed route prefixes must warn. Responses
-must include the sample-data notice and leave the activity file unchanged.
+Unknown hubs, invalid filters, and reversed route prefixes must produce a
+recoverable warning and leave the activity file unchanged. Successful route
+results and confirmed no-route responses include the sample-data notice; input
+warnings do not, because no accessibility result was calculated.
 
 <!-- @@author -->
 
