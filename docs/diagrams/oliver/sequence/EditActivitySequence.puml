@@ -48,28 +48,37 @@ activate Activities
 Activities -> Activities : getCanonicalView()
 Activities --> Edit : existingActivity
 deactivate Activities
+Edit -> Edit : LocalDateTime.now(clock)
 note over Edit, Activities
-  Reject every edit if the original end is at or before now.
+  This success-path example assumes the original end is after now
+  and any supplied date/time range ends after now.
   Combine supplied fields with existing values.
   Preserve completion and omitted ratings.
-  If a date/time field was supplied, validate
-  the resulting range and end-after-now rule.
 end note
 create participant "replacement:Activity" as Replacement
 Edit -> Replacement : Activity(...)
 note over Edit, Schedule
-  This path assumes a name or schedule field was supplied.
-  Demand/rating-only edits skip schedule validation.
+  Name/schedule edits run schedule validation.
+  Demand/rating-only edits skip it.
 end note
-Edit -> Schedule : validate(replacement, activities, existingActivity, allowOverlap)
-Schedule -> Activities : getCanonicalView()
-Activities --> Schedule : chronological activities
-alt duplicate activity or unapproved time clash
+opt name or schedule field supplied
+  Edit -> Schedule : validate(replacement, activities, existingActivity, allowOverlap)
+  Schedule -> Activities : getCanonicalView()
+  Activities --> Schedule : chronological activities
+end
+alt duplicate or unapproved time clash
   Schedule --> Edit : throws UniEnableException(warning)
   Edit --> Console : propagate warning
   Console -> UI : showMessage(warning)
-else validation succeeds (original activity excluded)
-  Schedule --> Edit : validation passed
+  opt unsaved changes remain
+    Console -> Storage : hasUnsavedChanges()
+    Storage --> Console : true
+    Console -> UI : showMessage(persistent unsaved warning)
+  end
+else validation passes or is skipped
+  opt validation was requested
+    Schedule --> Edit : validation passed
+  end
   Edit -> Activities : replaceByDisplayedIndex(displayedIndex, replacement)
   activate Activities
   Activities -> Activities : getByDisplayedIndex(displayedIndex)
@@ -80,20 +89,26 @@ else validation succeeds (original activity excluded)
   Activities --> Edit
   deactivate Activities
   Edit --> Console : result (didChangeActivities = true)
+  Console -> Storage : markUnsavedChanges()
   Console -> Storage : save(activities)
-  activate Storage
-  Storage -> Activities : getActivities()
-  Activities --> Storage : insertion-order snapshot
-  Storage --> Console
-  deactivate Storage
-  Console -> UI : showMessage(result.getMessage())
+  alt save succeeds
+    Storage --> Console : saved
+    Console -> UI : showMessage(result.getMessage())
+  else save fails
+    Storage --> Console : throws UniEnableException
+    Console -> UI : showMessage(save error)
+    Console -> Storage : hasUnsavedChanges()
+    Storage --> Console : true
+    Console -> UI : showMessage(persistent unsaved warning)
+  end
 end
 deactivate Edit
 
 note over Console, UI
-  Successful I/O is assumed on the valid path.
-  Rejected edits preserve every field, count and saved byte.
-  Storage handles file writing and recovery backups.
+  ConsoleHelper, not EditCommand, marks and saves the mutation.
+  Storage's serialization and recovery details are shown in CompletionAndSaveSequence.
+  The omitted rejection path for ended activities or invalid resulting times
+  throws before replacement and save. All rejected edits preserve activity data.
 end note
 @enduml
 '@@author
