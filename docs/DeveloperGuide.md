@@ -1231,8 +1231,10 @@ this scenario target an activity whose original end is still in the future.
 | `route from/AS6 to/AS7` | AS6 -> AS1 -> AS4 -> AS7, 200 metres. |
 | `route from/AS6 to/AS6` | Same-endpoint warning. |
 
-Unknown hubs, invalid filters, and reversed route prefixes must warn. Responses
-must include the sample-data notice and leave the activity file unchanged.
+Unknown hubs, invalid filters, and reversed route prefixes must produce a
+recoverable warning and leave the activity file unchanged. Successful route
+results and confirmed no-route responses include the sample-data notice; input
+warnings do not, because no accessibility result was calculated.
 
 <!-- @@author -->
 
