@@ -11,11 +11,16 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant ConsoleHelper as Console
 participant "parser:Parser" as Parser
 participant "activityParser:AddCommandParser" as Fields
 participant ActivityParameterValidator as Validator
-participant "ui:Ui" as UI
+
+Console -> UI : readLine()
+User -> UI : add n/Class demm/HIGH ...
+UI --> Console : input
 
 Console -> Parser : parse("add n/Class demm/HIGH ...")
 Parser -> Fields : parse(arguments)
@@ -31,6 +36,7 @@ alt a likely typo exists (demm/ is one edit from dem/)
   Fields --> Parser : propagate ParseException
   Parser --> Console : propagate ParseException
   Console -> UI : showMessage(warning)
+  UI --> User : warning
   note over Console, Fields
     No activity command executes.
     Nothing is added, edited, or saved.

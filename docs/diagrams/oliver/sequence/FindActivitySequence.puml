@@ -1,6 +1,6 @@
 '@@author Oliver-koh
 @startuml
-title Find activities using chronological indexes
+title Find Activities - Sequence Diagram
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName SansSerif
@@ -11,11 +11,16 @@ skinparam ArrowColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
 participant "parser:Parser" as Parser
 participant "activities:ActivityList" as Activities
 participant "ActivityListFormatter" as Formatter
-participant "ui:Ui" as UI
+
+Console -> UI : readLine()
+User -> UI : find Study
+UI --> Console : input
 
 Console -> Parser : parse(input)
 activate Parser
@@ -55,6 +60,7 @@ deactivate Formatter
 Find --> Console : result (didChangeActivities = false)
 deactivate Find
 Console -> UI : showMessage(result.getMessage())
+UI --> User : result message
 
 note over Console, UI
   The activity-change flag is false, so ConsoleHelper

@@ -11,11 +11,16 @@ skinparam ParticipantBorderColor #526477
 skinparam sequenceMessageAlign center
 hide footbox
 
+actor "User" as User
+participant "ui:Ui" as UI
 participant "ConsoleHelper" as Console
 participant "parser:Parser" as Parser
 participant "activities:ActivityList" as Activities
 participant "ActivityListFormatter" as Formatter
-participant "ui:Ui" as UI
+
+Console -> UI : readLine()
+User -> UI : overdue
+UI --> Console : input
 
 Console -> Parser : parse("overdue")
 create participant "command:OverdueCommand" as Query
@@ -40,5 +45,6 @@ note over Console, UI
   didChangeActivities() is false: do not call Storage.save().
 end note
 Console -> UI : showMessage(result.getMessage())
+UI --> User : result message
 @enduml
 '@@author
