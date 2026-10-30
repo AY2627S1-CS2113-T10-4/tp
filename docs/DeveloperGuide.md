@@ -1232,10 +1232,21 @@ this scenario target an activity whose original end is still in the future.
 | `route from/AS6 to/AS7` | AS6 -> AS1 -> AS4 -> AS7, 200 metres. |
 | `route from/AS6 to/AS6` | Same-endpoint warning. |
 
-Unknown hubs, invalid filters, and reversed route prefixes must produce a
-recoverable warning and leave the activity file unchanged. Successful route
-results and confirmed no-route responses include the sample-data notice; input
-warnings do not, because no accessibility result was calculated.
+Successful accessibility results and confirmed no-route responses include the
+sample-data notice. Input warnings have no sample-data notice because no
+accessibility result was calculated. Check these rejected inputs separately:
+
+| Command | Expected warning | Sample-data notice |
+| --- | --- | --- |
+| `route from/ZZZ to/AS6` | Unknown connection startpoint, followed by route usage. | Absent |
+| `route to/AS7 from/AS6` | Invalid route command, followed by route usage. | Absent |
+| `route from/AS6 to/AS6` | Source and destination are the same. | Absent |
+| `facility find type/LIFT status/MAYBE` | Invalid facility status, supported statuses and usage. | Absent |
+
+After each rejection, the session must accept another command and the saved
+activity file must remain unchanged. When checking the website, confirm that
+this warning table is present; an older published paragraph incorrectly required
+the notice on input warnings.
 
 <!-- @@author -->
 

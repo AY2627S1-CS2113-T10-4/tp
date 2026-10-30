@@ -31,3 +31,23 @@ link, a dataset link, an index link, and an image link from the Developer Guide;
 check diagram legibility at normal desktop and narrow viewport widths.
 
 Pages deployment requires GitHub Actions to be enabled for the team repository.
+
+### Verify the published revision
+
+Record the reviewed commit with `git rev-parse HEAD`. In the team repository's
+Pages deployment details, check that the successful deployment corresponds to
+the intended publishing commit. A successful Java CI run checks the application;
+it does not establish that the documentation website has been updated.
+
+Open the [published facility and route tests](https://ay2627s1-cs2113-t10-4.github.io/tp/DeveloperGuide.html#facility-queries-and-routes).
+Confirm that the rejected-input table is present and says the sample-data notice
+is absent for invalid route inputs. Compare it with the
+[reviewed Markdown](DeveloperGuide.md#facility-queries-and-routes) and try its
+commands using the released JAR in a separate test folder. If the page still
+shows the older blanket notice requirement, check the publishing branch/folder,
+deployment result and browser cache before treating the application as faulty.
+
+Merging into the configured publishing source, or triggering its configured
+deployment workflow, is required to update the public site. A local commit on a
+fix branch does not publish the correction. GitHub documents this behavior in
+[its Pages publishing guidance](https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/adding-content-to-your-github-pages-site-using-jekyll).
