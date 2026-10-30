@@ -92,11 +92,16 @@ Facility and connection data come from `src/main/resources/facilities.txt` and
 UniEnable runs in one process. The diagram groups classes by responsibility;
 the groups are not separate services. Editable diagrams are listed in the
 [diagram index](diagrams/README.md). Select an embedded diagram to open its
-full-size image using the link below it.
+full-size image using the link below it. Diagrams retain their original
+text size in a horizontally scrollable region. Scroll sideways, or focus the
+region with Tab and use the arrow keys; the enlarge link opens the entire image.
 
 <!-- @@author lukelouyu -->
 
-![UniEnable architecture](images/luke/architecture/ArchitectureDiagram.png)
+<div role="region" aria-label="UniEnable architecture (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/luke/architecture/ArchitectureDiagram.png" alt="UniEnable architecture" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/luke/architecture/ArchitectureDiagram.png) | [PlantUML source](diagrams/luke/architecture/ArchitectureDiagram.puml).
 
@@ -211,11 +216,17 @@ and [error handling](UserGuide.md#error-handling) provide the warning text.
 
 <!-- @@author lukelouyu -->
 
-![Name validation classes](images/luke/class/ActivityNameValidatorClassDiagram.png)
+<div role="region" aria-label="Name validation classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/luke/class/ActivityNameValidatorClassDiagram.png" alt="Name validation classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/luke/class/ActivityNameValidatorClassDiagram.png) | [PlantUML source](diagrams/luke/class/ActivityNameValidatorClassDiagram.puml).
 
-![Name validation sequence](images/luke/sequence/ActivityNameValidationSequence.png)
+<div role="region" aria-label="Name validation sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/luke/sequence/ActivityNameValidationSequence.png" alt="Name validation sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/luke/sequence/ActivityNameValidationSequence.png) | [PlantUML source](diagrams/luke/sequence/ActivityNameValidationSequence.puml).
 
@@ -264,7 +275,10 @@ failures leave the collection unchanged.
 
 <!-- @@author lukelouyu -->
 
-![Activity creation classes](images/luke/class/ActivityCreationClassDiagram.png)
+<div role="region" aria-label="Activity creation classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/luke/class/ActivityCreationClassDiagram.png" alt="Activity creation classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/luke/class/ActivityCreationClassDiagram.png) | [PlantUML source](diagrams/luke/class/ActivityCreationClassDiagram.puml).
 
@@ -272,7 +286,10 @@ failures leave the collection unchanged.
 
 <!-- @@author Atharva005 -->
 
-![Adding an activity](images/atharva/sequence/AddActivitySequence.png)
+<div role="region" aria-label="Adding an activity (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/atharva/sequence/AddActivitySequence.png" alt="Adding an activity" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/atharva/sequence/AddActivitySequence.png) | [PlantUML source](diagrams/atharva/sequence/AddActivitySequence.puml).
 
@@ -288,11 +305,17 @@ chronological list. The rating table fits 80 terminal columns and shortens label
 to 26 columns without splitting grapheme clusters. Full names remain in schedules
 and storage. See the [UG dashboard examples](UserGuide.md#viewing-calendar-dashboards-view).
 
-![Calendar dashboard classes](images/atharva/class/CalendarViewClassDiagram.png)
+<div role="region" aria-label="Calendar dashboard classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/atharva/class/CalendarViewClassDiagram.png" alt="Calendar dashboard classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/atharva/class/CalendarViewClassDiagram.png) | [PlantUML source](diagrams/atharva/class/CalendarViewClassDiagram.puml).
 
-![Calendar dashboard sequence](images/atharva/sequence/CalendarViewSequence.png)
+<div role="region" aria-label="Calendar dashboard sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/atharva/sequence/CalendarViewSequence.png" alt="Calendar dashboard sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/atharva/sequence/CalendarViewSequence.png) | [PlantUML source](diagrams/atharva/sequence/CalendarViewSequence.puml).
 
@@ -304,11 +327,17 @@ words produce a parsing warning. Help works without reference data and returns
 text without executing the described command or saving activities.
 See the [UG help reference](UserGuide.md#viewing-command-help-help).
 
-![Help classes](images/atharva/class/TopicHelpClassDiagram.png)
+<div role="region" aria-label="Help classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/atharva/class/TopicHelpClassDiagram.png" alt="Help classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/atharva/class/TopicHelpClassDiagram.png) | [PlantUML source](diagrams/atharva/class/TopicHelpClassDiagram.puml).
 
-![Topic help sequence](images/atharva/sequence/TopicHelpSequence.png)
+<div role="region" aria-label="Topic help sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/atharva/sequence/TopicHelpSequence.png" alt="Topic help sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/atharva/sequence/TopicHelpSequence.png) | [PlantUML source](diagrams/atharva/sequence/TopicHelpSequence.puml).
 
@@ -324,11 +353,17 @@ See the [UG help reference](UserGuide.md#viewing-command-help-help).
 This snapshot defines the one-based indexes used by edit, delete, mark and unmark.
 Queries and formatting leave the backing collection unchanged.
 
-![Chronological listing classes](images/asyraf/class/ListActivityClassDiagram.png)
+<div role="region" aria-label="Chronological listing classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/class/ListActivityClassDiagram.png" alt="Chronological listing classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/class/ListActivityClassDiagram.png) | [PlantUML source](diagrams/asyraf/class/ListActivityClassDiagram.puml).
 
-![Chronological listing sequence](images/asyraf/sequence/ListActivitySequence.png)
+<div role="region" aria-label="Chronological listing sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/sequence/ListActivitySequence.png" alt="Chronological listing sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/sequence/ListActivitySequence.png) | [PlantUML source](diagrams/asyraf/sequence/ListActivitySequence.puml).
 
@@ -338,11 +373,17 @@ Queries and formatting leave the backing collection unchanged.
 start time and insertion order. The formatter also receives the canonical view
 to keep each activity's full-list index. Completed activities remain included.
 
-![Demand listing classes](images/asyraf/class/ListDemandClassDiagram.png)
+<div role="region" aria-label="Demand listing classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/class/ListDemandClassDiagram.png" alt="Demand listing classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/class/ListDemandClassDiagram.png) | [PlantUML source](diagrams/asyraf/class/ListDemandClassDiagram.puml).
 
-![Demand listing sequence](images/asyraf/sequence/ListDemandSequence.png)
+<div role="region" aria-label="Demand listing sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/sequence/ListDemandSequence.png" alt="Demand listing sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/sequence/ListDemandSequence.png) | [PlantUML source](diagrams/asyraf/sequence/ListDemandSequence.puml).
 
@@ -353,11 +394,17 @@ to keep each activity's full-list index. Completed activities remain included.
 chronological activity. Zero and out-of-range indexes are rejected. Successful
 deletion sets the activity-change flag, including when the last activity is removed.
 
-![Deletion classes](images/asyraf/class/DeleteActivityClassDiagram.png)
+<div role="region" aria-label="Deletion classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/class/DeleteActivityClassDiagram.png" alt="Deletion classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/class/DeleteActivityClassDiagram.png) | [PlantUML source](diagrams/asyraf/class/DeleteActivityClassDiagram.puml).
 
-![Deletion sequence](images/asyraf/sequence/DeleteActivitySequence.png)
+<div role="region" aria-label="Deletion sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/sequence/DeleteActivitySequence.png" alt="Deletion sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/sequence/DeleteActivitySequence.png) | [PlantUML source](diagrams/asyraf/sequence/DeleteActivitySequence.puml).
 
@@ -372,11 +419,17 @@ automatically with time. Demand and completion do not affect the score.
 first and puts unavailable scores last. Ties use canonical order. The formatter
 retains canonical indexes; missing ratings display `-` and unavailable scores `NA`.
 
-![Priority listing classes](images/asyraf/class/ListPriorityClassDiagram.png)
+<div role="region" aria-label="Priority listing classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/class/ListPriorityClassDiagram.png" alt="Priority listing classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/class/ListPriorityClassDiagram.png) | [PlantUML source](diagrams/asyraf/class/ListPriorityClassDiagram.puml).
 
-![Priority listing sequence](images/asyraf/sequence/ListPrioritySequence.png)
+<div role="region" aria-label="Priority listing sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/sequence/ListPrioritySequence.png" alt="Priority listing sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/sequence/ListPrioritySequence.png) | [PlantUML source](diagrams/asyraf/sequence/ListPrioritySequence.puml).
 
@@ -387,11 +440,17 @@ an end strictly before that time. Ongoing activities and ends exactly now are
 excluded. `ActivityListFormatter` labels results as today, earlier this Monday-to-
 Sunday week, or earlier. Results retain chronological indexes and are read-only.
 
-![Overdue query classes](images/asyraf/class/OverdueActivityClassDiagram.png)
+<div role="region" aria-label="Overdue query classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/class/OverdueActivityClassDiagram.png" alt="Overdue query classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/class/OverdueActivityClassDiagram.png) | [PlantUML source](diagrams/asyraf/class/OverdueActivityClassDiagram.puml).
 
-![Overdue query sequence](images/asyraf/sequence/OverdueActivitySequence.png)
+<div role="region" aria-label="Overdue query sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/sequence/OverdueActivitySequence.png" alt="Overdue query sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/sequence/OverdueActivitySequence.png) | [PlantUML source](diagrams/asyraf/sequence/OverdueActivitySequence.puml).
 
@@ -402,11 +461,17 @@ activity whose start is strictly later than now. Starts exactly now are excluded
 equal starts retain insertion order. The formatter keeps its canonical index or
 returns an empty-result warning. See the [UG time queries](UserGuide.md#viewing-the-next-activity-next).
 
-![Next activity classes](images/asyraf/class/NextActivityClassDiagram.png)
+<div role="region" aria-label="Next activity classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/class/NextActivityClassDiagram.png" alt="Next activity classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/class/NextActivityClassDiagram.png) | [PlantUML source](diagrams/asyraf/class/NextActivityClassDiagram.puml).
 
-![Next activity sequence](images/asyraf/sequence/NextActivitySequence.png)
+<div role="region" aria-label="Next activity sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/asyraf/sequence/NextActivitySequence.png" alt="Next activity sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/asyraf/sequence/NextActivitySequence.png) | [PlantUML source](diagrams/asyraf/sequence/NextActivitySequence.puml).
 
@@ -436,11 +501,17 @@ testing simpler: ended activities are locked for editing. This avoids separate
 rules for changing historical details or moving records back into the future.
 To repeat a past activity, add a new one and preserve the original record.
 
-![Editing classes](images/oliver/class/EditActivityClassDiagram.png)
+<div role="region" aria-label="Editing classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/oliver/class/EditActivityClassDiagram.png" alt="Editing classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/oliver/class/EditActivityClassDiagram.png) | [PlantUML source](diagrams/oliver/class/EditActivityClassDiagram.puml).
 
-![Editing an eligible activity](images/oliver/sequence/EditActivitySequence.png)
+<div role="region" aria-label="Editing an eligible activity (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/oliver/sequence/EditActivitySequence.png" alt="Editing an eligible activity" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/oliver/sequence/EditActivitySequence.png) | [PlantUML source](diagrams/oliver/sequence/EditActivitySequence.puml).
 
@@ -452,11 +523,17 @@ To repeat a past activity, add a new one and preserve the original record.
 `ActivityList.findByName()`. The formatter receives matches and the canonical
 view to retain full-list indexes. Searching changes no state and requests no save.
 
-![Find Activities - Class Diagram](images/oliver/class/FindActivityClassDiagram.png)
+<div role="region" aria-label="Find Activities - Class Diagram (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/oliver/class/FindActivityClassDiagram.png" alt="Find Activities - Class Diagram" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/oliver/class/FindActivityClassDiagram.png) | [PlantUML source](diagrams/oliver/class/FindActivityClassDiagram.puml).
 
-![Find Activities - Sequence Diagram](images/oliver/sequence/FindActivitySequence.png)
+<div role="region" aria-label="Find Activities - Sequence Diagram (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/oliver/sequence/FindActivitySequence.png" alt="Find Activities - Sequence Diagram" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/oliver/sequence/FindActivitySequence.png) | [PlantUML source](diagrams/oliver/sequence/FindActivitySequence.puml).
 
@@ -466,11 +543,17 @@ view to retain full-list indexes. Searching changes no state and requests no sav
 The result requests saving only when completion changes; an invalid index or an
 already-complete activity produces a warning. Other fields are preserved.
 
-![Marking classes](images/oliver/class/MarkActivityClassDiagram.png)
+<div role="region" aria-label="Marking classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/oliver/class/MarkActivityClassDiagram.png" alt="Marking classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/oliver/class/MarkActivityClassDiagram.png) | [PlantUML source](diagrams/oliver/class/MarkActivityClassDiagram.puml).
 
-![Marking sequence](images/oliver/sequence/MarkActivitySequence.png)
+<div role="region" aria-label="Marking sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/oliver/sequence/MarkActivitySequence.png" alt="Marking sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/oliver/sequence/MarkActivitySequence.png) | [PlantUML source](diagrams/oliver/sequence/MarkActivitySequence.puml).
 
@@ -481,11 +564,17 @@ An already-incomplete activity produces a warning without saving. Completion
 commands can act on past records; the
 [ended-activity edit restriction](#ended-activity-edit-rationale) applies to `edit`.
 
-![Unmarking classes](images/oliver/class/UnmarkActivityClassDiagram.png)
+<div role="region" aria-label="Unmarking classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/oliver/class/UnmarkActivityClassDiagram.png" alt="Unmarking classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/oliver/class/UnmarkActivityClassDiagram.png) | [PlantUML source](diagrams/oliver/class/UnmarkActivityClassDiagram.puml).
 
-![Unmarking sequence](images/oliver/sequence/UnmarkActivitySequence.png)
+<div role="region" aria-label="Unmarking sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/oliver/sequence/UnmarkActivitySequence.png" alt="Unmarking sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/oliver/sequence/UnmarkActivitySequence.png) | [PlantUML source](diagrams/oliver/sequence/UnmarkActivitySequence.puml).
 
@@ -523,11 +612,17 @@ Add, edit and delete reference this interaction for saving and display; it does
 not execute another command. The separate [marking sequence](#marking-activities)
 shows how a completion command produces its result.
 
-![Persistence classes](images/oliver/class/ActivityPersistenceClassDiagram.png)
+<div role="region" aria-label="Persistence classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/oliver/class/ActivityPersistenceClassDiagram.png" alt="Persistence classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/oliver/class/ActivityPersistenceClassDiagram.png) | [PlantUML source](diagrams/oliver/class/ActivityPersistenceClassDiagram.puml).
 
-![Conditional automatic saving](images/oliver/sequence/CompletionAndSaveSequence.png)
+<div role="region" aria-label="Conditional automatic saving (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/oliver/sequence/CompletionAndSaveSequence.png" alt="Conditional automatic saving" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/oliver/sequence/CompletionAndSaveSequence.png) | [PlantUML source](diagrams/oliver/sequence/CompletionAndSaveSequence.puml).
 
@@ -564,11 +659,17 @@ from the [name-character restrictions](#name-character-set-rationale).
 
 <!-- @@author lukelouyu -->
 
-![Parameter validation classes](images/luke/class/ActivityParameterValidatorClassDiagram.png)
+<div role="region" aria-label="Parameter validation classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/luke/class/ActivityParameterValidatorClassDiagram.png" alt="Parameter validation classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/luke/class/ActivityParameterValidatorClassDiagram.png) | [PlantUML source](diagrams/luke/class/ActivityParameterValidatorClassDiagram.puml).
 
-![Parameter validation sequence](images/luke/sequence/ActivityParameterValidationSequence.png)
+<div role="region" aria-label="Parameter validation sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/luke/sequence/ActivityParameterValidationSequence.png" alt="Parameter validation sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/luke/sequence/ActivityParameterValidationSequence.png) | [PlantUML source](diagrams/luke/sequence/ActivityParameterValidationSequence.puml).
 
@@ -603,11 +704,17 @@ add/edit validation rules still apply.
 
 <!-- @@author Atharva005 -->
 
-![Schedule validation classes](images/atharva/class/ActivityScheduleValidatorClassDiagram.png)
+<div role="region" aria-label="Schedule validation classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/atharva/class/ActivityScheduleValidatorClassDiagram.png" alt="Schedule validation classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/atharva/class/ActivityScheduleValidatorClassDiagram.png) | [PlantUML source](diagrams/atharva/class/ActivityScheduleValidatorClassDiagram.puml).
 
-![Schedule validation sequence](images/atharva/sequence/ActivityScheduleValidationSequence.png)
+<div role="region" aria-label="Schedule validation sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/atharva/sequence/ActivityScheduleValidationSequence.png" alt="Schedule validation sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/atharva/sequence/ActivityScheduleValidationSequence.png) | [PlantUML source](diagrams/atharva/sequence/ActivityScheduleValidationSequence.puml).
 
@@ -644,11 +751,17 @@ Separating loading from queries allows manager tests to supply small datasets.
 Unknown facilities, invalid filters and empty searches produce recoverable
 messages. See the [UG facility commands](UserGuide.md#listing-and-viewing-facilities-facility).
 
-![Facility loading and query classes](images/luke/class/FacilityClassDiagram.png)
+<div role="region" aria-label="Facility loading and query classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/luke/class/FacilityClassDiagram.png" alt="Facility loading and query classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/luke/class/FacilityClassDiagram.png) | [PlantUML source](diagrams/luke/class/FacilityClassDiagram.puml).
 
-![Facility search sequence](images/luke/sequence/FacilityLookupSequence.png)
+<div role="region" aria-label="Facility search sequence (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/luke/sequence/FacilityLookupSequence.png" alt="Facility search sequence" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/luke/sequence/FacilityLookupSequence.png) | [PlantUML source](diagrams/luke/sequence/FacilityLookupSequence.puml).
 
@@ -671,7 +784,10 @@ of accessibility. This graph shows recorded connectivity, not geographical layou
 
 <a id="connectivity-graph"></a>
 
-![Campus connectivity graph](images/luke/graph/fass-accessibility-network.svg)
+<div role="region" aria-label="Campus connectivity graph (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/luke/graph/fass-accessibility-network.svg" alt="Campus connectivity graph" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/luke/graph/fass-accessibility-network.svg) | [PlantUML source](diagrams/luke/graph/fass-accessibility-network.puml).
 
@@ -682,7 +798,10 @@ facility IDs are not route endpoints. `ConnectionManager` keeps one reusable
 `DijkstraShortestPath` graph with both directions of each `YES` connection.
 Each query creates a fresh `DijkstraSolver` with independent search state.
 
-![Routing classes](images/luke/class/RoutingClassDiagram.png)
+<div role="region" aria-label="Routing classes (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/luke/class/RoutingClassDiagram.png" alt="Routing classes" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/luke/class/RoutingClassDiagram.png) | [PlantUML source](diagrams/luke/class/RoutingClassDiagram.puml).
 
@@ -698,7 +817,10 @@ known disconnected endpoints produce the two-line no-route warning described in
 the [UG route section](UserGuide.md#finding-an-accessible-route-route). It means
 the local dataset has no eligible path, not that campus has no accessible route.
 
-![Shortest recorded accessible route](images/luke/sequence/RouteSearchSequence.png)
+<div role="region" aria-label="Shortest recorded accessible route (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/luke/sequence/RouteSearchSequence.png" alt="Shortest recorded accessible route" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/luke/sequence/RouteSearchSequence.png) | [PlantUML source](diagrams/luke/sequence/RouteSearchSequence.puml).
 
