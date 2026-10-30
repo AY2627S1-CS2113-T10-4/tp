@@ -13,10 +13,10 @@ hide footbox
 
 actor "User" as User
 participant "ui:Ui" as UI
-participant ConsoleHelper as Console
+participant "ConsoleHelper" as Console <<class>>
 participant "parser:Parser" as Parser
 participant "activityParser:AddCommandParser" as Fields
-participant ActivityParameterValidator as Validator
+participant "ActivityParameterValidator" as Validator <<class>>
 
 Console -> UI : readLine()
 User -> UI : add n/Class demm/HIGH ...

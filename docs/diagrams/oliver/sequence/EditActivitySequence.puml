@@ -13,10 +13,10 @@ hide footbox
 
 actor "User" as User
 participant "ui:Ui" as UI
-participant "ConsoleHelper" as Console
+participant "ConsoleHelper" as Console <<class>>
 participant "edit:EditCommand" as Edit
 participant "activities:ActivityList" as Activities
-participant "ActivityScheduleValidator" as Schedule
+participant "ActivityScheduleValidator" as Schedule <<class>>
 
 Console -> UI : readLine()
 User -> UI : edit 1 ...
