@@ -186,7 +186,7 @@ incomplete.
 Activity names must contain at least one non-whitespace character and use
 printable ASCII characters only. English letters, digits, spaces, and ASCII
 punctuation are allowed except for the explicitly forbidden characters described
-below. Chinese, Tamil, Hindi, Telugu, Korean and Japanese characters, accented
+below. Foreign characters, accented
 letters, emoji, and non-printable characters such as tabs are rejected with:
 
 ```text
