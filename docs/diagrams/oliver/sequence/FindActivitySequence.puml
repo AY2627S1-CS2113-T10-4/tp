@@ -13,10 +13,10 @@ hide footbox
 
 actor "User" as User
 participant "ui:Ui" as UI
-participant "ConsoleHelper" as Console
+participant "ConsoleHelper" as Console <<class>>
 participant "parser:Parser" as Parser
 participant "activities:ActivityList" as Activities
-participant "ActivityListFormatter" as Formatter
+participant "ActivityListFormatter" as Formatter <<class>>
 
 Console -> UI : readLine()
 User -> UI : find Study

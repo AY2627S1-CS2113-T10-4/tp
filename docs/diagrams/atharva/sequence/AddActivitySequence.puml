@@ -13,10 +13,10 @@ hide footbox
 
 actor "User" as User
 participant "ui:Ui" as UI
-participant "ConsoleHelper" as Console
+participant "ConsoleHelper" as Console <<class>>
 participant "parser:Parser" as Parser
 participant "activities:ActivityList" as Activities
-participant "ActivityScheduleValidator" as Schedule
+participant "ActivityScheduleValidator" as Schedule <<class>>
 
 Console -> UI : readLine()
 User -> UI : add ...
@@ -52,7 +52,6 @@ Parser --> Console : addCommand
 deactivate Parser
 
 Console -> Add : execute(activities, storage)
-activate Add
 Add -> Schedule : validate(...)
 Schedule -> Activities : getCanonicalView()
 Activities --> Schedule : chronological activities
@@ -73,7 +72,6 @@ else no duplicate and any overlap is approved
   result, activities, storage
 end ref
 end
-deactivate Add
 note over Console, Activities
   Only successful insertion reaches the shared save-and-display steps.
   A rejected add changes neither the count nor the stored file.

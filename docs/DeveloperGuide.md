@@ -293,6 +293,18 @@ failures leave the collection unchanged.
 
 [Enlarge diagram](images/atharva/sequence/AddActivitySequence.png) | [PlantUML source](diagrams/atharva/sequence/AddActivitySequence.puml).
 
+#### Activity state snapshot
+
+The illustrative snapshot below follows adding Study and Consultation, then
+marking Study complete. Each `Activity` retains its own completion and optional
+ratings; unset ratings are `null` in memory. The membership links abstract away
+the backing collection. Display indexes are computed by ordered views rather
+than stored on these objects.
+
+![Illustrative activity state](images/atharva/object/ActivityStateSnapshot.png)
+
+[Enlarge diagram](images/atharva/object/ActivityStateSnapshot.png) | [PlantUML source](diagrams/atharva/object/ActivityStateSnapshot.puml).
+
 #### Calendar dashboards
 
 `ViewCommand` uses the session clock to select today, tomorrow, or today through
@@ -845,6 +857,11 @@ tests. Diagram sources and rendered images are indexed under
 [diagrams](diagrams/README.md) and [images](images/README.md). Regenerate an image
 when changing its PlantUML source and check that labels remain readable.
 
+Sequence lifelines use `objectName:ClassName` or `:ClassName` for instances.
+Participants marked `<<class>>` represent static calls rather than objects.
+Object snapshots underline instance labels and show concrete state and membership;
+they do not specify class inheritance or multiplicity constraints.
+
 ### Continuous integration
 
 The Java CI workflow runs `./gradlew check` with JDK 25 on Linux, macOS and Windows.
@@ -988,7 +1005,7 @@ Feature responsibility follows the table below. See the [team pages](team/README
 | Team member | Feature area | V1.0 work | V2.0 work | Diagram contribution |
 | --- | --- | --- | --- | --- |
 | [Lou Yu Luke](team/lukelouyu.md) | Ratings, shared validation and accessibility | Exit (`bye`); [facility listing, lookup, and feature search](#facility-lookup). | [Accessible routes](#accessible-route-search); [optional ratings](#optional-ratings-integration); [command/name validation](#ascii-command-name-validation); [duplicate/clash checks](#activity-schedule-validation). | [Activity-creation class diagram, name/parameter validation, facility lookup and routing](diagrams/README.md#luke): five class diagrams and four sequence diagrams. Additional diagrams: [architecture](diagrams/README.md#architecture) and [campus connectivity graph](diagrams/README.md#connectivity-graph). |
-| [Atharva Rege](team/atharva005.md) | Activity creation, calendar views and help | [Adding activities](#adding-activities) (`add`) and command help (`help`). | [Calendar dashboards](#calendar-dashboards) (`view today`, `view tomorrow`, `view week`); [topic help](#categorized-and-topic-help) (`help TOPIC`). | [Add sequence, calendar dashboards, topic help, and schedule validation](diagrams/README.md#atharva): seven diagrams (three class/sequence pairs plus the add sequence). |
+| [Atharva Rege](team/atharva005.md) | Activity creation, calendar views and help | [Adding activities](#adding-activities) (`add`) and command help (`help`). | [Calendar dashboards](#calendar-dashboards) (`view today`, `view tomorrow`, `view week`); [topic help](#categorized-and-topic-help) (`help TOPIC`). | [Add sequence, calendar dashboards, topic help, and schedule validation](diagrams/README.md#atharva): eight diagrams (three class/sequence pairs, the add sequence and an activity-state object diagram). |
 | [Muhammad Asyraf Bin Abdul Rahim](team/officialasyrafrahim.md) | Activity views and deletion | [Chronological/demand listing and deletion](#activity-views-and-deletion) (`list`, `list demand`, `delete`). | [Priority, overdue, and next views](#activity-views-and-deletion) (`list priority`, `overdue`, `next`). | [Chronological listing, demand listing, deletion, priority, overdue, and next](diagrams/README.md#asyraf): six class/sequence pairs. |
 | [Koh Li Wei Oliver](team/oliver-koh.md) | Completion, storage, editing and search | [Persistence and recovery](#completion-and-persistence); completion changes (`mark`, `unmark`). | [Editing](#editing-activities) (`edit`); [Find Activities](#name-search) (`find`); failed-save retry on exit (`bye`). | [Editing, Find Activities, marking, unmarking, and persistence](diagrams/README.md#oliver): five class/sequence pairs. |
 

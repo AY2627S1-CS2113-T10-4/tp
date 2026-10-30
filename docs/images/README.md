@@ -9,7 +9,7 @@ section, and regeneration commands.
 
 | Folder | Class diagrams | Sequence diagrams | Other diagrams |
 | --- | --- | --- | --- |
-| [atharva](#atharva) | Atharva Rege: [Class](#atharva) | [Sequence](#atharva) | - |
+| [atharva](#atharva) | Atharva Rege: [Class](#atharva) | [Sequence](#atharva) | [Object snapshot](atharva/object/ActivityStateSnapshot.png) |
 | [asyraf](#asyraf) | Muhammad Asyraf Bin Abdul Rahim: [Class](#asyraf) | [Sequence](#asyraf) | - |
 | [oliver](#oliver) | Koh Li Wei Oliver: [Class](#oliver) | [Sequence](#oliver) | - |
 | [luke](#luke) | Lou Yu Luke: [Class](#luke) | [Sequence](#luke) | Architecture and [connectivity graph](#luke) |
@@ -39,6 +39,11 @@ and schedule validation diagrams are in `atharva`. Class/sequence diagrams use
   topic selection, validation, and read-only command results.
 - [TopicHelpSequence.png](atharva/sequence/TopicHelpSequence.png) shows construction
   and execution for a known help topic, with notes on the other help scenarios.
+
+### Object diagram
+
+- [ActivityStateSnapshot.png](atharva/object/ActivityStateSnapshot.png) illustrates activity membership, completion and optional ratings.
+
 <!-- @@author -->
 
 <!-- @@author officialasyrafrahim -->

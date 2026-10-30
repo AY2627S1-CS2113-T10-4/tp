@@ -13,9 +13,9 @@ hide footbox
 
 actor "User" as User
 participant "ui:Ui" as UI
-participant ConsoleHelper as Console
+participant "ConsoleHelper" as Console <<class>>
 participant "add:AddCommand" as Add
-participant ActivityScheduleValidator as Validator
+participant "ActivityScheduleValidator" as Validator <<class>>
 participant "activities:ActivityList" as Activities
 
 Console -> UI : readLine()
