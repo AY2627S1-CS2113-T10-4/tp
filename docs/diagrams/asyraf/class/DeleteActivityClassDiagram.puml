@@ -1,4 +1,4 @@
-'@@author officialasyrafrahim
+' @@author officialasyrafrahim
 @startuml
 !pragma layout smetana
 title Delete an activity using its chronological index
@@ -56,4 +56,4 @@ note bottom of CommandResult
   ConsoleHelper saves before displaying the confirmation.
 end note
 @enduml
-'@@author
+' @@author

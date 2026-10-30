@@ -1,4 +1,4 @@
-'@@author Oliver-koh
+' @@author Oliver-koh
 @startuml
 !pragma layout smetana
 title Activity editing collaborators
@@ -54,4 +54,4 @@ note bottom of EditCommand
   before changing the selected activity.
 end note
 @enduml
-'@@author
+' @@author

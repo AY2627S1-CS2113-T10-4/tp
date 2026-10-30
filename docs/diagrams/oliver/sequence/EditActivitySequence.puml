@@ -1,4 +1,4 @@
-'@@author Oliver-koh
+' @@author Oliver-koh
 @startuml
 title Validate and replace an activity
 skinparam backgroundColor white
@@ -59,4 +59,4 @@ else activity is eligible
   end
 end
 @enduml
-'@@author
+' @@author

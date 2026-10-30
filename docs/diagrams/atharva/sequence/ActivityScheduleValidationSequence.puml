@@ -1,4 +1,4 @@
-'@@author Atharva005
+' @@author Atharva005
 @startuml
 title Validate an activity schedule before insertion or replacement
 skinparam backgroundColor white
@@ -75,4 +75,4 @@ note over Add, Validator
   Duplicate checks always apply.
 end note
 @enduml
-'@@author
+' @@author

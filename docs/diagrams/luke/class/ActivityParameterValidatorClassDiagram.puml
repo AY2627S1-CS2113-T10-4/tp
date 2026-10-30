@@ -1,4 +1,4 @@
-'@@author lukelouyu
+' @@author lukelouyu
 @startuml
 !pragma layout smetana
 title Activity parameter typo validation
@@ -53,4 +53,4 @@ note bottom of ParseException
   ActivityList and saved data remain unchanged.
 end note
 @enduml
-'@@author
+' @@author
