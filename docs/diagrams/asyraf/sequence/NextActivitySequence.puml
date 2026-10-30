@@ -1,4 +1,6 @@
-' @@author officialasyrafrahim
+/'
+// @@author officialasyrafrahim
+'/
 @startuml
 title Next upcoming activity query
 skinparam backgroundColor white
@@ -47,4 +49,6 @@ end note
 Console -> UI : showMessage(result.getMessage())
 UI --> User : result message
 @enduml
-' @@author
+/'
+// @@author
+'/

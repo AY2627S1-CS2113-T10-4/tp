@@ -1,4 +1,6 @@
-' @@author lukelouyu
+/'
+// @@author lukelouyu
+'/
 @startuml
 !pragma layout smetana
 title Command and printable-ASCII activity name validation
@@ -57,4 +59,6 @@ note bottom of ActivityNameValidator
   Slash is allowed subject to prefix rules; no escape or quote syntax exists.
 end note
 @enduml
-' @@author
+/'
+// @@author
+'/

@@ -1,4 +1,6 @@
-' @@author Oliver-koh
+/'
+// @@author Oliver-koh
+'/
 @startuml
 title Mark an activity as completed
 skinparam backgroundColor white
@@ -52,4 +54,6 @@ note over Console, UI
   Invalid indexes are reported without changing or saving data.
 end note
 @enduml
-' @@author
+/'
+// @@author
+'/

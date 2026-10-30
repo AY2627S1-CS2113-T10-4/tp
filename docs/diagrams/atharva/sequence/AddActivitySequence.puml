@@ -1,4 +1,6 @@
-' @@author Atharva005
+/'
+// @@author Atharva005
+'/
 @startuml
 title Add an activity
 skinparam backgroundColor white
@@ -78,4 +80,6 @@ note over Console, Activities
   See CompletionAndSaveSequence.
 end note
 @enduml
-' @@author
+/'
+// @@author
+'/

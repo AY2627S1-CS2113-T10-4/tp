@@ -1,4 +1,6 @@
-' @@author lukelouyu
+/'
+// @@author lukelouyu
+'/
 @startuml
 title Validate a command word and supplied activity name
 skinparam backgroundColor white
@@ -74,4 +76,6 @@ note over Fields, Validator
   Historical Unicode names load from storage without this input validation.
 end note
 @enduml
-' @@author
+/'
+// @@author
+'/

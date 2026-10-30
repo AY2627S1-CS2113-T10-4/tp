@@ -1,4 +1,6 @@
-' @@author Oliver-koh
+/'
+// @@author Oliver-koh
+'/
 @startuml
 !pragma layout smetana
 title Conditional activity persistence
@@ -65,4 +67,6 @@ note bottom of Storage
   A failed exit retry keeps the console open.
 end note
 @enduml
-' @@author
+/'
+// @@author
+'/

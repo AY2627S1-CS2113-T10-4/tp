@@ -1,4 +1,6 @@
-' @@author Atharva005
+/'
+// @@author Atharva005
+'/
 @startuml
 !pragma layout smetana
 title Illustrative activity state after adding two activities and marking one
@@ -39,4 +41,6 @@ note bottom of Activities
   Links show membership, not display indexes.
 end note
 @enduml
-' @@author
+/'
+// @@author
+'/
