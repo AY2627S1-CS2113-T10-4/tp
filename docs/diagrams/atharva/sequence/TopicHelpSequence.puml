@@ -1,4 +1,4 @@
-'@@author Atharva005
+' @@author Atharva005
 @startuml
 title Display help for a known topic
 skinparam backgroundColor white
@@ -55,4 +55,4 @@ note over Console, UI
   Add/edit help includes printable-ASCII names and duplicate/clash rules.
 end note
 @enduml
-'@@author
+' @@author

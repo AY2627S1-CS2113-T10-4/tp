@@ -1,4 +1,4 @@
-'@@author officialasyrafrahim
+' @@author officialasyrafrahim
 @startuml
 !pragma layout smetana
 title Priority-ordered activity listing
@@ -56,4 +56,4 @@ note bottom of CommandResult
   ConsoleHelper displays the message without saving.
 end note
 @enduml
-'@@author
+' @@author

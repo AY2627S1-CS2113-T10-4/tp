@@ -1,4 +1,4 @@
-'@@author lukelouyu
+' @@author lukelouyu
 @startuml
 title Check activity parameters before creating a command
 skinparam backgroundColor white
@@ -54,4 +54,4 @@ note over Fields, Validator
   EditCommandParser uses the same validation before reading edit fields.
 end note
 @enduml
-'@@author
+' @@author

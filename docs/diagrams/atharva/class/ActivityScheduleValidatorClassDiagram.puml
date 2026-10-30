@@ -1,4 +1,4 @@
-'@@author Atharva005
+' @@author Atharva005
 @startuml
 !pragma layout smetana
 title Activity schedule validation before add or edit
@@ -56,4 +56,4 @@ note bottom of ActivityScheduleValidator
   Validation performs no mutation or file I/O.
 end note
 @enduml
-'@@author
+' @@author

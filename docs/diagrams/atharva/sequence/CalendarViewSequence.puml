@@ -1,4 +1,4 @@
-'@@author Atharva005
+' @@author Atharva005
 @startuml
 title Display a daily or seven-day calendar dashboard
 skinparam backgroundColor white
@@ -73,4 +73,4 @@ end note
 Console -> UI : showMessage(...)
 UI --> User : result message
 @enduml
-'@@author
+' @@author

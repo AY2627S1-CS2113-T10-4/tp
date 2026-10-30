@@ -1,4 +1,4 @@
-'@@author officialasyrafrahim
+' @@author officialasyrafrahim
 @startuml
 title Chronological activity listing
 skinparam backgroundColor white
@@ -45,4 +45,4 @@ end note
 Console -> UI : showMessage(result.getMessage())
 UI --> User : result message
 @enduml
-'@@author
+' @@author

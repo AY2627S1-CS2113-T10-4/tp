@@ -1,4 +1,4 @@
-'@@author Atharva005
+' @@author Atharva005
 @startuml
 !pragma layout smetana
 title Categorized menu and topic help design
@@ -53,4 +53,4 @@ note bottom of CommandResult
   ActivityList and Storage are not read or modified.
 end note
 @enduml
-'@@author
+' @@author
