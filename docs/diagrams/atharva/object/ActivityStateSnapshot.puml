@@ -12,7 +12,7 @@ skinparam ArrowColor #526477
 object "<u>activities:ActivityList</u>" as Activities
 object "<u>study:Activity</u>" as Study {
   name = "Study"
-  date = 2099-12-10
+  date = 2026-12-10
   startTime = 09:00
   endTime = 10:00
   demand = LOW
@@ -23,7 +23,7 @@ object "<u>study:Activity</u>" as Study {
 }
 object "<u>consultation:Activity</u>" as Consultation {
   name = "Consultation"
-  date = 2099-12-11
+  date = 2026-12-11
   startTime = 11:00
   endTime = 12:00
   demand = HIGH
