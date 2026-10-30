@@ -51,6 +51,17 @@ are rendered from the corresponding PlantUML sources.
 | [CalendarViewSequence.puml](atharva/sequence/CalendarViewSequence.puml) | [PNG](../images/atharva/sequence/CalendarViewSequence.png) | [Calendar dashboards](../DeveloperGuide.md#calendar-dashboards) |
 | [TopicHelpSequence.puml](atharva/sequence/TopicHelpSequence.puml) | [PNG](../images/atharva/sequence/TopicHelpSequence.png) | [Categorized and topic help](../DeveloperGuide.md#categorized-and-topic-help) |
 
+
+### Object diagram
+
+- [ActivityStateSnapshot.puml](atharva/object/ActivityStateSnapshot.puml) | [PNG](../images/atharva/object/ActivityStateSnapshot.png) | [Activity state snapshot](../DeveloperGuide.md#activity-state-snapshot)
+
+The snapshot source and image use matching `atharva/object/` folders. Regenerate it with Java 25:
+
+```text
+java -jar "PATH_TO_PLANTUML_JAR" -charset UTF-8 -tpng -o ../../../images/atharva/object docs/diagrams/atharva/object/ActivityStateSnapshot.puml
+```
+
 <!-- @@author -->
 
 <!-- @@author officialasyrafrahim -->
