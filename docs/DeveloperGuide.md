@@ -301,7 +301,10 @@ ratings; unset ratings are `null` in memory. The membership links abstract away
 the backing collection. Display indexes are computed by ordered views rather
 than stored on these objects.
 
-![Illustrative activity state](images/atharva/object/ActivityStateSnapshot.png)
+<div role="region" aria-label="Illustrative activity state (scroll horizontally)"
+     tabindex="0" style="max-width: 100%; overflow-x: auto;">
+  <img src="images/atharva/object/ActivityStateSnapshot.png" alt="Illustrative activity state" style="max-width: none;">
+</div>
 
 [Enlarge diagram](images/atharva/object/ActivityStateSnapshot.png) | [PlantUML source](diagrams/atharva/object/ActivityStateSnapshot.puml).
 
