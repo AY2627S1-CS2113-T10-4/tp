@@ -1,4 +1,6 @@
-' @@author Oliver-koh
+/'
+// @@author Oliver-koh
+'/
 @startuml
 !pragma layout smetana
 title Find Activities - Class Diagram
@@ -67,4 +69,6 @@ note bottom of CommandResult
   Searching never requests saving.
 end note
 @enduml
-' @@author
+/'
+// @@author
+'/

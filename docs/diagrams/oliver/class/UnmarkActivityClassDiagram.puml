@@ -1,4 +1,6 @@
-' @@author Oliver-koh
+/'
+// @@author Oliver-koh
+'/
 @startuml
 !pragma layout smetana
 title Mark an activity as incomplete
@@ -57,4 +59,6 @@ note bottom of CommandResult
   Invalid indexes leave the original activity unchanged.
 end note
 @enduml
-' @@author
+/'
+// @@author
+'/

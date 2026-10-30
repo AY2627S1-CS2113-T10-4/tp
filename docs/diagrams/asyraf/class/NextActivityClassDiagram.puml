@@ -1,4 +1,6 @@
-' @@author officialasyrafrahim
+/'
+// @@author officialasyrafrahim
+'/
 @startuml
 !pragma layout smetana
 title Next upcoming activity query
@@ -53,4 +55,6 @@ note bottom of CommandResult
   ConsoleHelper displays the message without saving.
 end note
 @enduml
-' @@author
+/'
+// @@author
+'/

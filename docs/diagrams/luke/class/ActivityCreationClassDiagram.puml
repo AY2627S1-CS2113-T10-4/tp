@@ -1,4 +1,6 @@
-' @@author lukelouyu
+/'
+// @@author lukelouyu
+'/
 @startuml
 !pragma layout smetana
 title Activity creation and ratings
@@ -75,4 +77,6 @@ note bottom of ActivityScheduleValidator
   A warning prevents insertion and saving.
 end note
 @enduml
-' @@author
+/'
+// @@author
+'/

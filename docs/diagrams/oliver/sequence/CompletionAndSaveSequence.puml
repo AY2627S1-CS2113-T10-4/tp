@@ -1,4 +1,6 @@
-' @@author Oliver-koh
+/'
+// @@author Oliver-koh
+'/
 @startuml
 title Save and display an executed command
 skinparam backgroundColor white
@@ -54,4 +56,6 @@ else save succeeds or no write is required
   end
 end
 @enduml
-' @@author
+/'
+// @@author
+'/

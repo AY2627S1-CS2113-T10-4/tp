@@ -1,4 +1,6 @@
-' @@author officialasyrafrahim
+/'
+// @@author officialasyrafrahim
+'/
 @startuml
 title Delete the first chronological activity
 skinparam backgroundColor white
@@ -58,4 +60,6 @@ ref over User, Console
   result, activities, storage
 end ref
 @enduml
-' @@author
+/'
+// @@author
+'/
