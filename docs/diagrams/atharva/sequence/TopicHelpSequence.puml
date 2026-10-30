@@ -17,22 +17,33 @@ participant "ConsoleHelper" as Console <<class>>
 participant "parser:Parser" as Parser
 
 Console -> UI : readLine()
+activate UI
 User -> UI : help view
 UI --> Console : input
+deactivate UI
 
 Console -> Parser : parse("help view")
+activate Parser
 create participant "help:HelpCommand" as Help
 Parser -> Help : HelpCommand("view")
+activate Help
 note right of Help
   Normalize the topic with Locale.ROOT
   and look up TOPIC_HELP.
 end note
 Help --> Parser : initialized helpCommand
+deactivate Help
 Parser --> Console : helpCommand
+deactivate Parser
 Console -> Help : execute(activities, storage)
+activate Help
 Help --> Console : CommandResult(message, false)
+deactivate Help
 Console -> UI : showMessage(result.getMessage())
-UI --> User : result message
+activate UI
+UI -> User : result message
+UI --> Console
+deactivate UI
 
 note over Console, UI
   This sequence assumes one known topic.

@@ -24,9 +24,7 @@ UI --> Console : input
 
 Console -> Parser : parse("add n/Class demm/HIGH ...")
 Parser -> Fields : parse(arguments)
-activate Fields
 Fields -> Validator : validate(arguments)
-activate Validator
 loop each alphanumeric prefix-like token
   Validator -> Validator : skip known prefixes and single-letter tokens
   Validator -> Validator : reject known long-form aliases
@@ -52,8 +50,6 @@ else no likely typo
     Ordinary slash text such as and/or and w/o remains in the name.
   end note
 end
-deactivate Validator
-deactivate Fields
 note over Fields, Validator
   EditCommandParser uses the same validation before reading edit fields.
 end note
