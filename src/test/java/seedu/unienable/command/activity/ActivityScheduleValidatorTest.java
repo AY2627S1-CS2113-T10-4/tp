@@ -51,6 +51,22 @@ class ActivityScheduleValidatorTest {
     }
 
     @Test
+    void nameOnlyEdit_preservesApprovedOverlapButRejectsDuplicates() throws Exception {
+        ActivityList activities = new ActivityList();
+        execute(activities, "add n/Lecture d/2099-12-01 s/10:00 e/12:00");
+        execute(activities, "add n/Reminder d/2099-12-01 s/11:00 e/11:15 overlap/ALLOW");
+        execute(activities, "edit 2 n/Reminder call Prof Tan");
+        execute(activities, "edit 2 s/11:00");
+        assertEquals("Reminder call Prof Tan", activities.getByDisplayedIndex(2).getName());
+        Activity original = activities.getByDisplayedIndex(2);
+        assertThrows(UniEnableException.class, () -> execute(activities, "edit 2 s/11:05"));
+        assertSame(original, activities.getByDisplayedIndex(2));
+        execute(activities, "add n/Other d/2099-12-01 s/11:00 e/11:15 overlap/ALLOW");
+        assertThrows(UniEnableException.class, () -> execute(activities, "edit 2 n/Other"));
+        assertSame(original, activities.getByDisplayedIndex(2));
+    }
+
+    @Test
     void duplicateIgnoresNameCaseDemandRatingsAndCompletion() throws Exception {
         ActivityList activities = new ActivityList();
         execute(activities, "add n/Study d/2099-12-01 s/10:00 e/11:00");

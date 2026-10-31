@@ -508,9 +508,9 @@ clock once. Activities ending at or before now reject every edit, including
 metadata changes and rescheduling into the future.
 
 Omitted fields and completion stay unchanged. Date/time edits must end after
-both the start and now, on the same day. Name/schedule edits also check for
-duplicates and clashes, excluding the original activity; demand/rating-only
-edits skip this check. Validation finishes before replacement, so rejected edits
+both the start and now, on the same day. Every edit checks duplicates, excluding the original activity. Only actual
+date/time changes require a fresh overlap approval; name, demand and rating
+changes preserve existing overlaps. Validation finishes before replacement, so rejected edits
 change nothing. Refresh indexes after a successful edit.
 
 <a id="ended-activity-edit-rationale"></a>
@@ -705,7 +705,7 @@ from the [name-character restrictions](#name-character-set-rationale).
 | Duplicate | Same date, start, end and name, ignoring name case and surrounding spaces. Demand, ratings and completion do not affect identity. Always rejected. |
 | Time overlap | Same-date ranges overlap when `candidate.start < existing.end` and `existing.start < candidate.end`. Touching endpoints are allowed. Completed activities still participate. |
 | `overlap/ALLOW` | Permits a time clash, but never a duplicate. It is not stored; supply it again for a conflicting schedule edit. |
-| When validation runs | Before adding an activity or replacing an eligible activity's name/schedule. Edits exclude the original record; demand/rating-only edits skip this check. |
+| When validation runs | Before add or edit. Edits exclude the original record. Duplicate checks always run; only actual date/time changes require fresh overlap approval. |
 
 For an existing activity from **09:00 to 10:00**, these examples use different
 names to isolate the time-overlap check:

@@ -483,9 +483,10 @@ edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [im
   Historical activities already saved remain loadable, listable, and searchable.
 - Validation failures leave the activity unchanged. Successful edits save
   automatically and display all resulting fields, including ratings.
-- Name or schedule edits must not duplicate another activity. Time overlaps
-  require `overlap/ALLOW` on that edit, for example `edit 2 s/10:30 overlap/ALLOW`. The
-  activity being edited is excluded from this comparison. Rejected multi-field
+- Name or schedule edits must not duplicate another activity. An actual date/time change that overlaps
+  another activity requires `overlap/ALLOW` on that edit, for example `edit 2 s/10:30 overlap/ALLOW`. The
+  activity being edited is excluded from this comparison. Renaming or changing
+  ratings/demand preserves an existing overlap without another approval. Rejected multi-field
   edits leave every field and the saved file unchanged.
 - Rescheduling can change chronological indexes. Run `list` or `find` again
   before selecting another activity.

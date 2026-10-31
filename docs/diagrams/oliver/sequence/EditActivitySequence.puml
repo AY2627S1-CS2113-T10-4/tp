@@ -40,12 +40,14 @@ else activity is eligible
     Invalid replacement values warn before mutation.
     The remaining path assumes valid values.
   end note
-  opt name or schedule field supplied
-    Edit -> Schedule : validate(...)
-    Schedule -> Activities : getCanonicalView()
-    Activities --> Schedule : chronological activities
-    Schedule --> Edit : valid or conflict warning
-  end
+  Edit -> Schedule : validate(...)
+  Schedule -> Activities : getCanonicalView()
+  Activities --> Schedule : chronological activities
+  Schedule --> Edit : valid or conflict warning
+  note right of Schedule
+    Always check duplicates.
+    Require overlap approval only when the schedule changes.
+  end note
   alt duplicate or unapproved time clash
     Edit --> Console : conflict warning
     Console -> UI : showMessage(warning)
