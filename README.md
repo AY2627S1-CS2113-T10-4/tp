@@ -1,9 +1,6 @@
 # UniEnable
 
-UniEnable is a Java 25 command-line application for managing dated activities and
-checking campus accessibility reference information. It supports activity editing,
-search, completion, demand and priority views, calendar dashboards, automatic
-persistence with corruption recovery, facility queries, and accessible route search.
+UniEnable is a Java 25 command-line application that helps university students, particularly those with ASD, ADHD, or mobility constraints, organize academic and daily commitments and check campus accessibility information. It combines dated activities, optional importance, urgency and commitment ratings, priority and calendar views, completion tracking, and automatic local saving with facility searches and shortest recorded accessible-route queries using sample data for nine NUS FASS campus hubs.
 
 Read the [User Guide](docs/UserGuide.md) for commands and examples, or the
 [Developer Guide](docs/DeveloperGuide.md) for design, requirements, diagrams,
