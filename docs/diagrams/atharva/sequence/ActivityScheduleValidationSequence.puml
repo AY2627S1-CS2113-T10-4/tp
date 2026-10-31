@@ -39,7 +39,7 @@ alt duplicate identity exists
   Console -> UI : showMessage(warning)
   UI --> User : warning
 else no duplicate
-  alt allowOverlap is true
+  alt isOverlapAllowed is true
     Validator --> Add : validation passed
   else same-date positive overlap exists
     note over Validator, Activities
