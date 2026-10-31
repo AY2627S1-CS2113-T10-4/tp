@@ -120,7 +120,7 @@ class HelpCommandTest {
     void execute_routeHelp_matchesSupportedEndpoints() throws Exception {
         String route = parser.parse("help route").execute(new ActivityList(), noWrites).getMessage();
         assertTrue(route.contains("facility names (AS1-AS8 or CLB)"), route);
-        assertTrue(route.contains("Facility IDs such as F01 are not accepted"), route);
+        assertTrue(route.contains("Facility IDs F01-F09 are also accepted"), route);
         assertFalse(route.contains("facility IDs or names"), route);
     }
 

@@ -68,17 +68,17 @@ public class HelpCommand extends Command {
                       - n/, d/, s/, and e/ are required; prefixes may appear in any order.
                       - Names can contain spaces, but cannot be blank or contain | or line breaks.
                       - Names use printable ASCII only: English letters, digits, spaces, and punctuation.
-                      - Backslashes, commas, and single/double quotation marks are forbidden in names.
-                      - Slash / is allowed; /\\ and \\/ are forbidden. There is no slash-escape syntax.
+                      - Commas are allowed; apostrophes, double quotes, and backslashes are forbidden.
+                      - Every / must follow a supported prefix at a field boundary; literal slashes are forbidden.
                       - Use a real YYYY-MM-DD date and 24-hour HH:mm times, such as 09:30.
-                      - End must be after start on the same day and after the current time.
+                      - End must be after start on the same day; historical records are allowed.
                       - Duplicate activities are rejected. Intentional overlaps require overlap/ALLOW.
                       - Back-to-back activities are allowed; completed activities still occupy their time.
                       - Demand defaults to MEDIUM; choose LOW, MEDIUM, or HIGH.
                       - IMP = importance; URG = urgency; COM = commitment.
                       - Ratings are optional whole numbers from 1 to 5; missing ratings display -.
                       - New activities start incomplete and save automatically.
-                      - Replace example dates with your planned date; end must still be after now.
+                      - Ended activities can be added, but cannot subsequently be edited.
 
                     Examples:
                       add n/Study d/2030-12-01 s/10:00 e/11:00
@@ -95,8 +95,8 @@ public class HelpCommand extends Command {
                       - Supply at least one field; omitted fields and completion are preserved.
                       - Names, dates, times, demand, and ratings follow the same rules as add.
                       - Replacement names use printable ASCII only; | and line breaks are rejected.
-                      - Backslashes, commas, and single/double quotation marks are forbidden in names.
-                      - Slash / is allowed; /\\ and \\/ are forbidden. There is no slash-escape syntax.
+                      - Commas are allowed; apostrophes, double quotes, and backslashes are forbidden.
+                      - Every / must follow a supported prefix at a field boundary; literal slashes are forbidden.
                       - Date/time edits must leave an end after start on the same day and after now.
                       - Duplicate edits are rejected. Use overlap/ALLOW to confirm an intentional time clash.
                       - Activities ending at or before now cannot be edited, including name or rating changes.
@@ -281,7 +281,7 @@ public class HelpCommand extends Command {
 
                     Details:
                       - Supply two different facility names (AS1-AS8 or CLB), with from/ before to/.
-                      - Facility IDs such as F01 are not accepted as route endpoints.
+                      - Facility IDs F01-F09 are also accepted when facility data is available.
                       - Results show the route segments and total recorded distance in metres.
                       - Same endpoints, unknown facilities, or no confirmed accessible path produce warnings.
                       - Routes need loaded connection data and do not change activities.

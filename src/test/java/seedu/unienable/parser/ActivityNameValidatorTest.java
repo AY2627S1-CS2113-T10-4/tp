@@ -34,10 +34,10 @@ class ActivityNameValidatorTest {
     @Test
     void validate_forbiddenPunctuation_throwsSpecificWarning() {
         for (String name : new String[] {"\"Meeting\"", "A\"B", "\"Unclosed", "Trailing\"",
-            "O'Brien", "'Meeting'", "A,B", "A\\B", "A/\\B", "A\\/B"}) {
+            "O'Brien", "'Meeting'", "A\\B", "A/\\B", "A\\/B"}) {
             ParseException exception = assertThrows(ParseException.class, () -> ActivityNameValidator.validate(name));
-            assertEquals("[WARNING] Activity names must not contain backslashes (\\), commas (,),"
-                    + " or quotation marks (' or \"). Slash (/) is allowed; /\\ and \\/ are not.",
+            assertEquals("[WARNING] Activity names must not contain backslashes (\\)"
+                    + " or quotation marks (' or \").",
                     exception.getMessage());
         }
     }

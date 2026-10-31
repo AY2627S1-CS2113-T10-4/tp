@@ -10,7 +10,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Locale;
 import java.util.stream.Stream;
@@ -36,9 +35,7 @@ class AddCommandParserTest {
     /**
      * Fixes now at 16:00 on 14 October 2026 in Singapore for repeatable validation.
      */
-    private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-10-14T08:00:00Z"),
-            ZoneId.of("Asia/Singapore"));
-    private final AddCommandParser parser = new AddCommandParser(FIXED_CLOCK);
+    private final AddCommandParser parser = new AddCommandParser();
 
     @Test
     void parse_escapedSlashes_rejectsUnsupportedSyntax() {
@@ -134,11 +131,11 @@ class AddCommandParserTest {
         Integer[][] expected = {{1, null, 5}, {null, 2, null}};
         for (int i = 0; i < suffixes.length; i++) {
             ActivityList activities = new ActivityList();
-            parser.parse("n/Planning and/or review w/o slides d/2026-10-20 s/09:00 e/10:00 " + suffixes[i])
+            parser.parse("n/Planning review without slides d/2026-10-20 s/09:00 e/10:00 " + suffixes[i])
                     .execute(activities, new Storage());
 
             Activity result = activities.getActivities().getLast();
-            assertEquals("Planning and/or review w/o slides", result.getName());
+            assertEquals("Planning review without slides", result.getName());
             assertEquals(expected[i][0], result.getImportance());
             assertEquals(expected[i][1], result.getUrgency());
             assertEquals(expected[i][2], result.getCommitment());
@@ -173,19 +170,19 @@ class AddCommandParserTest {
     }
 
     @Test
-    void parse_andSlashInName_preservesFullName() throws Exception {
+    void parse_multiwordName_preservesFullName() throws Exception {
         ActivityList activities = new ActivityList();
-        parser.parse("n/Planning and/or review d/2026-10-20 s/09:00 e/10:00")
+        parser.parse("n/Planning review d/2026-10-20 s/09:00 e/10:00")
                 .execute(activities, new Storage());
-        assertEquals("Planning and/or review", activities.getActivities().get(0).getName());
+        assertEquals("Planning review", activities.getActivities().get(0).getName());
     }
 
     @Test
-    void parse_withoutSlashInName_preservesFullName() throws Exception {
+    void parse_nameWithOrdinaryWords_preservesFullName() throws Exception {
         ActivityList activities = new ActivityList();
-        parser.parse("n/Lunch w/o friends d/2026-10-20 s/09:00 e/10:00")
+        parser.parse("n/Lunch without friends d/2026-10-20 s/09:00 e/10:00")
                 .execute(activities, new Storage());
-        assertEquals("Lunch w/o friends", activities.getActivities().get(0).getName());
+        assertEquals("Lunch without friends", activities.getActivities().get(0).getName());
     }
 
     @Test
@@ -245,18 +242,14 @@ class AddCommandParserTest {
     }
 
     @Test
-    void parse_endDateTimeAtOrBeforeNow_throwsCurrentTimeWarning() {
+    void parse_historicalEndDateTimes_areAccepted() {
         String[] invalid = {
             "n/Past meeting d/2026-10-13 s/22:00 e/23:00",
             "n/Earlier today d/2026-10-14 s/14:00 e/15:00",
             "n/Ending now d/2026-10-14 s/15:00 e/16:00"
         };
         for (String input : invalid) {
-            ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input), input);
-            assertEquals("[WARNING] End time must be later than current time.\n"
-                    + "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm [dem/LOW|MEDIUM|HIGH] "
-                    + "[imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]",
-                    exception.getMessage());
+            assertDoesNotThrow(() -> parser.parse(input), input);
         }
     }
 
@@ -277,12 +270,12 @@ class AddCommandParserTest {
             LocalTime past = now.toLocalTime().minusHours(1);
             LocalTime future = now.toLocalTime().plusHours(1);
 
-            assertDoesNotThrow(() -> new AddCommandParser(clock).parse(
+            assertDoesNotThrow(() -> new Parser(clock).parse("add " + 
                     "n/Future d/" + now.toLocalDate() + " s/" + past + " e/" + future),
                     "future end must be accepted at " + instant);
-            assertThrows(ParseException.class, () -> new AddCommandParser(clock).parse(
+            assertDoesNotThrow(() -> new Parser(clock).parse("add " + 
                     "n/NotFuture d/" + now.toLocalDate() + " s/" + past + " e/" + now.toLocalTime()),
-                    "end equal to now must be rejected at " + instant);
+                    "historical recording is independent of now at " + instant);
         }
     }
 }

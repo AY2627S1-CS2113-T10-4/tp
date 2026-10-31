@@ -41,13 +41,11 @@ EditCommandParser ..> ActivityParameterValidator : validates before reading fiel
 ActivityParameterValidator ..> ParseException : warns about a likely misspelled prefix
 
 note bottom of ActivityParameterValidator
-  Scan whitespace-delimited alphanumeric tokens ending in /.
-  Skip recognised prefixes and single-letter slash text.
-  Check one insertion, deletion, substitution, or adjacent swap
-  against multi-letter prefixes using edit distance.
-  Reject plausible long-form aliases such as urgency/ and priority/.
-  Ordinary names containing and/or or w/o remain valid.
-  Prefix-like name text must be reworded; no slash-escape syntax exists.
+  Check every slash token, including inside the first name word.
+  Accept only supported prefixes at whitespace boundaries.
+  Reject every unknown prefix, including single-letter tokens.
+  Use edit distance only to suggest a correction.
+  Literal slash text in names and slash escaping are unsupported.
 end note
 note bottom of ParseException
   Example: Unknown parameter 'demm/'. Did you mean 'dem/'?

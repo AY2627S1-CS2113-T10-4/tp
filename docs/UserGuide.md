@@ -3,12 +3,7 @@
 <!-- TEAM: All members maintain the introduction and navigation. -->
 ## Introduction
 
-UniEnable is a command-line application for managing dated activities and checking
-campus accessibility information. Add activities with optional importance, urgency
-and commitment ratings, edit activities, search their names, track completion,
-rank activities by priority, count today's high-demand activities, identify
-overdue and upcoming activities, search facilities, and find shortest recorded
-accessible routes. Activity changes save automatically.
+UniEnable is a Java 25 command-line application that helps university students, particularly those with ASD, ADHD, or mobility constraints, organize academic and daily commitments and check campus accessibility information. It combines dated activities, optional importance, urgency and commitment ratings, priority and calendar views, completion tracking, and automatic local saving with facility searches and shortest recorded accessible-route queries using sample data for nine NUS FASS campus hubs.
 
 <!-- @@author Atharva005 -->
 Calendar dashboards (`view today`, `view tomorrow`, and `view week`) summarize
@@ -43,20 +38,20 @@ The horizontal borders are omitted from the expected outputs below.
 Command:
 
 ```text
-add n/Study d/2099-12-10 s/09:00 e/10:00
+add n/Study d/2030-12-10 s/09:00 e/10:00
 ```
 
 Expected output:
 
 ```text
 Added activity: Study
-Date: 2099-12-10
+Date: 2030-12-10
 Time: 09:00 - 10:00
 Demand: MEDIUM
 Importance: -
 Urgency: -
 Commitment: -
-Activities in this session: 1
+Total activities: 1
 ```
 
 Next commands, in the same session:
@@ -71,7 +66,7 @@ Expected output, in command order:
 ```text
 Marked activity as done: Study
 Activities (by date, start time):
-1. Study (2099-12-10, 09:00-10:00) [MEDIUM] [X]
+1. Study (2030-12-10, 09:00-10:00) [MEDIUM] [X]
 ```
 
 The `[X]` indicates completion. Enter `bye` to exit; the next launch from the
@@ -109,6 +104,11 @@ its original directory.
 <!-- @@author Oliver-koh -->
 
 ## Data Storage
+
+Save manually edited activity files as **UTF-8**. An invalidly encoded row is
+skipped with a line-numbered encoding warning; other readable rows still load.
+Loading leaves the original bytes untouched. A later recovery save first preserves
+the original file in `.corrupt.bak`.
 
 Activities save automatically to `data/activities.txt`, relative to the folder
 where the app starts. Use the same folder on each launch. A missing file starts
@@ -169,19 +169,18 @@ do not enter a literal `-`. Empty values, duplicate prefixes, ratings outside
 1 to 5, decimals, and text are rejected. Use the short prefixes shown above:
 long-form aliases such as `urgency/`, `importance/`, `commitment/`, and
 `priority/` are rejected instead of becoming part of the activity name.
-Ordinary slash text such as `and/or` and `w/o` remains valid in names.
+Every `/` in add/edit input must belong to a supported field prefix.
 
 <!-- @@author -->
 
 <!-- @@author Atharva005 -->
 
-The end time must be strictly after the start time on
-the same day; overnight activities are not supported. The activity's date and end
-time together must also be strictly after the current date/time in your computer's
-local time zone. An activity that has already started can still be added if it
-has not ended; an activity ending exactly now is rejected. Historical activities
-cannot be added, and there is no override for this restriction. New activities start
-incomplete.
+The end time must be strictly after the start time on the same day; overnight
+activities are not supported. **Past and ongoing activities can be added**, for
+example to record a missed commitment. New activities start incomplete. An
+activity ending at or before the current local time is immediately locked against
+editing or rescheduling, including when it has just been added. Check historical
+fields before adding; use delete and add again to correct a historical record.
 
 Activity names must contain at least one non-whitespace character and use
 printable ASCII characters only. English letters, digits, spaces, and ASCII
@@ -193,33 +192,29 @@ letters, emoji, and non-printable characters such as tabs are rejected with:
 [WARNING] Please write the activity name in English (ASCII characters only).
 ```
 
-The `|` character and line breaks remain forbidden and receive a general command-
-parameter delimiter warning, regardless of which field contains them. Ordinary
-slash text such as `and/or` and `w/o` is allowed.
-Backslashes (`\`), commas (`,`), single quotation marks (`'`, including apostrophes),
-and double quotation marks (`"`) are forbidden. Slash (`/`) is allowed, subject to
-the prefix rules below. Combinations `/\` and `\/` are forbidden because they
-contain a backslash. There is no slash-escape or quoted-name syntax. Both Add and
-Edit reject these characters with:
+**Commas are allowed; apostrophes are rejected.** Backslashes (`\`), single
+quotation marks (`'`, including apostrophes), and double quotation marks (`"`)
+are forbidden in supplied names. Pipes (`|`) and line breaks are also forbidden.
+There is no quoting or escaping syntax. Punctuation violations produce:
 
 ```text
-[WARNING] Activity names must not contain backslashes (\), commas (,), or quotation marks (' or "). Slash (/) is allowed; /\ and \/ are not.
+[WARNING] Activity names must not contain backslashes (\) or quotation marks (' or ").
 ```
 
-These input restrictions do not prevent loading historical saved names.
-Avoid field prefixes at the start of a word in a name: they are parsed as fields.
-Names are saved in UTF-8. Historical saved names containing non-ASCII characters
-can still be loaded, listed, and searched; a replacement name supplied with
-`edit INDEX n/NAME` must follow the printable-ASCII rule.
+**Every slash is a field separator, including inside name text.** The word before
+`/` must be one of `n`, `d`, `s`, `e`, `dem`, `imp`, `urg`, `com`, or `overlap`,
+ignoring case, and the prefix must start at the beginning of input or after
+whitespace. An unsupported token such as `mom/`, `t/`, or `and/` produces an
+`[WARNING] Unknown parameter ...` message and leaves activities and saved data
+unchanged. A likely typo may also show a suggested prefix.
 
-Likely misspellings of multi-letter prefixes, such as `demm/HIGH`, `dem1/HIGH`, or `impp/5`,
-produce a warning instead of becoming part of the name. This also applies to edit.
-Ordinary `and/or` and `w/o` remain allowed. Prefix-like slash text, such as a
-word beginning `d/` or a likely typo such as `dim/sum`, cannot be entered literally
-at a field boundary. Reword it using spaces or hyphens, such as `dim-sum` or
-`date notes`; do not attempt to quote or backslash-escape it.
+Literal names such as `Call Mom/Dad`, `Planning and/or review`, and `Sem/Exam`
+are therefore invalid. Use `Call Mom-Dad`, `Planning review`, or `Sem-Exam`
+instead. A recognized token such as `d/` starts a field, not part of a name.
+Historical saved names remain loadable and searchable. Supplying a replacement
+name through `edit INDEX n/NAME` applies these input rules again.
 
-A duplicate activity has the same name (ignoring case and surrounding whitespace),
+A duplicate activity has the same name (ignoring case, surrounding whitespace, and repeated internal spaces),
 date, start and end times as an existing activity. Changing demand, ratings or
 completion does not make it a different activity. Duplicates are rejected with
 `[WARNING] Duplicate activity already recorded at index ...`.
@@ -247,7 +242,7 @@ Demand: MEDIUM
 Importance: -
 Urgency: -
 Commitment: -
-Activities in this session: 1
+Total activities: 1
 ```
 
 Rejected duplicates and overlaps show the conflicting activity and its
@@ -423,7 +418,7 @@ Deleted activity: Project meeting
 Date: 2026-12-02
 Time: 14:00 - 15:00
 Demand: HIGH
-Activities in this session: 1
+Total activities: 1
 ```
 
 The activity is removed immediately; subsequent indexes may change.
@@ -442,12 +437,12 @@ overdue, and next examples. Enter each command on its own line:
 
 ```text
 add n/Project meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH
-add CoM/3 dem/low e/11:00 n/Planning and/or review d/2026-12-03 s/10:00 iMp/5
+add CoM/3 dem/low e/11:00 n/Planning review d/2026-12-03 s/10:00 iMp/5
 add n/CS2113 project d/2026-12-04 s/14:00 e/15:00 imp/5 urg/5 com/4
 add n/Team stand-up d/2026-12-04 s/16:00 e/17:00 imp/5 urg/4
 ```
 
-The mixed-case command demonstrates reordered fields and a slash in a name.
+The mixed-case command demonstrates reordered fields and a multiword name.
 Omitted ratings stay unset. Ratings appear in add confirmations and persist across
 restarts; `list` and `list demand` show demand and completion without ratings.
 
@@ -465,6 +460,11 @@ Format:
 edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]
 ```
 
+> **Important: ended activities are locked.** Once an activity's end is at or
+> before the current local time, `edit` cannot change it or reschedule it into
+> the future. There is no override. To repeat it, add a new activity; the original
+> remains available for listing, searching, completion changes, or deletion.
+
 - Use an index from chronological `list` or activity `find` output and supply
   at least one field. The command updates one activity at a time.
 - Each supplied field must have a value and appear once. Names follow the same
@@ -478,9 +478,10 @@ edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [im
   Historical activities already saved remain loadable, listable, and searchable.
 - Validation failures leave the activity unchanged. Successful edits save
   automatically and display all resulting fields, including ratings.
-- Name or schedule edits must not duplicate another activity. Time overlaps
-  require `overlap/ALLOW` on that edit, for example `edit 2 s/10:30 overlap/ALLOW`. The
-  activity being edited is excluded from this comparison. Rejected multi-field
+- Name or schedule edits must not duplicate another activity. An actual date/time change that overlaps
+  another activity requires `overlap/ALLOW` on that edit, for example `edit 2 s/10:30 overlap/ALLOW`. The
+  activity being edited is excluded from this comparison. Renaming or changing
+  ratings/demand preserves an existing overlap without another approval. Rejected multi-field
   edits leave every field and the saved file unchanged.
 - Rescheduling can change chronological indexes. Run `list` or `find` again
   before selecting another activity.
@@ -587,7 +588,7 @@ Indexes refer to the chronological 'list' order.
 4. CS2113 project (2026-12-04, 14:00-15:00) [MEDIUM] [ ] | Priority 225 (IMP 5, URG 5, COM 4)
 1. CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ] | Priority NA (IMP -, URG -, COM -)
 2. Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ] | Priority NA (IMP -, URG -, COM -)
-3. Planning and/or review (2026-12-03, 10:00-11:00) [LOW] [ ] | Priority NA (IMP 5, URG -, COM 3)
+3. Planning review (2026-12-03, 10:00-11:00) [LOW] [ ] | Priority NA (IMP 5, URG -, COM 3)
 5. Team stand-up (2026-12-04, 16:00-17:00) [MEDIUM] [ ] | Priority NA (IMP 5, URG 4, COM -)
 ```
 
@@ -612,7 +613,7 @@ Using the same five-activity schedule, assume the current local time is
 Overdue activities (ended before now):
 1. [OVERDUE WEEK] CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
 2. [OVERDUE WEEK] Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
-3. [OVERDUE WEEK] Planning and/or review (2026-12-03, 10:00-11:00) [LOW] [ ]
+3. [OVERDUE WEEK] Planning review (2026-12-03, 10:00-11:00) [LOW] [ ]
 4. [OVERDUE TODAY] CS2113 project (2026-12-04, 14:00-15:00) [MEDIUM] [ ]
 ```
 
@@ -704,7 +705,9 @@ Verify with current campus information before you rely on it.
 
 Format: `route from/START to/END`
 
-Use hub names (AS1-AS8 or CLB), rather than IDs such as F01.
+Use hub names (AS1-AS8 or CLB), or facility IDs F01-F09 when facility data is
+available. For example, `route from/F06 to/F07` is equivalent to
+`route from/AS6 to/AS7`. Unknown endpoints list the valid graph hubs.
 Keep `from/` before `to/`. Routes minimize recorded distance using only connections
 marked YES for accessibility. Shelter, barriers, and notes are displayed;
 a shortest route may include unsheltered sections or recorded barriers.
@@ -825,7 +828,9 @@ Command words must use ASCII characters. For example, entering `加入` or
 ```
 
 The app then waits for another command. Unknown ASCII command words and blank
-input keep the usual unrecognized-command warning. Non-ASCII or non-printable
+input show `[WARNING] Unrecognized command. Type help to see available commands.`
+For `bye now`, the warning is `[WARNING] bye takes no arguments. Usage: bye`.
+Non-ASCII or non-printable
 activity names supplied to `add` or `edit` receive the separate name warning:
 
 ```text

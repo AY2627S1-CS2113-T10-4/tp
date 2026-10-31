@@ -38,7 +38,7 @@ class DeleteCommandTest {
         var result = parser.parse("delete 1").execute(activities, storage);
         assertTrue(result.getMessage().startsWith("Deleted activity: Gym"),
                 "displayed index 1 must resolve to the canonical order, not the first add");
-        assertTrue(result.getMessage().contains("Activities in this session: 1"));
+        assertTrue(result.getMessage().contains("Total activities: 1"));
         assertFalse(result.getMessage().contains("There is no activity recorded"));
         String listMessage = parser.parse("list").execute(activities, storage).getMessage();
         assertFalse(listMessage.contains("Gym"), "deleted activity must be gone from the list");

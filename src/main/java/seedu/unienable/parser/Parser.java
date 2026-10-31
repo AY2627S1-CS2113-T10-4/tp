@@ -107,7 +107,7 @@ public class Parser {
      */
     public Parser(FacilityManager facilityManager, ConnectionManager connectionManager, Clock clock) {
         this.facilityCommandParser = new FacilityCommandParser(facilityManager);
-        this.routeParser = new RouteParser(connectionManager);
+        this.routeParser = new RouteParser(connectionManager, facilityManager);
         this.clock = clock;
     }
 
@@ -133,7 +133,7 @@ public class Parser {
             //@@author lukelouyu
             case "bye":
                 if (words.length != 1) {
-                    throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");
+                    throw new ParseException(WARNING_MESSAGE + " bye takes no arguments. Usage: bye");
                 }
                 return new ByeCommand();
             case "facility":
@@ -143,7 +143,7 @@ public class Parser {
             //@@author
             //@@author Atharva005
             case "add":
-                return new AddCommandParser(clock).parse(trimmedInput.substring(words[0].length()).trim());
+                return new AddCommandParser().parse(trimmedInput.substring(words[0].length()).trim());
             //@@author
             //@@author Oliver-koh
             case "edit":
@@ -203,7 +203,8 @@ public class Parser {
                 return words.length == 1 ? new HelpCommand() : new HelpCommand(words[1]);
             //@@author
             default:
-                throw new ParseException(WARNING_MESSAGE + " Unrecognized command. Type bye to exit.");
+                throw new ParseException(WARNING_MESSAGE
+                        + " Unrecognized command. Type help to see available commands.");
         }
     }
 

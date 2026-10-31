@@ -26,9 +26,9 @@ class FindCommandTest {
 
     @Test
     void execute_matchesCaseInsensitiveSubstringAndKeepsFullListIndexes() throws Exception {
-        add("Planning meeting", "2099-01-01", "09:00", "10:00");
-        add("Submit project report", "2099-01-02", "14:00", "15:00");
-        add("Project review", "2099-01-03", "14:00", "15:00");
+        add("Planning meeting", "2030-01-01", "09:00", "10:00");
+        add("Submit project report", "2030-01-02", "14:00", "15:00");
+        add("Project review", "2030-01-03", "14:00", "15:00");
 
         String message = parser.parse("find PROJECT").execute(activities, noWrites).getMessage();
 
@@ -41,7 +41,7 @@ class FindCommandTest {
 
     @Test
     void execute_noMatchReportsKeywordAndDoesNotChangeState() throws Exception {
-        add("Lecture", "2099-01-01", "09:00", "10:00");
+        add("Lecture", "2030-01-01", "09:00", "10:00");
 
         String message = parser.parse("find exam").execute(activities, noWrites).getMessage();
 

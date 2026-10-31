@@ -1,7 +1,8 @@
 # UniEnable Developer Guide
 
-UniEnable is a Java command-line application for planning activities and checking
-campus accessibility reference information. This guide explains its components,
+UniEnable is a Java 25 command-line application that helps university students, particularly those with ASD, ADHD, or mobility constraints, organize academic and daily commitments and check campus accessibility information. It combines dated activities, optional importance, urgency and commitment ratings, priority and calendar views, completion tracking, and automatic local saving with facility searches and shortest recorded accessible-route queries using sample data for nine NUS FASS campus hubs.
+
+This guide explains its components,
 key implementation decisions, and how to test changes. For command syntax,
 warnings, and worked examples, use the [User Guide](UserGuide.md).
 
@@ -140,7 +141,7 @@ a `CommandResult` containing a message, an exit flag and an activity-change flag
 `ConsoleHelper` uses these flags to coordinate automatic saving and shutdown.
 Read-only commands leave the activity-change flag unset.
 
-Time-sensitive parsers and commands share an injected `Clock`. Production uses
+Time-sensitive edit validation and queries share an injected `Clock`. Production uses
 the local clock; tests supply a fixed clock to reproduce boundary cases.
 
 ### Model component
@@ -188,9 +189,9 @@ cases that validation and testing must cover.
 
 <a id="activity-name-punctuation"></a>
 
-**Name punctuation and slash syntax:** Names prohibit backslashes (`\`), commas
-(`,`), single quotation marks (`'`, including apostrophes), double quotation marks
-(`"`), pipes and line breaks. Slash (`/`) is allowed: `and/or` and `w/o` are valid.
+**Name punctuation and slash syntax:** **Commas are allowed; apostrophes are rejected.**
+Names prohibit backslashes (`\`), single quotation marks (`'`, including apostrophes), double quotation marks
+(`"`), pipes and line breaks. Every slash in add/edit input must belong to a supported field prefix.
 Both `/\` and `\/` contain a forbidden backslash. Quoting and slash escaping are
 unsupported; [prefix-like text](#activity-parameter-validation) may still be reserved.
 
@@ -198,8 +199,8 @@ unsupported; [prefix-like text](#activity-parameter-validation) may still be res
 
 **Why the name character set is restricted.** Supplied activity names use a
 conservative whitelist. The restricted punctuation (backslashes, single and
-double quotes, commas) carries special meaning in other grammars—escaping,
-quoting, or field separation—so accepting it would add ambiguous edge cases in
+double quotes) carries special meaning in other grammars—escaping,
+or quoting—so accepting it would add ambiguous edge cases in
 parsing, storage, and any future data exchange. Keeping these characters out
 shrinks the input space, which avoids unnecessary error analysis and incorrect
 results, lowers the chance of bugs, and makes the parser and storage simpler to
@@ -263,8 +264,8 @@ components; the table above gives their Java package locations.
 `AddCommandParser` validates the fields and creates an `AddCommand`, whose
 constructor creates an incomplete activity.
 Demand defaults to `MEDIUM`; omitted ratings remain unset. The end must be later
-than the start on the same day and strictly later than the current local time.
-Historical activities are always rejected, including with `overlap/ALLOW`.
+than the start on the same day. Past and ongoing activities are accepted for
+historical recording; the existing ended-activity edit lock still applies.
 
 `AddCommand` applies the shared [schedule checks](#activity-schedule-validation)
 before insertion. A successful insertion sets the activity-change flag, which
@@ -317,7 +318,7 @@ ratings and demand summaries without changing data.
 
 Dashboard row numbers belong to the selected period; indexed changes use the full
 chronological list. The rating table fits 80 terminal columns and shortens labels
-to 26 columns without splitting grapheme clusters. Full names remain in schedules
+to 26 columns without splitting grapheme clusters. Schedule rows pad names and indexes to align rating columns. Full names remain in schedules
 and storage. See the [UG dashboard examples](UserGuide.md#viewing-calendar-dashboards-view).
 
 <div role="region" aria-label="Calendar dashboard classes (scroll horizontally)"
@@ -498,15 +499,19 @@ returns an empty-result warning. See the [UG time queries](UserGuide.md#viewing-
 
 #### Editing activities
 
+> **Design constraint: ended activities cannot be edited or rescheduled.** The
+> existing end date/time is checked before any replacement is built. An end at
+> or before local now rejects every edit, even if the requested date is in the future.
+
 `EditCommandParser` collects changes in immutable `EditCommand.Fields`.
 `EditCommand` selects the activity by its chronological index and checks the
 clock once. Activities ending at or before now reject every edit, including
 metadata changes and rescheduling into the future.
 
 Omitted fields and completion stay unchanged. Date/time edits must end after
-both the start and now, on the same day. Name/schedule edits also check for
-duplicates and clashes, excluding the original activity; demand/rating-only
-edits skip this check. Validation finishes before replacement, so rejected edits
+both the start and now, on the same day. Every edit checks duplicates, excluding the original activity. Only actual
+date/time changes require a fresh overlap approval; name, demand and rating
+changes preserve existing overlaps. Validation finishes before replacement, so rejected edits
 change nothing. Refresh indexes after a successful edit.
 
 <a id="ended-activity-edit-rationale"></a>
@@ -595,7 +600,9 @@ commands can act on past records; the
 
 #### Completion and persistence
 
-`Storage` reads UTF-8 records in insertion order. Saves use nine pipe-separated
+`Storage` decodes each UTF-8 record independently in insertion order. Invalid
+encoding skips only that row and produces a line-numbered warning. Raw bytes are
+preserved until a recovery save verifies the original backup. Saves use nine pipe-separated
 fields; unset ratings are `-`, and `DONE` is `true` or `false`:
 
 ```text
@@ -658,17 +665,17 @@ omitted add ratings stay unset. Ratings are stored unchanged and used by the
 
 #### Activity parameter validation
 
-Before field extraction, add and edit use `ActivityParameterValidator` to reject
-known long-form aliases such as `urgency/` and `priority/`, and to suggest
-corrections for unknown alphanumeric prefixes. It detects one insertion, deletion,
-substitution or adjacent swap between multi-letter tokens; `demm/` and `dem1/`
-suggest `dem/`. Known prefixes and single-letter tokens are skipped.
+Before field extraction, `ActivityParameterValidator` checks every slash token,
+including slash text in the first word of a name. Only `n/`, `d/`, `s/`, `e/`,
+`dem/`, `imp/`, `urg/`, `com/`, and `overlap/` are supported, ignoring case, and
+prefixes must start at a whitespace boundary. Unsupported words before `/` warn
+before command construction or mutation. Literal slashes in names are unsupported.
 
-Unrecognized tokens remain in the preceding field, potentially causing misleading
-errors or becoming part of a name. Early detection gives more specific feedback,
-but can reject literal text such as `dim/sum` at a field boundary. Actionable
-feedback takes priority; affected names must be reworded. This tradeoff is separate
-from the [name-character restrictions](#name-character-set-rationale).
+One insertion, deletion, substitution or adjacent swap can add a correction
+suggestion: `demm/` and `dem1/` suggest `dem/`. Suggestions do not determine
+validity: every unsupported token is rejected, including single-letter tokens
+such as `t/`. This prevents unknown fields being absorbed into a preceding name,
+date or time. Historical names loaded from storage keep their original text.
 
 <!-- @@author -->
 
@@ -698,10 +705,10 @@ from the [name-character restrictions](#name-character-set-rationale).
 
 | Check | Rule |
 | --- | --- |
-| Duplicate | Same date, start, end and name, ignoring name case and surrounding spaces. Demand, ratings and completion do not affect identity. Always rejected. |
+| Duplicate | Same date, start, end and name, ignoring name case, surrounding spaces and repeated internal spaces. Demand, ratings and completion do not affect identity. Always rejected. |
 | Time overlap | Same-date ranges overlap when `candidate.start < existing.end` and `existing.start < candidate.end`. Touching endpoints are allowed. Completed activities still participate. |
 | `overlap/ALLOW` | Permits a time clash, but never a duplicate. It is not stored; supply it again for a conflicting schedule edit. |
-| When validation runs | Before adding an activity or replacing an eligible activity's name/schedule. Edits exclude the original record; demand/rating-only edits skip this check. |
+| When validation runs | Before add or edit. Edits exclude the original record. Duplicate checks always run; only actual date/time changes require fresh overlap approval. |
 
 For an existing activity from **09:00 to 10:00**, these examples use different
 names to isolate the time-overlap check:
@@ -808,8 +815,9 @@ of accessibility. This graph shows recorded connectivity, not geographical layou
 
 #### Accessible route search
 
-`RouteParser` creates a `RouteCommand` for two hub names, matched ignoring case;
-facility IDs are not route endpoints. `ConnectionManager` keeps one reusable
+`RouteParser` resolves facility IDs through `FacilityManager` when available,
+then creates a `RouteCommand` for two hub names, matched ignoring case. Unknown
+endpoints report the valid graph hubs. `ConnectionManager` keeps one reusable
 `DijkstraShortestPath` graph with both directions of each `YES` connection.
 Each query creates a fresh `DijkstraSolver` with independent search state.
 
@@ -942,11 +950,11 @@ For activity names, add and edit apply the shared
 | Input example | Validation and rationale |
 | --- | --- |
 | `n/学习`, `n/படி`, `n/पढ़ाई`, `n/చదువు`, `n/공부`, `n/勉強`, `n/Study 🎉`, `n/Café` | These foreign-language characters (Chinese, Tamil, Hindi, Telugu, Korean and Japanese), emoji and accented characters are outside printable ASCII.<br>Supporting more character sets requires broader testing of input handling and terminal display.<br>Restricting new names to printable ASCII keeps the supported input predictable and the validation scope manageable. See the [design rationale](#ascii-command-name-validation).<br>Existing Unicode names remain loadable under the separate [stored-name rules](#historical-name-compatibility). |
-| `n/Meeting, Week 3`, `n/Student's meeting` | Commas and apostrophes are forbidden. Rejecting unsupported punctuation before changes prevents partial updates and reduces ambiguous input; see the [name-character rationale](#name-character-set-rationale). |
+| `n/Student's meeting` | Apostrophes are forbidden; `n/Meeting, Week 3` is accepted. Rejecting unsupported punctuation before changes prevents partial updates and reduces ambiguous input; see the [name-character rationale](#name-character-set-rationale). |
 | `n/"Study"`, `n/Study\notes` | Double quotes and backslashes are forbidden; quoted names and escaping are unsupported. |
 | `n/Study\|Review` or a name containing a line break | Pipes and line breaks conflict with record boundaries. |
 | A blank name or one containing a tab, NUL or DEL | Names must be nonblank and contain only printable characters. |
-| `n/Planning and/or review` (accepted) | Ordinary slash text is allowed, subject to the [prefix rules](#activity-parameter-validation). |
+| `n/Planning and/or review` (rejected) | `and/` is not a supported prefix. Reword the name using spaces or hyphens; see the [prefix rules](#activity-parameter-validation). |
 
 Collection copies protect shared data from external changes. Assertions help
 detect internal ordering and deletion errors during debugging. Input validation
@@ -1027,11 +1035,11 @@ Feature responsibility follows the table below. See the [team pages](team/README
 | US02 | Must-Have | student planning my routine | list all my activities in chronological order | I can review my commitments and anticipate what comes next | Implemented |
 | US03 | Must-Have | student with a long schedule | find activities by keyword | I can locate a specific commitment quickly | Implemented |
 | US04 | Must-Have | student whose plans change | delete an activity | obsolete commitments do not clutter my schedule | Implemented |
-| US05 | Must-Have | student whose details change | edit an existing activity's name, date, or time | I can correct my plan without deleting and re-adding it | Implemented |
+| US05 | Must-Have | student whose details change | edit an existing activity's name, date, or time | I can correct my plan without deleting and re-adding it | Partial: ended activities are locked against editing and rescheduling |
 | US06 | Must-Have | student who finds it difficult to track completion | mark and unmark an activity as done | I know what is finished and what remains | Implemented |
 | US07 | Nice-to-Have | student balancing responsibilities | assign a category (academic, CCA, daily) to an activity | I can distinguish types of commitments | Not implemented |
 | US08 | Nice-to-Have | student who finds timetable entry tedious | add a recurring activity by specifying its day, time, and week numbers | I do not re-enter the same class repeatedly | Not implemented |
-| US09 | Nice-to-Have | student whose day changes unexpectedly | reschedule an activity to a new date or time | my plan stays realistic when disruptions occur | Implemented |
+| US09 | Nice-to-Have | student whose day changes unexpectedly | reschedule an activity to a new date or time | my plan stays realistic when disruptions occur | Partial: ended activities are locked against editing and rescheduling |
 
 ### Views and reminders
 
@@ -1084,7 +1092,7 @@ validation and persistence contracts.
 
 | Use case | Main success flow | Extensions |
 | --- | --- | --- |
-| Add an activity | User supplies fields; UniEnable validates, inserts, saves and confirms. | Invalid fields, a historical end, duplicates or an unapproved clash leave the list unchanged. A save failure keeps the change in memory and reports unsaved data. |
+| Add an activity | User supplies fields; UniEnable validates, inserts, saves and confirms. | Invalid fields, duplicates or an unapproved clash leave the list unchanged. A save failure keeps the change in memory and reports unsaved data. |
 | Edit an activity | User selects a canonical index and replacements; UniEnable validates the whole replacement, saves and confirms. | Invalid indexes and ended activities are rejected. Invalid replacements leave all fields unchanged. |
 | Find an accessible route | User supplies known, distinct hubs; UniEnable finds and displays the shortest eligible recorded path with a disclaimer. | Invalid endpoints warn. Known disconnected hubs produce a no-route result scoped to the dataset. |
 
@@ -1125,7 +1133,7 @@ hardware, and procedure; this guide sets no timing benchmark.
 | Displayed index | A one-based position in chronological `list`, used by edit, delete, mark, and unmark and retained by demand, find, priority, overdue, and next. Calendar dashboards number their selected rows separately. |
 | Seven-day dashboard | `view week`: today through today plus six days, including completed activities and grouped by date. |
 | Hub | A supported facility name: AS1 to AS8 or CLB in the bundled dataset. |
-| Facility ID | A stable lookup identifier, F01 to F09. Route endpoints use hub names instead. |
+| Facility ID | A stable lookup identifier, F01 to F09. Route input accepts IDs when facility data is available, resolving them to hub names. |
 | Connection | A bidirectional recorded link with distance, accessibility, traversal type, shelter, and optional barrier information or notes. |
 | Accessibility status | A recorded `YES`, `NO`, or `UNKNOWN` value. A missing feature is distinct from an explicit `UNKNOWN`. |
 | Route | Ordered stops and their connecting segments, with total recorded distance. |
@@ -1154,8 +1162,8 @@ In a fresh test folder, enter the following commands one line at a time. The
 dates must be in the future; replace the example dates if necessary.
 
 ```text
-add n/Study d/2099-12-10 s/09:00 e/10:00 dem/LOW imp/3 urg/4 com/2
-add n/Consultation d/2099-12-11 s/11:00 e/12:00 dem/HIGH
+add n/Study d/2030-12-10 s/09:00 e/10:00 dem/LOW imp/3 urg/4 com/2
+add n/Consultation d/2030-12-11 s/11:00 e/12:00 dem/HIGH
 list
 list demand
 mark 1
@@ -1182,7 +1190,7 @@ without partial changes and confirm the original activities after restart.
 Include a non-ASCII command word to check warning selection against the
 [UG error-handling examples](UserGuide.md#error-handling).
 
-Use accepted ASCII names such as `Planning and/or review` and `C++ @ COM1 #2` to
+Use accepted ASCII names such as `Planning review` and `C++ @ COM1 #2` to
 exercise add, edit, search, and restart. Exercise
 [stored-name compatibility](#historical-name-compatibility) with a pre-existing
 UTF-8 fixture, including an eligible edit that omits the name. `UniEnableProcessTest`
@@ -1194,10 +1202,10 @@ Use a fresh test folder. Enter these commands one at a time, keeping the dates
 in the future:
 
 ```text
-add n/Session d/2099-12-10 s/09:00 e/10:00
-add n/session d/2099-12-10 s/09:00 e/10:00 overlap/ALLOW
-add n/Practice d/2099-12-10 s/09:30 e/10:30
-add n/Practice d/2099-12-10 s/09:30 e/10:30 overlap/ALLOW
+add n/Session d/2030-12-10 s/09:00 e/10:00
+add n/session d/2030-12-10 s/09:00 e/10:00 overlap/ALLOW
+add n/Practice d/2030-12-10 s/09:30 e/10:30
+add n/Practice d/2030-12-10 s/09:30 e/10:30 overlap/ALLOW
 edit 2 s/09:45 e/10:45
 edit 2 s/09:45 e/10:45 overlap/ALLOW
 list
@@ -1220,8 +1228,8 @@ these records. The first date must be past and the other dates future:
 
 ```text
 Old|2000-01-01|09:00|10:00|LOW|false|1|5|1
-Future rated|2099-12-10|09:00|10:00|HIGH|false|3|4|2
-Future unrated|2099-12-11|11:00|12:00|LOW|false|-|-|-
+Future rated|2030-12-10|09:00|10:00|HIGH|false|3|4|2
+Future unrated|2030-12-11|11:00|12:00|LOW|false|-|-|-
 ```
 
 Start the app, then enter:
@@ -1237,7 +1245,7 @@ overdue
 unmark 1
 overdue
 edit 1 imp/5
-edit 1 d/2099-12-12
+edit 1 d/2030-12-12
 ```
 
 Priority order is indexes 2 (80), 1 (50), then 3 (`NA`). The first `next` selects
@@ -1313,9 +1321,9 @@ macOS/Linux, replace `.\gradlew.bat` with `./gradlew`.
 In a fresh test folder, enter:
 
 ```text
-add n/Valid d/2099-12-10 s/09:00 e/10:00
+add n/Valid d/2030-12-10 s/09:00 e/10:00
 add n/Missing
-add n/Meeting, Week 3 d/2099-12-11 s/09:00 e/10:00
+add n/Student's meeting d/2030-12-11 s/09:00 e/10:00
 edit 1 imp/1,5
 edit 1 n/Changed imp/0
 help add extra
@@ -1337,12 +1345,12 @@ session accepts another command after each rejection.
 Start in a fresh test folder with future dates and enter:
 
 ```text
-add n/Study d/2099-12-10 s/09:00 e/10:00 dem/LOW imp/3 urg/4 com/2
-add n/Consultation d/2099-12-11 s/11:00 e/12:00
+add n/Study d/2030-12-10 s/09:00 e/10:00 dem/LOW imp/3 urg/4 com/2
+add n/Consultation d/2030-12-11 s/11:00 e/12:00
 mark 1
 edit 1 n/Revision dem/HIGH
 find revision
-edit 1 d/2099-12-12 s/13:00 e/14:00
+edit 1 d/2030-12-12 s/13:00 e/14:00
 find revision
 edit 2 n/Should stay unchanged imp/0
 list
@@ -1386,9 +1394,7 @@ accessibility result was calculated. Check these rejected inputs separately:
 | `facility find type/LIFT status/MAYBE` | Invalid facility status, supported statuses and usage. | Absent |
 
 After each rejection, the session must accept another command and the saved
-activity file must remain unchanged. When checking the website, confirm that
-this warning table is present; an older published paragraph incorrectly required
-the notice on input warnings.
+activity file must remain unchanged.
 
 <!-- @@author -->
 

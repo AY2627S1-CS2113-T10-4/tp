@@ -58,7 +58,11 @@ public final class RouteCommand extends Command {
         try {
             route = connectionManager.findRoute(from, to);
         } catch (IllegalArgumentException exception) {
-            throw new UniEnableException("[WARNING] " + exception.getMessage() + "\n" + USAGE);
+            String hubs = connectionManager.getConnections().stream()
+                    .flatMap(connection -> java.util.stream.Stream.of(connection.getFrom(), connection.getTo()))
+                    .distinct().sorted().collect(java.util.stream.Collectors.joining(", "));
+            throw new UniEnableException("[WARNING] " + exception.getMessage()
+                    + "\nValid hubs: " + (hubs.isEmpty() ? "none loaded" : hubs) + "\n" + USAGE);
         }
 
         if (route.isEmpty()) {

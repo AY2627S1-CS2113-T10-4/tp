@@ -54,7 +54,7 @@ class ConsoleSaveRecoveryTest {
             }
         };
         ActivityList activities = new ActivityList();
-        String input = "add n/Keep me d/2099-12-10 s/09:00 e/10:00\nlist\nbye\n";
+        String input = "add n/Keep me d/2030-12-10 s/09:00 e/10:00\nlist\nbye\n";
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         Ui ui = new Ui(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)),
                 new PrintStream(output, true, StandardCharsets.UTF_8));

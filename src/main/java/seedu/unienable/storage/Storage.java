@@ -1,6 +1,8 @@
 package seedu.unienable.storage;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
@@ -77,7 +79,9 @@ public class Storage {
         List<Activity> activities = new ArrayList<>();
         List<String> lines;
         try {
-            lines = Files.readAllLines(activityFile, StandardCharsets.UTF_8);
+            // Split the file into rows first, so one row with invalid UTF-8
+            // does not stop other rows from loading.
+            lines = new String(Files.readAllBytes(activityFile), StandardCharsets.ISO_8859_1).lines().toList();
         } catch (IOException exception) {
             // A decoding or I/O failure must not bypass recovery protection on a later save.
             loadedCorruptData = true;
@@ -85,9 +89,13 @@ public class Storage {
         }
 
         for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
             try {
+                String line = StandardCharsets.UTF_8.newDecoder().decode(ByteBuffer.wrap(
+                        lines.get(i).getBytes(StandardCharsets.ISO_8859_1))).toString();
                 activities.add(parseLine(line));
+            } catch (CharacterCodingException exception) {
+                loadedCorruptData = true;
+                warnings.add("Line " + (i + 1) + ": invalid UTF-8 encoding; row skipped. Save the file as UTF-8.");
             } catch (IllegalArgumentException exception) {
                 loadedCorruptData = true;
                 warnings.add("Line " + (i + 1) + ": " + exception.getMessage());

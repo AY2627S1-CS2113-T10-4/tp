@@ -114,10 +114,14 @@ public class ViewCommand extends Command {
             return;
         }
         int index = view.indexOf(daily.get(0)) + 1;
+        int nameWidth = daily.stream().mapToInt(activity -> displayWidth(activity.getName())).max().orElse(0);
+        int indexWidth = Integer.toString(index + daily.size() - 1).length();
         for (Activity activity : daily) {
-            output.append("\n").append(index++).append(". ").append(activity.getStartTime())
+            output.append("\n").append(String.format(Locale.ROOT, "%" + indexWidth + "d", index++))
+                    .append(". ").append(activity.getStartTime())
                     .append("-").append(activity.getEndTime()).append(" [")
-                    .append(activity.isDone() ? "X" : " ").append("] ").append(activity.getName())
+                    .append(activity.isDone() ? "X" : " ").append("] ")
+                    .append(padName(activity.getName(), nameWidth))
                     .append("    IMP ").append(rating(activity.getImportance()))
                     .append("  URG ").append(rating(activity.getUrgency()))
                     .append("  COM ").append(rating(activity.getCommitment()))

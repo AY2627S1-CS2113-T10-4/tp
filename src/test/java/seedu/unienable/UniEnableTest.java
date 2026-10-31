@@ -56,7 +56,7 @@ class UniEnableTest {
         }
         assertEquals(5, output.split("Added activity:", -1).length - 1);
         assertEquals(15, output.split("\\[WARNING\\]", -1).length - 1);
-        assertTrue(output.contains("Activities in this session: 5"));
+        assertTrue(output.contains("Total activities: 5"));
         assertTrue(output.contains(AccessibilityDisclaimer.TEXT));
     }
 
@@ -71,18 +71,18 @@ class UniEnableTest {
     @Test
     void mistypedActivityParameters_warnWithoutAddingEditingOrSaving(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
-        byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|false|-|-|-\n"
+        byte[] original = "Existing|2030-12-10|09:00|10:00|LOW|false|-|-|-\n"
                 .getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
         var originalTime = Files.getLastModifiedTime(activityFile);
 
-        String output = consoleAtPath("add n/Class demm/HIGH d/2099-12-11 s/09:00 e/10:00\n"
+        String output = consoleAtPath("add n/Class demm/HIGH d/2030-12-11 s/09:00 e/10:00\n"
                 + "edit 1 n/Changed impp/5\nlist\nbye\n", activityFile);
 
         assertEquals(2, output.split("Unknown parameter", -1).length - 1, output);
         assertFalse(output.contains("Added activity:"), output);
         assertFalse(output.contains("Edited activity:"), output);
-        assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [ ]"), output);
+        assertTrue(output.contains("1. Existing (2030-12-10, 09:00-10:00) [LOW] [ ]"), output);
         assertArrayEquals(original, Files.readAllBytes(activityFile));
         assertEquals(originalTime, Files.getLastModifiedTime(activityFile));
     }
@@ -92,7 +92,7 @@ class UniEnableTest {
     @Test
     void topicHelp_showsInstructionsWithoutChangingActivitiesOrExiting(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
-        byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n"
+        byte[] original = "Existing|2030-12-10|09:00|10:00|LOW|true|2|3|4\n"
                 .getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);
@@ -114,7 +114,7 @@ class UniEnableTest {
         assertTrue(output.contains("[WARNING] help accepts at most one command name."));
         assertEquals(2, output.split(Pattern.quote("[WARNING]"), -1).length - 1);
         assertEquals(1, output.split(Pattern.quote("Goodbye from UniEnable!"), -1).length - 1);
-        assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"));
+        assertTrue(output.contains("1. Existing (2030-12-10, 09:00-10:00) [LOW] [X]"));
         assertArrayEquals(original, Files.readAllBytes(activityFile));
         assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
     }
@@ -176,7 +176,7 @@ class UniEnableTest {
 
         assertTrue(output.contains("Deleted activity: Project meeting\nDate: 2030-10-25\n"
                 + "Time: 16:00 - 17:00\nDemand: HIGH\nThere is no activity recorded\n"));
-        assertFalse(output.contains("Activities in this session: 0"));
+        assertFalse(output.contains("Total activities: 0"));
         assertTrue(output.contains("Activities (by date, start time):\n[WARNING] No activities yet."));
         assertTrue(output.contains("[WARNING] There are no activities to delete."));
         assertEquals("", Files.readString(activityFile));
@@ -209,19 +209,19 @@ class UniEnableTest {
     @Test
     void activityRatings_surviveRestartAndCompletionChanges(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
-        String partial = "add n/Planning and/or review d/2030-10-25 s/10:00 e/11:00 imp/5 com/3";
+        String partial = "add n/Planning and-or review d/2030-10-25 s/10:00 e/11:00 imp/5 com/3";
         String firstSession = consoleAtPath(String.join("\n",
                 "add n/Study d/2030-10-25 s/09:00 e/10:00",
                 partial,
                 "ADD CoM/3 n/Project UrG/4 d/2030-10-25 iMp/5 e/12:00 DeM/hIgH s/11:00",
-                "add n/Planning and/or review d/2030-10-25 s/12:00 e/13:00 imp/5 com/3",
+                "add n/Planning and-or review d/2030-10-25 s/12:00 e/13:00 imp/5 com/3",
                 "mark 2", "mark 3", "bye", ""), activityFile);
-        String partialRow = "Planning and/or review|2030-10-25|10:00|11:00|MEDIUM|";
+        String partialRow = "Planning and-or review|2030-10-25|10:00|11:00|MEDIUM|";
         List<String> expectedRows = new ArrayList<>(List.of(
                 "Study|2030-10-25|09:00|10:00|MEDIUM|false|-|-|-",
                 partialRow + "true|5|-|3",
                 "Project|2030-10-25|11:00|12:00|HIGH|true|5|4|3",
-                "Planning and/or review|2030-10-25|12:00|13:00|MEDIUM|false|5|-|3"));
+                "Planning and-or review|2030-10-25|12:00|13:00|MEDIUM|false|5|-|3"));
 
         assertFalse(firstSession.contains("[WARNING]"), firstSession);
         assertEquals(4, firstSession.split("Added activity:", -1).length - 1);
@@ -229,8 +229,8 @@ class UniEnableTest {
 
         String secondSession = consoleAtPath("list\nunmark 2\nbye\n", activityFile);
 
-        assertTrue(secondSession.contains("2. Planning and/or review (2030-10-25, 10:00-11:00) [MEDIUM] [X]"));
-        assertTrue(secondSession.contains("Unmarked activity: Planning and/or review"));
+        assertTrue(secondSession.contains("2. Planning and-or review (2030-10-25, 10:00-11:00) [MEDIUM] [X]"));
+        assertTrue(secondSession.contains("Unmarked activity: Planning and-or review"));
         expectedRows.set(1, partialRow + "false|5|-|3");
         assertEquals(expectedRows, Files.readAllLines(activityFile, StandardCharsets.UTF_8));
     }
@@ -269,8 +269,8 @@ class UniEnableTest {
     void repeatedCompletion_warnsWithoutSavingOrChangingState(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
         byte[] original = String.join("\n",
-                "Done|2099-12-01|09:00|10:00|HIGH|true|-|-|-",
-                "Pending|2099-12-02|09:00|10:00|LOW|false|-|-|-", "")
+                "Done|2030-12-01|09:00|10:00|HIGH|true|-|-|-",
+                "Pending|2030-12-02|09:00|10:00|LOW|false|-|-|-", "")
                 .getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);
@@ -280,8 +280,8 @@ class UniEnableTest {
         assertTrue(output.contains("[WARNING] Activity is already marked as done: Done"), output);
         assertTrue(output.contains("[WARNING] Activity is already unmarked: Pending"), output);
         assertEquals(2, output.split(Pattern.quote("[WARNING]"), -1).length - 1);
-        assertTrue(output.contains("Done (2099-12-01, 09:00-10:00) [HIGH] [X]"), output);
-        assertTrue(output.contains("Pending (2099-12-02, 09:00-10:00) [LOW] [ ]"), output);
+        assertTrue(output.contains("Done (2030-12-01, 09:00-10:00) [HIGH] [X]"), output);
+        assertTrue(output.contains("Pending (2030-12-02, 09:00-10:00) [LOW] [ ]"), output);
         assertArrayEquals(original, Files.readAllBytes(activityFile));
         assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
     }
@@ -291,9 +291,9 @@ class UniEnableTest {
     void populatedQueries_keepNormalMessagesAndDoNotSave(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
         byte[] original = String.join("\n",
-                "Past|2000-01-01|09:00|10:00|LOW|false|1|1|1",
+                "Past|2026-01-01|09:00|10:00|LOW|false|1|1|1",
                 "Today|2026-10-14|09:00|10:00|HIGH|false|1|1|1",
-                "Future|2099-12-01|09:00|10:00|HIGH|false|5|5|5", "")
+                "Future|2030-12-01|09:00|10:00|HIGH|false|5|5|5", "")
                 .getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
 
@@ -311,7 +311,7 @@ class UniEnableTest {
     @Test
     void invalidRatingCommands_preserveActivityListAndStoredBytes(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
-        byte[] original = "Existing|2000-01-01|09:00|10:00|LOW|true\n".getBytes(StandardCharsets.UTF_8);
+        byte[] original = "Existing|2026-01-01|09:00|10:00|LOW|true\n".getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
         String[] invalidRatings = {
             "imp/0", "urg/6", "com/-1", "imp/1.5", "urg/text", "com/-", "imp/", "urg/1 URG/2"
@@ -327,7 +327,7 @@ class UniEnableTest {
 
         assertEquals(invalidRatings.length, output.split("\\[WARNING\\]", -1).length - 1);
         assertFalse(output.contains("Added activity:"), output);
-        assertTrue(output.contains("1. Existing (2000-01-01, 09:00-10:00) [LOW] [X]"));
+        assertTrue(output.contains("1. Existing (2026-01-01, 09:00-10:00) [LOW] [X]"));
         assertFalse(output.contains("Rejected ("), output);
         assertArrayEquals(original, Files.readAllBytes(activityFile));
     }
@@ -337,24 +337,24 @@ class UniEnableTest {
     @Test
     void addWithUnicodeWhitespaceName_isRejectedAndPreservesSavedData(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
-        byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n"
+        byte[] original = "Existing|2030-12-10|09:00|10:00|LOW|true|2|3|4\n"
                 .getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);
 
         for (String name : new String[] {"\u2003", "\u3000", " \u2003\t\u3000 "}) {
             String output = consoleAtPath("add n/" + name
-                    + " d/2099-12-11 s/09:00 e/10:00\nlist\nbye\n", activityFile);
+                    + " d/2030-12-11 s/09:00 e/10:00\nlist\nbye\n", activityFile);
 
             assertTrue(output.contains("[WARNING] Empty n/ parameter."), output);
             assertFalse(output.contains("Added activity:"), output);
-            assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), output);
+            assertTrue(output.contains("1. Existing (2030-12-10, 09:00-10:00) [LOW] [X]"), output);
             assertArrayEquals(original, Files.readAllBytes(activityFile));
             assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
 
             String restartOutput = consoleAtPath("list\nbye\n", activityFile);
             assertFalse(restartOutput.contains("Activity data warning:"), restartOutput);
-            assertTrue(restartOutput.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"),
+            assertTrue(restartOutput.contains("1. Existing (2030-12-10, 09:00-10:00) [LOW] [X]"),
                     restartOutput);
             assertArrayEquals(original, Files.readAllBytes(activityFile));
         }
@@ -367,19 +367,19 @@ class UniEnableTest {
         String[] names = {"复习", "வணக்கம்", "படி", "Café", "📚 Study", "Study\u2003group"};
         for (int i = 0; i < names.length; i++) {
             Path file = tempDir.resolve("unicode-" + i + ".txt");
-            byte[] original = "Existing|2099-12-10|09:00|10:00|LOW|true|2|3|4\n"
+            byte[] original = "Existing|2030-12-10|09:00|10:00|LOW|true|2|3|4\n"
                     .getBytes(StandardCharsets.UTF_8);
             Files.write(file, original);
-            String output = consoleAtPath("add n/" + names[i] + " d/2099-12-10 s/09:00 e/10:00\n"
+            String output = consoleAtPath("add n/" + names[i] + " d/2030-12-10 s/09:00 e/10:00\n"
                     + "edit 1 n/" + names[i] + " revised imp/5\nlist\nbye\n", file);
             String warning = "[WARNING] Please write the activity name in English (ASCII characters only).";
             assertEquals(2, output.split(java.util.regex.Pattern.quote(warning), -1).length - 1, output);
             assertFalse(output.contains("Added activity:"), output);
             assertFalse(output.contains("Edited activity:"), output);
-            assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), output);
+            assertTrue(output.contains("1. Existing (2030-12-10, 09:00-10:00) [LOW] [X]"), output);
             assertArrayEquals(original, Files.readAllBytes(file));
             String restarted = consoleAtPath("list\nbye\n", file);
-            assertTrue(restarted.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), restarted);
+            assertTrue(restarted.contains("1. Existing (2030-12-10, 09:00-10:00) [LOW] [X]"), restarted);
             assertArrayEquals(original, Files.readAllBytes(file));
         }
     }
@@ -392,7 +392,7 @@ class UniEnableTest {
         String[] whitespaceNames = {"\u2003", "\u3000", " \u2003\t\u3000 "};
         for (int i = 0; i < whitespaceNames.length; i++) {
             Path activityFile = tempDir.resolve("activities-" + i + ".txt");
-            String addOutput = consoleAtPath("add n/Unicode bug test d/2099-12-10 s/09:00 e/10:00\nbye\n",
+            String addOutput = consoleAtPath("add n/Unicode bug test d/2030-12-10 s/09:00 e/10:00\nbye\n",
                     activityFile);
             assertTrue(addOutput.contains("Added activity: Unicode bug test"), addOutput);
             byte[] original = Files.readAllBytes(activityFile);
@@ -401,14 +401,14 @@ class UniEnableTest {
             String editOutput = consoleAtPath("edit 1 n/" + whitespaceNames[i] + "\nlist\nbye\n", activityFile);
 
             assertTrue(editOutput.contains("[WARNING] Empty n/ parameter."), editOutput);
-            assertTrue(editOutput.contains("1. Unicode bug test (2099-12-10, 09:00-10:00) [MEDIUM] [ ]"),
+            assertTrue(editOutput.contains("1. Unicode bug test (2030-12-10, 09:00-10:00) [MEDIUM] [ ]"),
                     editOutput);
             assertArrayEquals(original, Files.readAllBytes(activityFile));
             assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
 
             String restartOutput = consoleAtPath("list\nbye\n", activityFile);
             assertFalse(restartOutput.contains("Activity data warning:"), restartOutput);
-            assertTrue(restartOutput.contains("1. Unicode bug test (2099-12-10, 09:00-10:00) [MEDIUM] [ ]"),
+            assertTrue(restartOutput.contains("1. Unicode bug test (2030-12-10, 09:00-10:00) [MEDIUM] [ ]"),
                     restartOutput);
             assertArrayEquals(original, Files.readAllBytes(activityFile));
         }
@@ -419,7 +419,7 @@ class UniEnableTest {
      * Retains the original console cases directly in Java so fresh checkouts can run them.
      */
     private static List<String[]> consoleCases() {
-        String unratedDetails = "\nImportance: -\nUrgency: -\nCommitment: -\nActivities in this session: 1";
+        String unratedDetails = "\nImportance: -\nUrgency: -\nCommitment: -\nTotal activities: 1";
         return List.of(
                 new String[]{"ADD01", "add n/Lecture d/2026-10-15 s/09:00 e/11:00",
                     "Added activity: Lecture\nDate: 2026-10-15\nTime: 09:00 - 11:00\nDemand: MEDIUM"
@@ -453,7 +453,7 @@ class UniEnableTest {
                     "Duplicate n/ parameter.", "Added activity:"},
                 new String[]{"ADD16", "add n/Test d/2026-10-21 s/10:00 e/11:00 dem/URGENT",
                     "Demand must be LOW, MEDIUM, or HIGH.", "Added activity:"},
-                new String[]{"ADD17", "add n/Test d/2026-10-21 s/10:00 e/11:00 loc/NUS", "Invalid time.",
+                new String[]{"ADD17", "add n/Test d/2026-10-21 s/10:00 e/11:00 loc/NUS", "Unknown parameter 'loc/'.",
                     "Added activity:"},
                 new String[]{"FAC01", "facility AS4", "[F04] AS4", "[WARNING]"},
                 new String[]{"FAC02", "facility clb", "[F09] CLB", "[WARNING]"},
@@ -491,7 +491,7 @@ class UniEnableTest {
                 new String[]{"STATUS_BAD", "facility find type/LIFT status/MAYBE",
                     "Invalid facility status 'MAYBE'.", "Facilities with"},
                 new String[]{"MISSPELLED", "faciliy", "Unrecognized command.", "Accessibility Features:"},
-                new String[]{"BYE_ARGS", "bye extra", "Unrecognized command.", "Added activity:"},
+                new String[]{"BYE_ARGS", "bye extra", "bye takes no arguments. Usage: bye", "Added activity:"},
                 new String[]{"BLANK", "", "Unrecognized command.", "Added activity:"},
                 new String[]{"REST_POINT", "facility find type/REST_POINT", "[F08] AS8", "[F01] AS1"});
     }
@@ -526,7 +526,7 @@ class UniEnableTest {
                     "Duplicate n/ parameter.", "Added activity:"},
                 new String[]{"ADD16", "add n/Test d/2026-10-21 s/10:00 e/11:00 dem/URGENT",
                     "Demand must be LOW, MEDIUM, or HIGH.", "Added activity:"},
-                new String[]{"ADD17", "add n/Test d/2026-10-21 s/10:00 e/11:00 loc/NUS", "Invalid time.",
+                new String[]{"ADD17", "add n/Test d/2026-10-21 s/10:00 e/11:00 loc/NUS", "Unknown parameter 'loc/'.",
                     "Added activity:"},
                 new String[]{"FAC01", "facility AS4", "[F04] AS4", "[WARNING]"},
                 new String[]{"FAC02", "facility clb", "[F09] CLB", "[WARNING]"},

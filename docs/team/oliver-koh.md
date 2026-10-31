@@ -6,7 +6,7 @@
 
 ### Overview
 
-UniEnable is a Java 25 command-line application that helps students plan dated activities and check recorded campus accessibility information.
+UniEnable is a Java 25 command-line application that helps university students, particularly those with ASD, ADHD, or mobility constraints, organize academic and daily commitments and check campus accessibility information. It combines dated activities, optional importance, urgency and commitment ratings, priority and calendar views, completion tracking, and automatic local saving with facility searches and shortest recorded accessible-route queries using sample data for nine NUS FASS campus hubs.
 
 ### Summary of contributions
 
@@ -17,12 +17,12 @@ I implemented activity completion, file persistence and malformed-record recover
 #### Enhancements implemented
 
 - **Completion tracking:** Implemented `mark` and `unmark` so students can track progress across sessions ([PR #20](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/20)). Commands resolve chronological indexes and signal whether state actually changed. Repeating an already satisfied request warns without requesting another save, avoiding unnecessary file writes.
-- **Persistence and recovery:** Developed UTF-8 activity storage and console integration so commitments survive restart ([PR #20](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/20)). Malformed rows produce line-numbered warnings while valid records remain usable; a backup preserves the corrupt original before a recovery save. Temporary-file replacement required Windows-specific handling. Optional-rating compatibility and the current failed-save/exit-retry flow were later team extensions.
-- **Editing and name search:** Implemented partial `edit` and literal, case-insensitive `find` so students can revise and locate commitments without recreating them ([PR #31](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/31)). A name-only edit preserves the schedule and completion state; an invalid replacement leaves the original activity unchanged. Search retains full-list chronological indexes. Added Unicode-whitespace rejection to prevent edited records disappearing after restart ([PR #42](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/42)).
+- **Persistence and recovery:** UTF-8 activity storage and console integration preserve commitments across restart ([PR #20](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/20)). Valid records load alongside line-numbered warnings for malformed or invalidly encoded rows. Saves retain optional ratings, read legacy records, and verify an original-file backup before recovery. Temporary-file replacement avoids partial writes; failed saves keep changes in memory and `bye` retries before exiting.
+- **Editing and name search:** Partial `edit` and literal, case-insensitive `find` let students revise and locate commitments without recreating them ([PR #31](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/31)). For an activity that has not ended, a name-only edit preserves its schedule and completion state; invalid replacements leave it unchanged. Ended activities cannot be edited or rescheduled. Search retains full-list chronological indexes, and supplied names reject Unicode whitespace to keep saved records readable ([PR #42](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/42)).
 
 #### Testing contributions
 
-Added storage, mark/unmark, and parser tests for restart persistence, malformed-row recovery, invalid indexes, and repeated completion requests ([PR #20](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/20)). Added [edit tests](https://github.com/AY2627S1-CS2113-T10-4/tp/blob/master/src/test/java/seedu/unienable/command/activity/EditCommandTest.java) and search tests for partial updates, rejected changes, and chronological results ([PR #31](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/31)); later team regressions extend these suites.
+Contributed storage, mark/unmark, and parser tests for restart persistence, malformed-row recovery, invalid indexes, and repeated completion requests ([PR #20](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/20)). The [edit tests](https://github.com/AY2627S1-CS2113-T10-4/tp/blob/master/src/test/java/seedu/unienable/command/activity/EditCommandTest.java) and search tests cover partial updates, rejected changes, and chronological results ([PR #31](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/31)).
 
 #### Documentation contributions
 
@@ -32,6 +32,6 @@ Added storage, mark/unmark, and parser tests for restart persistence, malformed-
 
 #### Team-based tasks
 
-Connected add, delete, and completion commands to the command-result flag that tells the console when to save ([PR #20](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/20)). Merged the team's ratings foundation while developing edit/search ([PR #31](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/31)). Updated my diagram assets in [PR #59](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/59) and [PR #70](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/70).
+Connected add, delete, and completion commands to the command-result flag that tells the console when to save ([PR #20](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/20)). Integrated edit/search with the shared ratings model ([PR #31](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/31)). Maintain the corresponding diagram assets ([PR #59](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/59), [PR #70](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/70)).
 
 <!-- @@author -->

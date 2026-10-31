@@ -88,9 +88,10 @@ public class EditCommand extends Command {
 
         Activity replacement = new Activity(updatedName, updatedDate, updatedStart, updatedEnd,
                 updatedDemand, activity.isDone(), updatedImportance, updatedUrgency, updatedCommitment);
-        if (fields.name() != null || fields.date() != null || fields.startTime() != null || fields.endTime() != null) {
-            ActivityScheduleValidator.validate(replacement, activities, activity, allowOverlap);
-        }
+        boolean scheduleChanged = !updatedDate.equals(activity.getDate())
+                || !updatedStart.equals(activity.getStartTime()) || !updatedEnd.equals(activity.getEndTime());
+        // Renaming does not introduce a time clash; duplicate identity still needs checking.
+        ActivityScheduleValidator.validate(replacement, activities, activity, allowOverlap || !scheduleChanged);
         activities.replaceByDisplayedIndex(displayedIndex, replacement);
         String message = "Edited activity: " + replacement.getName() + "\n"
                 + "Date: " + replacement.getDate() + "\n"

@@ -36,7 +36,7 @@ class EditCommandParserTest {
 
     @Test
     void parse_printableAsciiReplacement_acceptsSpacesAndPunctuation() throws Exception {
-        for (String name : new String[] {"CS2113 Tutorial", "Planning and/or review", "Lunch w/o friends",
+        for (String name : new String[] {"CS2113 Tutorial", "Planning review", "Lunch without friends",
             "Group-2 (Lab)!", "C++ @ COM1 #2"}) {
             assertInstanceOf(EditCommand.class, parser.parse("edit 1 n/" + name));
         }
@@ -90,7 +90,7 @@ class EditCommandParserTest {
     @Test
     void parse_acceptsFieldsInAnyOrder() throws Exception {
         assertInstanceOf(EditCommand.class,
-                parser.parse("edit 1 dem/HIGH e/15:00 n/Updated d/2099-01-03 s/14:00"));
+                parser.parse("edit 1 dem/HIGH e/15:00 n/Updated d/2030-01-03 s/14:00"));
         assertInstanceOf(EditCommand.class, parser.parse("edit\t1\tn/Updated"));
     }
 
@@ -98,7 +98,7 @@ class EditCommandParserTest {
     Stream<DynamicTest> parse_malformedFields_warnWithUsage() {
         String[] arguments = {
             "-1 n/Updated", "2147483648 n/Updated", "1 n/", "1 unexpected n/Updated",
-            "1 d/2099-2-03", "1 d/2099-02-29", "1 s/9:00", "1 e/24:00",
+            "1 d/2030-2-03", "1 d/2030-02-29", "1 s/9:00", "1 e/24:00",
             "1 dem/EXTREME", "1 imp/0", "1 urg/6", "1 com/5.0"
         };
         return Stream.of(arguments).map(input -> DynamicTest.dynamicTest("edit " + input, () -> {
