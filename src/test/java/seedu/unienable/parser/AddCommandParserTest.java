@@ -131,11 +131,11 @@ class AddCommandParserTest {
         Integer[][] expected = {{1, null, 5}, {null, 2, null}};
         for (int i = 0; i < suffixes.length; i++) {
             ActivityList activities = new ActivityList();
-            parser.parse("n/Planning and/or review w/o slides d/2026-10-20 s/09:00 e/10:00 " + suffixes[i])
+            parser.parse("n/Planning review without slides d/2026-10-20 s/09:00 e/10:00 " + suffixes[i])
                     .execute(activities, new Storage());
 
             Activity result = activities.getActivities().getLast();
-            assertEquals("Planning and/or review w/o slides", result.getName());
+            assertEquals("Planning review without slides", result.getName());
             assertEquals(expected[i][0], result.getImportance());
             assertEquals(expected[i][1], result.getUrgency());
             assertEquals(expected[i][2], result.getCommitment());
@@ -170,19 +170,19 @@ class AddCommandParserTest {
     }
 
     @Test
-    void parse_andSlashInName_preservesFullName() throws Exception {
+    void parse_multiwordName_preservesFullName() throws Exception {
         ActivityList activities = new ActivityList();
-        parser.parse("n/Planning and/or review d/2026-10-20 s/09:00 e/10:00")
+        parser.parse("n/Planning review d/2026-10-20 s/09:00 e/10:00")
                 .execute(activities, new Storage());
-        assertEquals("Planning and/or review", activities.getActivities().get(0).getName());
+        assertEquals("Planning review", activities.getActivities().get(0).getName());
     }
 
     @Test
-    void parse_withoutSlashInName_preservesFullName() throws Exception {
+    void parse_nameWithOrdinaryWords_preservesFullName() throws Exception {
         ActivityList activities = new ActivityList();
-        parser.parse("n/Lunch w/o friends d/2026-10-20 s/09:00 e/10:00")
+        parser.parse("n/Lunch without friends d/2026-10-20 s/09:00 e/10:00")
                 .execute(activities, new Storage());
-        assertEquals("Lunch w/o friends", activities.getActivities().get(0).getName());
+        assertEquals("Lunch without friends", activities.getActivities().get(0).getName());
     }
 
     @Test

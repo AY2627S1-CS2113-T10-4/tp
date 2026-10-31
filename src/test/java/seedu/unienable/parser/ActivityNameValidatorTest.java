@@ -37,7 +37,7 @@ class ActivityNameValidatorTest {
             "O'Brien", "'Meeting'", "A\\B", "A/\\B", "A\\/B"}) {
             ParseException exception = assertThrows(ParseException.class, () -> ActivityNameValidator.validate(name));
             assertEquals("[WARNING] Activity names must not contain backslashes (\\)"
-                    + " or quotation marks (' or \"). Slash (/) is allowed; /\\ and \\/ are not.",
+                    + " or quotation marks (' or \").",
                     exception.getMessage());
         }
     }

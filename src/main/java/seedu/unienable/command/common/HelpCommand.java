@@ -69,7 +69,7 @@ public class HelpCommand extends Command {
                       - Names can contain spaces, but cannot be blank or contain | or line breaks.
                       - Names use printable ASCII only: English letters, digits, spaces, and punctuation.
                       - Commas are allowed; apostrophes, double quotes, and backslashes are forbidden.
-                      - Slash / is allowed; /\\ and \\/ are forbidden. There is no slash-escape syntax.
+                      - Every / must follow a supported prefix at a field boundary; literal slashes are forbidden.
                       - Use a real YYYY-MM-DD date and 24-hour HH:mm times, such as 09:30.
                       - End must be after start on the same day; historical records are allowed.
                       - Duplicate activities are rejected. Intentional overlaps require overlap/ALLOW.
@@ -96,7 +96,7 @@ public class HelpCommand extends Command {
                       - Names, dates, times, demand, and ratings follow the same rules as add.
                       - Replacement names use printable ASCII only; | and line breaks are rejected.
                       - Commas are allowed; apostrophes, double quotes, and backslashes are forbidden.
-                      - Slash / is allowed; /\\ and \\/ are forbidden. There is no slash-escape syntax.
+                      - Every / must follow a supported prefix at a field boundary; literal slashes are forbidden.
                       - Date/time edits must leave an end after start on the same day and after now.
                       - Duplicate edits are rejected. Use overlap/ALLOW to confirm an intentional time clash.
                       - Activities ending at or before now cannot be edited, including name or rating changes.

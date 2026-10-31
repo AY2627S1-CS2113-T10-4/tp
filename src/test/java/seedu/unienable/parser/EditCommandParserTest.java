@@ -36,7 +36,7 @@ class EditCommandParserTest {
 
     @Test
     void parse_printableAsciiReplacement_acceptsSpacesAndPunctuation() throws Exception {
-        for (String name : new String[] {"CS2113 Tutorial", "Planning and/or review", "Lunch w/o friends",
+        for (String name : new String[] {"CS2113 Tutorial", "Planning review", "Lunch without friends",
             "Group-2 (Lab)!", "C++ @ COM1 #2"}) {
             assertInstanceOf(EditCommand.class, parser.parse("edit 1 n/" + name));
         }

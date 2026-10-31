@@ -174,7 +174,7 @@ do not enter a literal `-`. Empty values, duplicate prefixes, ratings outside
 1 to 5, decimals, and text are rejected. Use the short prefixes shown above:
 long-form aliases such as `urgency/`, `importance/`, `commitment/`, and
 `priority/` are rejected instead of becoming part of the activity name.
-Ordinary slash text such as `and/or` and `w/o` remains valid in names.
+Every `/` in add/edit input must belong to a supported field prefix.
 
 <!-- @@author -->
 
@@ -197,31 +197,27 @@ letters, emoji, and non-printable characters such as tabs are rejected with:
 [WARNING] Please write the activity name in English (ASCII characters only).
 ```
 
-The `|` character and line breaks remain forbidden and receive a general command-
-parameter delimiter warning, regardless of which field contains them. Ordinary
-slash text such as `and/or` and `w/o` is allowed.
-**Commas are allowed. Apostrophes are rejected.** Backslashes (`\`), single quotation marks (`'`, including apostrophes),
-and double quotation marks (`"`) are forbidden. Slash (`/`) is allowed, subject to
-the prefix rules below. Combinations `/\` and `\/` are forbidden because they
-contain a backslash. There is no slash-escape or quoted-name syntax. Both Add and
-Edit reject these characters with:
+**Commas are allowed; apostrophes are rejected.** Backslashes (`\`), single
+quotation marks (`'`, including apostrophes), and double quotation marks (`"`)
+are forbidden in supplied names. Pipes (`|`) and line breaks are also forbidden.
+There is no quoting or escaping syntax. Punctuation violations produce:
 
 ```text
-[WARNING] Activity names must not contain backslashes (\) or quotation marks (' or "). Slash (/) is allowed; /\ and \/ are not.
+[WARNING] Activity names must not contain backslashes (\) or quotation marks (' or ").
 ```
 
-These input restrictions do not prevent loading historical saved names.
-Avoid field prefixes at the start of a word in a name: they are parsed as fields.
-Names are saved in UTF-8. Historical saved names containing non-ASCII characters
-can still be loaded, listed, and searched; a replacement name supplied with
-`edit INDEX n/NAME` must follow the printable-ASCII rule.
+**Every slash is a field separator, including inside name text.** The word before
+`/` must be one of `n`, `d`, `s`, `e`, `dem`, `imp`, `urg`, `com`, or `overlap`,
+ignoring case, and the prefix must start at the beginning of input or after
+whitespace. An unsupported token such as `mom/`, `t/`, or `and/` produces an
+`[WARNING] Unknown parameter ...` message and leaves activities and saved data
+unchanged. A likely typo may also show a suggested prefix.
 
-Likely misspellings of multi-letter prefixes, such as `demm/HIGH`, `dem1/HIGH`, or `impp/5`,
-produce a warning instead of becoming part of the name. This also applies to edit.
-Ordinary `and/or` and `w/o` remain allowed. Prefix-like slash text, such as a
-word beginning `d/` or a likely typo such as `dim/sum`, cannot be entered literally
-at a field boundary. Reword it using spaces or hyphens, such as `dim-sum` or
-`date notes`; do not attempt to quote or backslash-escape it.
+Literal names such as `Call Mom/Dad`, `Planning and/or review`, and `Sem/Exam`
+are therefore invalid. Use `Call Mom-Dad`, `Planning review`, or `Sem-Exam`
+instead. A recognized token such as `d/` starts a field, not part of a name.
+Historical saved names remain loadable and searchable. Supplying a replacement
+name through `edit INDEX n/NAME` applies these input rules again.
 
 A duplicate activity has the same name (ignoring case, surrounding whitespace, and repeated internal spaces),
 date, start and end times as an existing activity. Changing demand, ratings or
@@ -446,12 +442,12 @@ overdue, and next examples. Enter each command on its own line:
 
 ```text
 add n/Project meeting d/2026-12-02 s/14:00 e/15:00 dem/HIGH
-add CoM/3 dem/low e/11:00 n/Planning and/or review d/2026-12-03 s/10:00 iMp/5
+add CoM/3 dem/low e/11:00 n/Planning review d/2026-12-03 s/10:00 iMp/5
 add n/CS2113 project d/2026-12-04 s/14:00 e/15:00 imp/5 urg/5 com/4
 add n/Team stand-up d/2026-12-04 s/16:00 e/17:00 imp/5 urg/4
 ```
 
-The mixed-case command demonstrates reordered fields and a slash in a name.
+The mixed-case command demonstrates reordered fields and a multiword name.
 Omitted ratings stay unset. Ratings appear in add confirmations and persist across
 restarts; `list` and `list demand` show demand and completion without ratings.
 
@@ -597,7 +593,7 @@ Indexes refer to the chronological 'list' order.
 4. CS2113 project (2026-12-04, 14:00-15:00) [MEDIUM] [ ] | Priority 225 (IMP 5, URG 5, COM 4)
 1. CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ] | Priority NA (IMP -, URG -, COM -)
 2. Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ] | Priority NA (IMP -, URG -, COM -)
-3. Planning and/or review (2026-12-03, 10:00-11:00) [LOW] [ ] | Priority NA (IMP 5, URG -, COM 3)
+3. Planning review (2026-12-03, 10:00-11:00) [LOW] [ ] | Priority NA (IMP 5, URG -, COM 3)
 5. Team stand-up (2026-12-04, 16:00-17:00) [MEDIUM] [ ] | Priority NA (IMP 5, URG 4, COM -)
 ```
 
@@ -622,7 +618,7 @@ Using the same five-activity schedule, assume the current local time is
 Overdue activities (ended before now):
 1. [OVERDUE WEEK] CS2113 tutorial (2026-12-01, 10:00-11:00) [MEDIUM] [ ]
 2. [OVERDUE WEEK] Project meeting (2026-12-02, 14:00-15:00) [HIGH] [ ]
-3. [OVERDUE WEEK] Planning and/or review (2026-12-03, 10:00-11:00) [LOW] [ ]
+3. [OVERDUE WEEK] Planning review (2026-12-03, 10:00-11:00) [LOW] [ ]
 4. [OVERDUE TODAY] CS2113 project (2026-12-04, 14:00-15:00) [MEDIUM] [ ]
 ```
 

@@ -25,7 +25,7 @@ final class ActivityNameValidator {
         if (input.indexOf('"') >= 0 || input.indexOf('\'') >= 0
                 || input.indexOf('\\') >= 0) {
             throw new ParseException("[WARNING] Activity names must not contain backslashes (\\)"
-                    + " or quotation marks (' or \"). Slash (/) is allowed; /\\ and \\/ are not.");
+                    + " or quotation marks (' or \").");
         }
     }
 

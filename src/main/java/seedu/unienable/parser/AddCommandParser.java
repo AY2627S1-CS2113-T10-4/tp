@@ -102,11 +102,8 @@ public class AddCommandParser {
 
     /**
      * Collects prefix/value pairs while allowing whitespace inside the activity name.
-     * Only known prefixes (overlap, dem, imp, urg, com, n, d, s, e) delimit values; any other
-     * slash-containing text such as "and/or" or "w/o" is kept as value content,
-     * except likely misspellings rejected by the shared parameter validator.
-     * A known prefix like d/ that appears inside free text is still parsed as a
-     * prefix, an unavoidable ambiguity of prefix-based grammars.
+     * The shared validator first rejects unsupported slash tokens. Supported prefixes
+     * delimit values at whitespace boundaries; literal slashes in names are unsupported.
      */
     private Map<String, String> readFields(String arguments) throws ParseException {
         Map<String, String> fields = new HashMap<>();

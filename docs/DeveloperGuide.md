@@ -190,7 +190,7 @@ cases that validation and testing must cover.
 
 **Name punctuation and slash syntax:** **Commas are allowed; apostrophes are rejected.**
 Names prohibit backslashes (`\`), single quotation marks (`'`, including apostrophes), double quotation marks
-(`"`), pipes and line breaks. Slash (`/`) is allowed: `and/or` and `w/o` are valid.
+(`"`), pipes and line breaks. Every slash in add/edit input must belong to a supported field prefix.
 Both `/\` and `\/` contain a forbidden backslash. Quoting and slash escaping are
 unsupported; [prefix-like text](#activity-parameter-validation) may still be reserved.
 
@@ -664,17 +664,17 @@ omitted add ratings stay unset. Ratings are stored unchanged and used by the
 
 #### Activity parameter validation
 
-Before field extraction, add and edit use `ActivityParameterValidator` to reject
-known long-form aliases such as `urgency/` and `priority/`, and to suggest
-corrections for unknown alphanumeric prefixes. It detects one insertion, deletion,
-substitution or adjacent swap between multi-letter tokens; `demm/` and `dem1/`
-suggest `dem/`. Known prefixes and single-letter tokens are skipped.
+Before field extraction, `ActivityParameterValidator` checks every slash token,
+including slash text in the first word of a name. Only `n/`, `d/`, `s/`, `e/`,
+`dem/`, `imp/`, `urg/`, `com/`, and `overlap/` are supported, ignoring case, and
+prefixes must start at a whitespace boundary. Unsupported words before `/` warn
+before command construction or mutation. Literal slashes in names are unsupported.
 
-Unrecognized tokens remain in the preceding field, potentially causing misleading
-errors or becoming part of a name. Early detection gives more specific feedback,
-but can reject literal text such as `dim/sum` at a field boundary. Actionable
-feedback takes priority; affected names must be reworded. This tradeoff is separate
-from the [name-character restrictions](#name-character-set-rationale).
+One insertion, deletion, substitution or adjacent swap can add a correction
+suggestion: `demm/` and `dem1/` suggest `dem/`. Suggestions do not determine
+validity: every unsupported token is rejected, including single-letter tokens
+such as `t/`. This prevents unknown fields being absorbed into a preceding name,
+date or time. Historical names loaded from storage keep their original text.
 
 <!-- @@author -->
 
@@ -953,7 +953,7 @@ For activity names, add and edit apply the shared
 | `n/"Study"`, `n/Study\notes` | Double quotes and backslashes are forbidden; quoted names and escaping are unsupported. |
 | `n/Study\|Review` or a name containing a line break | Pipes and line breaks conflict with record boundaries. |
 | A blank name or one containing a tab, NUL or DEL | Names must be nonblank and contain only printable characters. |
-| `n/Planning and/or review` (accepted) | Ordinary slash text is allowed, subject to the [prefix rules](#activity-parameter-validation). |
+| `n/Planning and/or review` (rejected) | `and/` is not a supported prefix. Reword the name using spaces or hyphens; see the [prefix rules](#activity-parameter-validation). |
 
 Collection copies protect shared data from external changes. Assertions help
 detect internal ordering and deletion errors during debugging. Input validation
@@ -1189,7 +1189,7 @@ without partial changes and confirm the original activities after restart.
 Include a non-ASCII command word to check warning selection against the
 [UG error-handling examples](UserGuide.md#error-handling).
 
-Use accepted ASCII names such as `Planning and/or review` and `C++ @ COM1 #2` to
+Use accepted ASCII names such as `Planning review` and `C++ @ COM1 #2` to
 exercise add, edit, search, and restart. Exercise
 [stored-name compatibility](#historical-name-compatibility) with a pre-existing
 UTF-8 fixture, including an eligible edit that omits the name. `UniEnableProcessTest`

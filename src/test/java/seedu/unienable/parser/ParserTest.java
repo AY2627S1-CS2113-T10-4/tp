@@ -19,12 +19,12 @@ class ParserTest {
     @Test
     void forbiddenNamePunctuation_keepsNameWarning() {
         for (String name : List.of("\"Discuss notes\"", "\"Unclosed", "A\"B", "Trailing\"",
-                "O'Brien", "'Meeting'", "A\\B", "A/\\B", "A\\/B")) {
+                "O'Brien", "'Meeting'", "A\\B")) {
             for (String input : List.of("add n/" + name + " d/2099-12-10 s/09:00 e/10:00",
                     "edit 1 n/" + name + " imp/5")) {
                 ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input));
                 assertEquals("[WARNING] Activity names must not contain backslashes (\\)"
-                        + " or quotation marks (' or \"). Slash (/) is allowed; /\\ and \\/ are not.",
+                        + " or quotation marks (' or \").",
                         exception.getMessage());
             }
         }
@@ -67,7 +67,8 @@ class ParserTest {
     void unknownAsciiAndBlankCommands_keepUnrecognizedWarning() {
         for (String input : List.of("bogus", "", " \t ")) {
             ParseException error = assertThrows(ParseException.class, () -> parser.parse(input), input);
-            assertEquals("[WARNING] Unrecognized command. Type help to see available commands.", error.getMessage(), input);
+            assertEquals("[WARNING] Unrecognized command. Type help to see available commands.",
+                    error.getMessage(), input);
         }
     }
 
