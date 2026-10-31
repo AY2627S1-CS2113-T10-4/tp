@@ -31,7 +31,7 @@ class MarkCommand {
 }
 class ActivityList {
   +getByDisplayedIndex(displayedIndex: int): Activity
-  +setDoneAtDisplayedIndex(displayedIndex: int, done: boolean): boolean
+  +setDoneAtDisplayedIndex(displayedIndex: int, isDone: boolean): boolean
 }
 class Activity {
   +getName(): String
@@ -45,7 +45,7 @@ class CommandResult {
 Command <|-- MarkCommand
 Parser ..> MarkCommandParser : delegates command syntax
 MarkCommandParser ..> MarkCommand : creates with index
-MarkCommand ..> ActivityList : requests done = true
+MarkCommand ..> ActivityList : requests isDone = true
 MarkCommand ..> CommandResult : reports whether state changed
 ActivityList --> "0..*" Activity : activities
 note bottom of ActivityList

@@ -28,8 +28,8 @@ public class MarkCommand extends Command {
      *
      * @param activities shared activity collection.
      * @param storage activity storage, not used directly.
-     * @return command result for the console
-     * @throws UniEnableException when the displayed index is invalid
+     * @return command result for the console.
+     * @throws UniEnableException when the displayed index is invalid.
      */
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {

@@ -26,10 +26,10 @@ class DijkstraShortestPath {
   +findRoute(...): Optional<Route>
 }
 class DijkstraSolver {
-  -dist: long[]
-  -previous: int[]
-  -previousConnection: Connection[]
-  ~dijkstra(...): void
+  -distances: long[]
+  -previousVertices: int[]
+  -previousConnections: Connection[]
+  ~computeShortestPaths(...): void
   ~getDistance(vertex: int): long
   ~getPrevious(vertex: int): int
   ~getPreviousConnection(vertex: int): Connection

@@ -30,13 +30,16 @@ Console -> Delete : execute(activities, storage)
 activate Delete
 Delete -> Activities : deleteByDisplayedIndex(1)
 activate Activities
-Activities -> Activities : getCanonicalView()
+Activities -> Activities : getByDisplayedIndex(1)
 activate Activities
-Activities --> Activities : canonical
-deactivate Activities
 note right of Activities
+  Read the canonical view.
   Check that the index exists.
   Select canonical.get(0).
+end note
+Activities --> Activities : removed
+deactivate Activities
+note right of Activities
   Remove that object from the backing list.
 end note
 Activities --> Delete : removed activity

@@ -35,12 +35,16 @@ public class AddCommandParser {
 
     private final Clock clock;
 
-    /** Creates a parser using the local system time. */
+    /**
+     * Creates a parser using the local system time.
+     */
     public AddCommandParser() {
         this(Clock.systemDefaultZone());
     }
 
-    /** Creates a parser with a shared clock for repeatable date/time validation. */
+    /**
+     * Creates a parser with a shared clock for repeatable date/time validation.
+     */
     public AddCommandParser(Clock clock) {
         this.clock = clock;
     }
@@ -54,22 +58,22 @@ public class AddCommandParser {
      */
     public AddCommand parse(String arguments) throws ParseException {
         if (arguments.contains("|") || arguments.indexOf('\n') >= 0 || arguments.indexOf('\r') >= 0) {
-            throw invalid("The | character and line breaks are not allowed in command parameters.");
+            throw createUsageError("The | character and line breaks are not allowed in command parameters.");
         }
         ActivityParameterValidator.validate(arguments);
         Map<String, String> fields = readFields(arguments);
         for (String required : new String[] {"n", "d", "s", "e"}) {
             if (!fields.containsKey(required)) {
-                throw invalid("Missing " + required + "/ parameter.");
+                throw createUsageError("Missing " + required + "/ parameter.");
             }
         }
 
         String name = fields.get("n");
         if (name.isBlank()) {
-            throw invalid("Empty n/ parameter.");
+            throw createUsageError("Empty n/ parameter.");
         }
         if (name.contains("|") || name.indexOf('\n') >= 0 || name.indexOf('\r') >= 0) {
-            throw invalid("The activity name must not contain | or line breaks.");
+            throw createUsageError("The activity name must not contain | or line breaks.");
         }
         ActivityNameValidator.validate(name);
 
@@ -82,20 +86,20 @@ public class AddCommandParser {
             }
             date = LocalDate.parse(fields.get("d"), DATE_FORMAT);
         } catch (DateTimeParseException exception) {
-            throw invalid("Invalid date. Use YYYY-MM-DD and a real calendar date.");
+            throw createUsageError("Invalid date. Use YYYY-MM-DD and a real calendar date.");
         }
         try {
             startTime = parseTime(fields.get("s"));
             endTime = parseTime(fields.get("e"));
         } catch (DateTimeParseException exception) {
-            throw invalid("Invalid time. Use 24-hour HH:mm (for example, 09:30).");
+            throw createUsageError("Invalid time. Use 24-hour HH:mm (for example, 09:30).");
         }
 
         if (!endTime.isAfter(startTime)) {
-            throw invalid("End time must be later than start time on the same day.");
+            throw createUsageError("End time must be later than start time on the same day.");
         }
         if (!LocalDateTime.of(date, endTime).isAfter(LocalDateTime.now(clock))) {
-            throw invalid("Activities that have ended cannot be added.");
+            throw createUsageError("Activities that have ended cannot be added.");
         }
 
         DemandLevel demand = DemandLevel.MEDIUM;
@@ -103,7 +107,7 @@ public class AddCommandParser {
             try {
                 demand = DemandLevel.valueOf(fields.get("dem").toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException exception) {
-                throw invalid("Demand must be LOW, MEDIUM, or HIGH.");
+                throw createUsageError("Demand must be LOW, MEDIUM, or HIGH.");
             }
         }
         //@@author
@@ -131,7 +135,7 @@ public class AddCommandParser {
         while (matcher.find()) {
             if (previousKey == null) {
                 if (!arguments.substring(0, matcher.start()).isBlank()) {
-                    throw invalid("Unexpected text before the first parameter.");
+                    throw createUsageError("Unexpected text before the first parameter.");
                 }
             } else {
                 store(fields, previousKey, arguments.substring(previousValueStart, matcher.start()).trim());
@@ -140,7 +144,7 @@ public class AddCommandParser {
             previousValueStart = matcher.end();
         }
         if (previousKey == null) {
-            throw invalid("No add parameters supplied.");
+            throw createUsageError("No add parameters supplied.");
         }
         store(fields, previousKey, arguments.substring(previousValueStart).trim());
         return fields;
@@ -148,10 +152,10 @@ public class AddCommandParser {
 
     private void store(Map<String, String> fields, String key, String value) throws ParseException {
         if (value.isEmpty()) {
-            throw invalid("Empty " + key + "/ parameter.");
+            throw createUsageError("Empty " + key + "/ parameter.");
         }
         if (fields.putIfAbsent(key, value) != null) {
-            throw invalid("Duplicate " + key + "/ parameter.");
+            throw createUsageError("Duplicate " + key + "/ parameter.");
         }
     }
 
@@ -175,7 +179,7 @@ public class AddCommandParser {
             Activity.validateRating(rating);
             return rating;
         } catch (IllegalArgumentException exception) {
-            throw invalid("The " + prefix + "/ rating must be a whole number from 1 to 5.");
+            throw createUsageError("The " + prefix + "/ rating must be a whole number from 1 to 5.");
         }
     }
     //@@author
@@ -188,7 +192,7 @@ public class AddCommandParser {
         return LocalTime.parse(value, TIME_FORMAT);
     }
 
-    private ParseException invalid(String message) {
+    private ParseException createUsageError(String message) {
         return new ParseException("[WARNING] " + message + "\n" + USAGE);
     }
 }

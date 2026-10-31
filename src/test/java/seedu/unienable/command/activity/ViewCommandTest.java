@@ -13,6 +13,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 
@@ -342,7 +343,7 @@ class ViewCommandTest {
             assertFalse(chart.contains("C".repeat(27)));
             assertFalse(chart.contains("D".repeat(200)));
             for (String name : names) {
-                assertTrue(message.matches("(?s).*\\] " + java.util.regex.Pattern.quote(name)
+                assertTrue(message.matches("(?s).*\\] " + Pattern.quote(name)
                         + "\\s+IMP.*"), "Full schedule name missing");
             }
             assertFalse(result.didChangeActivities());

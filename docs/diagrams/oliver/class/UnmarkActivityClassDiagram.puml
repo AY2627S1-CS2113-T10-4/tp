@@ -31,7 +31,7 @@ class UnmarkCommand {
 }
 class ActivityList {
   +getByDisplayedIndex(displayedIndex: int): Activity
-  +setDoneAtDisplayedIndex(displayedIndex: int, done: boolean): boolean
+  +setDoneAtDisplayedIndex(displayedIndex: int, isDone: boolean): boolean
 }
 class Activity {
   +getName(): String
@@ -45,7 +45,7 @@ class CommandResult {
 Command <|-- UnmarkCommand
 Parser ..> MarkCommandParser : delegates command syntax
 MarkCommandParser ..> UnmarkCommand : creates with index
-UnmarkCommand ..> ActivityList : requests done = false
+UnmarkCommand ..> ActivityList : requests isDone = false
 UnmarkCommand ..> CommandResult : reports whether state changed
 ActivityList --> "0..*" Activity : activities
 note bottom of ActivityList

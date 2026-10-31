@@ -143,6 +143,7 @@ class AddCommandParserTest {
         }
     }
     //@@author
+
     //@@author lukelouyu
     @Test
     void parse_invalidRatings_rejectsEachPrefix() {
@@ -271,11 +272,11 @@ class AddCommandParserTest {
             LocalTime past = now.toLocalTime().minusHours(1);
             LocalTime future = now.toLocalTime().plusHours(1);
 
-            assertDoesNotThrow(() -> new Parser(clock).parse("add " +
-                    "n/Future d/" + now.toLocalDate() + " s/" + past + " e/" + future),
+            assertDoesNotThrow(() -> new Parser(clock).parse("add "
+                    + "n/Future d/" + now.toLocalDate() + " s/" + past + " e/" + future),
                     "future end must be accepted at " + instant);
-            assertThrows(ParseException.class, () -> new Parser(clock).parse("add " +
-                    "n/NotFuture d/" + now.toLocalDate() + " s/" + past + " e/" + now.toLocalTime()),
+            assertThrows(ParseException.class, () -> new Parser(clock).parse("add "
+                    + "n/NotFuture d/" + now.toLocalDate() + " s/" + past + " e/" + now.toLocalTime()),
                     "ended activity must be rejected at " + instant);
         }
     }

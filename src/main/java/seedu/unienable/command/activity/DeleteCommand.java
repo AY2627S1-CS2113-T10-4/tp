@@ -10,7 +10,6 @@ import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
 
-
 /**
  * Deletes one activity chosen by its 1-based displayed index in the canonical list.
  */

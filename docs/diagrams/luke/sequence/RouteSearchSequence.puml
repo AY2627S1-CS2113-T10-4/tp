@@ -36,7 +36,7 @@ Manager -> Graph : findRoute(from, to)
 activate Graph
 create participant ":DijkstraSolver" as Solver
 Graph -> Solver : DijkstraSolver(...)
-Graph -> Solver : dijkstra(adjacency, source)
+Graph -> Solver : computeShortestPaths(adjacency, source)
 activate Solver
 note over Graph, Solver
   Use a priority queue and settle vertices.
