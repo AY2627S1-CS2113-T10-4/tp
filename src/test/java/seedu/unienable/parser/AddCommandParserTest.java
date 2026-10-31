@@ -35,7 +35,8 @@ class AddCommandParserTest {
     /**
      * Fixes now at 16:00 on 14 October 2026 in Singapore for repeatable validation.
      */
-    private final AddCommandParser parser = new AddCommandParser();
+    private final AddCommandParser parser = new AddCommandParser(Clock.fixed(Instant.parse("2026-10-14T08:00:00Z"),
+            ZoneOffset.ofHours(8)));
 
     @Test
     void parse_escapedSlashes_rejectsUnsupportedSyntax() {
@@ -242,14 +243,14 @@ class AddCommandParserTest {
     }
 
     @Test
-    void parse_historicalEndDateTimes_areAccepted() {
+    void parse_historicalEndDateTimes_areRejected() {
         String[] invalid = {
             "n/Past meeting d/2026-10-13 s/22:00 e/23:00",
             "n/Earlier today d/2026-10-14 s/14:00 e/15:00",
             "n/Ending now d/2026-10-14 s/15:00 e/16:00"
         };
         for (String input : invalid) {
-            assertDoesNotThrow(() -> parser.parse(input), input);
+            assertThrows(ParseException.class, () -> parser.parse(input), input);
         }
     }
 
@@ -270,12 +271,12 @@ class AddCommandParserTest {
             LocalTime past = now.toLocalTime().minusHours(1);
             LocalTime future = now.toLocalTime().plusHours(1);
 
-            assertDoesNotThrow(() -> new Parser(clock).parse("add " + 
+            assertDoesNotThrow(() -> new Parser(clock).parse("add " +
                     "n/Future d/" + now.toLocalDate() + " s/" + past + " e/" + future),
                     "future end must be accepted at " + instant);
-            assertDoesNotThrow(() -> new Parser(clock).parse("add " + 
+            assertThrows(ParseException.class, () -> new Parser(clock).parse("add " +
                     "n/NotFuture d/" + now.toLocalDate() + " s/" + past + " e/" + now.toLocalTime()),
-                    "historical recording is independent of now at " + instant);
+                    "ended activity must be rejected at " + instant);
         }
     }
 }

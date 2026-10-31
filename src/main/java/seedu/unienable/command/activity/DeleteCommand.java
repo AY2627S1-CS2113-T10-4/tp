@@ -30,7 +30,8 @@ public class DeleteCommand extends Command {
     /**
      * Deletes the activity at the displayed index and returns a confirmation message
      * for Ui.showMessage(). An out-of-range index surfaces as an InvalidIndexException,
-     * whose [WARNING] message is displayed by ConsoleHelper.
+     * whose message is displayed by ConsoleHelper. Missing activities use normal feedback;
+     * invalid indexes retain a warning.
      */
     @Override
     public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {
@@ -39,7 +40,7 @@ public class DeleteCommand extends Command {
         LOGGER.fine(() -> "Deleted displayed index " + displayedIndex + "; "
                 + remainingSize + " activities remain.");
         String remainingMessage = remainingSize == 0
-                ? "There is no activity recorded"
+                ? ActivityList.NO_ACTIVITIES_MESSAGE
                 : "Total activities: " + remainingSize;
         String message = "Deleted activity: " + activity.getName() + "\n"
                 + "Date: " + activity.getDate() + "\n"

@@ -39,7 +39,7 @@ class DeleteCommandTest {
         assertTrue(result.getMessage().startsWith("Deleted activity: Gym"),
                 "displayed index 1 must resolve to the canonical order, not the first add");
         assertTrue(result.getMessage().contains("Total activities: 1"));
-        assertFalse(result.getMessage().contains("There is no activity recorded"));
+        assertFalse(result.getMessage().contains("Sorry, the activity list is empty."));
         String listMessage = parser.parse("list").execute(activities, storage).getMessage();
         assertFalse(listMessage.contains("Gym"), "deleted activity must be gone from the list");
         assertTrue(listMessage.contains("1. Lab (2026-10-13, 14:00-16:00) [MEDIUM]"),
@@ -67,7 +67,7 @@ class DeleteCommandTest {
         var result = parser.parse("delete 1").execute(activities, storage);
         assertTrue(activities.getActivities().isEmpty(), "the only remaining activity is deletable");
         assertEquals("Deleted activity: First\nDate: 2026-10-12\nTime: 08:00 - 09:00\n"
-                + "Demand: LOW\nThere is no activity recorded", result.getMessage());
+                + "Demand: LOW\nSorry, the activity list is empty.", result.getMessage());
         assertTrue(result.didChangeActivities(), "deleting the final activity must request saving");
         assertFalse(result.isExit(), "deleting the final activity must keep the console running");
     }
@@ -86,7 +86,7 @@ class DeleteCommandTest {
     void execute_rejectsIndexOnEmptyList() {
         var exception = assertThrows(UniEnableException.class,
                 () -> parser.parse("delete 1").execute(activities, storage));
-        assertTrue(exception.getMessage().contains("There are no activities to delete."));
+        assertTrue(exception.getMessage().contains("Sorry, the activity list is empty."));
     }
 
     /**

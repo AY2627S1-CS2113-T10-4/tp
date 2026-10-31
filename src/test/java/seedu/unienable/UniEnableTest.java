@@ -175,14 +175,14 @@ class UniEnableTest {
                 "delete 1", "list", "delete 1", "bye", ""), activityFile);
 
         assertTrue(output.contains("Deleted activity: Project meeting\nDate: 2030-10-25\n"
-                + "Time: 16:00 - 17:00\nDemand: HIGH\nThere is no activity recorded\n"));
+                + "Time: 16:00 - 17:00\nDemand: HIGH\nSorry, the activity list is empty.\n"));
         assertFalse(output.contains("Total activities: 0"));
-        assertTrue(output.contains("Activities (by date, start time):\nNo activities yet."));
-        assertTrue(output.contains("[WARNING] There are no activities to delete."));
+        assertTrue(output.contains("Sorry, the activity list is empty."));
+        assertTrue(output.contains("Sorry, the activity list is empty."));
         assertEquals("", Files.readString(activityFile));
 
         String restartedOutput = consoleAtPath("list\nbye\n", activityFile);
-        assertTrue(restartedOutput.contains("Activities (by date, start time):\nNo activities yet."));
+        assertTrue(restartedOutput.contains("Sorry, the activity list is empty."));
         assertFalse(restartedOutput.contains("Project meeting"));
     }
 
@@ -240,17 +240,17 @@ class UniEnableTest {
     void emptyQueries_reportNoResultsWithoutCreatingAnActivityFile(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
         String[][] cases = {
-            {"list", "No activities yet."},
-            {"list demand", "No activities yet."},
-            {"list priority", "No activities yet."},
+            {"list", "Sorry, the activity list is empty."},
+            {"list demand", "Sorry, the activity list is empty."},
+            {"list priority", "Sorry, the activity list is empty."},
             //@@author Atharva005
-            {"view today", "[WARNING] No activities scheduled for this day."},
-            {"view tomorrow", "[WARNING] No activities scheduled for this day."},
-            {"view week", "[WARNING] No activities scheduled for the next seven days."},
+            {"view today", "Sorry, no activities fall within the selected period."},
+            {"view tomorrow", "Sorry, no activities fall within the selected period."},
+            {"view week", "Sorry, no activities fall within the selected period."},
             //@@author
-            {"overdue", "No overdue activities."},
-            {"next", "No upcoming incomplete activities."},
-            {"find missing", "[WARNING] No activities matched keyword \"missing\"."},
+            {"overdue", "Sorry, no incomplete activities have ended."},
+            {"next", "Sorry, no upcoming incomplete activities exist."},
+            {"find missing", "Sorry, no activity names match your search."},
             {"facility find type/AUTOMATIC_DOOR", "[WARNING] No matching facilities found."}
         };
 

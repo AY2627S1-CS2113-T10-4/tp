@@ -76,7 +76,7 @@ public class ViewCommand extends Command {
     }
 
     /**
-     * Renders a warning for an empty range, or its schedule and aggregate sections when populated.
+     * Renders the normal no-activities message for an empty range, or the populated dashboard.
      */
     private String format(LocalDate start, LocalDate end, List<Activity> view) {
         StringBuilder output = new StringBuilder();
@@ -88,8 +88,7 @@ public class ViewCommand extends Command {
                     .append(start.format(WEEK_FORMAT));
         }
         if (view.isEmpty()) {
-            return output.append("\n\n[WARNING] No activities scheduled for ")
-                    .append(range == Range.WEEK ? "the next seven days." : "this day.").toString();
+            return "Sorry, no activities fall within the selected period.";
         }
         if (range == Range.WEEK) {
             for (int day = 0; day < 7; day++) {

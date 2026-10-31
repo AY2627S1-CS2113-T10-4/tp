@@ -48,7 +48,7 @@ deactivate Activities
 View -> View : format(...)
 alt selected period is empty
   note right of View
-    Return the period heading and warning only.
+    Return only the normal no-activities message, without a period heading.
     Do not append a summary or rating table.
   end note
 else selected period has activities

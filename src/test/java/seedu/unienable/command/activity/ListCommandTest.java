@@ -32,7 +32,7 @@ class ListCommandTest {
     void execute_onEmptyList_showsPlaceholderAndStaysReadOnly() throws Exception {
         var result = parser.parse("list").execute(activities, noWrites);
         assertFalse(result.isExit());
-        assertTrue(result.getMessage().endsWith("No activities yet."));
+        assertTrue(result.getMessage().endsWith("Sorry, the activity list is empty."));
         assertTrue(activities.getActivities().isEmpty());
     }
 

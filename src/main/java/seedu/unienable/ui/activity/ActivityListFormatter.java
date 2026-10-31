@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import seedu.unienable.model.Activity;
+import seedu.unienable.model.ActivityList;
 
 //@@author officialasyrafrahim
 /**
@@ -38,11 +39,7 @@ public final class ActivityListFormatter {
     /**
      * Reports a normal empty result when an activity view has no entries.
      */
-    private static final String EMPTY_MESSAGE = "No activities yet.";
-
-    private static final String NO_OVERDUE_MESSAGE = "No overdue activities.";
-
-    private static final String NO_NEXT_MESSAGE = "No upcoming incomplete activities.";
+    private static final String EMPTY_MESSAGE = ActivityList.NO_ACTIVITIES_MESSAGE;
 
     private static final String UNKNOWN_RATING = "-";
 
@@ -67,7 +64,7 @@ public final class ActivityListFormatter {
 
     /**
      * Formats the demand view with a notice explaining which indexes deletion uses.
-     * The notice appears before the activities or the empty-list placeholder.
+     * Empty results contain only the no-activities message.
      *
      * @param activities activities in demand display order.
      * @param canonicalView full chronological activity view.
@@ -77,7 +74,7 @@ public final class ActivityListFormatter {
         StringBuilder output = new StringBuilder(DEMAND_LIST_HEADING)
                 .append("\n").append(DEMAND_LIST_INDEX_NOTICE);
         if (activities.isEmpty()) {
-            return output.append("\n").append(EMPTY_MESSAGE).toString();
+            return EMPTY_MESSAGE;
         }
         for (Activity activity : activities) {
             output.append("\n").append(chronologicalIndex(activity, canonicalView)).append(". ")
@@ -98,7 +95,7 @@ public final class ActivityListFormatter {
         StringBuilder output = new StringBuilder(PRIORITY_LIST_HEADING)
                 .append("\n").append(PRIORITY_INDEX_NOTICE);
         if (activities.isEmpty()) {
-            return output.append("\n").append(EMPTY_MESSAGE).toString();
+            return EMPTY_MESSAGE;
         }
         for (Activity activity : activities) {
             output.append("\n").append(chronologicalIndex(activity, canonicalView)).append(". ")
@@ -121,7 +118,7 @@ public final class ActivityListFormatter {
             LocalDateTime now) {
         StringBuilder output = new StringBuilder(OVERDUE_LIST_HEADING);
         if (activities.isEmpty()) {
-            return output.append("\n").append(NO_OVERDUE_MESSAGE).toString();
+            return "Sorry, no incomplete activities have ended.";
         }
         for (Activity activity : activities) {
             output.append("\n").append(chronologicalIndex(activity, canonicalView)).append(". [")
@@ -140,7 +137,7 @@ public final class ActivityListFormatter {
     public static String formatNext(Optional<Activity> next, List<Activity> canonicalView) {
         StringBuilder output = new StringBuilder(NEXT_HEADING);
         if (next.isEmpty()) {
-            return output.append("\n").append(NO_NEXT_MESSAGE).toString();
+            return "Sorry, no upcoming incomplete activities exist.";
         }
         Activity activity = next.get();
         return output.append("\n").append(chronologicalIndex(activity, canonicalView)).append(". ")
@@ -192,7 +189,7 @@ public final class ActivityListFormatter {
     public static String formatFindResults(String keyword, List<Activity> matches,
             List<Activity> canonicalView) {
         if (matches.isEmpty()) {
-            return "[WARNING] No activities matched keyword \"" + keyword + "\".";
+            return "Sorry, no activity names match your search.";
         }
         String activityLabel = matches.size() == 1 ? "activity" : "activities";
         StringBuilder output = new StringBuilder("Found ")
@@ -209,8 +206,7 @@ public final class ActivityListFormatter {
     private static String format(String heading, List<Activity> activities) {
         StringBuilder output = new StringBuilder(heading);
         if (activities.isEmpty()) {
-            output.append("\n").append(EMPTY_MESSAGE);
-            return output.toString();
+            return EMPTY_MESSAGE;
         }
         for (int i = 0; i < activities.size(); i++) {
             output.append("\n").append(i + 1).append(". ")

@@ -19,6 +19,9 @@ import seedu.unienable.exception.InvalidIndexException;
  * contract is untouched.
  */
 public class ActivityList {
+    /** Shared feedback when an activity command has no records or matching results. */
+    public static final String NO_ACTIVITIES_MESSAGE = "Sorry, the activity list is empty.";
+
     //@@author officialasyrafrahim
     /**
      * Canonical {@code list} order: date, then start time; stable ties keep add order.
@@ -205,7 +208,10 @@ public class ActivityList {
     public Activity deleteByDisplayedIndex(int displayedIndex) throws InvalidIndexException {
         List<Activity> canonical = getCanonicalView();
         if (canonical.isEmpty()) {
-            throw new InvalidIndexException("[WARNING] There are no activities to delete.");
+            if (displayedIndex < 1) {
+                throw new InvalidIndexException("[WARNING] Index must be a positive whole number.");
+            }
+            throw new InvalidIndexException(NO_ACTIVITIES_MESSAGE);
         }
         if (displayedIndex < 1 || displayedIndex > canonical.size()) {
             throw new InvalidIndexException("[WARNING] No activity at index " + displayedIndex
@@ -230,7 +236,10 @@ public class ActivityList {
     public Activity getByDisplayedIndex(int displayedIndex) throws InvalidIndexException {
         List<Activity> canonical = getCanonicalView();
         if (canonical.isEmpty()) {
-            throw new InvalidIndexException("[WARNING] There are no activities to update.");
+            if (displayedIndex < 1) {
+                throw new InvalidIndexException("[WARNING] Index must be a positive whole number.");
+            }
+            throw new InvalidIndexException(NO_ACTIVITIES_MESSAGE);
         }
         if (displayedIndex < 1 || displayedIndex > canonical.size()) {
             throw new InvalidIndexException("[WARNING] No activity at index " + displayedIndex
