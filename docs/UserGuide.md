@@ -219,7 +219,7 @@ word beginning `d/` or a likely typo such as `dim/sum`, cannot be entered litera
 at a field boundary. Reword it using spaces or hyphens, such as `dim-sum` or
 `date notes`; do not attempt to quote or backslash-escape it.
 
-A duplicate activity has the same name (ignoring case and surrounding whitespace),
+A duplicate activity has the same name (ignoring case, surrounding whitespace, and repeated internal spaces),
 date, start and end times as an existing activity. Changing demand, ratings or
 completion does not make it a different activity. Duplicates are rejected with
 `[WARNING] Duplicate activity already recorded at index ...`.

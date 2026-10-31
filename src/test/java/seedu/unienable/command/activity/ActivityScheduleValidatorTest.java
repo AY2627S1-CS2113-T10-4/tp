@@ -82,6 +82,19 @@ class ActivityScheduleValidatorTest {
     }
 
     @Test
+    void repeatedInternalSpaces_cannotBypassDuplicateChecksWithOverlapApproval() throws Exception {
+        ActivityList activities = new ActivityList();
+        execute(activities, "add n/Study group d/2099-12-01 s/10:00 e/11:00");
+        UniEnableException error = assertThrows(UniEnableException.class, () -> execute(activities,
+                "add n/STUDY  group d/2099-12-01 s/10:00 e/11:00 overlap/ALLOW"));
+        assertTrue(error.getMessage().contains("Duplicate activity"));
+        assertEquals("Study group", activities.getByDisplayedIndex(1).getName());
+        execute(activities, "add n/Other d/2099-12-01 s/10:00 e/11:00 overlap/ALLOW");
+        assertThrows(UniEnableException.class, () -> execute(activities, "edit 2 n/Study   group"));
+        assertEquals("Other", activities.getByDisplayedIndex(2).getName());
+    }
+
+    @Test
     void allOverlappingRangesAreRejectedWithoutChangingTheList() throws Exception {
         for (String range : List.of("s/10:00 e/11:00", "s/09:30 e/10:30", "s/10:30 e/11:30",
                 "s/10:15 e/10:45", "s/09:00 e/12:00", "s/10:00 e/12:00", "s/09:00 e/11:00")) {

@@ -702,7 +702,7 @@ from the [name-character restrictions](#name-character-set-rationale).
 
 | Check | Rule |
 | --- | --- |
-| Duplicate | Same date, start, end and name, ignoring name case and surrounding spaces. Demand, ratings and completion do not affect identity. Always rejected. |
+| Duplicate | Same date, start, end and name, ignoring name case, surrounding spaces and repeated internal spaces. Demand, ratings and completion do not affect identity. Always rejected. |
 | Time overlap | Same-date ranges overlap when `candidate.start < existing.end` and `existing.start < candidate.end`. Touching endpoints are allowed. Completed activities still participate. |
 | `overlap/ALLOW` | Permits a time clash, but never a duplicate. It is not stored; supply it again for a conflicting schedule edit. |
 | When validation runs | Before add or edit. Edits exclude the original record. Duplicate checks always run; only actual date/time changes require fresh overlap approval. |
