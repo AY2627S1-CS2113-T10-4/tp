@@ -22,6 +22,16 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class UniEnableProcessTest {
     @Test
+    void historicalAdd_survivesRestartAndRetainsTheEndedEditLock(@TempDir Path tempDir) throws Exception {
+        String output = runSession(tempDir, "add n/Past tutorial d/2000-01-02 s/09:00 e/10:00\n"
+                + "edit 1 d/2027-12-10\noverdue\nbye\n");
+        assertTrue(output.contains("Added activity: Past tutorial"), output);
+        assertTrue(output.contains("Activities that have ended cannot be edited."), output);
+        String restarted = runSession(tempDir, "list\nbye\n");
+        assertTrue(restarted.contains("Past tutorial (2000-01-02, 09:00-10:00)"), restarted);
+    }
+
+    @Test
     void totalCount_includesActivitiesLoadedFromEarlierSessions(@TempDir Path tempDir) throws Exception {
         runSession(tempDir, "add n/First d/2027-12-10 s/09:00 e/10:00\nbye\n");
         String output = runSession(tempDir, "add n/Second d/2027-12-10 s/10:00 e/11:00\nbye\n");
@@ -109,16 +119,14 @@ class UniEnableProcessTest {
     }
 
     @Test
-    void historicalActivities_rejectAddAndEveryEditWithoutChangingSavedData(@TempDir Path tempDir) throws Exception {
+    void historicalActivities_rejectEveryEditWithoutChangingSavedData(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("data/activities.txt");
         Files.createDirectories(activityFile.getParent());
         byte[] original = "Historical|2000-01-01|09:00|10:00|LOW|true|2|3|4\n".getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);
 
-        String output = runSession(tempDir, "add n/Past d/2000-01-02 s/09:00 e/10:00\n"
-                + "edit 1 n/Changed dem/HIGH imp/5\nedit 1 d/2099-01-01\nlist\nfind Historical\nbye\n");
-        assertTrue(output.contains("End time must be later than current time."), output);
+        String output = runSession(tempDir, "edit 1 n/Changed dem/HIGH imp/5\nedit 1 d/2099-01-01\nlist\nfind Historical\nbye\n");
         assertEquals(2, output.split(Pattern.quote(
                 "[WARNING] Activities that have ended cannot be edited."), -1).length - 1, output);
         assertFalse(output.contains("Added activity:"), output);

@@ -1,8 +1,6 @@
 package seedu.unienable.parser;
 
-import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -10,7 +8,6 @@ import java.time.format.ResolverStyle;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,27 +30,6 @@ public class AddCommandParser {
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String USAGE = "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm "
             + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]";
-
-    /**
-     * Supplies the current time and local zone for activity end-time validation.
-     */
-    private final Clock clock;
-
-    /**
-     * Creates a parser using the system clock and local time zone.
-     */
-    public AddCommandParser() {
-        this(Clock.systemDefaultZone());
-    }
-
-    /**
-     * Creates a parser with a supplied clock so tests can fix the current date and time.
-     *
-     * @param clock clock used to validate whether the activity has ended.
-     */
-    AddCommandParser(Clock clock) {
-        this.clock = Objects.requireNonNull(clock, "clock");
-    }
 
     /**
      * Validates add arguments and constructs an AddCommand without modifying activity state.
@@ -103,11 +79,6 @@ public class AddCommandParser {
 
         if (!endTime.isAfter(startTime)) {
             throw invalid("End time must be later than start time on the same day.");
-        }
-
-        LocalDateTime endDateTime = LocalDateTime.of(date, endTime);
-        if (!endDateTime.isAfter(LocalDateTime.now(clock))) {
-            throw invalid("End time must be later than current time.");
         }
 
         DemandLevel demand = DemandLevel.MEDIUM;

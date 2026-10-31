@@ -180,13 +180,12 @@ Ordinary slash text such as `and/or` and `w/o` remains valid in names.
 
 <!-- @@author Atharva005 -->
 
-The end time must be strictly after the start time on
-the same day; overnight activities are not supported. The activity's date and end
-time together must also be strictly after the current date/time in your computer's
-local time zone. An activity that has already started can still be added if it
-has not ended; an activity ending exactly now is rejected. Historical activities
-cannot be added, and there is no override for this restriction. New activities start
-incomplete.
+The end time must be strictly after the start time on the same day; overnight
+activities are not supported. **Past and ongoing activities can be added**, for
+example to record a missed commitment. New activities start incomplete. An
+activity ending at or before the current local time is immediately locked against
+editing or rescheduling, including when it has just been added. Check historical
+fields before adding; use delete and add again to correct a historical record.
 
 Activity names must contain at least one non-whitespace character and use
 printable ASCII characters only. English letters, digits, spaces, and ASCII

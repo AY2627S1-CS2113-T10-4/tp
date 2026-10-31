@@ -31,11 +31,12 @@ note right of Parser
   This path assumes valid command syntax and fields.
 end note
 create participant ":AddCommandParser" as AddParser
-Parser -> AddParser : AddCommandParser(clock)
+Parser -> AddParser : AddCommandParser()
 Parser -> AddParser : parse(arguments)
 activate AddParser
 note right of AddParser
-  Validate fields, name and future end.
+  Validate fields, name and same-day time range.
+  Historical activities are accepted; ended records cannot be edited.
   Apply defaults and optional ratings.
 end note
 create participant ":AddCommand" as Add

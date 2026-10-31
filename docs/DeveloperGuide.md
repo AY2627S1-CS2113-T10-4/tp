@@ -140,7 +140,7 @@ a `CommandResult` containing a message, an exit flag and an activity-change flag
 `ConsoleHelper` uses these flags to coordinate automatic saving and shutdown.
 Read-only commands leave the activity-change flag unset.
 
-Time-sensitive parsers and commands share an injected `Clock`. Production uses
+Time-sensitive edit validation and queries share an injected `Clock`. Production uses
 the local clock; tests supply a fixed clock to reproduce boundary cases.
 
 ### Model component
@@ -263,8 +263,8 @@ components; the table above gives their Java package locations.
 `AddCommandParser` validates the fields and creates an `AddCommand`, whose
 constructor creates an incomplete activity.
 Demand defaults to `MEDIUM`; omitted ratings remain unset. The end must be later
-than the start on the same day and strictly later than the current local time.
-Historical activities are always rejected, including with `overlap/ALLOW`.
+than the start on the same day. Past and ongoing activities are accepted for
+historical recording; the existing ended-activity edit lock still applies.
 
 `AddCommand` applies the shared [schedule checks](#activity-schedule-validation)
 before insertion. A successful insertion sets the activity-change flag, which
@@ -1090,7 +1090,7 @@ validation and persistence contracts.
 
 | Use case | Main success flow | Extensions |
 | --- | --- | --- |
-| Add an activity | User supplies fields; UniEnable validates, inserts, saves and confirms. | Invalid fields, a historical end, duplicates or an unapproved clash leave the list unchanged. A save failure keeps the change in memory and reports unsaved data. |
+| Add an activity | User supplies fields; UniEnable validates, inserts, saves and confirms. | Invalid fields, duplicates or an unapproved clash leave the list unchanged. A save failure keeps the change in memory and reports unsaved data. |
 | Edit an activity | User selects a canonical index and replacements; UniEnable validates the whole replacement, saves and confirms. | Invalid indexes and ended activities are rejected. Invalid replacements leave all fields unchanged. |
 | Find an accessible route | User supplies known, distinct hubs; UniEnable finds and displays the shortest eligible recorded path with a disclaimer. | Invalid endpoints warn. Known disconnected hubs produce a no-route result scoped to the dataset. |
 

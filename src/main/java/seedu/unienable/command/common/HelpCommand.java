@@ -71,14 +71,14 @@ public class HelpCommand extends Command {
                       - Commas are allowed; apostrophes, double quotes, and backslashes are forbidden.
                       - Slash / is allowed; /\\ and \\/ are forbidden. There is no slash-escape syntax.
                       - Use a real YYYY-MM-DD date and 24-hour HH:mm times, such as 09:30.
-                      - End must be after start on the same day and after the current time.
+                      - End must be after start on the same day; historical records are allowed.
                       - Duplicate activities are rejected. Intentional overlaps require overlap/ALLOW.
                       - Back-to-back activities are allowed; completed activities still occupy their time.
                       - Demand defaults to MEDIUM; choose LOW, MEDIUM, or HIGH.
                       - IMP = importance; URG = urgency; COM = commitment.
                       - Ratings are optional whole numbers from 1 to 5; missing ratings display -.
                       - New activities start incomplete and save automatically.
-                      - Replace example dates with your planned date; end must still be after now.
+                      - Ended activities can be added, but cannot subsequently be edited.
 
                     Examples:
                       add n/Study d/2030-12-01 s/10:00 e/11:00
