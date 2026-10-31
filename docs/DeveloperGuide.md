@@ -373,8 +373,7 @@ See the [UG help reference](UserGuide.md#viewing-command-help-help).
 This snapshot defines the one-based indexes used by edit, delete, mark and unmark.
 Queries and formatting leave the backing collection unchanged.
 
-Empty chronological, demand and priority views return `Sorry, the activity list is empty.` as
-a normal result, without a heading, index notice, or `[WARNING]`.
+Empty chronological, demand and priority views return `Sorry, the activity list is empty.`.
 
 `ActivityList.NO_ACTIVITIES_MESSAGE` supplies empty-list feedback for listing and
 indexed operations. Empty indexed operations return it through
@@ -470,8 +469,11 @@ retains canonical indexes; missing ratings display `-` and unavailable scores `N
 an end strictly before that time. Ongoing activities and ends exactly now are
 excluded. `ActivityListFormatter` labels results as today, earlier this Monday-to-
 Sunday week, or earlier. Results retain chronological indexes and are read-only.
-If no activity qualifies, the formatter returns `Sorry, no incomplete activities have ended.` without
-`[WARNING]`.
+If no activity qualifies, the output is:
+
+```text
+Sorry, no incomplete activities have ended.
+```
 
 <div role="region" aria-label="Overdue query classes (scroll horizontally)"
      tabindex="0" style="max-width: 100%; overflow-x: auto;">
@@ -491,8 +493,12 @@ If no activity qualifies, the formatter returns `Sorry, no incomplete activities
 
 `NextCommand` uses the captured local time to select the earliest incomplete
 activity whose start is strictly later than now. Starts exactly now are excluded;
-equal starts retain insertion order. The formatter keeps its canonical index or
-returns `Sorry, no upcoming incomplete activities exist.` without `[WARNING]` when none qualifies.
+equal starts retain insertion order. The formatter keeps the selected activity's
+canonical index. If no activity qualifies, the output is:
+
+```text
+Sorry, no upcoming incomplete activities exist.
+```
 See the [UG time queries](UserGuide.md#viewing-the-next-activity-next).
 
 <div role="region" aria-label="Next activity classes (scroll horizontally)"
@@ -1325,7 +1331,7 @@ three records and excludes Day seven: three activities, one completed and one
 HIGH-demand activity. Rating totals are importance 5, urgency 7 and commitment 6.
 Help displays the menu or requested topic without executing it or changing data.
 In a separate empty folder, the three view commands should show the period-specific no-activities
-message without `[WARNING]`, a summary, or a rating table.
+message.
 
 Rating rows fit 80 terminal columns. Long table labels shorten to at most 26
 columns with `...`, while schedules retain full names. Dashboard numbers belong
@@ -1389,8 +1395,8 @@ bye
 The first search shows completed Revision at index 1 with its ratings preserved.
 Rescheduling moves it after Consultation, so the second search uses index 2.
 The invalid rating rejects the entire subsequent edit; the name remains Revision.
-Both deletions leave an empty list. The last search returns the normal
-`Sorry, no activity names match your search.` message without `[WARNING]`. Restart
+Both deletions leave an empty list. The last search returns the
+`Sorry, no activity names match your search.` message. Restart
 from the same folder and run `list`: the empty state must persist. All edits in
 this scenario target an activity whose original end is still in the future.
 
