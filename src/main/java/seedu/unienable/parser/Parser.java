@@ -143,7 +143,7 @@ public class Parser {
             //@@author
             //@@author Atharva005
             case "add":
-                return new AddCommandParser().parse(trimmedInput.substring(words[0].length()).trim());
+                return new AddCommandParser(clock).parse(trimmedInput.substring(words[0].length()).trim());
             //@@author
             //@@author Oliver-koh
             case "edit":

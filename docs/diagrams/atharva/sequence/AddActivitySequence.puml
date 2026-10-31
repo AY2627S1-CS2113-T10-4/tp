@@ -36,7 +36,7 @@ Parser -> AddParser : parse(arguments)
 activate AddParser
 note right of AddParser
   Validate fields, name and same-day time range.
-  Historical activities are accepted; ended records cannot be edited.
+  Reject an end at or before now; ended records cannot be added or edited.
   Apply defaults and optional ratings.
 end note
 create participant ":AddCommand" as Add

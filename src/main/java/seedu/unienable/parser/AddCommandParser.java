@@ -1,6 +1,8 @@
 package seedu.unienable.parser;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -30,6 +32,18 @@ public class AddCommandParser {
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String USAGE = "Usage: add n/NAME d/YYYY-MM-DD s/HH:mm e/HH:mm "
             + "[dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]";
+
+    private final Clock clock;
+
+    /** Creates a parser using the local system time. */
+    public AddCommandParser() {
+        this(Clock.systemDefaultZone());
+    }
+
+    /** Creates a parser with a shared clock for repeatable date/time validation. */
+    public AddCommandParser(Clock clock) {
+        this.clock = clock;
+    }
 
     /**
      * Validates add arguments and constructs an AddCommand without modifying activity state.
@@ -79,6 +93,9 @@ public class AddCommandParser {
 
         if (!endTime.isAfter(startTime)) {
             throw invalid("End time must be later than start time on the same day.");
+        }
+        if (!LocalDateTime.of(date, endTime).isAfter(LocalDateTime.now(clock))) {
+            throw invalid("Activities that have ended cannot be added.");
         }
 
         DemandLevel demand = DemandLevel.MEDIUM;
