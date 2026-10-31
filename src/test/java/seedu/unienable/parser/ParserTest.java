@@ -79,6 +79,20 @@ class ParserTest {
     }
 
     @Test
+    void unknownPrefixes_reportTheTokenInsteadOfAnUnrelatedFieldError() {
+        for (String input : List.of("add n/Y d/2027-12-02 s/11:00 e/12:00 t/tag",
+                "edit 1 x/1", "edit 1 e/12:00 t/tag")) {
+            ParseException error = assertThrows(ParseException.class, () -> parser.parse(input), input);
+            String prefix = input.contains("x/1") ? "x" : "t";
+            org.junit.jupiter.api.Assertions.assertTrue(
+                    error.getMessage().startsWith("[WARNING] Unknown parameter '" + prefix + "/'."),
+                    error.getMessage());
+            org.junit.jupiter.api.Assertions.assertFalse(error.getMessage().contains("Invalid time"));
+            org.junit.jupiter.api.Assertions.assertFalse(error.getMessage().contains("At least one field"));
+        }
+    }
+
+    @Test
     void nonAsciiActivityNames_showNameWarningInsteadOfCommandWarning() {
         for (String input : List.of("add n/复习 d/2099-12-12 s/09:00 e/10:00", "edit 1 n/படி")) {
             ParseException error = assertThrows(ParseException.class, () -> parser.parse(input), input);
