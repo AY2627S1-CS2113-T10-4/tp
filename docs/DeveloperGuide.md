@@ -599,7 +599,9 @@ commands can act on past records; the
 
 #### Completion and persistence
 
-`Storage` reads UTF-8 records in insertion order. Saves use nine pipe-separated
+`Storage` decodes each UTF-8 record independently in insertion order. Invalid
+encoding skips only that row and produces a line-numbered warning. Raw bytes are
+preserved until a recovery save verifies the original backup. Saves use nine pipe-separated
 fields; unset ratings are `-`, and `DONE` is `true` or `false`:
 
 ```text

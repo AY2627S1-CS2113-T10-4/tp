@@ -193,12 +193,13 @@ class StorageTest {
     }
 
     @Test
-    void save_afterFatalUtf8LoadFailure_preservesOriginalBytesInBackup() throws Exception {
+    void save_afterInvalidUtf8Row_preservesOriginalBytesInBackup() throws Exception {
         Path file = tempDir.resolve("activities.txt");
         byte[] original = {0x4F, 0x6C, 0x64, (byte) 0xFF, 0x0A};
         Files.write(file, original);
         Storage storage = new Storage(file);
-        assertThrows(UniEnableException.class, storage::load);
+        assertTrue(storage.load().getActivities().isEmpty());
+        assertTrue(storage.getWarnings().getFirst().contains("invalid UTF-8 encoding"));
         Activity added = new Activity("New meeting", LocalDate.of(2026, 10, 20), LocalTime.of(9, 0),
                 LocalTime.of(10, 0), DemandLevel.MEDIUM, false);
 
@@ -206,6 +207,24 @@ class StorageTest {
 
         assertArrayEquals(original, Files.readAllBytes(tempDir.resolve("activities.txt.corrupt.bak")));
         assertEquals("New meeting|2026-10-20|09:00|10:00|MEDIUM|false|-|-|-\n", Files.readString(file));
+    }
+
+    @Test
+    void load_invalidUtf8BetweenValidRows_recoversReadableRecordsWithoutReplacingBytes() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        byte[] original = ("Before|2027-12-01|09:00|10:00|LOW|false\r\n"
+                + "Bad\u00ff|2027-12-01|10:00|11:00|LOW|false\r\n"
+                + "After|2027-12-01|11:00|12:00|LOW|false\r\n").getBytes(StandardCharsets.ISO_8859_1);
+        Files.write(file, original);
+        Storage storage = new Storage(file);
+        ActivityList loaded = storage.load();
+        assertEquals(List.of("Before", "After"), loaded.getActivities().stream().map(Activity::getName).toList());
+        assertEquals(List.of("Line 2: invalid UTF-8 encoding; row skipped. Save the file as UTF-8."),
+                storage.getWarnings());
+        assertArrayEquals(original, Files.readAllBytes(file));
+        storage.save(loaded);
+        assertArrayEquals(original, Files.readAllBytes(tempDir.resolve("activities.txt.corrupt.bak")));
+        assertEquals(2, new Storage(file).load().getActivities().size());
     }
 
     @Test

@@ -110,6 +110,11 @@ its original directory.
 
 ## Data Storage
 
+Save manually edited activity files as **UTF-8**. An invalidly encoded row is
+skipped with a line-numbered encoding warning; other readable rows still load.
+Loading leaves the original bytes untouched. A later recovery save first preserves
+the original file in `.corrupt.bak`.
+
 Activities save automatically to `data/activities.txt`, relative to the folder
 where the app starts. Use the same folder on each launch. A missing file starts
 an empty list. Ratings and completion status survive restarting.
