@@ -469,11 +469,6 @@ retains canonical indexes; missing ratings display `-` and unavailable scores `N
 an end strictly before that time. Ongoing activities and ends exactly now are
 excluded. `ActivityListFormatter` labels results as today, earlier this Monday-to-
 Sunday week, or earlier. Results retain chronological indexes and are read-only.
-If no activity qualifies, the output is:
-
-```text
-Sorry, no incomplete activities have ended.
-```
 
 <div role="region" aria-label="Overdue query classes (scroll horizontally)"
      tabindex="0" style="max-width: 100%; overflow-x: auto;">
@@ -494,11 +489,8 @@ Sorry, no incomplete activities have ended.
 `NextCommand` uses the captured local time to select the earliest incomplete
 activity whose start is strictly later than now. Starts exactly now are excluded;
 equal starts retain insertion order. The formatter keeps the selected activity's
-canonical index. If no activity qualifies, the output is:
+canonical index, or returns `Sorry, no upcoming incomplete activities exist.`.
 
-```text
-Sorry, no upcoming incomplete activities exist.
-```
 See the [UG time queries](UserGuide.md#viewing-the-next-activity-next).
 
 <div role="region" aria-label="Next activity classes (scroll horizontally)"
