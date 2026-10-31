@@ -5,7 +5,7 @@
 
 UniEnable is a Java 25 command-line application that helps university students, particularly those with ASD, ADHD, or mobility constraints, organize academic and daily commitments and check campus accessibility information.
 
-Students can add, edit, search, and delete dated activities, track completion, and assign optional importance, urgency, and commitment ratings to help prioritize their commitments. Activities are saved automatically on the local computer. Calendar dashboards summarize schedules and ratings for today, tomorrow, or the seven-day period starting today. Students can also search facility information and find the shortest recorded accessible route using sample data for nine NUS FASS campus hubs.
+Target users can add, edit, search, and delete dated activities, track completion, and assign optional importance, urgency, and commitment ratings to help prioritize their commitments. Activities are saved automatically on the local computer. Calendar dashboards summarize schedules and ratings for today, tomorrow, or the seven-day period starting today. Students can also search facility information and find the shortest recorded accessible route using sample data for nine NUS FASS campus hubs.
 
 [Quick Start](#quick-start) · [Command Format](#command-format) ·
 [Data Storage](#data-storage) · [Features](#features) ·
@@ -15,11 +15,6 @@ Students can add, edit, search, and delete dated activities, track completion, a
 ## Quick Start
 
 This guide describes UniEnable v2.1, the latest release.
-
-The GitHub download is named `unienable.jar`. For the course's Canvas submission,
-use the filename `[CS2113-T10-4][UniEnable].jar` as required by the
-[Week 12 submission instructions](https://nus-cs2113-ay2627-s1.github.io/website/schedule/week12/project.html).
-If running that copy, use `java -jar "[CS2113-T10-4][UniEnable].jar"`.
 
 1. Install Java 25 and download `unienable.jar` from the
    [UniEnable v2.1 release](https://github.com/AY2627S1-CS2113-T10-4/tp/releases/tag/v2.1)
