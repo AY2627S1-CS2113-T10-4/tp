@@ -6,17 +6,23 @@
 
 ### Overview
 
-UniEnable is a Java 25 command-line application that helps students plan dated activities and check recorded campus accessibility information. My contributions focus on creating activities, presenting calendar summaries, and making commands easier to discover.
+UniEnable is a Java 25 command-line application that helps students plan dated activities and check recorded campus accessibility information.
 
 ### Summary of contributions
+
+I implemented activity creation, daily/weekly calendar dashboards, and the initial help command. My work covered input parsing, activity insertion, schedule summaries, related tests, and feature documentation and diagrams.
 
 **Code contributed:** [My code and tests on the tP Code Dashboard](https://nus-cs2113-ay2627-s1.github.io/tp-dashboard/?search=&sort=groupTitle&sortWithin=title&timeframe=commit&mergegroup=&groupSelect=groupByRepos&breakdown=true&checkedFileTypes=docs%7Efunctional-code%7Etest-code%7Eother&since=2026-09-18T00%3A00%3A00&filteredFileName=&tabOpen=true&tabType=authorship&tabAuthor=Atharva005&tabRepo=AY2627S1-CS2113-T10-4%2Ftp%5Bmaster%5D&authorshipIsMergeGroup=false&authorshipFileTypes=functional-code%7Etest-code&authorshipIsBinaryFileTypeChecked=false&authorshipIsIgnoredFilesChecked=false)
 
 #### Enhancements implemented
 
-- **Activity creation:** Implemented `add` and its named-field parser, allowing fields in any order and multiword names. Validation checks required fields, real dates, same-day time ranges, and whether an activity has already ended before changing the list. Comparing the full end date/time avoids rejecting a future activity merely because its clock time is earlier than now. Evidence: [PR #11](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/11) and [PR #23](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/23).
-- **Calendar dashboards:** Added `view today`, `view tomorrow`, and `view week`. These select activities by local date, group weekly schedules by day, and display completion summaries, demand counts, and rating charts. The implementation combines filtering, chronological ordering, and aggregation while leaving stored activities unchanged. Evidence: [PR #47](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/47).
-- **Command help and testing:** Added the help command and JUnit tests for help, activity creation, and add parsing. The current help feature provides a categorized menu and command-specific syntax, rules, and examples without executing the described command. Evidence: [PR #21](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/21).
+- **Activity creation:** Implemented `add` and its named-field parser so students can record multiword activities without remembering a fixed field order ([PR #11](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/11)). Corrected date/time validation: at 15:00 today, an activity ending at 10:00 tomorrow must remain valid ([PR #23](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/23)). This requires comparing the date and time together. Optional ratings and shared clash/name validation were later team extensions.
+- **Calendar dashboards:** Implemented `view today`, `view tomorrow`, and `view week` so students can inspect commitments and workload together ([PR #47](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/47)). Combined date filtering, daily grouping, completion summaries, and rating charts without changing stored activities. An injectable clock makes date selection reproducible; later team changes refined demand counts, formatting, and displayed indexes.
+- **Command discovery:** Added the initial help command so users can discover supported commands inside the application ([PR #21](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/21)). This established the help entry point subsequently expanded by the team into categorized and topic-specific guidance.
+
+#### Testing contributions
+
+Added JUnit tests for successful activity creation, parser field handling, invalid inputs, and help output in [PR #21](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/21). These exercise both parsing and command execution, helping distinguish malformed input from insertion failures. The current [add tests](https://github.com/AY2627S1-CS2113-T10-4/tp/blob/master/src/test/java/seedu/unienable/command/activity/AddCommandTest.java) also contain later team regressions.
 
 #### Documentation contributions
 
@@ -26,6 +32,6 @@ UniEnable is a Java 25 command-line application that helps students plan dated a
 
 #### Team-based tasks
 
-Integrated add, help, and calendar commands with the team's shared parser and activity list. Added parser and command tests so changes to shared input handling could be checked alongside other members' features ([PR #21](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/21)). Reconciled changes from the shared branch while developing activity creation and calendar views, keeping these features compatible with the team's activity model.
+Connected `add` parsing to activity insertion and registered calendar commands in the shared dispatcher ([PR #11](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/11), [PR #47](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/47)). Updated my diagram assets in [PR #58](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/58) and corrected them in [PR #71](https://github.com/AY2627S1-CS2113-T10-4/tp/pull/71), keeping feature explanations aligned with the integrated application.
 
 <!-- @@author -->
