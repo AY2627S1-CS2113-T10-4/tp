@@ -40,7 +40,7 @@ public class DeleteCommand extends Command {
                 + remainingSize + " activities remain.");
         String remainingMessage = remainingSize == 0
                 ? "There is no activity recorded"
-                : "Activities in this session: " + remainingSize;
+                : "Total activities: " + remainingSize;
         String message = "Deleted activity: " + activity.getName() + "\n"
                 + "Date: " + activity.getDate() + "\n"
                 + "Time: " + activity.getStartTime() + " - " + activity.getEndTime() + "\n"

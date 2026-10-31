@@ -22,8 +22,16 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class UniEnableProcessTest {
     @Test
+    void totalCount_includesActivitiesLoadedFromEarlierSessions(@TempDir Path tempDir) throws Exception {
+        runSession(tempDir, "add n/First d/2027-12-10 s/09:00 e/10:00\nbye\n");
+        String output = runSession(tempDir, "add n/Second d/2027-12-10 s/10:00 e/11:00\nbye\n");
+        assertTrue(output.contains("Total activities: 2"), output);
+        assertFalse(output.contains("Activities in this session"), output);
+    }
+
+    @Test
     void commas_surviveAddEditAndRestart(@TempDir Path tempDir) throws Exception {
-        String output = runSession(tempDir, "add n/Lunch, then gym d/2099-12-10 s/09:00 e/10:00\n"
+        String output = runSession(tempDir, "add n/Lunch, then gym d/2027-12-10 s/09:00 e/10:00\n"
                 + "edit 1 n/Lunch, then study\nbye\n");
         assertTrue(output.contains("Added activity: Lunch, then gym"), output);
         assertTrue(output.contains("Edited activity: Lunch, then study"), output);
@@ -152,7 +160,7 @@ class UniEnableProcessTest {
     void duplicateAndClashingCommandsPreserveCountAndStoredBytes(@TempDir Path tempDir) throws Exception {
         String setup = runSession(tempDir, "add n/CS2113 tutorial d/2099-12-01 s/10:00 e/11:00\n"
                 + "add n/Later d/2099-12-01 s/12:00 e/13:00\nbye\n");
-        assertTrue(setup.contains("Activities in this session: 2"), setup);
+        assertTrue(setup.contains("Total activities: 2"), setup);
         Path activityFile = tempDir.resolve("data/activities.txt");
         byte[] original = Files.readAllBytes(activityFile);
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);

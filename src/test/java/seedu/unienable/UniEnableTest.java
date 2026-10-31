@@ -56,7 +56,7 @@ class UniEnableTest {
         }
         assertEquals(5, output.split("Added activity:", -1).length - 1);
         assertEquals(15, output.split("\\[WARNING\\]", -1).length - 1);
-        assertTrue(output.contains("Activities in this session: 5"));
+        assertTrue(output.contains("Total activities: 5"));
         assertTrue(output.contains(AccessibilityDisclaimer.TEXT));
     }
 
@@ -176,7 +176,7 @@ class UniEnableTest {
 
         assertTrue(output.contains("Deleted activity: Project meeting\nDate: 2030-10-25\n"
                 + "Time: 16:00 - 17:00\nDemand: HIGH\nThere is no activity recorded\n"));
-        assertFalse(output.contains("Activities in this session: 0"));
+        assertFalse(output.contains("Total activities: 0"));
         assertTrue(output.contains("Activities (by date, start time):\n[WARNING] No activities yet."));
         assertTrue(output.contains("[WARNING] There are no activities to delete."));
         assertEquals("", Files.readString(activityFile));
@@ -419,7 +419,7 @@ class UniEnableTest {
      * Retains the original console cases directly in Java so fresh checkouts can run them.
      */
     private static List<String[]> consoleCases() {
-        String unratedDetails = "\nImportance: -\nUrgency: -\nCommitment: -\nActivities in this session: 1";
+        String unratedDetails = "\nImportance: -\nUrgency: -\nCommitment: -\nTotal activities: 1";
         return List.of(
                 new String[]{"ADD01", "add n/Lecture d/2026-10-15 s/09:00 e/11:00",
                     "Added activity: Lecture\nDate: 2026-10-15\nTime: 09:00 - 11:00\nDemand: MEDIUM"
@@ -491,7 +491,7 @@ class UniEnableTest {
                 new String[]{"STATUS_BAD", "facility find type/LIFT status/MAYBE",
                     "Invalid facility status 'MAYBE'.", "Facilities with"},
                 new String[]{"MISSPELLED", "faciliy", "Unrecognized command.", "Accessibility Features:"},
-                new String[]{"BYE_ARGS", "bye extra", "Unrecognized command.", "Added activity:"},
+                new String[]{"BYE_ARGS", "bye extra", "bye takes no arguments. Usage: bye", "Added activity:"},
                 new String[]{"BLANK", "", "Unrecognized command.", "Added activity:"},
                 new String[]{"REST_POINT", "facility find type/REST_POINT", "[F08] AS8", "[F01] AS1"});
     }

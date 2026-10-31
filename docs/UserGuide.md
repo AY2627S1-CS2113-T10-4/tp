@@ -56,7 +56,7 @@ Demand: MEDIUM
 Importance: -
 Urgency: -
 Commitment: -
-Activities in this session: 1
+Total activities: 1
 ```
 
 Next commands, in the same session:
@@ -247,7 +247,7 @@ Demand: MEDIUM
 Importance: -
 Urgency: -
 Commitment: -
-Activities in this session: 1
+Total activities: 1
 ```
 
 Rejected duplicates and overlaps show the conflicting activity and its
@@ -423,7 +423,7 @@ Deleted activity: Project meeting
 Date: 2026-12-02
 Time: 14:00 - 15:00
 Demand: HIGH
-Activities in this session: 1
+Total activities: 1
 ```
 
 The activity is removed immediately; subsequent indexes may change.

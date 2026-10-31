@@ -78,7 +78,7 @@ public class AddCommand extends Command {
                 + "Urgency: " + formatRating(activity.getUrgency()) + "\n"
                 + "Commitment: " + formatRating(activity.getCommitment()) + "\n"
                 //@@author
-                + "Activities in this session: " + activities.getActivities().size();
+                + "Total activities: " + activities.getActivities().size();
         return new CommandResult(message, false, true);
     }
 
