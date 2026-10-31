@@ -22,9 +22,20 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class UniEnableProcessTest {
     @Test
+    void commas_surviveAddEditAndRestart(@TempDir Path tempDir) throws Exception {
+        String output = runSession(tempDir, "add n/Lunch, then gym d/2099-12-10 s/09:00 e/10:00\n"
+                + "edit 1 n/Lunch, then study\nbye\n");
+        assertTrue(output.contains("Added activity: Lunch, then gym"), output);
+        assertTrue(output.contains("Edited activity: Lunch, then study"), output);
+        String restarted = runSession(tempDir, "list\nbye\n");
+        assertTrue(restarted.contains("1. Lunch, then study"), restarted);
+        assertFalse(output.contains("[WARNING]"), output);
+    }
+
+    @Test
     void doubleQuotedNames_rejectAddAndEditWithoutWritingData(@TempDir Path tempDir) throws Exception {
         String add = "add n/\"Discuss notes\" d/2099-12-10 s/09:00 e/10:00\n";
-        String warning = "[WARNING] Activity names must not contain backslashes (\\), commas (,),"
+        String warning = "[WARNING] Activity names must not contain backslashes (\\)"
                 + " or quotation marks (' or \"). Slash (/) is allowed; /\\ and \\/ are not.";
         String emptyOutput = runSession(tempDir, add + "list\nbye\n");
         Path file = tempDir.resolve("data/activities.txt");
@@ -71,13 +82,13 @@ class UniEnableProcessTest {
         Files.write(file, original);
         var modifiedTime = Files.getLastModifiedTime(file);
         StringBuilder commands = new StringBuilder();
-        String[] names = {"A\\B", "A,B", "O'Brien", "'Meeting'", "A/\\B", "A\\/B"};
+        String[] names = {"A\\B", "O'Brien", "'Meeting'", "A/\\B", "A\\/B"};
         for (String name : names) {
             commands.append("add n/").append(name).append(" d/2099-12-11 s/09:00 e/10:00\n")
                     .append("edit 1 n/").append(name).append(" imp/5\n");
         }
         String output = runSession(tempDir, commands + "list\nbye\n");
-        String warning = "[WARNING] Activity names must not contain backslashes (\\), commas (,),"
+        String warning = "[WARNING] Activity names must not contain backslashes (\\)"
                 + " or quotation marks (' or \"). Slash (/) is allowed; /\\ and \\/ are not.";
         assertEquals(names.length * 2, output.split(Pattern.quote(warning), -1).length - 1, output);
         assertFalse(output.contains("Added activity:"), output);

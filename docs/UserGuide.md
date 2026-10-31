@@ -196,14 +196,14 @@ letters, emoji, and non-printable characters such as tabs are rejected with:
 The `|` character and line breaks remain forbidden and receive a general command-
 parameter delimiter warning, regardless of which field contains them. Ordinary
 slash text such as `and/or` and `w/o` is allowed.
-Backslashes (`\`), commas (`,`), single quotation marks (`'`, including apostrophes),
+**Commas are allowed. Apostrophes are rejected.** Backslashes (`\`), single quotation marks (`'`, including apostrophes),
 and double quotation marks (`"`) are forbidden. Slash (`/`) is allowed, subject to
 the prefix rules below. Combinations `/\` and `\/` are forbidden because they
 contain a backslash. There is no slash-escape or quoted-name syntax. Both Add and
 Edit reject these characters with:
 
 ```text
-[WARNING] Activity names must not contain backslashes (\), commas (,), or quotation marks (' or "). Slash (/) is allowed; /\ and \/ are not.
+[WARNING] Activity names must not contain backslashes (\) or quotation marks (' or "). Slash (/) is allowed; /\ and \/ are not.
 ```
 
 These input restrictions do not prevent loading historical saved names.

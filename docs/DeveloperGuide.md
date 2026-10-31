@@ -188,8 +188,8 @@ cases that validation and testing must cover.
 
 <a id="activity-name-punctuation"></a>
 
-**Name punctuation and slash syntax:** Names prohibit backslashes (`\`), commas
-(`,`), single quotation marks (`'`, including apostrophes), double quotation marks
+**Name punctuation and slash syntax:** **Commas are allowed; apostrophes are rejected.**
+Names prohibit backslashes (`\`), single quotation marks (`'`, including apostrophes), double quotation marks
 (`"`), pipes and line breaks. Slash (`/`) is allowed: `and/or` and `w/o` are valid.
 Both `/\` and `\/` contain a forbidden backslash. Quoting and slash escaping are
 unsupported; [prefix-like text](#activity-parameter-validation) may still be reserved.
@@ -198,8 +198,8 @@ unsupported; [prefix-like text](#activity-parameter-validation) may still be res
 
 **Why the name character set is restricted.** Supplied activity names use a
 conservative whitelist. The restricted punctuation (backslashes, single and
-double quotes, commas) carries special meaning in other grammars—escaping,
-quoting, or field separation—so accepting it would add ambiguous edge cases in
+double quotes) carries special meaning in other grammars—escaping,
+or quoting—so accepting it would add ambiguous edge cases in
 parsing, storage, and any future data exchange. Keeping these characters out
 shrinks the input space, which avoids unnecessary error analysis and incorrect
 results, lowers the chance of bugs, and makes the parser and storage simpler to
@@ -946,7 +946,7 @@ For activity names, add and edit apply the shared
 | Input example | Validation and rationale |
 | --- | --- |
 | `n/学习`, `n/படி`, `n/पढ़ाई`, `n/చదువు`, `n/공부`, `n/勉強`, `n/Study 🎉`, `n/Café` | These foreign-language characters (Chinese, Tamil, Hindi, Telugu, Korean and Japanese), emoji and accented characters are outside printable ASCII.<br>Supporting more character sets requires broader testing of input handling and terminal display.<br>Restricting new names to printable ASCII keeps the supported input predictable and the validation scope manageable. See the [design rationale](#ascii-command-name-validation).<br>Existing Unicode names remain loadable under the separate [stored-name rules](#historical-name-compatibility). |
-| `n/Meeting, Week 3`, `n/Student's meeting` | Commas and apostrophes are forbidden. Rejecting unsupported punctuation before changes prevents partial updates and reduces ambiguous input; see the [name-character rationale](#name-character-set-rationale). |
+| `n/Student's meeting` | Apostrophes are forbidden; `n/Meeting, Week 3` is accepted. Rejecting unsupported punctuation before changes prevents partial updates and reduces ambiguous input; see the [name-character rationale](#name-character-set-rationale). |
 | `n/"Study"`, `n/Study\notes` | Double quotes and backslashes are forbidden; quoted names and escaping are unsupported. |
 | `n/Study\|Review` or a name containing a line break | Pipes and line breaks conflict with record boundaries. |
 | A blank name or one containing a tab, NUL or DEL | Names must be nonblank and contain only printable characters. |
@@ -1319,7 +1319,7 @@ In a fresh test folder, enter:
 ```text
 add n/Valid d/2099-12-10 s/09:00 e/10:00
 add n/Missing
-add n/Meeting, Week 3 d/2099-12-11 s/09:00 e/10:00
+add n/Student's meeting d/2099-12-11 s/09:00 e/10:00
 edit 1 imp/1,5
 edit 1 n/Changed imp/0
 help add extra
