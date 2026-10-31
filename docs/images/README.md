@@ -112,7 +112,6 @@ and schedule validation diagrams are in `atharva`. Class/sequence diagrams use
   shows the shared prefix-typo checker used by add and edit.
 - [ActivityParameterValidationSequence.png](luke/sequence/ActivityParameterValidationSequence.png)
   shows a typo warning before an activity command executes.
-
 - [ArchitectureDiagram.png](luke/architecture/ArchitectureDiagram.png) shows
   startup, commands, models, storage, and output responsibilities.
 - [FacilityClassDiagram.png](luke/class/FacilityClassDiagram.png) shows facility
