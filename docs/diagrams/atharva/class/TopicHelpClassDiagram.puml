@@ -16,7 +16,7 @@ hide circle
 hide empty members
 
 abstract class Command {
-  +execute(activities: ActivityList, storage: Storage): CommandResult
+  {abstract} +execute(activities: ActivityList, storage: Storage): CommandResult
 }
 class Parser {
   +parse(input: String): Command

@@ -42,15 +42,20 @@ class Connection {
   -from: String
   -to: String
   -distanceInMetres: int
-  -accessibility: AccessibilityStatus
+}
+enum AccessibilityStatus <<enumeration>> {
+  YES
+  NO
+  UNKNOWN
 }
 
 RouteCommand --> ConnectionManager : connectionManager
-ConnectionManager --> DijkstraShortestPath : shortestPath
+ConnectionManager *-- DijkstraShortestPath : shortestPath
 ConnectionManager --> "0..*" Connection : connections
 DijkstraShortestPath ..> DijkstraSolver : creates
 DijkstraShortestPath ..> Route : returns
 Route --> "0..*" Connection : segments
+Connection --> "1" AccessibilityStatus : accessibility
 
 note bottom of Route
   Nested record: DijkstraShortestPath.Route

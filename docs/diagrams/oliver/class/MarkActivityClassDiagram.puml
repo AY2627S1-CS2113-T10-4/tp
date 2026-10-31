@@ -16,7 +16,7 @@ hide circle
 hide empty members
 
 abstract class Command {
-  +execute(...): CommandResult
+  {abstract} +execute(...): CommandResult
 }
 class Parser {
   +parse(input: String): Command
@@ -43,7 +43,7 @@ class CommandResult {
   +didChangeActivities(): boolean
 }
 Command <|-- MarkCommand
-Parser ..> MarkCommandParser : delegates command syntax
+Parser *-- MarkCommandParser : delegates command syntax
 MarkCommandParser ..> MarkCommand : creates with index
 MarkCommand ..> ActivityList : requests isDone = true
 MarkCommand ..> CommandResult : reports whether state changed
