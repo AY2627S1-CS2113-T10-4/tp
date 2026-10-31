@@ -50,7 +50,7 @@ ActivityList --> "0..*" Activity : activities
 note bottom of ActivityList
   Sort by date and start time; ties retain insertion order.
   Return a separate, unmodifiable view; keep backing order unchanged.
-  Include completed activities and show the empty-list warning when needed.
+  Include completed activities and show the normal empty-list message when needed.
 end note
 note bottom of CommandResult
   No activity changes or exit are requested.

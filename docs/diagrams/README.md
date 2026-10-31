@@ -23,7 +23,7 @@ corresponding implementation. The add sequence, calendar dashboards, help, and
 schedule validation pair are documented in their respective sections. Exit has
 no separate diagram.
 
-Owned PlantUML sources use single-quote author comments. Their image links and
+Owned PlantUML sources enclose RepoSense author markers in PlantUML block comments. Their image links and
 Developer Guide embeds sit inside the corresponding Markdown author scopes.
 Imported PNG files retain the original archive images. New and updated diagrams
 are rendered from the corresponding PlantUML sources.

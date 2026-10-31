@@ -30,12 +30,12 @@ class ListPriorityCommandTest {
     };
 
     @Test
-    void execute_onEmptyList_showsPriorityHeadingAndPlaceholder() throws Exception {
+    void execute_onEmptyList_showsOnlySorryMessage() throws Exception {
         var result = parser.parse("list priority").execute(activities, noWrites);
         assertFalse(result.isExit());
         assertFalse(result.didChangeActivities());
-        assertTrue(result.getMessage().startsWith("Activities by priority (highest first):"));
-        assertTrue(result.getMessage().endsWith("No activities yet."));
+        assertTrue(result.getMessage().equals("Sorry, the activity list is empty."));
+        assertTrue(result.getMessage().endsWith("Sorry, the activity list is empty."));
     }
 
     @Test

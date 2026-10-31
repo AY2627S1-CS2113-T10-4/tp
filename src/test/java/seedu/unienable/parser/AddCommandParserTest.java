@@ -271,10 +271,10 @@ class AddCommandParserTest {
             LocalTime past = now.toLocalTime().minusHours(1);
             LocalTime future = now.toLocalTime().plusHours(1);
 
-            assertDoesNotThrow(() -> new Parser(clock).parse("add " + 
+            assertDoesNotThrow(() -> new Parser(clock).parse("add " +
                     "n/Future d/" + now.toLocalDate() + " s/" + past + " e/" + future),
                     "future end must be accepted at " + instant);
-            assertThrows(ParseException.class, () -> new Parser(clock).parse("add " + 
+            assertThrows(ParseException.class, () -> new Parser(clock).parse("add " +
                     "n/NotFuture d/" + now.toLocalDate() + " s/" + past + " e/" + now.toLocalTime()),
                     "ended activity must be rejected at " + instant);
         }

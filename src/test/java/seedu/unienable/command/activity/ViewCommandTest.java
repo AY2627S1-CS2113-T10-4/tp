@@ -80,12 +80,12 @@ class ViewCommandTest {
     }
 
     @Test
-    void execute_emptyList_warnsWithoutShowingEmptyCharts() throws Exception {
+    void execute_emptyList_reportsNormalResultWithoutShowingEmptyCharts() throws Exception {
         assertEmptyViews(new ActivityList());
     }
 
     @Test
-    void execute_activitiesOutsideRange_warnsWithoutChangingActivities() throws Exception {
+    void execute_activitiesOutsideRange_reportsNormalResultWithoutChangingActivities() throws Exception {
         ActivityList activities = new ActivityList();
         activities.addActivity(new Activity("Previous week", TODAY.minusDays(7), START, END,
                 DemandLevel.LOW, false));
@@ -355,12 +355,9 @@ class ViewCommandTest {
      */
     private void assertEmptyViews(ActivityList activities) throws Exception {
         String[][] cases = {
-            {"view today", "TODAY - Sunday, 25 October 2026\n\n"
-                    + "[WARNING] No activities scheduled for this day."},
-            {"view tomorrow", "TOMORROW - Monday, 26 October 2026\n\n"
-                    + "[WARNING] No activities scheduled for this day."},
-            {"view week", "WEEK - Sunday, 25 October 2026 to Saturday, 31 October 2026\n\n"
-                    + "[WARNING] No activities scheduled for the next seven days."}
+            {"view today", "Sorry, no activities fall within the selected period."},
+            {"view tomorrow", "Sorry, no activities fall within the selected period."},
+            {"view week", "Sorry, no activities fall within the selected period."}
         };
         List<Activity> original = activities.getActivities();
         for (String[] scenario : cases) {

@@ -45,7 +45,7 @@ class FindCommandTest {
 
         String message = parser.parse("find exam").execute(activities, noWrites).getMessage();
 
-        assertEquals("[WARNING] No activities matched keyword \"exam\".", message);
+        assertEquals("Sorry, no activity names match your search.", message);
         assertTrue(activities.getActivities().size() == 1);
     }
 

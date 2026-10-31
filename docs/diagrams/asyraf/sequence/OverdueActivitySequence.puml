@@ -41,7 +41,7 @@ note right of Activities
 end note
 Activities --> Query : view
 Query -> Formatter : formatOverdueList(view, canonicalView, now)
-Formatter --> Query : formatted rows or empty-state warning
+Formatter --> Query : formatted rows or normal empty-state message
 Query --> Console : CommandResult(message, false)
 note over Console, UI
   didChangeActivities() is false: do not call Storage.save().

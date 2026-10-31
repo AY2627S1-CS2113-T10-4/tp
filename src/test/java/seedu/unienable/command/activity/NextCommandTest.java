@@ -63,13 +63,13 @@ class NextCommandTest {
 
         String message = parser.parse("next").execute(activities, noWrites).getMessage();
 
-        assertTrue(message.endsWith("No upcoming incomplete activities."), message);
+        assertTrue(message.endsWith("Sorry, no upcoming incomplete activities exist."), message);
     }
 
     @Test
     void execute_onEmptyList_showsEmptyMessage() throws Exception {
         String message = parser.parse("next").execute(activities, noWrites).getMessage();
-        assertTrue(message.endsWith("No upcoming incomplete activities."), message);
+        assertTrue(message.endsWith("Sorry, no upcoming incomplete activities exist."), message);
     }
 
     @Test

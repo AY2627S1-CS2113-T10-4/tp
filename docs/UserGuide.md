@@ -18,6 +18,10 @@ See [Calendar dashboards](#viewing-calendar-dashboards-view) for examples, or en
 <!-- TEAM: All members maintain installation and startup instructions. -->
 ## Quick Start
 
+This guide describes the source revision containing it. The linked v2.0 download
+is an older release snapshot; use the source-build option below to reproduce the
+current behavior and messages.
+
 1. Install Java 25 and download `unienable.jar` from the
    [UniEnable v2.0 release](https://github.com/AY2627S1-CS2113-T10-4/tp/releases/tag/v2.0)
    ([direct JAR download](https://github.com/AY2627S1-CS2113-T10-4/tp/releases/download/v2.0/unienable.jar)).
@@ -176,11 +180,10 @@ Every `/` in add/edit input must belong to a supported field prefix.
 <!-- @@author Atharva005 -->
 
 The end time must be strictly after the start time on the same day; overnight
-activities are not supported. **Past and ongoing activities can be added**, for
-example to record a missed commitment. New activities start incomplete. An
-activity ending at or before the current local time is immediately locked against
-editing or rescheduling, including when it has just been added. Check historical
-fields before adding; use delete and add again to correct a historical record.
+activities are not supported. **Ended activities cannot be added.** The end must be strictly after the current
+local time. Ongoing activities whose end is still in the future can be added.
+New activities start incomplete. Once an activity ends, it cannot be edited or
+rescheduled.
 
 Activity names must contain at least one non-whitespace character and use
 printable ASCII characters only. English letters, digits, spaces, and ASCII
@@ -286,8 +289,7 @@ Indexes refer to the chronological 'list' order.
 Demand sorting changes row order while keeping the indexes from `list`.
 For example, `mark 2`, `unmark 2`, `edit 2 imp/5`, and `delete 2` select Project meeting.
 
-An empty list shows `[WARNING] No activities yet.` beneath the heading
-(and demand-view notice).
+An empty list shows `Sorry, the activity list is empty.` without a heading or index notice.
 
 <!-- @@author -->
 
@@ -321,8 +323,7 @@ Formats: `view today`, `view tomorrow`, and `view week`
   indexes for edit, mark, unmark, or delete. Dashboards do not save changes.
 
 Try this example in a separate empty test folder. Assume today is **1 December
-2026**, before 21:00. When trying it on another date, replace the dates with today
-and tomorrow and choose times that have not ended for today's activities.
+2026**. When trying it on another date, replace the dates with today and tomorrow.
 
 ```text
 add n/Practice quiz d/2026-12-01 s/21:00 e/21:30 dem/HIGH imp/4 urg/5 com/3
@@ -375,10 +376,10 @@ Practice quiz has priority `5 x 5 x (4 + 3) = 175`.
 Rows with a missing rating show `N` for priority.
 `view tomorrow` shows Project meeting; `view week` includes all five activities.
 
-An empty day shows `[WARNING] No activities scheduled for this day.`; an empty
-week shows `[WARNING] No activities scheduled for the next seven days.` Empty
-periods omit the summary and rating sections. An empty day within a populated
-week instead shows a plain no-activities message.
+If no activity falls within the selected day or seven-day period, the command
+shows `Sorry, no activities fall within the selected period.`
+without a warning. Empty periods omit the summary and rating sections. An empty
+day within a populated week instead shows a plain no-activities row for that day.
 
 Missing or unsupported arguments show `Usage: view today|tomorrow|week`.
 Use `help view` for the command rules.
@@ -423,7 +424,7 @@ Total activities: 1
 
 The activity is removed immediately; subsequent indexes may change.
 When the last activity is deleted, the confirmation ends with
-`There is no activity recorded` instead of a remaining count.
+`Sorry, the activity list is empty.` instead of a remaining count.
 
 <!-- @@author -->
 
@@ -557,7 +558,7 @@ Found 1 matching activity:
 ```
 
 `find exco PLANNING` returns the same activity. `find exam` reports
-`[WARNING] No activities matched keyword "exam".`; a valid search on an empty list has
+`Sorry, no activity names match your search.`; a valid search on an empty list has
 the same no-match form. `find` without a keyword reports a warning and usage.
 
 <!-- @@author -->
@@ -578,6 +579,8 @@ formula. Higher scores appear first. Activities with missing ratings show
 `Priority NA` and appear after every scored activity. Equal scores keep date and
 start-time order, and equal date/time keep add order. Indexes refer to chronological
 `list` output.
+
+An empty priority list shows `Sorry, the activity list is empty.` without a heading or index notice.
 
 Using the five-activity schedule from [optional add ratings](#trying-optional-add-ratings),
 with all activities incomplete:
@@ -617,7 +620,7 @@ Overdue activities (ended before now):
 4. [OVERDUE TODAY] CS2113 project (2026-12-04, 14:00-15:00) [MEDIUM] [ ]
 ```
 
-If nothing is overdue, the command shows `[WARNING] No overdue activities.`
+If nothing is overdue, the command shows `Sorry, no incomplete activities have ended.`
 
 ### Viewing the next activity: `next`
 
@@ -634,7 +637,7 @@ Next activity (earliest upcoming):
 ```
 
 If no incomplete activity starts later, the command shows
-`[WARNING] No upcoming incomplete activities.`
+`Sorry, no upcoming incomplete activities exist.`
 
 For an incomplete activity scheduled 09:00-09:30 on the current date:
 
@@ -819,19 +822,36 @@ Output: `Goodbye from UniEnable!`
 <!-- TEAM: All members maintain common error behavior and cross-feature validation rules. -->
 ## Error Handling
 
-Invalid input usually produces `[WARNING]` and the app waits for another command.
-Empty activity views, searches with no matches, and
-unavailable route results also include `[WARNING]` on the no-result message.
-See [route results](#finding-an-accessible-route-route) for the no-recorded-path
-warning and its meaning.
+Invalid input produces `[WARNING]` and the app waits for another command.
+Valid activity commands with no available activities display normal feedback without
+`[WARNING]`:
+
+| Command | Expected output |
+| --- | --- |
+| `list`, `list demand`, `list priority` | Sorry, the activity list is empty. |
+| `view today`, `view tomorrow`, `view week` | Sorry, no activities fall within the selected period. |
+| `find KEYWORD` | Sorry, no activity names match your search. |
+| `overdue` | Sorry, no incomplete activities have ended. |
+| `next` | Sorry, no upcoming incomplete activities exist. |
+| `edit`, `mark`, `unmark`, `delete` on an empty list | Sorry, the activity list is empty. |
+
+Empty results display only the corresponding message, without headings, dates,
+index notices, summaries, or rating tables. Commands that find no
+activity to read or modify do not save. Valid `add` commands can create the first
+activity. Invalid syntax, ratings, dates, ended additions, or non-positive indexes
+produce warnings even when no activities exist.
+
+Facility searches with no matches and unavailable route results retain
+`[WARNING]`. See [route results](#finding-an-accessible-route-route) for the
+no-recorded-path warning and its meaning.
 
 <!-- @@author Atharva005 -->
-For `view week`, this warning applies only when the whole selected period is empty;
+For `view week`, the no-activities result applies only when the whole selected period is empty;
 empty days inside a populated week have a plain no-activities message.
 <!-- @@author -->
 
 <!-- @@author lukelouyu -->
-Facility lists without records or recorded features use the same marker.
+Facility lists without records or recorded features retain the `[WARNING]` marker.
 
 Command words must use ASCII characters. For example, entering `加入` or
 `வணக்கம்` as a command shows:

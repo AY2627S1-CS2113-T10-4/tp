@@ -41,7 +41,7 @@ Activities --> Query : view
 Query -> Activities : getCanonicalView()
 Activities --> Query : canonicalView
 Query -> Formatter : formatDemandList(view, canonicalView)
-Formatter --> Query : formatted rows or empty-state warning
+Formatter --> Query : formatted rows or normal empty-state message
 Query --> Console : CommandResult(message, false)
 note over Console, UI
   didChangeActivities() is false: do not call Storage.save().

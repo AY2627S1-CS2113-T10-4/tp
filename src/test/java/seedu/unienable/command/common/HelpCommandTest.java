@@ -33,6 +33,14 @@ class HelpCommandTest {
     };
 
     @Test
+    void execute_nextHelp_describesTheNormalEmptyResult() throws Exception {
+        String message = parser.parse("help next").execute(new ActivityList(), noWrites).getMessage();
+        assertTrue(message.contains("Sorry, no upcoming incomplete activities exist."), message);
+        assertTrue(message.contains("normal no-activities message"), message);
+        assertFalse(message.contains("Shows a warning when none qualifies"), message);
+    }
+
+    @Test
     void execute_overview_groupsCommandsAndExplainsTopicNavigation() {
         CommandResult result = new HelpCommand().execute(new ActivityList(), noWrites);
         String message = result.getMessage();
@@ -93,6 +101,10 @@ class HelpCommandTest {
             assertTrue(message.endsWith("Type help to return to the command menu."));
             assertFalse(message.contains("[WARNING]"), message);
             assertFalse(message.contains("%s"), message);
+            if (List.of("edit", "find", "list", "view", "overdue", "next", "mark", "unmark", "delete")
+                    .contains(scenario[0])) {
+                assertTrue(message.contains("Sorry,"), message);
+            }
             assertFalse(result.isExit());
             assertFalse(result.didChangeActivities());
             assertTrue(activities.getActivities().isEmpty());

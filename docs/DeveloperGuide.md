@@ -208,8 +208,8 @@ implement and maintain. The cost is that a few names must be reworded; this is a
 simplicity and robustness choice rather than a requirement of the current `|`
 delimiter.
 
-Raw add/edit arguments are checked only for pipes and line breaks. Extracted
-names receive the name checks; other fields use their own validators so errors
+Raw add/edit arguments reject pipes, line breaks and unsupported slash tokens.
+Extracted names receive the name checks; other fields use their own validators so errors
 identify the field that failed. The [UG adding rules](UserGuide.md#adding-an-activity-add)
 and [error handling](UserGuide.md#error-handling) provide the warning text.
 
@@ -264,8 +264,8 @@ components; the table above gives their Java package locations.
 `AddCommandParser` validates the fields and creates an `AddCommand`, whose
 constructor creates an incomplete activity.
 Demand defaults to `MEDIUM`; omitted ratings remain unset. The end must be later
-than the start on the same day. Past and ongoing activities are accepted for
-historical recording; the existing ended-activity edit lock still applies.
+than the start on the same day. Activities whose end is at or before the current local time are rejected.
+Ongoing activities with a future end are accepted; ended activities cannot be edited.
 
 `AddCommand` applies the shared [schedule checks](#activity-schedule-validation)
 before insertion. A successful insertion sets the activity-change flag, which
@@ -369,6 +369,17 @@ See the [UG help reference](UserGuide.md#viewing-command-help-help).
 This snapshot defines the one-based indexes used by edit, delete, mark and unmark.
 Queries and formatting leave the backing collection unchanged.
 
+Empty chronological, demand and priority views return `Sorry, the activity list is empty.` as
+a normal result, without a heading, index notice, or `[WARNING]`.
+
+`ActivityList.NO_ACTIVITIES_MESSAGE` supplies empty-list feedback for listing and
+indexed operations. Empty indexed operations return it through
+`InvalidIndexException`; the console displays the message unchanged. Query-specific
+feedback follows the [UG expected outputs](UserGuide.md#error-handling).
+Invalid syntax or non-positive indexes produce warnings. No activity is changed
+or saved when no record can be read or modified. Deleting the final activity saves
+its removal and appends `Sorry, the activity list is empty.` to the confirmation.
+
 <div role="region" aria-label="Chronological listing classes (scroll horizontally)"
      tabindex="0" style="max-width: 100%; overflow-x: auto;">
   <img src="images/asyraf/class/ListActivityClassDiagram.png" alt="Chronological listing classes" style="max-width: none;">
@@ -455,6 +466,8 @@ retains canonical indexes; missing ratings display `-` and unavailable scores `N
 an end strictly before that time. Ongoing activities and ends exactly now are
 excluded. `ActivityListFormatter` labels results as today, earlier this Monday-to-
 Sunday week, or earlier. Results retain chronological indexes and are read-only.
+If no activity qualifies, the formatter returns `Sorry, no incomplete activities have ended.` without
+`[WARNING]`.
 
 <div role="region" aria-label="Overdue query classes (scroll horizontally)"
      tabindex="0" style="max-width: 100%; overflow-x: auto;">
@@ -475,7 +488,8 @@ Sunday week, or earlier. Results retain chronological indexes and are read-only.
 `NextCommand` uses the captured local time to select the earliest incomplete
 activity whose start is strictly later than now. Starts exactly now are excluded;
 equal starts retain insertion order. The formatter keeps its canonical index or
-returns an empty-result warning. See the [UG time queries](UserGuide.md#viewing-the-next-activity-next).
+returns `Sorry, no upcoming incomplete activities exist.` without `[WARNING]` when none qualifies.
+See the [UG time queries](UserGuide.md#viewing-the-next-activity-next).
 
 <div role="region" aria-label="Next activity classes (scroll horizontally)"
      tabindex="0" style="max-width: 100%; overflow-x: auto;">
@@ -1254,8 +1268,12 @@ activities. `overdue` initially shows Old (1), becomes empty after `mark 1`, and
 shows Old again after `unmark 1`. Both edits are rejected because the original
 activity has ended, including the attempt to move it into the future.
 
-Historical records must be prepared while the app is closed; add/edit cannot
-create them. Ongoing activities appear in neither time query. To verify exact
+Neither `add` nor `edit` can create an ended activity. Once an activity has ended,
+`edit` cannot change its details or reschedule it. For this test, prepare the supplied
+data file while the app is closed so that completion states and ratings match
+the expected results.
+
+Ongoing activities appear in neither `overdue` nor `next`. To verify exact
 start/end boundaries without changing the computer clock, run from the project root:
 
 ```text
@@ -1273,8 +1291,8 @@ On macOS/Linux, replace `.\gradlew.bat` with `./gradlew`.
 Use a fresh test folder and close the app. Prepare `data/activities.txt` below,
 replacing `<TODAY>`, `<TOMORROW>`, `<DAY_6>` and `<DAY_7>` with actual dates in
 `YYYY-MM-DD` format: today, tomorrow, six days ahead and seven days ahead. Refresh
-the dates if the test crosses midnight. File preparation allows testing past
-times on the current date without bypassing add/edit restrictions.
+the dates if the test crosses midnight. File preparation gives this scenario
+reproducible dates, completion states and ratings.
 
 ```text
 Today|<TODAY>|09:00|10:00|HIGH|false|3|4|2
@@ -1298,8 +1316,8 @@ The daily views show Today and Tomorrow respectively. The week includes the firs
 three records and excludes Day seven: three activities, one completed and one
 HIGH-demand activity. Rating totals are importance 5, urgency 7 and commitment 6.
 Help displays the menu or requested topic without executing it or changing data.
-In a separate empty folder, the three view commands should show empty-period
-warnings without a summary or rating table.
+In a separate empty folder, the three view commands should show the period-specific no-activities
+message without `[WARNING]`, a summary, or a rating table.
 
 Rating rows fit 80 terminal columns. Long table labels shorten to at most 26
 columns with `...`, while schedules retain full names. Dashboard numbers belong
@@ -1363,7 +1381,8 @@ bye
 The first search shows completed Revision at index 1 with its ratings preserved.
 Rescheduling moves it after Consultation, so the second search uses index 2.
 The invalid rating rejects the entire subsequent edit; the name remains Revision.
-Both deletions leave an empty list and the last search has no matches. Restart
+Both deletions leave an empty list. The last search returns the normal
+`Sorry, no activity names match your search.` message without `[WARNING]`. Restart
 from the same folder and run `list`: the empty state must persist. All edits in
 this scenario target an activity whose original end is still in the future.
 

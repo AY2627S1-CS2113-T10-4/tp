@@ -62,7 +62,7 @@ note bottom of ActivityList
 end note
 note bottom of ActivityListFormatter
   Use indexes from the full chronological view.
-  Produce a warning when there are no matches.
+  Return the normal no-match message when there are no matches.
 end note
 note bottom of CommandResult
   Exit and activity-change flags are false.

@@ -22,12 +22,30 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class UniEnableProcessTest {
     @Test
-    void emptyActivityQueries_reportNormalResultsWithoutWarningsOrSaving(@TempDir Path tempDir) throws Exception {
-        String output = runSession(tempDir, "list\nlist demand\nlist priority\noverdue\nnext\nbye\n");
-        assertEquals(3, output.split(Pattern.quote("No activities yet."), -1).length - 1, output);
-        assertTrue(output.contains("No overdue activities."), output);
-        assertTrue(output.contains("No upcoming incomplete activities."), output);
+    void emptyActivityCommands_shareNormalFeedbackAndDoNotSave(@TempDir Path tempDir) throws Exception {
+        String[] commands = {"list", "list demand", "list priority", "view today", "view tomorrow", "view week",
+            "overdue", "next", "find missing", "edit 1 n/Changed", "mark 1", "unmark 1", "delete 1"};
+        String output = runSession(tempDir, String.join("\n", commands) + "\nbye\n");
+        String message = "Sorry,";
+        assertEquals(commands.length, output.split(Pattern.quote(message), -1).length - 1, output);
+        for (String expected : new String[] {
+            "Sorry, the activity list is empty.",
+            "Sorry, no activities fall within the selected period.",
+            "Sorry, no activity names match your search.",
+            "Sorry, no incomplete activities have ended.",
+            "Sorry, no upcoming incomplete activities exist."}) {
+            assertTrue(output.contains(expected), output);
+        }
         assertFalse(output.contains("[WARNING]"), output);
+        assertFalse(Files.exists(tempDir.resolve("data/activities.txt")));
+    }
+
+    @Test
+    void invalidActivityInput_retainsWarningsEvenWhenNoActivitiesExist(@TempDir Path tempDir) throws Exception {
+        String output = runSession(tempDir, "delete 0\nedit 0 n/Changed\nmark 0\nunmark 0\n"
+                + "list invalid\nfind\nview year\nbye\n");
+        assertEquals(7, output.split(Pattern.quote("[WARNING]"), -1).length - 1, output);
+        assertFalse(output.contains("Sorry, the activity list is empty."), output);
         assertFalse(Files.exists(tempDir.resolve("data/activities.txt")));
     }
 
@@ -42,13 +60,11 @@ class UniEnableProcessTest {
     }
 
     @Test
-    void historicalAdd_survivesRestartAndRetainsTheEndedEditLock(@TempDir Path tempDir) throws Exception {
-        String output = runSession(tempDir, "add n/Past tutorial d/2026-01-02 s/09:00 e/10:00\n"
-                + "edit 1 d/2027-12-10\noverdue\nbye\n");
-        assertTrue(output.contains("Added activity: Past tutorial"), output);
-        assertTrue(output.contains("Activities that have ended cannot be edited."), output);
-        String restarted = runSession(tempDir, "list\nbye\n");
-        assertTrue(restarted.contains("Past tutorial (2026-01-02, 09:00-10:00)"), restarted);
+    void historicalAdd_isRejectedWithoutSaving(@TempDir Path tempDir) throws Exception {
+        String output = runSession(tempDir, "add n/Past tutorial d/2026-01-02 s/09:00 e/10:00\nbye\n");
+        assertTrue(output.contains("[WARNING] Activities that have ended cannot be added."), output);
+        assertFalse(output.contains("Added activity:"), output);
+        assertFalse(Files.exists(tempDir.resolve("data/activities.txt")));
     }
 
     @Test
@@ -284,7 +300,7 @@ class UniEnableProcessTest {
 
         assertEquals(names.length, output.split(Pattern.quote(invalidNameWarning()), -1).length - 1, output);
         assertFalse(output.contains("Added activity:"), output);
-        assertTrue(output.contains("No activities yet."), output);
+        assertTrue(output.contains("Sorry, the activity list is empty."), output);
         assertTrue(output.contains("Goodbye from UniEnable!"), output);
         assertFalse(Files.exists(tempDir.resolve("data/activities.txt")));
     }
