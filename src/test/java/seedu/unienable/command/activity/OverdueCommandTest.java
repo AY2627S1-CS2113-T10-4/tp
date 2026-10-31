@@ -81,7 +81,7 @@ class OverdueCommandTest {
             if (time.equals("09:30:01")) {
                 assertTrue(message.contains("1. [OVERDUE TODAY] Boundary"), message);
             } else {
-                assertTrue(message.endsWith("[WARNING] No overdue activities."), message);
+                assertTrue(message.endsWith("No overdue activities."), message);
             }
         }
     }
@@ -89,7 +89,7 @@ class OverdueCommandTest {
     @Test
     void execute_onEmptyList_showsNoOverdueMessage() throws Exception {
         String message = parser.parse("overdue").execute(activities, noWrites).getMessage();
-        assertTrue(message.endsWith("[WARNING] No overdue activities."), message);
+        assertTrue(message.endsWith("No overdue activities."), message);
     }
 
     @Test

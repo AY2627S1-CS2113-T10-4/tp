@@ -22,6 +22,16 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class UniEnableProcessTest {
     @Test
+    void emptyActivityQueries_reportNormalResultsWithoutWarningsOrSaving(@TempDir Path tempDir) throws Exception {
+        String output = runSession(tempDir, "list\nlist demand\nlist priority\noverdue\nnext\nbye\n");
+        assertEquals(3, output.split(Pattern.quote("No activities yet."), -1).length - 1, output);
+        assertTrue(output.contains("No overdue activities."), output);
+        assertTrue(output.contains("No upcoming incomplete activities."), output);
+        assertFalse(output.contains("[WARNING]"), output);
+        assertFalse(Files.exists(tempDir.resolve("data/activities.txt")));
+    }
+
+    @Test
     void routeIds_matchNamesAndUnknownEndpointsListValidHubs(@TempDir Path tempDir) throws Exception {
         String named = runSession(tempDir, "route from/AS6 to/AS7\nbye\n");
         String ids = runSession(tempDir, "route from/f06 to/F07\nbye\n");
