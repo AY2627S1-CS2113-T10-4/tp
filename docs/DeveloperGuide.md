@@ -193,8 +193,8 @@ cases that validation and testing must cover.
 
 <a id="activity-name-punctuation"></a>
 
-**Name punctuation and slash syntax:** **Commas are allowed; apostrophes are rejected.**
-Names prohibit backslashes (`\`), single quotation marks (`'`, including apostrophes), double quotation marks
+**Name punctuation and slash syntax:** **Commas and apostrophes are allowed.**
+Names prohibit backslashes (`\`) and double quotation marks
 (`"`), pipes and line breaks. Every slash in add/edit input must belong to a supported field prefix.
 Both `/\` and `\/` contain a forbidden backslash. Quoting and slash escaping are
 unsupported; [prefix-like text](#activity-parameter-validation) may still be reserved.
@@ -373,8 +373,7 @@ See the [UG help reference](UserGuide.md#viewing-command-help-help).
 This snapshot defines the one-based indexes used by edit, delete, mark and unmark.
 Queries and formatting leave the backing collection unchanged.
 
-Empty chronological, demand and priority views return `Sorry, the activity list is empty.` as
-a normal result, without a heading, index notice, or `[WARNING]`.
+Empty chronological, demand and priority views return `Sorry, the activity list is empty.`.
 
 `ActivityList.NO_ACTIVITIES_MESSAGE` supplies empty-list feedback for listing and
 indexed operations. Empty indexed operations return it through
@@ -471,7 +470,6 @@ an end strictly before that time. Ongoing activities and ends exactly now are
 excluded. `ActivityListFormatter` labels results as today, earlier this Monday-to-
 Sunday week, or earlier. Results retain chronological indexes and are read-only.
 
-
 <div role="region" aria-label="Overdue query classes (scroll horizontally)"
      tabindex="0" style="max-width: 100%; overflow-x: auto;">
   <img src="images/asyraf/class/OverdueActivityClassDiagram.png" alt="Overdue query classes" style="max-width: none;">
@@ -490,8 +488,8 @@ Sunday week, or earlier. Results retain chronological indexes and are read-only.
 
 `NextCommand` uses the captured local time to select the earliest incomplete
 activity whose start is strictly later than now. Starts exactly now are excluded;
-equal starts retain insertion order. The formatter keeps its canonical index or
-returns `Sorry, no upcoming incomplete activities exist.`. 
+equal starts retain insertion order. The formatter keeps the selected activity's
+canonical index, or returns `Sorry, no upcoming incomplete activities exist.`.
 
 See the [UG time queries](UserGuide.md#viewing-the-next-activity-next).
 
@@ -968,7 +966,6 @@ For activity names, add and edit apply the shared
 | Input example | Validation and rationale |
 | --- | --- |
 | `n/学习`, `n/படி`, `n/पढ़ाई`, `n/చదువు`, `n/공부`, `n/勉強`, `n/Study 🎉`, `n/Café` | These foreign-language characters (Chinese, Tamil, Hindi, Telugu, Korean and Japanese), emoji and accented characters are outside printable ASCII.<br>Supporting more character sets requires broader testing of input handling and terminal display.<br>Restricting new names to printable ASCII keeps the supported input predictable and the validation scope manageable. See the [design rationale](#ascii-command-name-validation).<br>Existing Unicode names remain loadable under the separate [stored-name rules](#historical-name-compatibility). |
-| `n/Student's meeting` | Apostrophes are forbidden; `n/Meeting, Week 3` is accepted. Rejecting unsupported punctuation before changes prevents partial updates and reduces ambiguous input; see the [name-character rationale](#name-character-set-rationale). |
 | `n/"Study"`, `n/Study\notes` | Double quotes and backslashes are forbidden; quoted names and escaping are unsupported. |
 | `n/Study\|Review` or a name containing a line break | Pipes and line breaks conflict with record boundaries. |
 | A blank name or one containing a tab, NUL or DEL | Names must be nonblank and contain only printable characters. |
@@ -1325,7 +1322,7 @@ three records and excludes Day seven: three activities, one completed and one
 HIGH-demand activity. Rating totals are importance 5, urgency 7 and commitment 6.
 Help displays the menu or requested topic without executing it or changing data.
 In a separate empty folder, the three view commands should show the period-specific no-activities
-message without `[WARNING]`, a summary, or a rating table.
+message.
 
 Rating rows fit 80 terminal columns. Long table labels shorten to at most 26
 columns with `...`, while schedules retain full names. Dashboard numbers belong
@@ -1349,7 +1346,7 @@ In a fresh test folder, enter:
 ```text
 add n/Valid d/2030-12-10 s/09:00 e/10:00
 add n/Missing
-add n/Student's meeting d/2030-12-11 s/09:00 e/10:00
+add n/"Student meeting" d/2030-12-11 s/09:00 e/10:00
 edit 1 imp/1,5
 edit 1 n/Changed imp/0
 help add extra
@@ -1389,8 +1386,8 @@ bye
 The first search shows completed Revision at index 1 with its ratings preserved.
 Rescheduling moves it after Consultation, so the second search uses index 2.
 The invalid rating rejects the entire subsequent edit; the name remains Revision.
-Both deletions leave an empty list. The last search returns the normal
-`Sorry, no activity names match your search.` message without `[WARNING]`. Restart
+Both deletions leave an empty list. The last search returns the
+`Sorry, no activity names match your search.` message. Restart
 from the same folder and run `list`: the empty state must persist. All edits in
 this scenario target an activity whose original end is still in the future.
 

@@ -131,13 +131,12 @@ letters, emoji, and non-printable characters such as tabs are rejected with:
 [WARNING] Please write the activity name in English (ASCII characters only).
 ```
 
-**Commas are allowed; apostrophes are rejected.** Backslashes (`\`), single
-quotation marks (`'`, including apostrophes), and double quotation marks (`"`)
+**Commas and apostrophes are allowed.** Backslashes (`\`) and double quotation marks (`"`)
 are forbidden in supplied names. Pipes (`|`) and line breaks are also forbidden.
 There is no quoting or escaping syntax. Punctuation violations produce:
 
 ```text
-[WARNING] Activity names must not contain backslashes (\) or quotation marks (' or ").
+[WARNING] Activity names must not contain backslashes (\) or double quotation marks.
 ```
 
 **Every slash is a field separator, including inside name text.** The word before
