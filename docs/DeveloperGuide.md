@@ -1412,6 +1412,7 @@ accessibility result was calculated. Check these rejected inputs separately:
 
 | Command | Expected warning | Sample-data notice |
 | --- | --- | --- |
+| `route from/UTown to/AS6` | Unknown connection startpoint, followed by route usage. | Absent |
 | `route from/ZZZ to/AS6` | Unknown connection startpoint, followed by route usage. | Absent |
 | `route to/AS7 from/AS6` | Invalid route command, followed by route usage. | Absent |
 | `route from/AS6 to/AS6` | Source and destination are the same. | Absent |
