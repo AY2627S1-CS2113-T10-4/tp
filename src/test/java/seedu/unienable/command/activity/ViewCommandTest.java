@@ -82,7 +82,7 @@ class ViewCommandTest {
     void parse_removedDemandCommand_reportsUnrecognizedCommand() {
         for (String input : List.of("demand", "demand today", "DEMAND TODAY", "demand today extra")) {
             ParseException exception = assertThrows(ParseException.class, () -> parser.parse(input), input);
-            assertEquals("[WARNING] Unrecognized command. Type bye to exit.", exception.getMessage(), input);
+            assertEquals("[WARNING] Unrecognized command. Type help to see available commands.", exception.getMessage(), input);
         }
     }
 

@@ -830,7 +830,9 @@ Command words must use ASCII characters. For example, entering `加入` or
 ```
 
 The app then waits for another command. Unknown ASCII command words and blank
-input keep the usual unrecognized-command warning. Non-ASCII or non-printable
+input show `[WARNING] Unrecognized command. Type help to see available commands.`
+For `bye now`, the warning is `[WARNING] bye takes no arguments. Usage: bye`.
+Non-ASCII or non-printable
 activity names supplied to `add` or `edit` receive the separate name warning:
 
 ```text

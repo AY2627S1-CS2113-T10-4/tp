@@ -192,7 +192,7 @@ class UniEnableProcessTest {
         String border = "_".repeat(60);
         assertEquals(6, output.split(Pattern.quote(warning), -1).length - 1, output);
         assertTrue(output.replace("\r\n", "\n").contains(border + "\n" + warning + "\n" + border), output);
-        assertTrue(output.contains("[WARNING] Unrecognized command. Type bye to exit."), output);
+        assertTrue(output.contains("[WARNING] Unrecognized command. Type help to see available commands."), output);
         assertTrue(output.contains("1. Existing (2099-12-10, 09:00-10:00) [LOW] [X]"), output);
         assertTrue(output.contains("Goodbye from UniEnable!"), output);
         assertArrayEquals(original, Files.readAllBytes(activityFile));

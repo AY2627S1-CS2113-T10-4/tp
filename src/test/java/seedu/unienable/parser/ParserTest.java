@@ -67,8 +67,14 @@ class ParserTest {
     void unknownAsciiAndBlankCommands_keepUnrecognizedWarning() {
         for (String input : List.of("bogus", "", " \t ")) {
             ParseException error = assertThrows(ParseException.class, () -> parser.parse(input), input);
-            assertEquals("[WARNING] Unrecognized command. Type bye to exit.", error.getMessage(), input);
+            assertEquals("[WARNING] Unrecognized command. Type help to see available commands.", error.getMessage(), input);
         }
+    }
+
+    @Test
+    void byeWithArguments_explainsTheRecognizedCommandSyntax() {
+        ParseException error = assertThrows(ParseException.class, () -> parser.parse("bye now"));
+        assertEquals("[WARNING] bye takes no arguments. Usage: bye", error.getMessage());
     }
 
     @Test
