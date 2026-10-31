@@ -762,14 +762,13 @@ Invalid input produces `[WARNING]` and the app waits for another command.
 Valid activity commands with no available activities display normal feedback without
 `[WARNING]`:
 
-| Command | Expected output |
-| --- | --- |
-| `list`, `list demand`, `list priority` | Sorry, the activity list is empty. |
-| `view today`, `view tomorrow`, `view week` | Sorry, no activities fall within the selected period. |
-| `find KEYWORD` | Sorry, no activity names match your search. |
-| `overdue` | Sorry, no incomplete activities have ended. |
-| `next` | Sorry, no upcoming incomplete activities exist. |
-| `edit`, `mark`, `unmark`, `delete` on an empty list | Sorry, the activity list is empty. |
+| Situation | Commands | Expected output |
+| --- | --- | --- |
+| The activity list is empty | `list`, `list demand`, `list priority`, `edit INDEX ...`, `mark INDEX`, `unmark INDEX`, `delete INDEX` | Sorry, the activity list is empty. |
+| The selected period has no activities | `view today`, `view tomorrow`, `view week` | Sorry, no activities fall within the selected period. |
+| No activity names match | `find KEYWORD` | Sorry, no activity names match your search. |
+| No incomplete activities have ended | `overdue` | Sorry, no incomplete activities have ended. |
+| No upcoming incomplete activities exist | `next` | Sorry, no upcoming incomplete activities exist. |
 
 Empty results display only the corresponding message, without headings, dates,
 index notices, summaries, or rating tables. Commands that find no
@@ -777,54 +776,43 @@ activity to read or modify do not save. Valid `add` commands can create the firs
 activity. Invalid syntax, ratings, dates, ended additions, or non-positive indexes
 produce warnings even when no activities exist.
 
-Facility searches with no matches and unavailable route results retain
-`[WARNING]`. See [route results](#finding-an-accessible-route-route) for the
-no-recorded-path warning and its meaning.
-
 <!-- @@author Atharva005 -->
 For `view week`, the no-activities result applies only when the whole selected period is empty;
 empty days inside a populated week have a plain no-activities message.
 <!-- @@author -->
 
 <!-- @@author lukelouyu -->
-Facility lists without records or recorded features retain the `[WARNING]` marker.
+Facility queries with no records or matching features, and unavailable route
+results, display warnings. See [route results](#finding-an-accessible-route-route)
+for the no-recorded-path response.
 
-Command words must use ASCII characters. For example, entering `加入` or
-`வணக்கம்` as a command shows:
+The following table shows common input warnings and the messages you will see.
 
-```text
-[WARNING] Please write the command in English (ASCII characters only).
-```
+| Input problem | Example input                           | Warning message |
+| --- |-----------------------------------------| --- |
+| Non-ASCII command word | `你好` or `வணக்கம்`                       | `[WARNING] Please write the command in English (ASCII characters only).` |
+| Unknown command or blank input | `unknown` or an empty line              | `[WARNING] Unrecognized command. Type help to see available commands.` |
+| Arguments supplied to `bye` | `bye now`                               | `[WARNING] bye takes no arguments. Usage: bye` |
+| Non-ASCII or non-printable activity name | `add n/Café d/2026-12-10 s/09:00 e/10:00` | `[WARNING] Please write the activity name in English (ASCII characters only).` |
 
-The app then waits for another command. Unknown ASCII command words and blank
-input show `[WARNING] Unrecognized command. Type help to see available commands.`
-For `bye now`, the warning is `[WARNING] bye takes no arguments. Usage: bye`.
-Non-ASCII or non-printable
-activity names supplied to `add` or `edit` receive the separate name warning:
-
-```text
-[WARNING] Please write the activity name in English (ASCII characters only).
-```
-
-Rejected commands leave activities and the saved file unchanged.
-<!-- @@author -->
-
-<!-- @@author Oliver-koh -->
-Repeated mark/unmark requests warn that completion is already in the requested
-state. A repeated request does not save or modify activities.
 <!-- @@author -->
 
 <!-- TEAM: The following validation rules apply to multiple members' features. -->
-Common causes include missing/duplicate fields, invalid dates or times, unknown
-facilities, or an activity index outside the current list.
-For `add` and `edit`, use real calendar dates and two-digit hours and minutes (for example,
-`09:30`, not `9:30`). Use `help add` or `help edit` to check the expected format.
-Rejected add or edit input, including an invalid rating, leaves the activity list and
-stored data unchanged.
+The table below explains how the app handles input errors, repeated commands,
+and activity conflicts, including those already present in saved data, and what
+you can do in each case.
 
-Duplicate and clash warnings prevent new conflicting entries. Existing duplicates
-or overlaps in saved files still load; remove unwanted entries using their current
-`list` indexes and `delete INDEX`. They are not removed automatically.
+| Problem or situation | App behavior or action to take |
+| --- | --- |
+| Rejected input | Activities and the saved file remain unchanged. |
+| <!-- @@author Oliver-koh --> Repeated `mark` or `unmark` | The app warns that completion is already in the requested state. No activities are changed or saved. <!-- @@author --> |
+| Missing or duplicate fields | Supply each required field once. Use `help add` or `help edit` to check the format. |
+| Invalid date or time | Use a real calendar date and two-digit hours and minutes, such as `09:30` rather than `9:30`. |
+| Unknown facility | Use a facility listed by `facility list`. |
+| Activity index outside the list | Run `list` and choose an index shown in its output. |
+| Duplicate activity | Change the entry so it does not duplicate an existing activity. `overlap/ALLOW` does not permit duplicates. |
+| Overlapping activities | Change the date or times, or use `overlap/ALLOW` to confirm an intentional overlap. |
+| Existing duplicates or overlaps in saved data | These still load and are not removed automatically. Run `list`, then use `delete INDEX` to remove unwanted entries. |
 
 <!-- @@author officialasyrafrahim -->
 `list priority`, `overdue`, and `next` accept no arguments. Extra arguments and
@@ -832,17 +820,12 @@ unsupported list variants produce a warning; they do not change activities.
 <!-- @@author -->
 
 <!-- @@author Atharva005 -->
-Example input: `help extra`
+For help-command errors, check the response below and enter a single valid topic.
 
-Output:
-
-```text
-[WARNING] Unknown help topic 'extra'.
-Usage: help [TOPIC]
-Type help to see the available commands.
-```
-
-Extra topic words, such as `help add extra`, also show a warning and the help usage.
+| Help input problem | Example input | Expected response |
+| --- | --- | --- |
+| Unknown topic | `help extra` | `[WARNING] Unknown help topic 'extra'.` followed by `Usage: help [TOPIC]` and `Type help to see the available commands.` |
+| More than one topic word | `help add extra` | A warning followed by the help usage. |
 <!-- @@author -->
 
 <!-- @@author Oliver-koh -->
