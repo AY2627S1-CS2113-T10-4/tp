@@ -77,54 +77,41 @@ its original directory.
 <!-- TEAM: All members maintain the cross-feature command and index conventions. -->
 ## Command Format
 
-- Words in UPPER_CASE are placeholders; replace them with your own values.
-- Square brackets in command formats indicate optional fields; do not type them.
-- Command words, prefixes, demand levels, feature types, statuses, and hub codes
-  are case-insensitive. Activity names preserve their capitalization.
-- For `add` and `edit`, fields can appear in any order. Names can contain spaces.
-  For `edit`, put the activity index before the fields.
-- Separate fields with whitespace (for example, `n/Meeting d/2026-12-01`).
-  Do not put text before the first field.
-- Enter each command on one line, including all optional fields.
-- Dates use `YYYY-MM-DD`, such as `2026-12-01`; times use 24-hour `HH:mm`.
-- Activity indexes start at 1. Change commands (`delete`, `edit`, `mark`, and `unmark`)
-  use indexes from chronological `list` output. `list demand`,
-  `find`, `list priority`, `overdue`, and `next` retain full chronological
-  indexes, even when some indexes are missing from the results. Run `list` before
-  changing an activity; adding, deleting, or rescheduling can change indexes.
-- Calendar dashboards (`view today`, `view tomorrow`, and `view week`) number only
-  their selected period. Run `list` to get indexes for changing those activities.
-- Sample outputs below omit the application's horizontal borders.
-  The activity walkthrough, from `add` through `delete`, starts with an empty list
-  and runs in order. Additional rating examples follow the walkthrough.
-  If you try them after the example dates, replace the dates with future dates.
+| Convention | How to use it |
+| --- | --- |
+| Placeholders | Words in UPPER_CASE are placeholders; replace them with your own values. |
+| Optional fields | Square brackets in command formats indicate optional fields; do not type them. |
+| Letter case | Command words, prefixes, demand levels, feature types, statuses, and hub codes are case-insensitive. Activity names preserve their capitalization. |
+| Field order | For `add` and `edit`, fields can appear in any order. Names can contain spaces. For `edit`, put the activity index before the fields. |
+| Field separators | Separate fields with whitespace (for example, `n/Meeting d/2026-12-01`). Do not put text before the first field. |
+| Command entry | Enter each command on one line, including all optional fields. |
+| Dates and times | Dates use `YYYY-MM-DD`, such as `2026-12-01`; times use 24-hour `HH:mm`. |
+| Activity indexes | Activity indexes start at 1. Change commands (`delete`, `edit`, `mark`, and `unmark`) use indexes from chronological `list` output. `list demand`, `find`, `list priority`, `overdue`, and `next` retain full chronological indexes, even when some indexes are missing from the results. Run `list` before changing an activity; adding, deleting, or rescheduling can change indexes. |
+| Calendar numbering | Calendar dashboards (`view today`, `view tomorrow`, and `view week`) number only their selected period. Run `list` to get indexes for changing those activities. |
+| Sample outputs | Sample outputs below omit the application's horizontal borders. The activity walkthrough, from `add` through `delete`, starts with an empty list and runs in order. Additional rating examples follow the walkthrough. If you try them after the example dates, replace the dates with future dates. |
 
 <!-- @@author Oliver-koh -->
 
 ## Data Storage
 
-Save manually edited activity files as **UTF-8**. An invalidly encoded row is
-skipped with a line-numbered encoding warning; other readable rows still load.
-Loading leaves the original bytes untouched. A later recovery save first preserves
-the original file in `.corrupt.bak`.
+Activities save automatically to `data/activities.txt`. Start the app from the
+same folder each time to reload your activities, ratings, and completion status.
+If the file is missing, the app starts with an empty list.
 
-Activities save automatically to `data/activities.txt`, relative to the folder
-where the app starts. Use the same folder on each launch. A missing file starts
-an empty list. Ratings and completion status survive restarting.
+Viewing information does not save the file. Repeated `mark` or `unmark` commands
+also do not save if completion is unchanged. Successful edits always save.
 
-Read-only commands and repeated mark/unmark requests do not save. A successful
-edit saves even if the supplied values match the existing ones. Older six-field
-files still load; later saves use the current format, which V1.0 cannot read.
+The app skips invalid or unreadable lines and warns you with their line numbers.
+Other valid activities still load. If the entire file cannot be read, the app
+shows a warning and starts with an empty list.
 
-Malformed rows, including time ranges whose end is not after their start, are
-skipped with line-numbered warnings. Historical activities with valid time ranges
-still load. An unreadable file starts
-an empty list with a warning. Before a later save, the app preserves the original
-file in `data/activities.txt.corrupt.bak`; a failed backup prevents replacement.
-Keep a separate copy of that backup before further recovery attempts.
+Loading leaves the original file unchanged. Before saving after a loading problem,
+the app copies the original to `data/activities.txt.corrupt.bak`. If this backup
+fails, the original is not replaced. Keep a separate copy of the backup before
+attempting further recovery.
 
 If saving fails, keep the app open and follow [Error Handling](#error-handling).
-Facility and connection reference data are bundled and read-only.
+Facility and connection data are bundled with the app and are read-only.
 
 <!-- @@author -->
 
