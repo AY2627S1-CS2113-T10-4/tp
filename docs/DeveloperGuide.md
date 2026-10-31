@@ -814,8 +814,9 @@ of accessibility. This graph shows recorded connectivity, not geographical layou
 
 #### Accessible route search
 
-`RouteParser` creates a `RouteCommand` for two hub names, matched ignoring case;
-facility IDs are not route endpoints. `ConnectionManager` keeps one reusable
+`RouteParser` resolves facility IDs through `FacilityManager` when available,
+then creates a `RouteCommand` for two hub names, matched ignoring case. Unknown
+endpoints report the valid graph hubs. `ConnectionManager` keeps one reusable
 `DijkstraShortestPath` graph with both directions of each `YES` connection.
 Each query creates a fresh `DijkstraSolver` with independent search state.
 
@@ -1131,7 +1132,7 @@ hardware, and procedure; this guide sets no timing benchmark.
 | Displayed index | A one-based position in chronological `list`, used by edit, delete, mark, and unmark and retained by demand, find, priority, overdue, and next. Calendar dashboards number their selected rows separately. |
 | Seven-day dashboard | `view week`: today through today plus six days, including completed activities and grouped by date. |
 | Hub | A supported facility name: AS1 to AS8 or CLB in the bundled dataset. |
-| Facility ID | A stable lookup identifier, F01 to F09. Route endpoints use hub names instead. |
+| Facility ID | A stable lookup identifier, F01 to F09. Route input accepts IDs when facility data is available, resolving them to hub names. |
 | Connection | A bidirectional recorded link with distance, accessibility, traversal type, shelter, and optional barrier information or notes. |
 | Accessibility status | A recorded `YES`, `NO`, or `UNKNOWN` value. A missing feature is distinct from an explicit `UNKNOWN`. |
 | Route | Ordered stops and their connecting segments, with total recorded distance. |

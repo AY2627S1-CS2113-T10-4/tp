@@ -714,7 +714,9 @@ Verify with current campus information before you rely on it.
 
 Format: `route from/START to/END`
 
-Use hub names (AS1-AS8 or CLB), rather than IDs such as F01.
+Use hub names (AS1-AS8 or CLB), or facility IDs F01-F09 when facility data is
+available. For example, `route from/F06 to/F07` is equivalent to
+`route from/AS6 to/AS7`. Unknown endpoints list the valid graph hubs.
 Keep `from/` before `to/`. Routes minimize recorded distance using only connections
 marked YES for accessibility. Shelter, barriers, and notes are displayed;
 a shortest route may include unsheltered sections or recorded barriers.

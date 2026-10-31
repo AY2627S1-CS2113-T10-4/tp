@@ -22,6 +22,16 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class UniEnableProcessTest {
     @Test
+    void routeIds_matchNamesAndUnknownEndpointsListValidHubs(@TempDir Path tempDir) throws Exception {
+        String named = runSession(tempDir, "route from/AS6 to/AS7\nbye\n");
+        String ids = runSession(tempDir, "route from/f06 to/F07\nbye\n");
+        assertEquals(named, ids);
+        assertTrue(ids.contains("Total distance: 200 metres"), ids);
+        String unknown = runSession(tempDir, "route from/ZZZ to/F07\nbye\n");
+        assertTrue(unknown.contains("Valid hubs: AS1, AS2, AS3, AS4, AS5, AS6, AS7, AS8, CLB"), unknown);
+    }
+
+    @Test
     void historicalAdd_survivesRestartAndRetainsTheEndedEditLock(@TempDir Path tempDir) throws Exception {
         String output = runSession(tempDir, "add n/Past tutorial d/2000-01-02 s/09:00 e/10:00\n"
                 + "edit 1 d/2027-12-10\noverdue\nbye\n");

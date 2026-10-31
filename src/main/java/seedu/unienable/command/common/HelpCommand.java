@@ -281,7 +281,7 @@ public class HelpCommand extends Command {
 
                     Details:
                       - Supply two different facility names (AS1-AS8 or CLB), with from/ before to/.
-                      - Facility IDs such as F01 are not accepted as route endpoints.
+                      - Facility IDs F01-F09 are also accepted when facility data is available.
                       - Results show the route segments and total recorded distance in metres.
                       - Same endpoints, unknown facilities, or no confirmed accessible path produce warnings.
                       - Routes need loaded connection data and do not change activities.

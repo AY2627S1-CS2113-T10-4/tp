@@ -107,7 +107,7 @@ public class Parser {
      */
     public Parser(FacilityManager facilityManager, ConnectionManager connectionManager, Clock clock) {
         this.facilityCommandParser = new FacilityCommandParser(facilityManager);
-        this.routeParser = new RouteParser(connectionManager);
+        this.routeParser = new RouteParser(connectionManager, facilityManager);
         this.clock = clock;
     }
 
