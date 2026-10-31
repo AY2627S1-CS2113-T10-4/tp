@@ -52,6 +52,10 @@ its text datasets. The linked NUS PDF provides the original campus map.
 
 ## Setting up and getting started
 
+The latest release is [UniEnable v2.1](https://github.com/AY2627S1-CS2113-T10-4/tp/releases/tag/v2.1).
+Its executable JAR requires Java 25. To inspect or reproduce the released code,
+use the repository's `v2.1` tag; `master` may contain later development changes.
+
 Install **JDK 25** and clone the repository. Check `java -version` before building
 or running the application. In IntelliJ IDEA, import the project as a Gradle
 project and select JDK 25 for both the project SDK and Gradle JVM. The
@@ -1162,6 +1166,10 @@ hardware, and procedure; this guide sets no timing benchmark.
 Build with Java 25 using `check shadowJar`. Run the JAR from a separate folder
 so tests cannot change personal activity data. Use future dates for new activities
 and restart from the same folder to verify persistence.
+
+To test the released application, download `unienable.jar` from the
+[v2.1 release](https://github.com/AY2627S1-CS2113-T10-4/tp/releases/tag/v2.1)
+and run it in the separate test folder instead of using a local build.
 
 Copy `build/libs/unienable.jar` into an empty test folder, open a terminal there,
 and run `java -ea -jar unienable.jar`. Enter `help`, then `bye`: the menu and
