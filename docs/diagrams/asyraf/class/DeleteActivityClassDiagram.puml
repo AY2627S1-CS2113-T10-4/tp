@@ -16,7 +16,7 @@ hide circle
 hide empty members
 
 abstract class Command {
-  +execute(...): CommandResult
+  {abstract} +execute(...): CommandResult
 }
 class Parser {
   +parse(input: String): Command
@@ -43,7 +43,7 @@ class CommandResult {
   +didChangeActivities(): boolean
 }
 Command <|-- DeleteCommand
-Parser ..> ListDeleteCommandParser : delegates delete
+Parser *-- ListDeleteCommandParser : delegates delete
 ListDeleteCommandParser ..> DeleteCommand : creates with index
 DeleteCommand ..> ActivityList : removes chronological selection
 DeleteCommand ..> Activity : reads removed details
