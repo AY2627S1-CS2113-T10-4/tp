@@ -317,7 +317,7 @@ ratings and demand summaries without changing data.
 
 Dashboard row numbers belong to the selected period; indexed changes use the full
 chronological list. The rating table fits 80 terminal columns and shortens labels
-to 26 columns without splitting grapheme clusters. Full names remain in schedules
+to 26 columns without splitting grapheme clusters. Schedule rows pad names and indexes to align rating columns. Full names remain in schedules
 and storage. See the [UG dashboard examples](UserGuide.md#viewing-calendar-dashboards-view).
 
 <div role="region" aria-label="Calendar dashboard classes (scroll horizontally)"
