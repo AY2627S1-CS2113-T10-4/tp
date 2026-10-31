@@ -39,10 +39,10 @@ final class ActivityParameterValidator {
             }
             if (UNSUPPORTED_PREFIXES.contains(token)) {
                 String replacement = switch (token) {
-                    case "urgency" -> "urg";
-                    case "importance" -> "imp";
-                    case "commitment" -> "com";
-                    default -> null;
+                case "urgency" -> "urg";
+                case "importance" -> "imp";
+                case "commitment" -> "com";
+                default -> null;
                 };
                 String suggestion = replacement == null ? "" : " Did you mean '" + replacement + "/'?";
                 throw new ParseException("[WARNING] Unknown parameter '" + token + "/'." + suggestion);

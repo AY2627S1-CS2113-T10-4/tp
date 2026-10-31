@@ -84,14 +84,14 @@ public class FacilityStorage {
             List<FeatureLine> featureLines, List<String> warnings) {
         try {
             switch (fields[0]) {
-                case "FACILITY":
-                    addFacility(fields, facilities, ids, names);
-                    break;
-                case "FEATURE":
-                    featureLines.add(new FeatureLine(lineNumber, fields));
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown record type: " + fields[0]);
+            case "FACILITY":
+                addFacility(fields, facilities, ids, names);
+                break;
+            case "FEATURE":
+                featureLines.add(new FeatureLine(lineNumber, fields));
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown record type: " + fields[0]);
             }
         } catch (IllegalArgumentException exception) {
             warnings.add("Line " + lineNumber + ": " + exception.getMessage());

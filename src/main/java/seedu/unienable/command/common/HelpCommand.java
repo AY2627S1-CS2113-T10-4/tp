@@ -356,11 +356,11 @@ public class HelpCommand extends Command {
                     + "'.\nUsage: help [TOPIC]\nType help to see the available commands.");
         }
         String emptyMessage = switch (normalizedTopic) {
-            case "view" -> "Sorry, no activities fall within the selected period.";
-            case "find" -> "Sorry, no activity names match your search.";
-            case "overdue" -> "Sorry, no incomplete activities have ended.";
-            case "next" -> "Sorry, no upcoming incomplete activities exist.";
-            default -> ActivityList.NO_ACTIVITIES_MESSAGE;
+        case "view" -> "Sorry, no activities fall within the selected period.";
+        case "find" -> "Sorry, no activity names match your search.";
+        case "overdue" -> "Sorry, no incomplete activities have ended.";
+        case "next" -> "Sorry, no upcoming incomplete activities exist.";
+        default -> ActivityList.NO_ACTIVITIES_MESSAGE;
         };
         String emptyResultHelp = EMPTY_RESULT_TOPICS.contains(normalizedTopic)
                 ? "\n\nIf no activity is available for this command, it displays this normal result:\n"
