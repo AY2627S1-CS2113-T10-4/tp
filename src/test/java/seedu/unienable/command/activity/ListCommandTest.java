@@ -16,7 +16,7 @@ import seedu.unienable.storage.Storage;
 
 //@@author officialasyrafrahim
 /**
- * Checks canonical-order display and read-only behaviour for the list command.
+ * Checks canonical-order display and read-only behavior for the list command.
  */
 class ListCommandTest {
     private final Parser parser = new Parser();

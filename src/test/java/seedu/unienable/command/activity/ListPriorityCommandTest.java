@@ -68,9 +68,9 @@ class ListPriorityCommandTest {
     }
 
     private void add(String name, String date, String start, Integer importance, Integer urgency,
-                     Integer commitment, boolean done) {
+            Integer commitment, boolean isDone) {
         activities.addActivity(new Activity(name, LocalDate.parse(date), LocalTime.parse(start),
-                LocalTime.parse(start).plusHours(1), DemandLevel.MEDIUM, done,
+                LocalTime.parse(start).plusHours(1), DemandLevel.MEDIUM, isDone,
                 importance, urgency, commitment));
     }
 }

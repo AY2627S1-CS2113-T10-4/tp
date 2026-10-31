@@ -77,9 +77,9 @@ class NextCommandTest {
         assertThrows(ParseException.class, () -> parser.parse("next extra"));
     }
 
-    private void add(String name, String date, String start, boolean done) {
+    private void add(String name, String date, String start, boolean isDone) {
         activities.addActivity(new Activity(name, LocalDate.parse(date), LocalTime.parse(start),
-                LocalTime.parse(start).plusHours(1), DemandLevel.MEDIUM, done));
+                LocalTime.parse(start).plusHours(1), DemandLevel.MEDIUM, isDone));
     }
 }
 //@@author

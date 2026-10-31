@@ -115,8 +115,8 @@ public class Parser {
      * Dispatches supported user commands to their handlers.
      *
      * @param input command entered by the user.
-     * @return the command to execute
-     * @throws ParseException if the command is invalid or unavailable
+     * @return the command to execute.
+     * @throws ParseException if the command is invalid or unavailable.
      */
     public Command parse(String input) throws ParseException {
         String trimmedInput = input.trim();
@@ -207,5 +207,4 @@ public class Parser {
                     + " Unrecognized command. Type help to see available commands.");
         }
     }
-
 }

@@ -23,17 +23,17 @@ import seedu.unienable.model.enums.AccessibilityStatus;
  * Loads bundled facility reference data, preserving valid records and reporting invalid lines.
  */
 public class FacilityStorage {
-
     /**
      * Creates a loader for the bundled facility reference dataset.
      */
     public FacilityStorage() {
     }
+
     /**
      * Loads facilities.txt from the classpath using UTF-8, including inside a packaged JAR.
      *
-     * @return facilities in source order with warnings for skipped lines
-     * @throws UniEnableException if the resource is missing or cannot be read
+     * @return facilities in source order with warnings for skipped lines.
+     * @throws UniEnableException if the resource is missing or cannot be read.
      */
     public LoadResult<Facility> load() throws UniEnableException {
         return loadResource("/facilities.txt");
@@ -48,8 +48,8 @@ public class FacilityStorage {
      * records are skipped with warnings; matching statuses may retain separate notes.
      *
      * @param source reader containing facility and feature records.
-     * @return valid facilities and warnings carrying physical source line numbers
-     * @throws UniEnableException if reading fails; partial data is not returned as a successful load
+     * @return valid facilities and warnings carrying physical source line numbers.
+     * @throws UniEnableException if reading fails; partial data is not returned as a successful load.
      */
     public LoadResult<Facility> load(Reader source) throws UniEnableException {
         Map<String, FacilityBuilder> facilities = new LinkedHashMap<>();
@@ -70,7 +70,7 @@ public class FacilityStorage {
                         featureLines, warnings);
             }
         } catch (IOException exception) {
-            throw readFailure(exception);
+            throw createReadFailure(exception);
         }
         attachFeatures(featureLines, facilities, warnings);
         return new LoadResult<>(buildFacilities(facilities), warnings);
@@ -142,7 +142,7 @@ public class FacilityStorage {
         try (Reader reader = source) {
             return load(reader);
         } catch (IOException exception) {
-            throw readFailure(exception);
+            throw createReadFailure(exception);
         }
     }
 
@@ -166,7 +166,7 @@ public class FacilityStorage {
         if (containsIgnoreCase(names, fields[2])) {
             throw new IllegalArgumentException("Duplicate facility name: " + fields[2]);
         }
-        facilities.put(fields[1], new FacilityBuilder(fields[1], fields[2], optionalText(fields[3])));
+        facilities.put(fields[1], new FacilityBuilder(fields[1], fields[2], toOptionalText(fields[3])));
         ids.add(fields[1]);
         names.add(fields[2]);
     }
@@ -218,18 +218,18 @@ public class FacilityStorage {
                         + ", rejected " + status + ".");
             }
         }
-        String notes = fields.length == 5 ? optionalText(fields[4]) : null;
+        String notes = fields.length == 5 ? toOptionalText(fields[4]) : null;
         facility.features.add(new FacilityFeature(type, status, notes));
     }
 
-    private String optionalText(String value) {
+    private String toOptionalText(String value) {
         return value.isEmpty() ? null : value;
     }
 
     /**
      * Gives callers a concise error while retaining the underlying I/O cause for diagnostics.
      */
-    private UniEnableException readFailure(IOException cause) {
+    private UniEnableException createReadFailure(IOException cause) {
         UniEnableException exception = new UniEnableException("Unable to read facility dataset: " + cause.getMessage());
         exception.initCause(cause);
         return exception;
@@ -244,7 +244,7 @@ public class FacilityStorage {
     /**
      * Collects features before constructing the immutable Facility model.
      */
-    private static class FacilityBuilder {
+    private static final class FacilityBuilder {
         private final String id;
         private final String name;
         private final String description;

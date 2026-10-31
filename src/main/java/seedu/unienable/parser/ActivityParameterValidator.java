@@ -16,7 +16,9 @@ final class ActivityParameterValidator {
     private static final List<String> PREFIXES = List.of("n", "d", "s", "e", "dem", "imp", "urg", "com", "overlap");
     private static final List<String> UNSUPPORTED_PREFIXES = List.of("urgency", "importance", "commitment", "priority");
 
-    /** Prevents instantiation of this shared parser helper. */
+    /**
+     * Prevents instantiation of this shared parser helper.
+     */
     private ActivityParameterValidator() {
     }
 
@@ -59,7 +61,9 @@ final class ActivityParameterValidator {
         }
     }
 
-    /** Parses the explicit, per-command permission to keep an overlapping activity. */
+    /**
+     * Parses the explicit, per-command permission to keep an overlapping activity.
+     */
     static boolean allowsOverlap(String value) throws ParseException {
         if (value == null) {
             return false;
@@ -70,7 +74,9 @@ final class ActivityParameterValidator {
         return true;
     }
 
-    /** Computes edit distance with adjacent swaps for the short field-prefix tokens. */
+    /**
+     * Returns whether a token is one edit from a prefix, counting an adjacent swap as one edit.
+     */
     private static boolean isOneEditAway(String token, String prefix) {
         if (Math.abs(token.length() - prefix.length()) > 1) {
             return false;

@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
@@ -108,7 +109,7 @@ class UniEnableTest {
         assertTrue(output.contains("ACTIVITY MANAGEMENT"));
         assertTrue(output.contains("PLANNING AND PRIORITIES"));
         for (String topic : topics) {
-            assertTrue(output.contains(topic.toUpperCase(java.util.Locale.ROOT) + " - "), topic);
+            assertTrue(output.contains(topic.toUpperCase(Locale.ROOT) + " - "), topic);
         }
         assertTrue(output.contains("[WARNING] Unknown help topic 'unknown'"));
         assertTrue(output.contains("[WARNING] help accepts at most one command name."));
@@ -374,7 +375,7 @@ class UniEnableTest {
             String output = consoleAtPath("add n/" + names[i] + " d/2030-12-10 s/09:00 e/10:00\n"
                     + "edit 1 n/" + names[i] + " revised imp/5\nlist\nbye\n", file);
             String warning = "[WARNING] Please write the activity name in English (ASCII characters only).";
-            assertEquals(2, output.split(java.util.regex.Pattern.quote(warning), -1).length - 1, output);
+            assertEquals(2, output.split(Pattern.quote(warning), -1).length - 1, output);
             assertFalse(output.contains("Added activity:"), output);
             assertFalse(output.contains("Edited activity:"), output);
             assertTrue(output.contains("1. Existing (2030-12-10, 09:00-10:00) [LOW] [X]"), output);
@@ -542,6 +543,7 @@ class UniEnableTest {
                 new String[]{"FAC09", "facility AS4", "[F04] AS4", "[WARNING]"},
                 new String[]{"EXIT", "bye", "Goodbye from UniEnable!"});
     }
+
     /**
      * Captures an isolated console session and restores the caller's streams after execution.
      */

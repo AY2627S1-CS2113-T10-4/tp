@@ -34,9 +34,11 @@ final class ActivityScheduleValidator {
         validate(candidate, activities, replacedActivity, false);
     }
 
-    /** Checks duplicates unconditionally, allowing a time overlap only when explicitly requested. */
-    static void validate(Activity candidate, ActivityList activities, Activity replacedActivity, boolean allowOverlap)
-            throws UniEnableException {
+    /**
+     * Checks duplicates unconditionally, allowing a time overlap only when explicitly requested.
+     */
+    static void validate(Activity candidate, ActivityList activities, Activity replacedActivity,
+            boolean isOverlapAllowed) throws UniEnableException {
         List<Activity> existing = activities.getCanonicalView();
         for (int index = 0; index < existing.size(); index++) {
             Activity activity = existing.get(index);
@@ -49,7 +51,7 @@ final class ActivityScheduleValidator {
                         + describe(index + 1, activity));
             }
         }
-        if (allowOverlap) {
+        if (isOverlapAllowed) {
             return;
         }
         for (int index = 0; index < existing.size(); index++) {
@@ -63,7 +65,9 @@ final class ActivityScheduleValidator {
         }
     }
 
-    /** Collapses spacing for identity checks while preserving the user's stored/displayed name. */
+    /**
+     * Collapses spacing for identity checks while preserving the user's stored/displayed name.
+     */
     private static String normalizeName(String name) {
         return name.strip().replaceAll("\\s+", " ");
     }

@@ -42,12 +42,12 @@ class ConsoleSaveRecoveryTest {
     void failedSave_byeRetriesPersistenceBeforeExiting(@TempDir Path directory) throws Exception {
         Path file = directory.resolve("activities.txt");
         Storage storage = new Storage(file) {
-            private boolean fail = true;
+            private boolean shouldFail = true;
 
             @Override
             public void save(ActivityList activities) throws UniEnableException {
-                if (fail) {
-                    fail = false;
+                if (shouldFail) {
+                    shouldFail = false;
                     throw new UniEnableException("Unable to save activities: simulated failure");
                 }
                 super.save(activities);

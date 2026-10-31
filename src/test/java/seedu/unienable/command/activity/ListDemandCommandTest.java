@@ -17,7 +17,7 @@ import seedu.unienable.storage.Storage;
 
 //@@author officialasyrafrahim
 /**
- * Checks demand-order display and read-only behaviour for the list demand command.
+ * Checks demand-order display and read-only behavior for the list demand command.
  */
 class ListDemandCommandTest {
     private final Parser parser = new Parser();

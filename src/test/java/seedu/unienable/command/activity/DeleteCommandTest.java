@@ -19,7 +19,7 @@ import seedu.unienable.storage.Storage;
 
 //@@author officialasyrafrahim
 /**
- * Checks displayed-index deletion behaviour: index mapping, boundary indexes,
+ * Checks displayed-index deletion behavior: index mapping, boundary indexes,
  * renumbering, and model-reported range errors.
  */
 class DeleteCommandTest {

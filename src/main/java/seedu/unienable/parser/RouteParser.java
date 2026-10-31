@@ -46,7 +46,9 @@ public class RouteParser {
         this(connectionManager, null);
     }
 
-    /** Creates a route parser with optional ID lookup; name-only routing still works without facilities. */
+    /**
+     * Creates a route parser with optional ID lookup; name-only routing still works without facilities.
+     */
     public RouteParser(ConnectionManager connectionManager, FacilityManager facilityManager) {
         this.connectionManager = connectionManager;
         this.facilityManager = facilityManager;
@@ -56,8 +58,8 @@ public class RouteParser {
      * Parses route prefixes and asks for any missing source or destination.
      *
      * @param words command words beginning with route, with optional from/ and to/ arguments.
-     * @return the route command with both endpoints supplied
-     * @throws ParseException if arguments are missing, malformed or reference data is unavailable
+     * @return the route command with both endpoints supplied.
+     * @throws ParseException if arguments are missing, malformed or reference data is unavailable.
      */
     public RouteCommand parseRoute(String[] words) throws ParseException {
         if (words.length > 3) {
