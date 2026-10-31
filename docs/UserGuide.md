@@ -755,6 +755,19 @@ Sample reference data.
 Verify with current campus information before you rely on it.
 ```
 
+**Same source and destination**
+
+Input: `route from/as6 to/as6`
+
+Output:
+```text
+[WARNING] Sorry, the source and destination are the same.
+```
+
+The request is rejected because both endpoints identify AS6. The same warning
+appears for different letter cases or equivalent identifiers, such as
+`route from/AS6 to/as6` and `route from/F06 to/AS6`.
+
 <!-- @@author -->
 
 <!-- @@author Atharva005 -->

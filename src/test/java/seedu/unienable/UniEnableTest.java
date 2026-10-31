@@ -177,12 +177,12 @@ class UniEnableTest {
         assertTrue(output.contains("Deleted activity: Project meeting\nDate: 2030-10-25\n"
                 + "Time: 16:00 - 17:00\nDemand: HIGH\nThere is no activity recorded\n"));
         assertFalse(output.contains("Total activities: 0"));
-        assertTrue(output.contains("Activities (by date, start time):\n[WARNING] No activities yet."));
+        assertTrue(output.contains("Activities (by date, start time):\nNo activities yet."));
         assertTrue(output.contains("[WARNING] There are no activities to delete."));
         assertEquals("", Files.readString(activityFile));
 
         String restartedOutput = consoleAtPath("list\nbye\n", activityFile);
-        assertTrue(restartedOutput.contains("Activities (by date, start time):\n[WARNING] No activities yet."));
+        assertTrue(restartedOutput.contains("Activities (by date, start time):\nNo activities yet."));
         assertFalse(restartedOutput.contains("Project meeting"));
     }
 
@@ -237,28 +237,29 @@ class UniEnableTest {
     //@@author
 
     @Test
-    void emptyQueries_showOneWarningWithoutCreatingAnActivityFile(@TempDir Path tempDir) throws Exception {
+    void emptyQueries_reportNoResultsWithoutCreatingAnActivityFile(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("activities.txt");
         String[][] cases = {
-            {"list", "[WARNING] No activities yet."},
-            {"list demand", "[WARNING] No activities yet."},
-            {"list priority", "[WARNING] No activities yet."},
+            {"list", "No activities yet."},
+            {"list demand", "No activities yet."},
+            {"list priority", "No activities yet."},
             //@@author Atharva005
             {"view today", "[WARNING] No activities scheduled for this day."},
             {"view tomorrow", "[WARNING] No activities scheduled for this day."},
             {"view week", "[WARNING] No activities scheduled for the next seven days."},
             //@@author
-            {"overdue", "[WARNING] No overdue activities."},
-            {"next", "[WARNING] No upcoming incomplete activities."},
+            {"overdue", "No overdue activities."},
+            {"next", "No upcoming incomplete activities."},
             {"find missing", "[WARNING] No activities matched keyword \"missing\"."},
             {"facility find type/AUTOMATIC_DOOR", "[WARNING] No matching facilities found."}
         };
 
         for (String[] scenario : cases) {
             String output = consoleAtPath(scenario[0] + "\nbye\n", activityFile);
+            int expectedWarnings = scenario[1].startsWith("[WARNING]") ? 1 : 0;
 
             assertTrue(output.contains(scenario[1]), scenario[0] + "\n" + output);
-            assertEquals(1, output.split(Pattern.quote("[WARNING]"), -1).length - 1, scenario[0]);
+            assertEquals(expectedWarnings, output.split(Pattern.quote("[WARNING]"), -1).length - 1, scenario[0]);
             assertTrue(output.contains("Goodbye from UniEnable!"), scenario[0]);
             assertFalse(Files.exists(activityFile), scenario[0]);
         }

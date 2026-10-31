@@ -36,13 +36,13 @@ public final class ActivityListFormatter {
             "Indexes refer to the chronological 'list' order.";
 
     /**
-     * Warns that a requested activity view has no entries.
+     * Reports a normal empty result when an activity view has no entries.
      */
-    private static final String EMPTY_MESSAGE = "[WARNING] No activities yet.";
+    private static final String EMPTY_MESSAGE = "No activities yet.";
 
-    private static final String NO_OVERDUE_MESSAGE = "[WARNING] No overdue activities.";
+    private static final String NO_OVERDUE_MESSAGE = "No overdue activities.";
 
-    private static final String NO_NEXT_MESSAGE = "[WARNING] No upcoming incomplete activities.";
+    private static final String NO_NEXT_MESSAGE = "No upcoming incomplete activities.";
 
     private static final String UNKNOWN_RATING = "-";
 
