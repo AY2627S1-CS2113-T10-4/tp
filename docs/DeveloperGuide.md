@@ -47,13 +47,6 @@ the [NUS FASS *Access Routes / Faculty Map*](https://osa.nus.edu.sg/wp-content/u
 updated 24 February 2025. The map is an effort led by the Student Accessibility
 Unit (SAU), Office of Student Affairs (OSA), National University of Singapore (NUS).
 
-The PlantUML connectivity graph is UniEnable's own schematic representation of
-its text datasets. The linked NUS PDF provides the original campus map.
-
-Lou Yu Luke used Claude (through Claude Code) with relevant skills to validate
-the code standard and code quality, and to apply the resulting formatting,
-naming and small refactoring fixes to the code and affected diagrams.
-
 ## Setting up and getting started
 
 The latest release is [UniEnable v2.1](https://github.com/AY2627S1-CS2113-T10-4/tp/releases/tag/v2.1).
