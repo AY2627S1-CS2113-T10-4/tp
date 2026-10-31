@@ -1161,8 +1161,8 @@ In a fresh test folder, enter the following commands one line at a time. The
 dates must be in the future; replace the example dates if necessary.
 
 ```text
-add n/Study d/2099-12-10 s/09:00 e/10:00 dem/LOW imp/3 urg/4 com/2
-add n/Consultation d/2099-12-11 s/11:00 e/12:00 dem/HIGH
+add n/Study d/2030-12-10 s/09:00 e/10:00 dem/LOW imp/3 urg/4 com/2
+add n/Consultation d/2030-12-11 s/11:00 e/12:00 dem/HIGH
 list
 list demand
 mark 1
@@ -1201,10 +1201,10 @@ Use a fresh test folder. Enter these commands one at a time, keeping the dates
 in the future:
 
 ```text
-add n/Session d/2099-12-10 s/09:00 e/10:00
-add n/session d/2099-12-10 s/09:00 e/10:00 overlap/ALLOW
-add n/Practice d/2099-12-10 s/09:30 e/10:30
-add n/Practice d/2099-12-10 s/09:30 e/10:30 overlap/ALLOW
+add n/Session d/2030-12-10 s/09:00 e/10:00
+add n/session d/2030-12-10 s/09:00 e/10:00 overlap/ALLOW
+add n/Practice d/2030-12-10 s/09:30 e/10:30
+add n/Practice d/2030-12-10 s/09:30 e/10:30 overlap/ALLOW
 edit 2 s/09:45 e/10:45
 edit 2 s/09:45 e/10:45 overlap/ALLOW
 list
@@ -1227,8 +1227,8 @@ these records. The first date must be past and the other dates future:
 
 ```text
 Old|2000-01-01|09:00|10:00|LOW|false|1|5|1
-Future rated|2099-12-10|09:00|10:00|HIGH|false|3|4|2
-Future unrated|2099-12-11|11:00|12:00|LOW|false|-|-|-
+Future rated|2030-12-10|09:00|10:00|HIGH|false|3|4|2
+Future unrated|2030-12-11|11:00|12:00|LOW|false|-|-|-
 ```
 
 Start the app, then enter:
@@ -1244,7 +1244,7 @@ overdue
 unmark 1
 overdue
 edit 1 imp/5
-edit 1 d/2099-12-12
+edit 1 d/2030-12-12
 ```
 
 Priority order is indexes 2 (80), 1 (50), then 3 (`NA`). The first `next` selects
@@ -1320,9 +1320,9 @@ macOS/Linux, replace `.\gradlew.bat` with `./gradlew`.
 In a fresh test folder, enter:
 
 ```text
-add n/Valid d/2099-12-10 s/09:00 e/10:00
+add n/Valid d/2030-12-10 s/09:00 e/10:00
 add n/Missing
-add n/Student's meeting d/2099-12-11 s/09:00 e/10:00
+add n/Student's meeting d/2030-12-11 s/09:00 e/10:00
 edit 1 imp/1,5
 edit 1 n/Changed imp/0
 help add extra
@@ -1344,12 +1344,12 @@ session accepts another command after each rejection.
 Start in a fresh test folder with future dates and enter:
 
 ```text
-add n/Study d/2099-12-10 s/09:00 e/10:00 dem/LOW imp/3 urg/4 com/2
-add n/Consultation d/2099-12-11 s/11:00 e/12:00
+add n/Study d/2030-12-10 s/09:00 e/10:00 dem/LOW imp/3 urg/4 com/2
+add n/Consultation d/2030-12-11 s/11:00 e/12:00
 mark 1
 edit 1 n/Revision dem/HIGH
 find revision
-edit 1 d/2099-12-12 s/13:00 e/14:00
+edit 1 d/2030-12-12 s/13:00 e/14:00
 find revision
 edit 2 n/Should stay unchanged imp/0
 list

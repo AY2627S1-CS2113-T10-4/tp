@@ -43,14 +43,14 @@ The horizontal borders are omitted from the expected outputs below.
 Command:
 
 ```text
-add n/Study d/2099-12-10 s/09:00 e/10:00
+add n/Study d/2030-12-10 s/09:00 e/10:00
 ```
 
 Expected output:
 
 ```text
 Added activity: Study
-Date: 2099-12-10
+Date: 2030-12-10
 Time: 09:00 - 10:00
 Demand: MEDIUM
 Importance: -
@@ -71,7 +71,7 @@ Expected output, in command order:
 ```text
 Marked activity as done: Study
 Activities (by date, start time):
-1. Study (2099-12-10, 09:00-10:00) [MEDIUM] [X]
+1. Study (2030-12-10, 09:00-10:00) [MEDIUM] [X]
 ```
 
 The `[X]` indicates completion. Enter `bye` to exit; the next launch from the

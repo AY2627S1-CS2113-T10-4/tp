@@ -94,14 +94,14 @@ class OverdueCommandTest {
 
     @Test
     void execute_acrossYearBoundary_usesCurrentMondayForWeekLabel() throws Exception {
-        Clock newYearClock = Clock.fixed(Instant.parse("2026-01-01T12:00:00Z"), ZoneOffset.UTC);
+        Clock newYearClock = Clock.fixed(Instant.parse("2027-01-01T12:00:00Z"), ZoneOffset.UTC);
         Parser newYearParser = new Parser(newYearClock);
         ActivityList newYearActivities = new ActivityList();
-        newYearActivities.addActivity(new Activity("Last year", LocalDate.parse("2025-12-28"),
+        newYearActivities.addActivity(new Activity("Last year", LocalDate.parse("2026-12-27"),
                 LocalTime.parse("09:00"), LocalTime.parse("10:00"), DemandLevel.LOW, false));
-        newYearActivities.addActivity(new Activity("This week", LocalDate.parse("2025-12-30"),
+        newYearActivities.addActivity(new Activity("This week", LocalDate.parse("2026-12-29"),
                 LocalTime.parse("09:00"), LocalTime.parse("10:00"), DemandLevel.LOW, false));
-        newYearActivities.addActivity(new Activity("Today", LocalDate.parse("2026-01-01"),
+        newYearActivities.addActivity(new Activity("Today", LocalDate.parse("2027-01-01"),
                 LocalTime.parse("08:00"), LocalTime.parse("09:00"), DemandLevel.LOW, false));
 
         String message = newYearParser.parse("overdue")
