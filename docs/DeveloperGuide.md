@@ -498,6 +498,10 @@ returns an empty-result warning. See the [UG time queries](UserGuide.md#viewing-
 
 #### Editing activities
 
+> **Design constraint: ended activities cannot be edited or rescheduled.** The
+> existing end date/time is checked before any replacement is built. An end at
+> or before local now rejects every edit, even if the requested date is in the future.
+
 `EditCommandParser` collects changes in immutable `EditCommand.Fields`.
 `EditCommand` selects the activity by its chronological index and checks the
 clock once. Activities ending at or before now reject every edit, including

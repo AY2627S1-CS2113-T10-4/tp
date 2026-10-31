@@ -465,6 +465,11 @@ Format:
 edit INDEX [n/NAME] [d/YYYY-MM-DD] [s/HH:mm] [e/HH:mm] [dem/LOW|MEDIUM|HIGH] [imp/IMP] [urg/URG] [com/COM] [overlap/ALLOW]
 ```
 
+> **Important: ended activities are locked.** Once an activity's end is at or
+> before the current local time, `edit` cannot change it or reschedule it into
+> the future. There is no override. To repeat it, add a new activity; the original
+> remains available for listing, searching, completion changes, or deletion.
+
 - Use an index from chronological `list` or activity `find` output and supply
   at least one field. The command updates one activity at a time.
 - Each supplied field must have a value and appear once. Names follow the same
