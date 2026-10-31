@@ -29,51 +29,6 @@ This guide describes UniEnable v2.1, the latest release.
 To build from source on Windows, run `.\gradlew.bat shadowJar` in the project folder,
 then `java -jar build/libs/unienable.jar`. Use Java 25 for both commands.
 
-Try this first session in an empty launch folder. The examples use a future date;
-if you try them after that date, replace it with a date that has not ended.
-The horizontal borders are omitted from the expected outputs below.
-
-Command:
-
-```text
-add n/Study d/2026-12-10 s/09:00 e/10:00
-```
-
-Expected output:
-
-```text
-Added activity: Study
-Date: 2026-12-10
-Time: 09:00 - 10:00
-Demand: MEDIUM
-Importance: -
-Urgency: -
-Commitment: -
-Total activities: 1
-```
-
-Next commands, in the same session:
-
-```text
-mark 1
-list
-```
-
-Expected output, in command order:
-
-```text
-Marked activity as done: Study
-Activities (by date, start time):
-1. Study (2026-12-10, 09:00-10:00) [MEDIUM] [X]
-```
-
-The `[X]` indicates completion. Enter `bye` to exit; the next launch from the
-same folder will load this activity. The feature walkthrough below starts with
-its own empty list, independently of this first-session example.
-To reproduce that walkthrough, exit the app, copy the JAR into a different empty
-directory, and launch it from that directory. Keep the first session's data in
-its original directory.
-
 <!-- TEAM: All members maintain the cross-feature command and index conventions. -->
 ## Command Format
 
