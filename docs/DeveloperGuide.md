@@ -1392,9 +1392,7 @@ accessibility result was calculated. Check these rejected inputs separately:
 | `facility find type/LIFT status/MAYBE` | Invalid facility status, supported statuses and usage. | Absent |
 
 After each rejection, the session must accept another command and the saved
-activity file must remain unchanged. When checking the website, confirm that
-this warning table is present; an older published paragraph incorrectly required
-the notice on input warnings.
+activity file must remain unchanged.
 
 <!-- @@author -->
 
