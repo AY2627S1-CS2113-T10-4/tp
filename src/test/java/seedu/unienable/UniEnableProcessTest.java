@@ -22,6 +22,32 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class UniEnableProcessTest {
     @Test
+    void riddhisBirthday_acceptsApostropheAndLowercaseDemand(@TempDir Path tempDir) throws Exception {
+        String output = runSession(tempDir,
+                "add n/riddhi's birthday d/2027-01-01 s/20:00 e/23:30 dem/low\nlist\nbye\n");
+        assertTrue(output.contains("Added activity: riddhi's birthday"), output);
+        assertTrue(output.contains("Date: 2027-01-01\nTime: 20:00 - 23:30\nDemand: LOW"), output);
+        assertTrue(output.contains("1. riddhi's birthday (2027-01-01, 20:00-23:30) [LOW] [ ]"), output);
+        assertFalse(output.contains("[WARNING]"), output);
+        assertEquals("riddhi's birthday|2027-01-01|20:00|23:30|LOW|false|-|-|-\n",
+                Files.readString(tempDir.resolve("data/activities.txt")));
+        String restarted = runSession(tempDir, "list\nbye\n");
+        assertTrue(restarted.contains("1. riddhi's birthday (2027-01-01, 20:00-23:30) [LOW] [ ]"), restarted);
+    }
+
+    @Test
+    void apostrophes_surviveAddEditSearchAndRestart(@TempDir Path tempDir) throws Exception {
+        String output = runSession(tempDir, "add n/Student's meeting d/2027-12-10 s/09:00 e/10:00\n"
+                + "edit 1 n/O'Brien's lecture\nfind O'Brien\nbye\n");
+        assertTrue(output.contains("Added activity: Student's meeting"), output);
+        assertTrue(output.contains("Edited activity: O'Brien's lecture"), output);
+        assertTrue(output.contains("Found 1 matching activity:"), output);
+        assertFalse(output.contains("[WARNING]"), output);
+        String restarted = runSession(tempDir, "list\nbye\n");
+        assertTrue(restarted.contains("1. O'Brien's lecture"), restarted);
+    }
+
+    @Test
     void emptyActivityCommands_shareNormalFeedbackAndDoNotSave(@TempDir Path tempDir) throws Exception {
         String[] commands = {"list", "list demand", "list priority", "view today", "view tomorrow", "view week",
             "overdue", "next", "find missing", "edit 1 n/Changed", "mark 1", "unmark 1", "delete 1"};
@@ -90,7 +116,7 @@ class UniEnableProcessTest {
     void doubleQuotedNames_rejectAddAndEditWithoutWritingData(@TempDir Path tempDir) throws Exception {
         String add = "add n/\"Discuss notes\" d/2030-12-10 s/09:00 e/10:00\n";
         String warning = "[WARNING] Activity names must not contain backslashes (\\)"
-                + " or quotation marks (' or \").";
+                + " or double quotation marks.";
         String emptyOutput = runSession(tempDir, add + "list\nbye\n");
         Path file = tempDir.resolve("data/activities.txt");
         assertTrue(emptyOutput.contains(warning), emptyOutput);
@@ -132,14 +158,14 @@ class UniEnableProcessTest {
         Files.write(file, original);
         var modifiedTime = Files.getLastModifiedTime(file);
         StringBuilder commands = new StringBuilder();
-        String[] names = {"A\\B", "O'Brien", "'Meeting'"};
+        String[] names = {"A\\B"};
         for (String name : names) {
             commands.append("add n/").append(name).append(" d/2030-12-11 s/09:00 e/10:00\n")
                     .append("edit 1 n/").append(name).append(" imp/5\n");
         }
         String output = runSession(tempDir, commands + "list\nbye\n");
         String warning = "[WARNING] Activity names must not contain backslashes (\\)"
-                + " or quotation marks (' or \").";
+                + " or double quotation marks.";
         assertEquals(names.length * 2, output.split(Pattern.quote(warning), -1).length - 1, output);
         assertFalse(output.contains("Added activity:"), output);
         assertFalse(output.contains("Edited activity:"), output);

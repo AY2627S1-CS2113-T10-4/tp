@@ -55,7 +55,7 @@ note bottom of ActivityNameValidator
   Whitespace-only names receive the empty-name warning.
   Parsers keep blank-name and delimiter checks.
   Historical Unicode names still load and save as UTF-8.
-  Allow commas; reject backslashes and both quotation marks in the extracted name.
+  Allow commas and apostrophes; reject backslashes and double quotation marks.
   Slash is allowed subject to prefix rules; no escape or quote syntax exists.
 end note
 @enduml
