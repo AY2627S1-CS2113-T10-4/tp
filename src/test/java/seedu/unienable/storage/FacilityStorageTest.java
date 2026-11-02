@@ -195,8 +195,6 @@ class FacilityStorageTest {
                     "1", "F01|ASİ|null|,F02|AS2|null|", "Duplicate facility name"},
                 new String[]{"F_DISTINCT", "F", "FACILITY|Fß1|AS1|\nFACILITY|FSS1|AS2|", "2", "0",
                     "Fß1|AS1|null|,FSS1|AS2|null|", ""},
-                new String[]{"F_FEATURE_LOWER_ID", "F", "FACILITY|F01|AS1|\nFEATURE|f01|LIFT|YES|Note", "1", "0",
-                    "F01|AS1|null|LIFT|YES|Note", ""},
                 new String[]{"F_FEATURE_LIFT_YES", "F", "FACILITY|F01|AS1|\nFEATURE|F01|LIFT|YES|Note", "1", "0",
                     "F01|AS1|null|LIFT|YES|Note", ""},
                 new String[]{"F_FEATURE_LIFT_NO", "F", "FACILITY|F01|AS1|\nFEATURE|F01|LIFT|NO|Note", "1", "0",

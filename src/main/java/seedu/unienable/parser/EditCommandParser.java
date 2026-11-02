@@ -17,7 +17,6 @@ import seedu.unienable.command.activity.EditCommand;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.enums.DemandLevel;
-import seedu.unienable.ui.SafeText;
 
 //@@author Oliver-koh
 /**
@@ -100,13 +99,12 @@ public class EditCommandParser {
 
     private int parseIndex(String token) throws ParseException {
         if (!INDEX_PATTERN.matcher(token).matches()) {
-            throw createUsageError("Invalid index '" + SafeText.format(token)
-                    + "'. Index must be a positive whole number.");
+            throw createUsageError("Invalid index '" + token + "'. Index must be a positive whole number.");
         }
         try {
             return Integer.parseInt(token);
         } catch (NumberFormatException exception) {
-            throw createUsageError("Index '" + SafeText.format(token) + "' is too large.");
+            throw createUsageError("Index '" + token + "' is too large.");
         }
     }
 

@@ -23,9 +23,13 @@ import seedu.unienable.ui.Ui;
  */
 final class ConsoleHelper {
     //@@author Oliver-koh
+    /*
+     * bye never discards unsaved changes, so the notice also names the deliberate way out:
+     * ending input closes the session without saving, even when storage cannot be repaired.
+     */
     private static final String UNSAVED_NOTICE =
-            "[WARNING] Unsaved activity changes. Fix the save error and enter 'bye' to retry saving and exit. "
-                    + "To quit without saving, press Ctrl-D (Ctrl-Z then Enter on Windows).";
+            "[WARNING] Unsaved activity changes. Fix the save error and enter 'bye' to retry saving and exit.\n"
+            + "To quit without saving these changes, end input with Ctrl+D (Windows: Ctrl+Z, then Enter).";
     //@@author
 
     /**

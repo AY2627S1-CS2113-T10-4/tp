@@ -11,7 +11,6 @@ import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
-import seedu.unienable.ui.SafeText;
 
 /**
  * Adds a validated, initially incomplete activity to the current session's activity list.
@@ -68,7 +67,7 @@ public class AddCommand extends Command {
     public CommandResult execute(ActivityList activities, Storage storage) throws UniEnableException {
         ActivityScheduleValidator.validate(activity, activities, null, isOverlapAllowed);
         activities.addActivity(activity);
-        String message = "Added activity: " + SafeText.format(activity.getName()) + "\n"
+        String message = "Added activity: " + activity.getName() + "\n"
                 + "Date: " + activity.getDate() + "\n"
                 + "Time: " + activity.getStartTime() + " - " + activity.getEndTime() + "\n"
                 + "Demand: " + activity.getDemand() + "\n"

@@ -21,8 +21,7 @@ import seedu.unienable.model.enums.TraversalType;
 //@@author lukelouyu
 /**
  * Loads bidirectional connection reference data against an explicitly supplied facility collection.
- * Stored endpoints are facility names, not facility IDs; endpoint case resolves to the recorded
- * facility name. Their order is preserved without implying direction.
+ * Stored endpoints are facility names, not facility IDs; their order is preserved without implying direction.
  */
 public class ConnectionStorage {
     private final Set<String> facilityNames;
@@ -52,7 +51,7 @@ public class ConnectionStorage {
 
     /**
      * Parses a caller-owned reader without closing it. Empty optional fields become null.
-     * Tags and enum values are matched exactly; endpoint case is resolved to the recorded facility name.
+     * Tags, enum values, and endpoint names are matched exactly; endpoint text is not rewritten.
      *
      * @param source reader containing connection records.
      * @return valid records and warnings carrying physical line numbers.
@@ -127,12 +126,10 @@ public class ConnectionStorage {
         if (distance <= 0) {
             throw new IllegalArgumentException("Connection distance must be positive: " + fields[4]);
         }
-        String firstFacility = resolveFacilityName(fields[2]);
-        String secondFacility = resolveFacilityName(fields[3]);
-        if (firstFacility == null || secondFacility == null) {
+        if (!facilityNames.contains(fields[2]) || !facilityNames.contains(fields[3])) {
             throw new IllegalArgumentException("Unknown facility endpoint: " + fields[2] + " / " + fields[3]);
         }
-        if (firstFacility.equals(secondFacility)) {
+        if (fields[2].equals(fields[3])) {
             throw new IllegalArgumentException("Self-connection is not allowed: " + fields[2]);
         }
         AccessibilityStatus accessibility = parseEnum(AccessibilityStatus.class, fields[5], "accessibility status");
@@ -140,20 +137,7 @@ public class ConnectionStorage {
         ShelterStatus shelter = parseEnum(ShelterStatus.class, fields[7], "shelter status");
         String barrier = fields.length >= 9 ? toOptionalText(fields[8]) : null;
         String notes = fields.length == 10 ? toOptionalText(fields[9]) : null;
-        return new Connection(id, firstFacility, secondFacility, distance, accessibility, type, shelter,
-                barrier, notes);
-    }
-
-    private String resolveFacilityName(String endpoint) {
-        if (facilityNames.contains(endpoint)) {
-            return endpoint;
-        }
-        for (String name : facilityNames) {
-            if (name.equalsIgnoreCase(endpoint)) {
-                return name;
-            }
-        }
-        return null;
+        return new Connection(id, fields[2], fields[3], distance, accessibility, type, shelter, barrier, notes);
     }
 
     private int parseInteger(String value, String fieldName) {

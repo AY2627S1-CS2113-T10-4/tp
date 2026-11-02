@@ -15,7 +15,6 @@ import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
-import seedu.unienable.ui.SafeText;
 
 /**
  * Displays scheduled activities and rating summaries for a day or today and the following six days.
@@ -123,14 +122,14 @@ public class ViewCommand extends Command {
         }
         int index = view.indexOf(dailyActivities.get(0)) + 1;
         int nameWidth = dailyActivities.stream()
-                .mapToInt(activity -> getDisplayWidth(SafeText.format(activity.getName()))).max().orElse(0);
+                .mapToInt(activity -> getDisplayWidth(activity.getName())).max().orElse(0);
         int indexWidth = Integer.toString(index + dailyActivities.size() - 1).length();
         for (Activity activity : dailyActivities) {
             output.append("\n").append(String.format(Locale.ROOT, "%" + indexWidth + "d", index++))
                     .append(". ").append(activity.getStartTime())
                     .append("-").append(activity.getEndTime()).append(" [")
                     .append(activity.isDone() ? "X" : " ").append("] ")
-                    .append(padName(SafeText.format(activity.getName()), nameWidth))
+                    .append(padName(activity.getName(), nameWidth))
                     .append("    IMP ").append(formatRating(activity.getImportance()))
                     .append("  URG ").append(formatRating(activity.getUrgency()))
                     .append("  COM ").append(formatRating(activity.getCommitment()))
@@ -155,8 +154,7 @@ public class ViewCommand extends Command {
      */
     private static void appendRatingChart(StringBuilder output, List<Activity> view) {
         int nameWidth = Math.min(MAX_CHART_NAME_WIDTH, Math.max("Activity".length(),
-                view.stream().mapToInt(activity -> getDisplayWidth(
-                        SafeText.format(activity.getName()))).max().orElse(0)));
+                view.stream().mapToInt(activity -> getDisplayWidth(activity.getName())).max().orElse(0)));
         String rowFormat = "| %s | %-5s | %-5s | %-5s | %-14s | %-6s |";
         String header = String.format(Locale.ENGLISH, rowFormat,
                 padName("Activity", nameWidth), "IMP", "URG", "COM", "PRIORITY SCORE", "DEMAND");
@@ -192,7 +190,7 @@ public class ViewCommand extends Command {
             String demand = "#".repeat(getDemandMarkCount(activity.getDemand()))
                     + " " + getDemandCode(activity.getDemand());
             output.append("\n").append(String.format(Locale.ENGLISH, rowFormat,
-                    padName(shortenName(SafeText.format(activity.getName())), nameWidth),
+                    padName(shortenName(activity.getName()), nameWidth),
                     formatStars(importance), formatExclamations(urgency), formatCommitmentMarks(commitment),
                     priority, demand));
         }

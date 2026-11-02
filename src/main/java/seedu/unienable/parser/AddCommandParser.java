@@ -41,6 +41,8 @@ public class AddCommandParser {
 
     /**
      * Creates a parser with a shared clock for repeatable date/time validation.
+     *
+     * @param clock time source for the ended-activity check and the today/tomorrow date words.
      */
     public AddCommandParser(Clock clock) {
         this.clock = clock;

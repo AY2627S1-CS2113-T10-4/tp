@@ -22,27 +22,35 @@ import org.junit.jupiter.api.io.TempDir;
  * through the real entry point and isolated storage.
  */
 class UniEnableProcessTest {
-    /** Relative future dates keep process tests independent of the wall clock. */
-    private static final String DATE = LocalDate.now().plusDays(30).toString();
-    private static final String NEXT_DATE = LocalDate.now().plusDays(31).toString();
+    /*
+     * The child JVM uses the real system clock, and add/edit reject activities that have ended.
+     * Dates are therefore computed from today instead of hard-coded, so the suite cannot start
+     * failing once a fixed date passes. NEXT_DATE and LATER_DATE keep the scenarios' day order.
+     */
+    private static final LocalDate BASE_DATE = LocalDate.now().plusYears(1);
+    private static final String FUTURE_DATE = BASE_DATE.toString();
+    private static final String NEXT_DATE = BASE_DATE.plusDays(1).toString();
+    private static final String LATER_DATE = BASE_DATE.plusDays(2).toString();
+    /** Completed, rated record that most scenarios store before checking it stays unchanged. */
+    private static final String EXISTING_RECORD = "Existing|" + FUTURE_DATE + "|09:00|10:00|LOW|true|2|3|4\n";
 
     @Test
     void riddhisBirthday_acceptsApostropheAndLowercaseDemand(@TempDir Path tempDir) throws Exception {
         String output = runSession(tempDir,
-                "add n/riddhi's birthday d/" + DATE + " s/20:00 e/23:30 dem/low\nlist\nbye\n");
+                "add n/riddhi's birthday d/" + FUTURE_DATE + " s/20:00 e/23:30 dem/low\nlist\nbye\n");
         assertTrue(output.contains("Added activity: riddhi's birthday"), output);
-        assertTrue(output.contains("Date: " + DATE + "\nTime: 20:00 - 23:30\nDemand: LOW"), output);
-        assertTrue(output.contains("1. riddhi's birthday (" + DATE + ", 20:00-23:30) [LOW] [ ]"), output);
+        assertTrue(output.contains("Date: " + FUTURE_DATE + "\nTime: 20:00 - 23:30\nDemand: LOW"), output);
+        assertTrue(output.contains("1. riddhi's birthday (" + FUTURE_DATE + ", 20:00-23:30) [LOW] [ ]"), output);
         assertFalse(output.contains("[WARNING]"), output);
-        assertEquals("riddhi's birthday|" + DATE + "|20:00|23:30|LOW|false|-|-|-\n",
+        assertEquals("riddhi's birthday|" + FUTURE_DATE + "|20:00|23:30|LOW|false|-|-|-\n",
                 Files.readString(tempDir.resolve("data/activities.txt")));
         String restarted = runSession(tempDir, "list\nbye\n");
-        assertTrue(restarted.contains("1. riddhi's birthday (" + DATE + ", 20:00-23:30) [LOW] [ ]"), restarted);
+        assertTrue(restarted.contains("1. riddhi's birthday (" + FUTURE_DATE + ", 20:00-23:30) [LOW] [ ]"), restarted);
     }
 
     @Test
     void apostrophes_surviveAddEditSearchAndRestart(@TempDir Path tempDir) throws Exception {
-        String output = runSession(tempDir, "add n/Student's meeting d/" + DATE + " s/09:00 e/10:00\n"
+        String output = runSession(tempDir, "add n/Student's meeting d/" + FUTURE_DATE + " s/09:00 e/10:00\n"
                 + "edit 1 n/O'Brien's lecture\nfind O'Brien\nbye\n");
         assertTrue(output.contains("Added activity: Student's meeting"), output);
         assertTrue(output.contains("Edited activity: O'Brien's lecture"), output);
@@ -100,15 +108,15 @@ class UniEnableProcessTest {
 
     @Test
     void totalCount_includesActivitiesLoadedFromEarlierSessions(@TempDir Path tempDir) throws Exception {
-        runSession(tempDir, "add n/First d/" + DATE + " s/09:00 e/10:00\nbye\n");
-        String output = runSession(tempDir, "add n/Second d/" + DATE + " s/10:00 e/11:00\nbye\n");
+        runSession(tempDir, "add n/First d/" + FUTURE_DATE + " s/09:00 e/10:00\nbye\n");
+        String output = runSession(tempDir, "add n/Second d/" + FUTURE_DATE + " s/10:00 e/11:00\nbye\n");
         assertTrue(output.contains("Total activities: 2"), output);
         assertFalse(output.contains("Activities in this session"), output);
     }
 
     @Test
     void commas_surviveAddEditAndRestart(@TempDir Path tempDir) throws Exception {
-        String output = runSession(tempDir, "add n/Lunch, then gym d/" + DATE + " s/09:00 e/10:00\n"
+        String output = runSession(tempDir, "add n/Lunch, then gym d/" + FUTURE_DATE + " s/09:00 e/10:00\n"
                 + "edit 1 n/Lunch, then study\nbye\n");
         assertTrue(output.contains("Added activity: Lunch, then gym"), output);
         assertTrue(output.contains("Edited activity: Lunch, then study"), output);
@@ -119,7 +127,7 @@ class UniEnableProcessTest {
 
     @Test
     void doubleQuotedNames_rejectAddAndEditWithoutWritingData(@TempDir Path tempDir) throws Exception {
-        String add = "add n/\"Discuss notes\" d/" + DATE + " s/09:00 e/10:00\n";
+        String add = "add n/\"Discuss notes\" d/" + FUTURE_DATE + " s/09:00 e/10:00\n";
         String warning = "[WARNING] Activity names must not contain backslashes (\\)"
                 + " or double quotation marks.";
         String emptyOutput = runSession(tempDir, add + "list\nbye\n");
@@ -128,7 +136,7 @@ class UniEnableProcessTest {
         assertFalse(emptyOutput.contains("Added activity:"), emptyOutput);
         assertFalse(Files.exists(file));
         Files.createDirectories(file.getParent());
-        byte[] original = ("Existing|" + DATE + "|09:00|10:00|LOW|true|2|3|4\n").getBytes(StandardCharsets.UTF_8);
+        byte[] original = EXISTING_RECORD.getBytes(StandardCharsets.UTF_8);
         Files.write(file, original);
         var modifiedTime = Files.getLastModifiedTime(file);
         String output = runSession(tempDir, add + "edit 1 n/\"Changed notes\" imp/5\nlist\nbye\n");
@@ -142,12 +150,12 @@ class UniEnableProcessTest {
 
     @Test
     void unsupportedSlashes_rejectAddAndEditWithoutChangingSavedData(@TempDir Path tempDir) throws Exception {
-        String add = "add n/Call Mom/Dad d/" + DATE + " s/09:00 e/10:00\n";
+        String add = "add n/Call Mom/Dad d/" + FUTURE_DATE + " s/09:00 e/10:00\n";
         String rejected = runSession(tempDir, add + "bye\n");
         assertTrue(rejected.contains("[WARNING] Unknown parameter 'mom/'"), rejected);
         Path file = tempDir.resolve("data/activities.txt");
         assertFalse(Files.exists(file));
-        runSession(tempDir, "add n/Original d/" + DATE + " s/09:00 e/10:00\nbye\n");
+        runSession(tempDir, "add n/Original d/" + FUTURE_DATE + " s/09:00 e/10:00\nbye\n");
         byte[] original = Files.readAllBytes(file);
         String edited = runSession(tempDir, "edit 1 n/Sem/Exam planning imp/5\nlist\nbye\n");
         assertTrue(edited.contains("[WARNING] Unknown parameter 'sem/'"), edited);
@@ -159,7 +167,7 @@ class UniEnableProcessTest {
     void forbiddenPunctuation_preservesSavedBytesAndRestart(@TempDir Path tempDir) throws Exception {
         Path file = tempDir.resolve("data/activities.txt");
         Files.createDirectories(file.getParent());
-        byte[] original = ("Existing|" + DATE + "|09:00|10:00|LOW|true|2|3|4\n").getBytes(StandardCharsets.UTF_8);
+        byte[] original = EXISTING_RECORD.getBytes(StandardCharsets.UTF_8);
         Files.write(file, original);
         var modifiedTime = Files.getLastModifiedTime(file);
         StringBuilder commands = new StringBuilder();
@@ -190,7 +198,7 @@ class UniEnableProcessTest {
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);
 
         String output = runSession(tempDir, "edit 1 n/Changed dem/HIGH imp/5\n"
-                + "edit 1 d/" + DATE + "\nlist\nfind Historical\nbye\n");
+                + "edit 1 d/" + FUTURE_DATE + "\nlist\nfind Historical\nbye\n");
         assertEquals(2, output.split(Pattern.quote(
                 "[WARNING] Activities that have ended cannot be edited."), -1).length - 1, output);
         assertFalse(output.contains("Added activity:"), output);
@@ -207,7 +215,7 @@ class UniEnableProcessTest {
 
     @Test
     void digitPrefixTypos_rejectAddAndEditWithoutWritingData(@TempDir Path tempDir) throws Exception {
-        String add = "add n/Class dem1/HIGH d/" + DATE + " s/10:00 e/11:00\n";
+        String add = "add n/Class dem1/HIGH d/" + FUTURE_DATE + " s/10:00 e/11:00\n";
         String warning = "[WARNING] Unknown parameter 'dem1/'. Did you mean 'dem/'?";
         String emptyOutput = runSession(tempDir, add + "list\nbye\n");
         Path activityFile = tempDir.resolve("data/activities.txt");
@@ -216,29 +224,29 @@ class UniEnableProcessTest {
         assertFalse(Files.exists(activityFile));
 
         Files.createDirectories(activityFile.getParent());
-        byte[] original = ("Existing|" + DATE + "|09:00|10:00|LOW|true|2|3|4\n").getBytes(StandardCharsets.UTF_8);
+        byte[] original = EXISTING_RECORD.getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);
         String output = runSession(tempDir, add + "edit 1 n/Class dem1/HIGH imp/5\nlist\nbye\n");
         assertEquals(2, output.split(Pattern.quote(warning), -1).length - 1, output);
         assertFalse(output.contains("Added activity:"), output);
         assertFalse(output.contains("Edited activity:"), output);
-        assertTrue(output.contains("1. Existing (" + DATE + ", 09:00-10:00) [LOW] [X]"), output);
+        assertTrue(output.contains("1. Existing (" + FUTURE_DATE + ", 09:00-10:00) [LOW] [X]"), output);
         assertArrayEquals(original, Files.readAllBytes(activityFile));
         assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
     }
 
     @Test
     void duplicateAndClashingCommandsPreserveCountAndStoredBytes(@TempDir Path tempDir) throws Exception {
-        String setup = runSession(tempDir, "add n/CS2113 tutorial d/" + DATE + " s/10:00 e/11:00\n"
-                + "add n/Later d/" + DATE + " s/12:00 e/13:00\nbye\n");
+        String setup = runSession(tempDir, "add n/CS2113 tutorial d/" + FUTURE_DATE + " s/10:00 e/11:00\n"
+                + "add n/Later d/" + FUTURE_DATE + " s/12:00 e/13:00\nbye\n");
         assertTrue(setup.contains("Total activities: 2"), setup);
         Path activityFile = tempDir.resolve("data/activities.txt");
         byte[] original = Files.readAllBytes(activityFile);
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);
 
-        String output = runSession(tempDir, "add n/CS2113 tutorial d/" + DATE + " s/10:00 e/11:00\n"
-                + "add n/Other d/" + DATE + " s/10:30 e/11:30\n"
+        String output = runSession(tempDir, "add n/CS2113 tutorial d/" + FUTURE_DATE + " s/10:00 e/11:00\n"
+                + "add n/Other d/" + FUTURE_DATE + " s/10:30 e/11:30\n"
                 + "edit 2 n/CS2113 tutorial s/10:00 e/11:00 imp/5\n"
                 + "edit 2 n/Changed s/10:30 e/11:30 imp/5\nlist\nbye\n");
 
@@ -263,7 +271,7 @@ class UniEnableProcessTest {
     void nonAsciiCommandWords_warnAndPreserveActivities(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("data/activities.txt");
         Files.createDirectories(activityFile.getParent());
-        byte[] original = ("Existing|" + DATE + "|09:00|10:00|LOW|true|2|3|4\n").getBytes(StandardCharsets.UTF_8);
+        byte[] original = EXISTING_RECORD.getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);
         String output = runSession(tempDir, "加入\nவணக்கம்\nபடி\ncafé\n🎉\nhe李lp\nbogus\nlist\nbye\n");
@@ -273,7 +281,7 @@ class UniEnableProcessTest {
         assertEquals(6, output.split(Pattern.quote(warning), -1).length - 1, output);
         assertTrue(output.replace("\r\n", "\n").contains(border + "\n" + warning + "\n" + border), output);
         assertTrue(output.contains("[WARNING] Unrecognized command. Type help to see available commands."), output);
-        assertTrue(output.contains("1. Existing (" + DATE + ", 09:00-10:00) [LOW] [X]"), output);
+        assertTrue(output.contains("1. Existing (" + FUTURE_DATE + ", 09:00-10:00) [LOW] [X]"), output);
         assertTrue(output.contains("Goodbye from UniEnable!"), output);
         assertArrayEquals(original, Files.readAllBytes(activityFile));
         assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
@@ -325,7 +333,7 @@ class UniEnableProcessTest {
             "Bad\u0000Name", "Bad\u007fName"};
         StringBuilder commands = new StringBuilder();
         for (String name : names) {
-            commands.append("add n/").append(name).append(" d/" + NEXT_DATE + " s/09:00 e/10:00\n");
+            commands.append("add n/").append(name).append(" d/" + LATER_DATE + " s/09:00 e/10:00\n");
         }
         String output = runSession(tempDir, commands + "list\nbye\n");
 
@@ -341,7 +349,7 @@ class UniEnableProcessTest {
         String name = "CS2113 Planning review (Group 2)!";
         String updatedName = name + " revised";
         String output = runSession(tempDir, "add n/" + name
-                + " d/" + DATE + " s/09:00 e/10:00\nedit 1 n/" + updatedName
+                + " d/" + FUTURE_DATE + " s/09:00 e/10:00\nedit 1 n/" + updatedName
                 + "\nfind " + updatedName + "\nbye\n");
 
         assertTrue(output.contains("Added activity: " + name), output);
@@ -350,10 +358,11 @@ class UniEnableProcessTest {
         assertFalse(output.contains("[WARNING]"), output);
         Path activityFile = tempDir.resolve("data/activities.txt");
         byte[] saved = Files.readAllBytes(activityFile);
-        assertTrue(new String(saved, StandardCharsets.UTF_8).contains(updatedName + "|" + DATE));
+        assertTrue(new String(saved, StandardCharsets.UTF_8).contains(updatedName + "|" + FUTURE_DATE));
 
         String restartedOutput = runSession(tempDir, "list\nbye\n");
-        assertTrue(restartedOutput.contains("1. " + updatedName + " (" + DATE + ", 09:00-10:00)"), restartedOutput);
+        assertTrue(restartedOutput.contains("1. " + updatedName + " (" + FUTURE_DATE + ", 09:00-10:00)"),
+                restartedOutput);
         assertArrayEquals(saved, Files.readAllBytes(activityFile));
     }
 
@@ -362,13 +371,13 @@ class UniEnableProcessTest {
         String name = "复习 வணக்கம் படி Café 🎉";
         Path activityFile = tempDir.resolve("data/activities.txt");
         Files.createDirectories(activityFile.getParent());
-        byte[] original = (name + "|" + DATE + "|09:00|10:00|LOW|false|-|-|-\n")
+        byte[] original = (name + "|" + FUTURE_DATE + "|09:00|10:00|LOW|false|-|-|-\n")
                 .getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
 
         for (int session = 0; session < 2; session++) {
             String output = runSession(tempDir, "list\nfind " + name + "\nbye\n");
-            assertTrue(output.contains("1. " + name + " (" + DATE + ", 09:00-10:00)"), output);
+            assertTrue(output.contains("1. " + name + " (" + FUTURE_DATE + ", 09:00-10:00)"), output);
             assertTrue(output.contains("Found 1 matching activity:"), output);
             assertFalse(output.contains("Activity data warning:"), output);
             assertArrayEquals(original, Files.readAllBytes(activityFile));
@@ -380,16 +389,18 @@ class UniEnableProcessTest {
         String name = "复习 வணக்கம் படி Café 🎉";
         Path activityFile = tempDir.resolve("data/activities.txt");
         Files.createDirectories(activityFile.getParent());
-        Files.writeString(activityFile, name + "|" + DATE + "|09:00|10:00|LOW|true|2|3|4\n", StandardCharsets.UTF_8);
+        Files.writeString(activityFile, name + "|" + FUTURE_DATE + "|09:00|10:00|LOW|true|2|3|4\n",
+                StandardCharsets.UTF_8);
 
         String output = runSession(tempDir, "edit 1 dem/HIGH imp/5\nbye\n");
         assertTrue(output.contains("Edited activity: " + name), output);
         assertFalse(output.contains("[WARNING]"), output);
-        byte[] expected = (name + "|" + DATE + "|09:00|10:00|HIGH|true|5|3|4\n").getBytes(StandardCharsets.UTF_8);
+        byte[] expected = (name + "|" + FUTURE_DATE + "|09:00|10:00|HIGH|true|5|3|4\n")
+                .getBytes(StandardCharsets.UTF_8);
         assertArrayEquals(expected, Files.readAllBytes(activityFile));
 
         String restarted = runSession(tempDir, "list\nbye\n");
-        assertTrue(restarted.contains("1. " + name + " (" + DATE + ", 09:00-10:00) [HIGH] [X]"), restarted);
+        assertTrue(restarted.contains("1. " + name + " (" + FUTURE_DATE + ", 09:00-10:00) [HIGH] [X]"), restarted);
         assertArrayEquals(expected, Files.readAllBytes(activityFile));
     }
 
@@ -397,15 +408,33 @@ class UniEnableProcessTest {
     void rejectedEdit_doesNotLeakFieldsIntoLaterSuccessfulEdit(@TempDir Path tempDir) throws Exception {
         Path activityFile = tempDir.resolve("data/activities.txt");
         Files.createDirectories(activityFile.getParent());
-        Files.writeString(activityFile, "Existing|" + DATE + "|09:00|10:00|LOW|true|2|3|4\n", StandardCharsets.UTF_8);
+        Files.writeString(activityFile, EXISTING_RECORD, StandardCharsets.UTF_8);
 
         String output = runSession(tempDir, "edit 1 n/复习 d/" + NEXT_DATE + " s/11:00 e/12:00"
                 + " dem/HIGH imp/5 urg/5 com/5\nedit 1 n/Verified\nbye\n");
 
         assertTrue(output.contains(invalidNameWarning()), output);
         assertTrue(output.contains("Edited activity: Verified"), output);
-        assertArrayEquals(("Verified|" + DATE + "|09:00|10:00|LOW|true|2|3|4\n").getBytes(StandardCharsets.UTF_8),
+        assertArrayEquals(("Verified|" + FUTURE_DATE + "|09:00|10:00|LOW|true|2|3|4\n")
+                .getBytes(StandardCharsets.UTF_8),
                 Files.readAllBytes(activityFile));
+    }
+
+    @Test
+    void controlCharacters_inSavedNamesAndEchoedInput_areNotSentToTheTerminal(@TempDir Path tempDir)
+            throws Exception {
+        Path activityFile = tempDir.resolve("data/activities.txt");
+        Files.createDirectories(activityFile.getParent());
+        byte[] original = ("Red\u001b[31mName|" + FUTURE_DATE + "|09:00|10:00|LOW|false|-|-|-\n")
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+
+        String output = runSession(tempDir, "list\nfind Red\nhelp \u001b[31mX\nbye\n");
+
+        assertFalse(output.contains("\u001b"), output);
+        assertTrue(output.contains("1. Red?[31mName (" + FUTURE_DATE + ", 09:00-10:00) [LOW] [ ]"), output);
+        assertTrue(output.contains("[WARNING] Unknown help topic '?[31mX'."), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
     }
 
     /**
@@ -414,39 +443,24 @@ class UniEnableProcessTest {
     private static void assertNameIsRejected(Path tempDir, String name) throws Exception {
         Path activityFile = tempDir.resolve("data/activities.txt");
         Files.createDirectories(activityFile.getParent());
-        byte[] original = ("Existing|" + DATE + "|09:00|10:00|LOW|true|2|3|4\n").getBytes(StandardCharsets.UTF_8);
+        byte[] original = EXISTING_RECORD.getBytes(StandardCharsets.UTF_8);
         Files.write(activityFile, original);
         var originalModifiedTime = Files.getLastModifiedTime(activityFile);
         String output = runSession(tempDir, "add n/" + name
-                + " d/" + NEXT_DATE + " s/09:00 e/10:00\nedit 1 n/" + name
+                + " d/" + LATER_DATE + " s/09:00 e/10:00\nedit 1 n/" + name
                 + " d/" + NEXT_DATE + " s/11:00 e/12:00 dem/HIGH imp/5 urg/5 com/5\nlist\nbye\n");
 
         assertEquals(2, output.split(Pattern.quote(invalidNameWarning()), -1).length - 1, output);
         assertFalse(output.contains("Added activity:"), output);
         assertFalse(output.contains("Edited activity:"), output);
-        assertTrue(output.contains("1. Existing (" + DATE + ", 09:00-10:00) [LOW] [X]"), output);
+        assertTrue(output.contains("1. Existing (" + FUTURE_DATE + ", 09:00-10:00) [LOW] [X]"), output);
         assertTrue(output.contains("Goodbye from UniEnable!"), output);
         assertArrayEquals(original, Files.readAllBytes(activityFile));
         assertEquals(originalModifiedTime, Files.getLastModifiedTime(activityFile));
 
         String restarted = runSession(tempDir, "list\nbye\n");
-        assertTrue(restarted.contains("1. Existing (" + DATE + ", 09:00-10:00) [LOW] [X]"), restarted);
+        assertTrue(restarted.contains("1. Existing (" + FUTURE_DATE + ", 09:00-10:00) [LOW] [X]"), restarted);
         assertArrayEquals(original, Files.readAllBytes(activityFile));
-    }
-
-    @Test
-    void storedControlCharacters_areEscapedInTerminalOutput(@TempDir Path tempDir) throws Exception {
-        Path file = tempDir.resolve("data/activities.txt");
-        Files.createDirectories(file.getParent());
-        String name = "Evil\u001b[31mRED";
-        Files.writeString(file, name + "|" + DATE + "|10:00|11:00|MEDIUM|false|-|-|-\n",
-                StandardCharsets.UTF_8);
-
-        String output = runSession(tempDir, "list\nfind Evil\nmark 1\nunmark 1\nbye\n");
-
-        assertFalse(output.contains("\u001b"), output);
-        assertTrue(output.contains("Evil\\u001B[31mRED"), output);
-        assertFalse(output.contains("Activity data warning:"), output);
     }
 
     /**

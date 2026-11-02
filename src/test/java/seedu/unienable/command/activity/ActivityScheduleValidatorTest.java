@@ -2,7 +2,6 @@
 package seedu.unienable.command.activity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -181,21 +180,6 @@ class ActivityScheduleValidatorTest {
                 () -> execute(activities, "add n/STUDY d/2030-12-01 s/10:00 e/11:00"));
 
         assertTrue(error.getMessage().startsWith("[WARNING] Duplicate activity already recorded at index 2:"));
-    }
-
-    @Test
-    void clashWarning_escapesControlCharactersInStoredNames() {
-        Activity existing = new Activity("Evil\u001b[31mRED", LocalDate.of(2030, 1, 1),
-                LocalTime.of(9, 0), LocalTime.of(10, 0), DemandLevel.LOW, false);
-        ActivityList activities = new ActivityList(List.of(existing));
-        Activity clash = new Activity("Other", LocalDate.of(2030, 1, 1),
-                LocalTime.of(9, 30), LocalTime.of(10, 30), DemandLevel.LOW, false);
-
-        UniEnableException error = assertThrows(UniEnableException.class,
-                () -> ActivityScheduleValidator.validate(clash, activities, null));
-
-        assertTrue(error.getMessage().contains("Evil\\u001B[31mRED"), error.getMessage());
-        assertFalse(error.getMessage().contains("\u001b"), error.getMessage());
     }
 
     /**

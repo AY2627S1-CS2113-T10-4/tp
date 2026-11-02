@@ -48,6 +48,9 @@ public class RouteParser {
 
     /**
      * Creates a route parser with optional ID lookup; name-only routing still works without facilities.
+     *
+     * @param connectionManager recorded connections, or null when connection data is unavailable.
+     * @param facilityManager facility data used to resolve IDs such as F01 to names, or null.
      */
     public RouteParser(ConnectionManager connectionManager, FacilityManager facilityManager) {
         this.connectionManager = connectionManager;

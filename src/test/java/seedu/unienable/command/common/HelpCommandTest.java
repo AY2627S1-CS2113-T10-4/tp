@@ -86,7 +86,7 @@ class HelpCommandTest {
                 "facility find type/LIFT status/YES"},
             {"route", "route from/START to/END", "from/ before to/", "route from/AS1 to/CLB"},
             {"help", "help TOPIC", "topic matching ignores letter case", "help add"},
-            {"bye", "bye", "keeps the app running", "Ctrl-D", "bye"}
+            {"bye", "bye", "keeps the app running", "bye"}
         };
         return Stream.of(cases).map(scenario -> DynamicTest.dynamicTest("help " + scenario[0], () -> {
             ActivityList activities = new ActivityList();
@@ -139,6 +139,13 @@ class HelpCommandTest {
         assertTrue(deletion.contains("list demand retains chronological indexes"), deletion);
         assertTrue(deletion.contains("Do not use numbering from the calendar dashboards"), deletion);
         assertFalse(deletion.contains("Do not use numbering from list demand"), deletion);
+    }
+
+    @Test
+    void execute_byeHelp_namesTheWayToQuitWithoutSaving() throws Exception {
+        String bye = parser.parse("help bye").execute(new ActivityList(), noWrites).getMessage();
+        assertTrue(bye.contains("A failed retry keeps the app running."), bye);
+        assertTrue(bye.contains("To quit without saving, end input with Ctrl+D (Windows: Ctrl+Z, then Enter)."), bye);
     }
 
     @Test

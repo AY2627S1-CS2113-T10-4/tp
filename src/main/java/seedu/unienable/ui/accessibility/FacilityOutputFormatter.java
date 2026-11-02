@@ -5,7 +5,6 @@ import java.util.List;
 import seedu.unienable.model.Facility;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
-import seedu.unienable.ui.SafeText;
 
 //@@author lukelouyu
 /**
@@ -86,7 +85,7 @@ public final class FacilityOutputFormatter {
      */
     public static String formatUnknownFacility(String identifier, List<Facility> facilities) {
         StringBuilder output = new StringBuilder("[WARNING] Unknown facility '");
-        output.append(SafeText.format(identifier)).append("'.\n\nSupported facilities:\n");
+        output.append(identifier).append("'.\n\nSupported facilities:\n");
         if (facilities.isEmpty()) {
             output.append("None");
         } else {

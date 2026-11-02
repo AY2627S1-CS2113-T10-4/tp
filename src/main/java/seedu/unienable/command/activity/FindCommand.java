@@ -32,7 +32,7 @@ public class FindCommand extends Command {
     public CommandResult execute(ActivityList activities, Storage storage) {
         List<Activity> canonicalView = activities.getCanonicalView();
         List<Activity> matches = activities.findByName(keyword);
-        String message = ActivityListFormatter.formatFindResults(matches, canonicalView);
+        String message = ActivityListFormatter.formatFindResults(keyword, matches, canonicalView);
         return new CommandResult(message, false);
     }
 }

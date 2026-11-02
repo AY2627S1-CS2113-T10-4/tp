@@ -8,7 +8,6 @@ import seedu.unienable.command.activity.ListDemandCommand;
 import seedu.unienable.command.activity.ListPriorityCommand;
 import seedu.unienable.command.common.Command;
 import seedu.unienable.exception.ParseException;
-import seedu.unienable.ui.SafeText;
 
 //@@author officialasyrafrahim
 /**
@@ -60,7 +59,7 @@ public class ListDeleteCommandParser {
             }
             return new ListPriorityCommand();
         }
-        throw new ParseException(WARNING_MESSAGE + " Unknown list variant '" + SafeText.format(words[1]) + "'.\n"
+        throw new ParseException(WARNING_MESSAGE + " Unknown list variant '" + words[1] + "'.\n"
                 + "Usage: list\n       list demand\n       list priority");
     }
 
@@ -84,7 +83,7 @@ public class ListDeleteCommandParser {
         }
         String token = words[1];
         if (!INDEX_PATTERN.matcher(token).matches()) {
-            throw new ParseException(WARNING_MESSAGE + " Invalid index '" + SafeText.format(token)
+            throw new ParseException(WARNING_MESSAGE + " Invalid index '" + token
                     + "'. Index must be a positive whole number.\n" + usage);
         }
         try {

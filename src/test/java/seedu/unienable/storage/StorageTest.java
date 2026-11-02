@@ -81,6 +81,21 @@ class StorageTest {
     }
 
     @Test
+    void save_timesWithSeconds_useTheHourMinuteFormatThatLoadingAccepts() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        Activity activity = new Activity("Seconds", LocalDate.of(2026, 1, 1), LocalTime.of(9, 0, 30),
+                LocalTime.of(10, 0, 45), DemandLevel.LOW, false);
+
+        new Storage(file).save(new ActivityList(List.of(activity)));
+
+        assertEquals("Seconds|2026-01-01|09:00|10:00|LOW|false|-|-|-\n",
+                Files.readString(file, StandardCharsets.UTF_8));
+        Storage restarted = new Storage(file);
+        assertEquals(List.of("Seconds"), restarted.load().getActivities().stream().map(Activity::getName).toList());
+        assertTrue(restarted.getWarnings().isEmpty());
+    }
+
+    @Test
     void load_legacyAndRatedRows_migratesOnlyOnSave() throws Exception {
         Path file = tempDir.resolve("activities.txt");
         String legacyDone = "Legacy done|2026-01-01|09:00|10:00|HIGH|true";
@@ -121,8 +136,7 @@ class StorageTest {
                 "BadTime|2026-01-01|25:00|10:00|LOW|false",
                 "BadDemand|2026-01-01|09:00|10:00|URGENT|false",
                 "BadDone|2026-01-01|09:00|10:00|LOW|maybe",
-                valid + "|1", valid + "|1|2", valid + "|1|2|3|4",
-                "Seconds|2030-01-01|09:00:15|10:00:00|LOW|false"));
+                valid + "|1", valid + "|1|2", valid + "|1|2|3|4"));
         for (String value : new String[] {"", "0", "6", "-1", "1.5", "text", "2147483648"}) {
             for (int field = 0; field < 3; field++) {
                 String[] ratings = {"1", "2", "3"};
@@ -147,6 +161,74 @@ class StorageTest {
     }
 
     @Test
+    void load_blankLines_areSkippedWithoutWarningsOrRecoveryBackup() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        String first = "First|2026-01-01|09:00|10:00|LOW|false|-|-|-";
+        String second = "Second|2026-01-02|09:00|10:00|HIGH|true|1|2|3";
+        String original = "\n" + first + "\n\n   \n" + second + "\n\n";
+        Files.writeString(file, original, StandardCharsets.UTF_8);
+        Storage storage = new Storage(file);
+
+        ActivityList loaded = storage.load();
+
+        assertEquals(List.of("First", "Second"), loaded.getActivities().stream().map(Activity::getName).toList());
+        assertTrue(storage.getWarnings().isEmpty());
+        assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
+
+        storage.save(loaded);
+
+        assertEquals(first + "\n" + second + "\n", Files.readString(file, StandardCharsets.UTF_8));
+        assertFalse(Files.exists(tempDir.resolve("activities.txt.corrupt.bak")));
+    }
+
+    @Test
+    void load_blankLines_stillCountTowardsWarningLineNumbers() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        Files.writeString(file, "Valid|2026-01-01|09:00|10:00|LOW|false\n\nbroken row\n", StandardCharsets.UTF_8);
+        Storage storage = new Storage(file);
+
+        storage.load();
+
+        assertEquals(List.of("Line 3: expected 6 or 9 fields separated by '|'."), storage.getWarnings());
+    }
+
+    @Test
+    void load_byteOrderMark_isNotPartOfTheFirstNameAndIsNotSavedBack() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        String record = "First|2026-01-01|09:00|10:00|LOW|false|-|-|-\n";
+        byte[] bom = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
+        byte[] recordBytes = record.getBytes(StandardCharsets.UTF_8);
+        byte[] original = new byte[bom.length + recordBytes.length];
+        System.arraycopy(bom, 0, original, 0, bom.length);
+        System.arraycopy(recordBytes, 0, original, bom.length, recordBytes.length);
+        Files.write(file, original);
+        Storage storage = new Storage(file);
+
+        ActivityList loaded = storage.load();
+
+        assertEquals("First", loaded.getActivities().getFirst().getName());
+        assertTrue(storage.getWarnings().isEmpty());
+        assertArrayEquals(original, Files.readAllBytes(file));
+
+        storage.save(loaded);
+
+        assertArrayEquals(recordBytes, Files.readAllBytes(file));
+        assertFalse(Files.exists(tempDir.resolve("activities.txt.corrupt.bak")));
+    }
+
+    @Test
+    void load_byteOrderMarkOnItsOwnLine_isSkippedLikeABlankLine() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        Files.writeString(file, "\uFEFF\nFirst|2026-01-01|09:00|10:00|LOW|false\n", StandardCharsets.UTF_8);
+        Storage storage = new Storage(file);
+
+        ActivityList loaded = storage.load();
+
+        assertEquals(List.of("First"), loaded.getActivities().stream().map(Activity::getName).toList());
+        assertTrue(storage.getWarnings().isEmpty());
+    }
+
+    @Test
     void load_invalidTimeRanges_warnsAndPreservesOriginalBeforeRecoverySave() throws Exception {
         String valid = "Historical|2026-01-01|09:00|10:00|LOW|false";
         String[] ranges = {"09:00|09:00", "10:00|09:00"};
@@ -163,10 +245,8 @@ class StorageTest {
 
                 assertEquals(List.of("Historical"), loaded.getActivities().stream().map(Activity::getName).toList(),
                         invalid);
-                assertEquals(1, storage.getWarnings().size(), invalid);
-                assertTrue(storage.getWarnings().getFirst().startsWith("Line 2:"), invalid);
-                assertTrue(storage.getWarnings().getFirst()
-                        .contains("end time must be later than start time"), invalid);
+                assertEquals(List.of("Line 2: end time must be later than start time on the same day."),
+                        storage.getWarnings(), invalid);
                 assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
 
                 storage.save(loaded);
@@ -261,21 +341,5 @@ class StorageTest {
 
         assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
     }
-
-    @Test
-    void load_ignoresBlankLinesAndUtf8BomWithoutWarnings() throws Exception {
-        Path file = tempDir.resolve("activities.txt");
-        String row = "A|2030-01-01|10:00|11:00|MEDIUM|false|-|-|-";
-        Files.write(file, ("\uFEFF" + row + "\n\n\n").getBytes(StandardCharsets.UTF_8));
-        Storage storage = new Storage(file);
-
-        ActivityList loaded = storage.load();
-
-        assertEquals(List.of("A"), loaded.getActivities().stream().map(Activity::getName).toList());
-        assertTrue(storage.getWarnings().isEmpty());
-        storage.save(loaded);
-        assertFalse(Files.exists(tempDir.resolve("activities.txt.corrupt.bak")));
-    }
-
 }
 //@@author

@@ -1,6 +1,7 @@
 //@@author Oliver-koh
 package seedu.unienable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,6 +12,10 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -87,7 +92,6 @@ class ConsoleSaveRecoveryTest {
         assertFalse(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
         assertTrue(storage.hasUnsavedChanges());
         assertFalse(output.toString(StandardCharsets.UTF_8).contains("Goodbye"));
-        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Ctrl-D"));
         assertFalse(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
         assertTrue(storage.hasUnsavedChanges());
         Files.delete(blocked);
@@ -96,6 +100,27 @@ class ConsoleSaveRecoveryTest {
         assertFalse(storage.hasUnsavedChanges());
         assertTrue(Files.exists(blocked.resolve("activities.txt")));
         assertThrows(ParseException.class, () -> parser.parse("save"));
+    }
+
+    @Test
+    void failedByeRetry_namesTheWayOutAndEndOfInputClosesWithoutSaving(@TempDir Path directory) throws Exception {
+        Path blocked = directory.resolve("blocked");
+        Files.writeString(blocked, "not a directory");
+        Path file = blocked.resolve("activities.txt");
+        String input = "add n/Keep me d/2026-12-10 s/09:00 e/10:00\nbye\n";
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        Clock clock = Clock.fixed(Instant.parse("2026-11-02T00:00:00Z"), ZoneOffset.UTC);
+
+        // run() returns only when bye succeeds or input ends; here bye fails, so input ending must close it.
+        UniEnable.run(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)),
+                new PrintStream(output, true, StandardCharsets.UTF_8), file, clock);
+
+        String text = output.toString(StandardCharsets.UTF_8);
+        String wayOut = "To quit without saving these changes, end input with Ctrl+D (Windows: Ctrl+Z, then Enter).";
+        assertEquals(2, text.split(Pattern.quote(wayOut), -1).length - 1, text);
+        assertFalse(text.contains("Goodbye"), text);
+        assertFalse(Files.exists(file));
+        assertEquals("not a directory", Files.readString(blocked));
     }
 }
 //@@author

@@ -25,5 +25,6 @@ text-ui-test/EXPECTED-UNIX.TXT
 /src/test/resources/session.tsv
 /src/test/resources/storage.tsv
 
-# Local activity data (personal schedule); never publish
+# Local activity data written by the app when run from the repository root.
+# Keeps personal schedules, recovery backups and temporary save files out of Git.
 /data/
