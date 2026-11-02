@@ -196,20 +196,26 @@ public class Storage {
         Integer urgency = fields.length == 9 ? parseStoredRating(fields[7]) : null;
         Integer commitment = fields.length == 9 ? parseStoredRating(fields[8]) : null;
 
+        LocalDate date;
+        LocalTime startTime;
+        LocalTime endTime;
+        DemandLevel demand;
+        boolean isDone;
         try {
-            LocalDate date = LocalDate.parse(fields[1], DATE_FORMAT);
-            LocalTime startTime = LocalTime.parse(fields[2], TIME_FORMAT);
-            LocalTime endTime = LocalTime.parse(fields[3], TIME_FORMAT);
-            if (!endTime.isAfter(startTime)) {
-                throw new IllegalArgumentException("end time must be later than start time on the same day.");
-            }
-            DemandLevel demand = DemandLevel.valueOf(fields[4].toUpperCase(Locale.ROOT));
-            boolean isDone = parseDone(fields[5]);
-            return new Activity(fields[0], date, startTime, endTime, demand, isDone,
-                    importance, urgency, commitment);
+            date = LocalDate.parse(fields[1], DATE_FORMAT);
+            startTime = LocalTime.parse(fields[2], TIME_FORMAT);
+            endTime = LocalTime.parse(fields[3], TIME_FORMAT);
+            demand = DemandLevel.valueOf(fields[4].toUpperCase(Locale.ROOT));
+            isDone = parseDone(fields[5]);
         } catch (DateTimeParseException | IllegalArgumentException exception) {
             throw new IllegalArgumentException("invalid date, time, demand, or completion value.");
         }
+        // Checked outside the catch above so the warning names this specific problem.
+        if (!endTime.isAfter(startTime)) {
+            throw new IllegalArgumentException("end time must be later than start time on the same day.");
+        }
+        return new Activity(fields[0], date, startTime, endTime, demand, isDone,
+                importance, urgency, commitment);
     }
 
     /**

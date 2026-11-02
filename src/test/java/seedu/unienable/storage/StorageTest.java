@@ -245,8 +245,8 @@ class StorageTest {
 
                 assertEquals(List.of("Historical"), loaded.getActivities().stream().map(Activity::getName).toList(),
                         invalid);
-                assertEquals(1, storage.getWarnings().size(), invalid);
-                assertTrue(storage.getWarnings().getFirst().startsWith("Line 2:"), invalid);
+                assertEquals(List.of("Line 2: end time must be later than start time on the same day."),
+                        storage.getWarnings(), invalid);
                 assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
 
                 storage.save(loaded);
