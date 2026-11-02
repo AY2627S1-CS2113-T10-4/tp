@@ -135,6 +135,12 @@ lists; the facility formatters build reference-data responses. `ViewCommand` and
 `RouteCommand` format their own results. The UI does not own activity state or
 write files. The main entry point uses UTF-8 console output for stored names.
 
+Every response passes through `Ui.showMessage`, which replaces control characters
+other than line breaks with `?` before printing. A saved name or an echoed command
+argument therefore cannot send a terminal escape sequence, such as a colour
+change, while printable Unicode names display unchanged. The activity file keeps
+the original characters.
+
 ### Logic component
 
 `Parser` dispatches each command word to a feature parser or validates a simple

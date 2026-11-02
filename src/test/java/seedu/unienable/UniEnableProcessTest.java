@@ -420,6 +420,23 @@ class UniEnableProcessTest {
                 Files.readAllBytes(activityFile));
     }
 
+    @Test
+    void controlCharacters_inSavedNamesAndEchoedInput_areNotSentToTheTerminal(@TempDir Path tempDir)
+            throws Exception {
+        Path activityFile = tempDir.resolve("data/activities.txt");
+        Files.createDirectories(activityFile.getParent());
+        byte[] original = ("Red\u001b[31mName|" + FUTURE_DATE + "|09:00|10:00|LOW|false|-|-|-\n")
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(activityFile, original);
+
+        String output = runSession(tempDir, "list\nfind Red\nhelp \u001b[31mX\nbye\n");
+
+        assertFalse(output.contains("\u001b"), output);
+        assertTrue(output.contains("1. Red?[31mName (" + FUTURE_DATE + ", 09:00-10:00) [LOW] [ ]"), output);
+        assertTrue(output.contains("[WARNING] Unknown help topic '?[31mX'."), output);
+        assertArrayEquals(original, Files.readAllBytes(activityFile));
+    }
+
     /**
      * Checks rejected add/edit, unchanged saved bytes and modification time, and preserved restart state.
      */

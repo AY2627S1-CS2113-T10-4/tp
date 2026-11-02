@@ -57,10 +57,12 @@ Viewing information does not save the file. Repeated `mark` or `unmark` commands
 also do not save if completion is unchanged. Successful edits always save.
 
 The app skips invalid or unreadable lines and warns you with their line numbers.
-Blank lines are ignored without a warning, and so is the invisible byte order
-mark that some text editors add to the start of a UTF-8 file. Other valid
-activities still load. If the entire file cannot be read, the app
+Other valid activities still load. If the entire file cannot be read, the app
 shows a warning and starts with an empty list.
+
+If you edit the file by hand, blank lines are ignored without a warning, and so
+is the invisible byte order mark that some text editors add to the start of a
+UTF-8 file. A control character in a saved name, such as a tab, is shown as `?`.
 
 Loading leaves the original file unchanged. Before saving after a loading problem,
 the app copies the original to `data/activities.txt.corrupt.bak`. If this backup
