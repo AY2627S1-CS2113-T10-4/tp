@@ -640,7 +640,9 @@ commands can act on past records; the
 
 #### Completion and persistence
 
-`Storage` decodes each UTF-8 record independently in insertion order. Invalid
+`Storage` decodes each UTF-8 record independently in insertion order. A UTF-8
+byte order mark at the start of the file is removed before the first record is
+parsed, so it never becomes part of a name or is saved back. Invalid
 encoding skips only that row and produces a line-numbered warning. Raw bytes are
 preserved until a recovery save verifies the original backup. Saves use nine pipe-separated
 fields; unset ratings are `-`, and `DONE` is `true` or `false`:

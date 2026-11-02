@@ -30,7 +30,8 @@ import seedu.unienable.model.enums.DemandLevel;
  * The saved format is {@code NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM}.
  * A stored dash means an unset rating; V1.0 records load with all ratings unset.
  *
- * <p>Blank lines are ignored. Malformed rows are skipped with line-numbered warnings. After malformed rows
+ * <p>Blank lines and a leading UTF-8 byte order mark are ignored. Malformed rows are skipped
+ * with line-numbered warnings. After malformed rows
  * or a fatal read failure, a later save preserves and verifies the original bytes
  * in a {@code .corrupt.bak} file before replacing the activity file.</p>
  */
@@ -40,6 +41,8 @@ public class Storage {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String FIELD_SEPARATOR = "|";
+    /** Invisible marker some editors write at the start of a UTF-8 file; it is never part of a name. */
+    private static final char BYTE_ORDER_MARK = '﻿';
 
     private final Path activityFile;
     private List<String> warnings = List.of();
@@ -92,6 +95,9 @@ public class Storage {
             try {
                 String line = StandardCharsets.UTF_8.newDecoder().decode(ByteBuffer.wrap(
                         lines.get(i).getBytes(StandardCharsets.ISO_8859_1))).toString();
+                if (i == 0 && !line.isEmpty() && line.charAt(0) == BYTE_ORDER_MARK) {
+                    line = line.substring(1);
+                }
                 // A blank line holds no record, as in the facility and connection files,
                 // so it is skipped without a corruption warning or recovery backup.
                 if (line.isBlank()) {

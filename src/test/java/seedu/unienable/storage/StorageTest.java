@@ -178,6 +178,42 @@ class StorageTest {
     }
 
     @Test
+    void load_byteOrderMark_isNotPartOfTheFirstNameAndIsNotSavedBack() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        String record = "First|2026-01-01|09:00|10:00|LOW|false|-|-|-\n";
+        byte[] bom = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
+        byte[] recordBytes = record.getBytes(StandardCharsets.UTF_8);
+        byte[] original = new byte[bom.length + recordBytes.length];
+        System.arraycopy(bom, 0, original, 0, bom.length);
+        System.arraycopy(recordBytes, 0, original, bom.length, recordBytes.length);
+        Files.write(file, original);
+        Storage storage = new Storage(file);
+
+        ActivityList loaded = storage.load();
+
+        assertEquals("First", loaded.getActivities().getFirst().getName());
+        assertTrue(storage.getWarnings().isEmpty());
+        assertArrayEquals(original, Files.readAllBytes(file));
+
+        storage.save(loaded);
+
+        assertArrayEquals(recordBytes, Files.readAllBytes(file));
+        assertFalse(Files.exists(tempDir.resolve("activities.txt.corrupt.bak")));
+    }
+
+    @Test
+    void load_byteOrderMarkOnItsOwnLine_isSkippedLikeABlankLine() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        Files.writeString(file, "﻿\nFirst|2026-01-01|09:00|10:00|LOW|false\n", StandardCharsets.UTF_8);
+        Storage storage = new Storage(file);
+
+        ActivityList loaded = storage.load();
+
+        assertEquals(List.of("First"), loaded.getActivities().stream().map(Activity::getName).toList());
+        assertTrue(storage.getWarnings().isEmpty());
+    }
+
+    @Test
     void load_invalidTimeRanges_warnsAndPreservesOriginalBeforeRecoverySave() throws Exception {
         String valid = "Historical|2026-01-01|09:00|10:00|LOW|false";
         String[] ranges = {"09:00|09:00", "10:00|09:00"};

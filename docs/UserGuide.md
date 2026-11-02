@@ -57,7 +57,9 @@ Viewing information does not save the file. Repeated `mark` or `unmark` commands
 also do not save if completion is unchanged. Successful edits always save.
 
 The app skips invalid or unreadable lines and warns you with their line numbers.
-Blank lines are ignored without a warning. Other valid activities still load. If the entire file cannot be read, the app
+Blank lines are ignored without a warning, and so is the invisible byte order
+mark that some text editors add to the start of a UTF-8 file. Other valid
+activities still load. If the entire file cannot be read, the app
 shows a warning and starts with an empty list.
 
 Loading leaves the original file unchanged. Before saving after a loading problem,
