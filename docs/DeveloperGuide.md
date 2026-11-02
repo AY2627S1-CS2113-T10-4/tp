@@ -1,10 +1,11 @@
 # UniEnable Developer Guide
 
-UniEnable is a Java 25 command-line application that helps university students, particularly those with ASD, ADHD, or mobility constraints, organize academic and daily commitments and check campus accessibility information. It combines dated activities, optional importance, urgency and commitment ratings, priority and calendar views, completion tracking, and automatic local saving with facility searches and shortest recorded accessible-route queries using sample data for nine NUS FASS campus hubs.
+UniEnable is a Java 25 command-line application that helps university students organize academic and daily commitments and check campus accessibility information. It is designed particularly for students with autism spectrum disorder (ASD), attention deficit hyperactivity disorder (ADHD), or mobility constraints. It combines dated activities, optional importance, urgency and commitment ratings, priority and calendar views, completion tracking, and automatic local saving with facility searches and shortest recorded accessible-route queries. The accessibility queries use sample data for nine campus buildings (hubs) of the Faculty of Arts and Social Sciences (FASS) at the National University of Singapore (NUS).
 
-This guide explains its components,
-key implementation decisions, and how to test changes. For command syntax,
-warnings, and worked examples, use the [User Guide](UserGuide.md).
+This guide explains UniEnable's components, key implementation decisions, and
+how to test changes. For command syntax, warnings, and worked examples, use the
+[User Guide](UserGuide.md). Technical terms are explained where they first
+appear and collected in the [Glossary](#glossary).
 
 ## Table of contents
 
@@ -53,13 +54,15 @@ The latest release is [UniEnable v2.1](https://github.com/AY2627S1-CS2113-T10-4/
 Its executable JAR requires Java 25. To inspect or reproduce the released code,
 use the repository's `v2.1` tag; `master` may contain later development changes.
 
-Install **JDK 25** and clone the repository. Check `java -version` before building
-or running the application. In IntelliJ IDEA, import the project as a Gradle
-project and select JDK 25 for both the project SDK and Gradle JVM. The
+Install **JDK 25** (the Java Development Kit, which includes the compiler) and
+clone the repository. Check `java -version` before building or running the
+application. In IntelliJ IDEA, import the project as a Gradle project and select
+JDK 25 for both the project SDK and Gradle JVM. The
 [README](https://github.com/AY2627S1-CS2113-T10-4/tp/blob/master/README.md#setting-up-in-intellij) gives the IDE setup steps.
 
-Run these commands from the project root using the included Gradle wrapper.
-The first build needs internet access to download Gradle and dependencies.
+Run these commands from the project root using the included Gradle wrapper
+(`gradlew` or `gradlew.bat`, scripts that download and run the correct Gradle
+version). The first build needs internet access to download Gradle and dependencies.
 
 | Purpose | Windows PowerShell | macOS / Linux |
 | --- | --- | --- |
@@ -69,10 +72,12 @@ The first build needs internet access to download Gradle and dependencies.
 | Run the console application | `.\gradlew.bat run --console=plain` | `./gradlew run --console=plain` |
 | Build the executable JAR | `.\gradlew.bat shadowJar` | `./gradlew shadowJar` |
 
-`check` runs tests, Checkstyle, and the configured JaCoCo coverage checks. The
-application entry point is `seedu.unienable.UniEnable`. Gradle's `run` task enables
-assertions; add `-ea` to the VM options when running the main method directly in
-an IDE. After `shadowJar`, run the JAR with assertions enabled:
+`check` runs the tests, Checkstyle (which enforces the coding style), and the
+configured JaCoCo test-coverage checks. The application entry point is
+`seedu.unienable.UniEnable`. Gradle's `run` task enables assertions, the `assert`
+statements that check internal assumptions; add `-ea` to the VM options when
+running the main method directly in an IDE. After `shadowJar` builds the
+executable JAR, run it with assertions enabled:
 
 ```text
 java -ea -jar build/libs/unienable.jar
@@ -93,12 +98,12 @@ these resources are also included in the JAR.
 
 ### Architecture
 
-UniEnable runs in one process. The diagram groups classes by responsibility;
-the groups are not separate services. Editable diagrams are listed in the
-[diagram index](diagrams/README.md). Select an embedded diagram to open its
-full-size image using the link below it. Diagrams retain their original
-text size in a horizontally scrollable region. Scroll sideways, or focus the
-region with Tab and use the arrow keys; the enlarge link opens the entire image.
+UniEnable runs as a single program (one process). The diagram groups classes by
+responsibility; the groups are not separate services. Editable diagram sources
+are listed in the [diagram index](diagrams/README.md). Each diagram keeps its
+original text size inside a horizontally scrollable box: scroll sideways, or
+select the box with Tab and use the arrow keys. The **Enlarge diagram** link
+below each diagram opens the full image.
 
 <!-- @@author lukelouyu -->
 
@@ -150,26 +155,32 @@ a `CommandResult` containing a message, an exit flag and an activity-change flag
 `ConsoleHelper` uses these flags to coordinate automatic saving and shutdown.
 Read-only commands leave the activity-change flag unset.
 
-The `today` and `tomorrow` date words, time-sensitive edit validation and queries
-share an injected `Clock`. Production uses the local clock; tests supply a fixed
-clock to reproduce boundary cases.
+The `today` and `tomorrow` date words, time-sensitive edit validation and time
+queries share one injected `java.time.Clock`: the clock object is passed in from
+outside instead of each class reading the system time directly. Production uses
+the local system clock; tests pass a fixed clock so that time boundaries can be
+reproduced exactly.
 
 ### Model component
 
 `Activity` holds the name, date, same-day times, demand, completion state and
 optional ratings. `ActivityList` owns the collection and supplies ordered or
-filtered snapshots. Its canonical view sorts by date, start time and insertion
-order; indexed changes resolve against that view.
+filtered snapshots, which are copies of the list taken at that moment. Its
+canonical view is the one ordering that every displayed index refers to: by
+date, then start time, then insertion order. Indexed changes resolve against
+that view.
 
-`Facility`, `FacilityFeature` and `Connection` are immutable reference records.
-Managers query snapshots of them. Defensive copies prevent callers from changing
-reference data or reordering the activity collection through a returned view.
+`Facility`, `FacilityFeature` and `Connection` are immutable reference records,
+meaning they cannot change after creation. Managers query snapshots of them.
+Defensive copies, made before a collection is stored or returned, prevent
+callers from changing reference data or reordering the activity collection
+through a returned view.
 
 ### Storage component
 
 `Storage` loads and saves `data/activities.txt` relative to the working directory.
-`FacilityStorage` and `ConnectionStorage` read bundled classpath resources and
-return accepted records plus warnings in `LoadResult<T>`. Facilities load first
+`FacilityStorage` and `ConnectionStorage` read data files bundled inside the JAR
+(classpath resources) and return accepted records plus warnings in `LoadResult<T>`. Facilities load first
 so connection endpoints can be checked against known hubs.
 
 Only activity data is writable through commands. The
@@ -188,7 +199,8 @@ validators keep add and edit consistent.
 <a id="ascii-command-name-validation"></a>
 
 **Command and name input:** Command words must be ASCII. Supplied activity names
-must contain a non-whitespace character and use printable ASCII (0x20-0x7E).
+must contain a non-whitespace character and use printable ASCII (characters
+0x20-0x7E: English letters, digits, space and keyboard punctuation).
 Whitespace-only names, including Unicode spaces, are empty. Add and edit use
 `ActivityNameValidator`; loading uses the separate
 [stored-name compatibility rule](#historical-name-compatibility).
@@ -208,15 +220,14 @@ unsupported; [prefix-like text](#activity-parameter-validation) may still be res
 <a id="name-character-set-rationale"></a>
 
 **Why the name character set is restricted.** Supplied activity names use a
-conservative whitelist. The restricted punctuation (backslashes, single and
-double quotes) carries special meaning in other grammars—escaping,
-or quoting—so accepting it would add ambiguous edge cases in
-parsing, storage, and any future data exchange. Keeping these characters out
-shrinks the input space, which avoids unnecessary error analysis and incorrect
-results, lowers the chance of bugs, and makes the parser and storage simpler to
-implement and maintain. The cost is that a few names must be reworded; this is a
-simplicity and robustness choice rather than a requirement of the current `|`
-delimiter.
+small allowlist of characters. Backslashes and double quotation marks are
+excluded because many text formats give them special meaning: a backslash
+usually escapes (changes the meaning of) the next character, and double quotes
+usually group text. Accepting them would add ambiguous cases in parsing,
+storage, and any future data exchange. Keeping them out reduces the inputs that
+need testing, lowers the chance of bugs, and keeps the parser and storage
+simpler. The cost is that a few names must be reworded. This is a simplicity and
+robustness choice; the current `|` field separator does not by itself require it.
 
 Raw add/edit arguments reject pipes, line breaks and unsupported slash tokens.
 Extracted names receive the name checks; other fields use their own validators so errors
@@ -258,8 +269,9 @@ The test tree mirrors these packages under `src/test/java/seedu/unienable`.
 | `command.accessibility.connection` | [`RouteCommand`](https://github.com/AY2627S1-CS2113-T10-4/tp/blob/master/src/main/java/seedu/unienable/command/accessibility/connection/RouteCommand.java). |
 | `command.accessibility.connection.logic` | [`ConnectionManager`, `FacilityManager`, `DijkstraShortestPath`, and `DijkstraSolver`](https://github.com/AY2627S1-CS2113-T10-4/tp/tree/master/src/main/java/seedu/unienable/command/accessibility/connection/logic). |
 
-The routing solver is package-private. The architecture diagram shows logical
-components; the table above gives their Java package locations.
+The routing solver is package-private, so only classes in its own package can
+use it. The architecture diagram shows logical components; the table above gives
+their Java package locations.
 
 <!-- @@author -->
 
@@ -274,8 +286,9 @@ components; the table above gives their Java package locations.
 `AddCommandParser` validates the fields and creates an `AddCommand`, whose
 constructor creates an incomplete activity.
 Demand defaults to `MEDIUM`; omitted ratings remain unset. The end must be later
-than the start on the same day. Activities whose end is at or before the current local time are rejected.
-Ongoing activities with a future end are accepted; ended activities cannot be edited.
+than the start on the same day. Activities whose end is at or before the current
+local time are rejected. Ongoing activities with a future end are accepted;
+ended activities cannot be edited.
 
 `AddCommand` applies the shared [schedule checks](#activity-schedule-validation)
 before insertion. A successful insertion sets the activity-change flag, which
@@ -332,9 +345,9 @@ Resolving the word during parsing keeps each saved record on a fixed date. Stori
 
 The illustrative snapshot below follows adding Study and Consultation, then
 marking Study complete. Each `Activity` retains its own completion and optional
-ratings; unset ratings are `null` in memory. The membership links abstract away
-the backing collection. Display indexes are computed by ordered views rather
-than stored on these objects.
+ratings; unset ratings are `null` in memory. The links show which activities
+belong to the list without showing the Java collection that stores them.
+Display indexes are computed by ordered views rather than stored on these objects.
 
 <div role="region" aria-label="Illustrative activity state (scroll horizontally)"
      tabindex="0" style="max-width: 100%; overflow-x: auto;">
@@ -352,8 +365,11 @@ ratings and demand summaries without changing data.
 
 Dashboard row numbers belong to the selected period; indexed changes use the full
 chronological list. The rating table fits 80 terminal columns and shortens labels
-to 26 columns without splitting grapheme clusters. Schedule rows pad names and indexes to align rating columns. Full names remain in schedules
-and storage. See the [UG dashboard examples](UserGuide.md#viewing-calendar-dashboards-view).
+to 26 columns without splitting a grapheme cluster, that is, a character drawn
+from several Unicode code points, such as an emoji with a skin-tone modifier.
+Schedule rows pad names and indexes to align rating columns. Full names remain
+in schedules and storage. See the
+[UG dashboard examples](UserGuide.md#viewing-calendar-dashboards-view).
 
 <div role="region" aria-label="Calendar dashboard classes (scroll horizontally)"
      tabindex="0" style="max-width: 100%; overflow-x: auto;">
@@ -449,7 +465,8 @@ to keep each activity's full-list index. Completed activities remain included.
 
 #### Activity deletion
 
-`ListDeleteCommandParser` reads an unsigned ASCII integer. `DeleteCommand` asks
+`ListDeleteCommandParser` reads a whole number written with the digits 0-9 and
+no sign. `DeleteCommand` asks
 `ActivityList.deleteByDisplayedIndex()` to validate it and remove the selected
 chronological activity. Zero and out-of-range indexes are rejected. Successful
 deletion sets the activity-change flag, including when the last activity is removed.
@@ -497,8 +514,9 @@ retains canonical indexes; missing ratings display `-` and unavailable scores `N
 
 `OverdueCommand` captures local time once and selects incomplete activities with
 an end strictly before that time. Ongoing activities and ends exactly now are
-excluded. `ActivityListFormatter` labels results as today, earlier this Monday-to-
-Sunday week, or earlier. Results retain chronological indexes and are read-only.
+excluded. `ActivityListFormatter` labels each result as ended today, earlier in
+the current Monday-to-Sunday week, or before that week. Results retain
+chronological indexes and are read-only.
 
 <div role="region" aria-label="Overdue query classes (scroll horizontally)"
      tabindex="0" style="max-width: 100%; overflow-x: auto;">
@@ -547,19 +565,22 @@ See the [UG time queries](UserGuide.md#viewing-the-next-activity-next).
 
 > **Design constraint: ended activities cannot be edited or rescheduled.** The
 > existing end date/time is checked before any replacement is built. An end at
-> or before local now rejects every edit, even if the requested date is in the future.
+> or before the current local time rejects every edit, even if the requested
+> date is in the future.
 
-`EditCommandParser` collects changes in immutable `EditCommand.Fields`, reading
-`d/` through the shared [`ActivityDateParser`](#date-parsing).
-`EditCommand` selects the activity by its chronological index and checks the
-clock once. Activities ending at or before now reject every edit, including
-metadata changes and rescheduling into the future.
+`EditCommandParser` collects the requested changes in an immutable (unchangeable)
+`EditCommand.Fields` object, reading `d/` through the shared
+[`ActivityDateParser`](#date-parsing). `EditCommand` selects the activity by its
+chronological index and reads the clock once. Activities ending at or before
+that time reject every edit, including changes to only the name, demand or
+ratings, and rescheduling into the future.
 
 Omitted fields and completion stay unchanged. Date/time edits must end after
-both the start and now, on the same day. Every edit checks duplicates, excluding the original activity. Only actual
-date/time changes require a fresh overlap approval; name, demand and rating
-changes preserve existing overlaps. Validation finishes before replacement, so rejected edits
-change nothing. Refresh indexes after a successful edit.
+both the start and the current time, on the same day. Every edit checks for
+duplicates, excluding the original activity. Only actual date/time changes
+require a fresh overlap approval; name, demand and rating changes preserve
+existing overlaps. Validation finishes before the replacement is stored, so
+rejected edits change nothing. Refresh indexes after a successful edit.
 
 <a id="ended-activity-edit-rationale"></a>
 
@@ -584,10 +605,11 @@ To repeat a past activity, add a new one and preserve the original record.
 
 <a id="name-search"></a>
 
-#### Find Activities
+#### Finding activities
 
-`FindCommand` delegates case-insensitive literal substring matching to
-`ActivityList.findByName()`. The formatter receives matches and the canonical
+`FindCommand` delegates name matching to `ActivityList.findByName()`, which looks
+for the keyword anywhere in each name, ignoring case and treating every
+character literally (no wildcards or patterns). The formatter receives matches and the canonical
 view to retain full-list indexes. Searching changes no state and requests no save.
 
 <div role="region" aria-label="Find Activities - Class Diagram (scroll horizontally)"
@@ -647,13 +669,15 @@ commands can act on past records; the
 
 #### Completion and persistence
 
-`Storage` decodes each UTF-8 record independently in insertion order. A UTF-8
-byte order mark at the start of the file is removed before the first record is
-parsed, so it never becomes part of a name or is saved back. Invalid
-encoding skips only that row and produces a line-numbered warning. Raw bytes are
-preserved until a recovery save verifies the original backup. Saves use nine pipe-separated
-fields; unset ratings are `-`, and `DONE` is `true` or `false`. Dates are written as
-`YYYY-MM-DD` and times as 24-hour `HH:mm`, the same formats that loading accepts:
+The activity file is UTF-8 text with one record per line. `Storage` decodes each
+line independently, in insertion order. A byte order mark at the start of the
+file (an invisible marker some editors add) is removed before the first record
+is parsed, so it never becomes part of a name or is saved back. A line that is
+not valid UTF-8 is skipped with a line-numbered warning, and the file's raw
+bytes are kept until a recovery save has verified a backup of them. Saves use
+nine fields separated by pipes (`|`); unset ratings are `-`, and `DONE` is
+`true` or `false`. Dates are written as `YYYY-MM-DD` and times as 24-hour
+`HH:mm`, the same formats that loading accepts:
 
 ```text
 NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM
@@ -671,8 +695,8 @@ names load, display and remain searchable. New-input restrictions apply to suppl
 names. An eligible edit that omits the name retains it, subject to the
 [ended-activity rule](#ended-activity-edit-rationale). Loading alone does not rewrite files.
 
-**Saving and recovery:** `ConsoleHelper` marks changes dirty and saves before
-showing a successful command result. Storage writes a temporary file, then replaces
+**Saving and recovery:** After a change, `ConsoleHelper` marks the activity data
+as dirty (changed but not yet saved) and saves before showing the command result. Storage writes a temporary file, then replaces
 the activity file. After detected corruption or a read failure, it first preserves
 and verifies the original bytes in `.corrupt.bak`; backup failure prevents replacement.
 
@@ -720,17 +744,20 @@ omitted add ratings stay unset. Ratings are stored unchanged and used by the
 
 #### Activity parameter validation
 
-Before field extraction, `ActivityParameterValidator` checks every slash token,
-including slash text in the first word of a name. Only `n/`, `d/`, `s/`, `e/`,
-`dem/`, `imp/`, `urg/`, `com/`, and `overlap/` are supported, ignoring case, and
-prefixes must start at a whitespace boundary. Unsupported words before `/` warn
-before command construction or mutation. Literal slashes in names are unsupported.
+Before the fields are separated, `ActivityParameterValidator` checks every word
+that contains a slash, including the first word of a name. Only `n/`, `d/`, `s/`,
+`e/`, `dem/`, `imp/`, `urg/`, `com/`, and `overlap/` are supported, ignoring case,
+and a prefix must be at the start of the input or follow whitespace. An
+unsupported word before `/` produces a warning before any command is created or
+any data changes. Names therefore cannot contain a literal slash.
 
-One insertion, deletion, substitution or adjacent swap can add a correction
-suggestion: `demm/` and `dem1/` suggest `dem/`. Suggestions do not determine
-validity: every unsupported token is rejected, including single-letter tokens
-such as `t/`. This prevents unknown fields being absorbed into a preceding name,
-date or time. Historical names loaded from storage keep their original text.
+If an unknown prefix is one typing slip away from a supported one (one character
+inserted, deleted or replaced, or two neighbouring characters swapped), the
+warning suggests it: `demm/` and `dem1/` suggest `dem/`. Suggestions do not
+decide validity: every unsupported prefix is rejected, including single letters
+such as `t/`. This stops an unknown field from being silently absorbed into the
+name, date or time before it. Historical names loaded from storage keep their
+original text.
 
 <!-- @@author -->
 
@@ -774,8 +801,8 @@ names to isolate the time-overlap check:
 | 10:00–11:00 | Same date | Allowed: endpoints only touch. |
 | 09:00–10:00 | Different date | Allowed: no time clash. |
 
-The helper reads a snapshot without changing data or performing I/O. Other
-add/edit validation rules still apply.
+The helper reads a snapshot without changing data or reading or writing files.
+Other add/edit validation rules still apply.
 
 <!-- @@author -->
 
@@ -811,7 +838,8 @@ FEATURE|FACILITY_ID|TYPE|STATUS|NOTES
 
 `FacilityStorage` associates feature rows with exact facility IDs after reading
 the resource. It skips malformed rows, duplicate facilities, unknown references
-and invalid enums with warnings; the first valid conflicting feature status wins.
+and values outside each field's fixed set (enum values) with warnings; when two
+valid rows give the same feature different statuses, the first one wins.
 `YES`, `NO` and `UNKNOWN` are distinct, and an absent feature is not `UNKNOWN`.
 The [dataset](https://github.com/AY2627S1-CS2113-T10-4/tp/blob/master/src/main/resources/facilities.txt)
 contains the recorded notes; loading matches IDs and enum values exactly.
@@ -883,10 +911,15 @@ Each query creates a fresh `DijkstraSolver` with independent search state.
 
 [Enlarge diagram](images/luke/class/RoutingClassDiagram.png) | [PlantUML source](diagrams/luke/class/RoutingClassDiagram.puml).
 
-The solver uses a priority queue to relax distances, accumulates totals in `long`,
-and reconstructs stops and segments from predecessors. Positive weights make
-Dijkstra suitable for shortest recorded distance. Reusing the graph avoids
-rebuilding it; a fresh solver prevents one query's state affecting the next.
+The solver uses Dijkstra's algorithm, a standard shortest-path method. A priority
+queue always expands the closest unvisited hub next, and each step relaxes
+(shortens, where possible) the best-known distance to that hub's neighbours.
+Totals are added in a `long`, so a sum of many distances cannot overflow an
+`int`, and the route is rebuilt
+by following each hub's predecessor, the hub reached just before it. Dijkstra's
+algorithm gives the correct shortest path here because every recorded distance
+is positive. Reusing the graph avoids rebuilding it; a fresh solver prevents one
+query's state affecting the next.
 
 Only accessibility status controls eligibility. Shelter, type and barrier notes
 do not alter the cost or exclude links. Results include stops, segments, distance
@@ -965,8 +998,9 @@ written to `build/reports/tests/test/index.html`; the JaCoCo HTML report is at
 | Demand and priority lists | `ListDemandCommandTest`, `ListPriorityCommandTest` | Ordering, chronological indexes, missing scores and completion states. |
 | Time queries | `OverdueCommandTest`, `NextCommandTest` | Selection rules and exact start/end boundaries. |
 | Activity formatting | `ActivityListFormatterTest` | Displayed indexes, ordering and result formatting. |
-| Storage | `StorageTest` | Save/load round trips, legacy rows, malformed data, backups and failed writes. |
-| Save recovery | `ConsoleSaveRecoveryTest` | Unsaved warnings, blocked exits and saving again on exit. |
+| Storage | `StorageTest` | Save/load round trips, legacy rows, malformed data, blank lines, byte order marks, backups and failed writes. |
+| Save recovery | `ConsoleSaveRecoveryTest` | Unsaved warnings, blocked exits, saving again on exit and the quit-without-saving notice. |
+| Console output | `UiTest` | Bordered messages; control characters shown as `?` while Unicode text is unchanged. |
 | Application sessions | `UniEnableTest` | Command sessions and persistence across restarts. |
 | Facility data | `FacilityStorageTest`, `FacilityManagerTest` | Loading records and matching feature statuses exactly. |
 | Facility commands | `FacilityCommandParserTest`, facility command tests | Input parsing, output formatting and unavailable data. |
@@ -1000,8 +1034,9 @@ passing after any particular day.
 ### Defensive programming
 
 Input is validated before data changes: parsers check syntax, while commands and
-models check values, indexes and rating ranges. Checked exceptions report
-recoverable errors so the user can correct the input and continue.
+models check values, indexes and rating ranges. Checked exceptions, which Java
+requires callers to handle, report recoverable errors so the user can correct
+the input and continue.
 
 For activity names, add and edit apply the shared
 [name-input policy](#ascii-command-name-validation), illustrated below:
@@ -1011,7 +1046,7 @@ For activity names, add and edit apply the shared
 | `n/学习`, `n/படி`, `n/पढ़ाई`, `n/చదువు`, `n/공부`, `n/勉強`, `n/Study 🎉`, `n/Café` | These foreign-language characters (Chinese, Tamil, Hindi, Telugu, Korean and Japanese), emoji and accented characters are outside printable ASCII.<br>Supporting more character sets requires broader testing of input handling and terminal display.<br>Restricting new names to printable ASCII keeps the supported input predictable and the validation scope manageable. See the [design rationale](#ascii-command-name-validation).<br>Existing Unicode names remain loadable under the separate [stored-name rules](#historical-name-compatibility). |
 | `n/"Study"`, `n/Study\notes` | Double quotes and backslashes are forbidden; quoted names and escaping are unsupported. |
 | `n/Study\|Review` or a name containing a line break | Pipes and line breaks conflict with record boundaries. |
-| A blank name or one containing a tab, NUL or DEL | Names must be nonblank and contain only printable characters. |
+| A blank name or one containing a tab, NUL or DEL (invisible control characters) | Names must be nonblank and contain only printable characters. |
 | `n/Planning and/or review` (rejected) | `and/` is not a supported prefix. Reword the name using spaces or hyphens; see the [prefix rules](#activity-parameter-validation). |
 
 Collection copies protect shared data from external changes. Assertions help
@@ -1051,16 +1086,19 @@ state changes, and restart behavior.
 
 | Aspect | Description |
 | --- | --- |
-| Target users | Tertiary students with ASD, ADHD, or mobility constraints who are adapting to university routines. |
+| Target users | Students with ASD, ADHD, or mobility constraints who are adapting to university routines. |
 | Value proposition | A keyboard-operated terminal application that combines commitment planning with campus reference queries and stores activities locally. |
 
 ### Current boundaries
 
-The current build supports dated, same-day activities, optional ratings,
-chronological, demand, and priority views, overdue and next queries,
-today's and tomorrow's dashboards, the next seven days' dashboard,
-activity editing and name search, completion, deletion, persistence,
-facility queries, and shortest recorded accessible routes.
+The current build supports:
+
+- dated activities that start and end on the same day, with optional ratings;
+- chronological, demand and priority lists, plus overdue and next queries;
+- dashboards for today, tomorrow and the next seven days;
+- editing, name search, completion tracking, deletion and automatic saving;
+- facility queries and shortest recorded accessible routes.
+
 Reference information covers the nine bundled hubs; it is sample data without
 live campus updates.
 
@@ -1151,7 +1189,7 @@ validation and persistence contracts.
 | Use case | Main success flow | Extensions |
 | --- | --- | --- |
 | Add an activity | User supplies fields; UniEnable validates, inserts, saves and confirms. | Invalid fields, duplicates or an unapproved clash leave the list unchanged. A save failure keeps the change in memory and reports unsaved data. |
-| Edit an activity | User selects a canonical index and replacements; UniEnable validates the whole replacement, saves and confirms. | Invalid indexes and ended activities are rejected. Invalid replacements leave all fields unchanged. |
+| Edit an activity | User selects a chronological index and replacements; UniEnable validates the whole replacement, saves and confirms. | Invalid indexes and ended activities are rejected. Invalid replacements leave all fields unchanged. |
 | Find an accessible route | User supplies known, distinct hubs; UniEnable finds and displays the shortest eligible recorded path with a disclaimer. | Invalid endpoints warn. Known disconnected hubs produce a no-route result scoped to the dataset. |
 
 <a id="non-functional-requirements"></a>
@@ -1196,6 +1234,16 @@ hardware, and procedure; this guide sets no timing benchmark.
 | Accessibility status | A recorded `YES`, `NO`, or `UNKNOWN` value. A missing feature is distinct from an explicit `UNKNOWN`. |
 | Route | Ordered stops and their connecting segments, with total recorded distance. |
 | Recovery backup | The original activity-file bytes copied to `.corrupt.bak` before a save following detected corruption; not a backup history. |
+| Ended activity | An activity whose end date and time are at or before the current local time. It cannot be added or edited, but can still be listed, searched, marked, unmarked or deleted. |
+| Duplicate | An activity with the same date, start, end and name as another, ignoring name case and extra spaces. Always rejected. |
+| Overlap (clash) | Two activities on the same date whose time ranges intersect. Back-to-back ranges do not overlap. Allowed only with `overlap/ALLOW`. |
+| Prefix | The label ending in `/` that starts each command field, such as `n/` or `dem/`. |
+| Printable ASCII | The 95 characters from space (0x20) to `~` (0x7E): English letters, digits, space and keyboard punctuation. New names are limited to these, except for a few forbidden punctuation marks. |
+| UTF-8 | The text encoding of the activity file; it can represent any Unicode character, so names saved earlier in other scripts still load. |
+| Byte order mark | An invisible marker (bytes `EF BB BF`) that some editors write at the start of a UTF-8 file. Loading ignores it. |
+| Control character | An invisible character such as tab, ESC or DEL. Output shows each one except the line break as `?`, so text cannot send terminal commands. |
+| Dirty data | Activity changes made in memory that have not yet been saved successfully. |
+| Injected clock | A `java.time.Clock` passed into the classes that need the time, so tests can supply a fixed time. |
 
 <a id="instructions-for-manual-testing"></a>
 
@@ -1203,7 +1251,8 @@ hardware, and procedure; this guide sets no timing benchmark.
 
 ### Prepare a separate test folder
 
-Build with Java 25 using `check shadowJar`. Run the JAR from a separate folder
+Build with Java 25 by running `.\gradlew.bat check shadowJar` (Windows) or
+`./gradlew check shadowJar` (macOS/Linux). Run the JAR from a separate folder
 so tests cannot change personal activity data. Use future dates for new activities
 and restart from the same folder to verify persistence.
 
@@ -1263,18 +1312,20 @@ contain real dates, not the words `today` or `tomorrow`.
 
 #### Printable-ASCII input and historical UTF-8 output
 
-Exercise the [input-validation contract](#ascii-command-name-validation) in disposable
-storage using Chinese (`复习`), Tamil (`வணக்கம்`, `படி`), accented (`Café`), and emoji
-(`Study 🎉`) names in both add and multi-field edit requests. Repeat with an
+In a fresh test folder, check the
+[input-validation rules](#ascii-command-name-validation) using Chinese (`复习`),
+Tamil (`வணக்கம்`, `படி`), accented (`Café`), and emoji (`Study 🎉`) names in
+both add and multi-field edit requests. Repeat with an
 internal tab, NUL, DEL, blank names, and forbidden punctuation. Check rejection
 without partial changes and confirm the original activities after restart.
 Include a non-ASCII command word to check warning selection against the
 [UG error-handling examples](UserGuide.md#error-handling).
 
 Use accepted ASCII names such as `Planning review` and `C++ @ COM1 #2` to
-exercise add, edit, search, and restart. Exercise
-[stored-name compatibility](#historical-name-compatibility) with a pre-existing
-UTF-8 fixture, including an eligible edit that omits the name. `UniEnableProcessTest`
+exercise add, edit, search, and restart. Check
+[stored-name compatibility](#historical-name-compatibility) by preparing a
+`data/activities.txt` that already contains such non-ASCII names, including an
+eligible edit that omits the name. `UniEnableProcessTest`
 covers these scenarios through the real entry point with redirected output.
 
 ### Duplicate activities and time clashes
@@ -1510,8 +1561,9 @@ activity file and showing an unsaved notice. `list` still shows the in-memory
 incomplete activity. Entering `bye` while the backup remains blocked must keep
 the session open, and the warning must name Ctrl+D (Ctrl+Z, then Enter on
 Windows) as the way to quit without saving. Move the blocking directory to a
-safe separate location, then enter `bye` again; saving should succeed and exit. Restart and verify the change.
-Follow the [UG recovery instructions](UserGuide.md#error-handling) when preserving
-existing files and backups.
+safe separate location, then enter `bye` again; saving should succeed and exit.
+Restart and verify the change. Follow the
+[UG recovery instructions](UserGuide.md#error-handling) when preserving existing
+files and backups.
 
 <!-- @@author -->
