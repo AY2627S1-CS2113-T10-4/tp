@@ -24,7 +24,8 @@ import seedu.unienable.ui.Ui;
 final class ConsoleHelper {
     //@@author Oliver-koh
     private static final String UNSAVED_NOTICE =
-            "[WARNING] Unsaved activity changes. Fix the save error and enter 'bye' to retry saving and exit.";
+            "[WARNING] Unsaved activity changes. Fix the save error and enter 'bye' to retry saving and exit. "
+                    + "To quit without saving, press Ctrl-D (Ctrl-Z then Enter on Windows).";
     //@@author
 
     /**

@@ -42,7 +42,8 @@ public class FacilityStorage {
     /**
      * Parses facility data from a caller-owned reader, which is not closed by this method.
      * Features may precede their facility declaration; association occurs after reading all lines.
-     * Record tags and enums are exact matches. IDs and names retain their spelling and must be unpadded.
+     * Feature IDs match facility IDs ignoring case. Record tags and enums are exact matches.
+     * IDs and names retain their spelling and must be unpadded.
      * Duplicate IDs and names use the same case-insensitive comparison as facility lookup.
      * For each facility and feature type, the first valid status is retained. Later conflicting
      * records are skipped with warnings; matching statuses may retain separate notes.
@@ -195,7 +196,7 @@ public class FacilityStorage {
         if (fields.length < 4 || fields.length > 5) {
             throw new IllegalArgumentException("FEATURE requires 4 or 5 fields; notes are optional.");
         }
-        FacilityBuilder facility = facilities.get(fields[1]);
+        FacilityBuilder facility = findFacilityBuilder(facilities, fields[1]);
         if (facility == null) {
             throw new IllegalArgumentException("Unknown facility ID: " + fields[1]);
         }
@@ -220,6 +221,19 @@ public class FacilityStorage {
         }
         String notes = fields.length == 5 ? toOptionalText(fields[4]) : null;
         facility.features.add(new FacilityFeature(type, status, notes));
+    }
+
+    private FacilityBuilder findFacilityBuilder(Map<String, FacilityBuilder> facilities, String id) {
+        FacilityBuilder exact = facilities.get(id);
+        if (exact != null) {
+            return exact;
+        }
+        for (FacilityBuilder facility : facilities.values()) {
+            if (facility.id.equalsIgnoreCase(id)) {
+                return facility;
+            }
+        }
+        return null;
     }
 
     private String toOptionalText(String value) {

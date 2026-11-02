@@ -1,6 +1,8 @@
 package seedu.unienable.ui.activity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -106,6 +108,26 @@ class ActivityListFormatterTest {
                 ActivityListFormatter.formatNext(Optional.of(tuesdayLab), List.of(mondayGym, tuesdayLab)));
         assertEquals("Sorry, no upcoming incomplete activities exist.",
                 ActivityListFormatter.formatNext(Optional.empty(), List.of(mondayGym, tuesdayLab)));
+    }
+
+    @Test
+    void formatFindResults_escapesControlCharactersAndKeepsChronologicalIndex() {
+        Activity escaped = new Activity("Evil\u001b[31mRED", LocalDate.parse("2026-10-14"),
+                LocalTime.parse("09:00"), LocalTime.parse("10:00"), DemandLevel.HIGH, false);
+        String message = ActivityListFormatter.formatFindResults(List.of(escaped),
+                List.of(mondayGym, escaped));
+
+        assertTrue(message.contains("2. Evil\\u001B[31mRED"), message);
+        assertFalse(message.contains("\u001b"), message);
+    }
+
+    @Test
+    void formatFindResults_activityMissingFromCanonicalView_throws() {
+        Activity foreign = new Activity("Foreign", LocalDate.parse("2026-10-14"),
+                LocalTime.parse("11:00"), LocalTime.parse("12:00"), DemandLevel.LOW, false);
+
+        assertThrows(IllegalStateException.class,
+                () -> ActivityListFormatter.formatFindResults(List.of(foreign), List.of(mondayGym)));
     }
 }
 //@@author

@@ -8,6 +8,7 @@ import java.util.Set;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
+import seedu.unienable.ui.SafeText;
 
 /**
  * Displays a categorized command menu or detailed help for one command without changing activities.
@@ -325,6 +326,7 @@ public class HelpCommand extends Command {
                       - Activity changes save when made; bye retries saving only if changes remain unsaved.
                       - A failed retry keeps the app running. Fix the file problem and enter bye again.
                       - Reading help bye displays these instructions and keeps the app running.
+                      - If saving still fails, press Ctrl-D (Ctrl-Z then Enter on Windows) to exit without saving.
 
                     Examples:
                       bye
@@ -354,7 +356,7 @@ public class HelpCommand extends Command {
         String normalizedTopic = topic.toLowerCase(Locale.ROOT);
         String details = TOPIC_HELP.get(normalizedTopic);
         if (details == null) {
-            throw new ParseException("[WARNING] Unknown help topic '" + topic
+            throw new ParseException("[WARNING] Unknown help topic '" + SafeText.format(topic)
                     + "'.\nUsage: help [TOPIC]\nType help to see the available commands.");
         }
         String emptyMessage = switch (normalizedTopic) {

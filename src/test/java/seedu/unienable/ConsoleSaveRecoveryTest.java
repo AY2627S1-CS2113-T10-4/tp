@@ -87,6 +87,7 @@ class ConsoleSaveRecoveryTest {
         assertFalse(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
         assertTrue(storage.hasUnsavedChanges());
         assertFalse(output.toString(StandardCharsets.UTF_8).contains("Goodbye"));
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Ctrl-D"));
         assertFalse(ConsoleHelper.processNextCommand(ui, parser, activities, storage));
         assertTrue(storage.hasUnsavedChanges());
         Files.delete(blocked);

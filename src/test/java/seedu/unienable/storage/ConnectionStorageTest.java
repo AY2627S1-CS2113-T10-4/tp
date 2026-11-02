@@ -108,6 +108,8 @@ class ConnectionStorageTest {
                 new String[]{"C_EMPTY", "C", "", "0", "0", "", ""},
                 new String[]{"C_COMMENTS", "C", "# Header\n  # Indented\n\n  \nCONNECTION|9|AS1|AS2|10|YES|PATH|YES",
                     "1", "0", "9|AS1|AS2|10|YES|PATH|YES|null|null", ""},
+                new String[]{"C_LOWER_ENDPOINTS", "C", "CONNECTION|9|as2|as1|10|YES|PATH|YES", "1", "0",
+                    "9|AS2|AS1|10|YES|PATH|YES|null|null", ""},
                 new String[]{"C_VALID", "C", "CONNECTION|9|AS1|AS2|10|YES|PATH|YES", "1", "0",
                     "9|AS1|AS2|10|YES|PATH|YES|null|null", ""},
                 new String[]{"C_REVERSE", "C", "CONNECTION|9|AS2|AS1|10|YES|PATH|YES", "1", "0",

@@ -999,6 +999,9 @@ Collection copies protect shared data from external changes. Assertions help
 detect internal ordering and deletion errors during debugging. Input validation
 remains responsible for checking user commands.
 
+Stored activity names and echoed command arguments are rendered through `SafeText`, which
+escapes control and separator characters so they cannot change terminal state.
+
 <!-- @@author Oliver-koh -->
 
 `Storage` validates saved time ranges separately from

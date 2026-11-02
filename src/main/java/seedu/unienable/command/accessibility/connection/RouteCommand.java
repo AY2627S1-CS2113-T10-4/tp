@@ -17,6 +17,7 @@ import seedu.unienable.model.Connection;
 import seedu.unienable.model.enums.ShelterStatus;
 import seedu.unienable.model.enums.TraversalType;
 import seedu.unienable.storage.Storage;
+import seedu.unienable.ui.SafeText;
 import seedu.unienable.ui.accessibility.AccessibilityDisclaimer;
 
 //@@author lukelouyu
@@ -33,8 +34,7 @@ public final class RouteCommand extends Command {
     private final String to;
 
     /**
-     * Creates a route request using facility names, not facility IDs.
-     * Validation of the endpoints is delegated to ConnectionManager.
+     * Creates a route request using facility names; facility IDs are resolved by RouteParser.
      *
      * @param connectionManager manager containing the recorded campus connections.
      * @param from starting facility name.
@@ -63,13 +63,13 @@ public final class RouteCommand extends Command {
             String hubs = connectionManager.getConnections().stream()
                     .flatMap(connection -> Stream.of(connection.getFrom(), connection.getTo()))
                     .distinct().sorted().collect(Collectors.joining(", "));
-            throw new UniEnableException("[WARNING] " + exception.getMessage()
+            throw new UniEnableException("[WARNING] " + SafeText.format(exception.getMessage())
                     + "\nValid hubs: " + (hubs.isEmpty() ? "none loaded" : hubs) + "\n" + USAGE);
         }
 
         if (route.isEmpty()) {
-            String message = "[WARNING] No confirmed accessible route recorded from " + from.strip()
-                    + " to " + to.strip()
+            String message = "[WARNING] No confirmed accessible route recorded from " + SafeText.format(from.strip())
+                    + " to " + SafeText.format(to.strip())
                     + ".\nOnly connections marked YES for accessibility are used.";
             return new CommandResult(appendDisclaimer(message), false);
         }
@@ -86,7 +86,7 @@ public final class RouteCommand extends Command {
      */
     private static String formatRoute(Route route) {
         StringBuilder output = new StringBuilder("Shortest recorded accessible route:\n");
-        output.append(String.join(" -> ", route.stops()));
+        output.append(route.stops().stream().map(SafeText::format).collect(Collectors.joining(" -> ")));
         output.append("\nTotal distance: ").append(route.distanceInMetres()).append(" metres");
         output.append("\n\nConnections:");
 
@@ -94,16 +94,17 @@ public final class RouteCommand extends Command {
         for (int i = 0; i < segments.size(); i++) {
             Connection connection = segments.get(i);
             output.append("\n").append(i + 1).append(". ")
-                    .append(route.stops().get(i)).append(" -> ").append(route.stops().get(i + 1))
+                    .append(SafeText.format(route.stops().get(i))).append(" -> ")
+                    .append(SafeText.format(route.stops().get(i + 1)))
                     .append(": ").append(connection.getDistanceInMetres()).append(" m (")
                     .append(formatTraversalType(connection.getType())).append(", ")
                     .append(formatShelterStatus(connection.getShelter())).append(")");
 
             if (hasText(connection.getKnownBarrier())) {
-                output.append("\n   Recorded barrier: ").append(connection.getKnownBarrier().strip());
+                output.append("\n   Recorded barrier: ").append(SafeText.format(connection.getKnownBarrier().strip()));
             }
             if (hasText(connection.getNotes())) {
-                output.append("\n   Note: ").append(connection.getNotes().strip());
+                output.append("\n   Note: ").append(SafeText.format(connection.getNotes().strip()));
             }
         }
         return output.toString();

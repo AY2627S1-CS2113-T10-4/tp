@@ -859,6 +859,8 @@ appears after subsequent commands. Repeating an add is not a save retry.
 3. A successful retry displays `Goodbye from UniEnable!` and exits. If saving
    still fails, the app stays open with the error and unsaved-change warning.
    Correct the problem and enter `bye` again.
+If the file problem cannot be fixed, end the input with Ctrl-D (Ctrl-Z then Enter
+on Windows). The app exits without saving the changes still in memory.
 <!-- @@author -->
 
 <!-- TEAM: Each FAQ answer is maintained by the owner of the feature it describes. -->

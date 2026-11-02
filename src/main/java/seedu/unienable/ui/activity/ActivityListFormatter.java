@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
+import seedu.unienable.ui.SafeText;
 
 //@@author officialasyrafrahim
 /**
@@ -168,7 +169,9 @@ public final class ActivityListFormatter {
 
     private static int getChronologicalIndex(Activity activity, List<Activity> canonicalView) {
         int index = canonicalView.indexOf(activity);
-        assert index >= 0 : "A formatted activity must belong to the canonical view.";
+        if (index < 0) {
+            throw new IllegalStateException("Formatted activity is missing from the canonical view.");
+        }
         return index + 1;
     }
 
@@ -177,13 +180,11 @@ public final class ActivityListFormatter {
     /**
      * Formats name-search results using the indexes from the full chronological list.
      *
-     * @param keyword searched name phrase.
      * @param matches matching activities in chronological order.
      * @param canonicalView full chronological activity view.
      * @return formatted search result.
      */
-    public static String formatFindResults(String keyword, List<Activity> matches,
-            List<Activity> canonicalView) {
+    public static String formatFindResults(List<Activity> matches, List<Activity> canonicalView) {
         if (matches.isEmpty()) {
             return "Sorry, no activity names match your search.";
         }
@@ -191,7 +192,7 @@ public final class ActivityListFormatter {
         StringBuilder output = new StringBuilder("Found ")
                 .append(matches.size()).append(" matching ").append(activityLabel).append(":");
         for (Activity activity : matches) {
-            output.append("\n").append(canonicalView.indexOf(activity) + 1)
+            output.append("\n").append(getChronologicalIndex(activity, canonicalView))
                     .append(". ").append(describe(activity));
         }
         return output.toString();
@@ -215,7 +216,7 @@ public final class ActivityListFormatter {
      * Matches the add confirmation's field formats (ISO date, 24-hour times, enum demand).
      */
     private static String describe(Activity activity) {
-        return activity.getName()
+        return SafeText.format(activity.getName())
                 + " (" + activity.getDate()
                 + ", " + activity.getStartTime()
                 + "-" + activity.getEndTime()

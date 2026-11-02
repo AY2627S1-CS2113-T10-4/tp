@@ -86,7 +86,7 @@ class HelpCommandTest {
                 "facility find type/LIFT status/YES"},
             {"route", "route from/START to/END", "from/ before to/", "route from/AS1 to/CLB"},
             {"help", "help TOPIC", "topic matching ignores letter case", "help add"},
-            {"bye", "bye", "keeps the app running", "bye"}
+            {"bye", "bye", "keeps the app running", "Ctrl-D", "bye"}
         };
         return Stream.of(cases).map(scenario -> DynamicTest.dynamicTest("help " + scenario[0], () -> {
             ActivityList activities = new ActivityList();

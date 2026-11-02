@@ -164,6 +164,8 @@ class StorageTest {
                         invalid);
                 assertEquals(1, storage.getWarnings().size(), invalid);
                 assertTrue(storage.getWarnings().getFirst().startsWith("Line 2:"), invalid);
+                assertTrue(storage.getWarnings().getFirst()
+                        .contains("end time must be later than start time"), invalid);
                 assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
 
                 storage.save(loaded);
@@ -258,5 +260,36 @@ class StorageTest {
 
         assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
     }
+
+    @Test
+    void load_ignoresBlankLinesAndUtf8BomWithoutWarnings() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        String row = "A|2030-01-01|10:00|11:00|MEDIUM|false|-|-|-";
+        Files.write(file, ("\uFEFF" + row + "\n\n\n").getBytes(StandardCharsets.UTF_8));
+        Storage storage = new Storage(file);
+
+        ActivityList loaded = storage.load();
+
+        assertEquals(List.of("A"), loaded.getActivities().stream().map(Activity::getName).toList());
+        assertTrue(storage.getWarnings().isEmpty());
+        storage.save(loaded);
+        assertFalse(Files.exists(tempDir.resolve("activities.txt.corrupt.bak")));
+    }
+
+    @Test
+    void saveAndLoad_roundTripsSecondsInTimes() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        Activity timed = new Activity("Timed", LocalDate.of(2030, 1, 1),
+                LocalTime.of(9, 0, 15), LocalTime.of(10, 0, 45), DemandLevel.LOW, false);
+        new Storage(file).save(new ActivityList(List.of(timed)));
+
+        Storage restarted = new Storage(file);
+        Activity loaded = restarted.load().getActivities().getFirst();
+
+        assertEquals(LocalTime.of(9, 0, 15), loaded.getStartTime());
+        assertEquals(LocalTime.of(10, 0, 45), loaded.getEndTime());
+        assertTrue(restarted.getWarnings().isEmpty());
+    }
+
 }
 //@@author

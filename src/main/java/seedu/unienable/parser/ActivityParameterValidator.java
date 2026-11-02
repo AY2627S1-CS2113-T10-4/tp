@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import seedu.unienable.exception.ParseException;
+import seedu.unienable.ui.SafeText;
 
 /**
  * Requires every slash token to be a supported activity field and suggests likely spelling corrections.
@@ -35,7 +36,8 @@ final class ActivityParameterValidator {
             String token = matcher.group(1).toLowerCase(Locale.ROOT);
             if (PREFIXES.contains(token)) {
                 if (matcher.start() > 0 && !Character.isWhitespace(arguments.charAt(matcher.start() - 1))) {
-                    throw new ParseException("[WARNING] Parameter '" + token + "/' must be preceded by whitespace.");
+                    throw new ParseException("[WARNING] Parameter '" + SafeText.format(token)
+                            + "/' must be preceded by whitespace.");
                 }
                 continue;
             }
@@ -47,15 +49,15 @@ final class ActivityParameterValidator {
                 default -> null;
                 };
                 String suggestion = replacement == null ? "" : " Did you mean '" + replacement + "/'?";
-                throw new ParseException("[WARNING] Unknown parameter '" + token + "/'." + suggestion);
+                throw new ParseException("[WARNING] Unknown parameter '" + SafeText.format(token) + "/'." + suggestion);
             }
             for (String prefix : PREFIXES) {
                 if (prefix.length() > 1 && token.length() > 1 && isOneEditAway(token, prefix)) {
-                    throw new ParseException("[WARNING] Unknown parameter '" + token
+                    throw new ParseException("[WARNING] Unknown parameter '" + SafeText.format(token)
                             + "/'. Did you mean '" + prefix + "/'?");
                 }
             }
-            throw new ParseException("[WARNING] Unknown parameter '" + token + "/'. "
+            throw new ParseException("[WARNING] Unknown parameter '" + SafeText.format(token) + "/'. "
                     + "Valid prefixes: n/, d/, s/, e/, dem/, imp/, urg/, com/, overlap/. "
                     + "Use spaces or hyphens instead of literal slashes in names.");
         }

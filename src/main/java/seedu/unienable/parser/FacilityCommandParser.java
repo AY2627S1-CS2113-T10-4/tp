@@ -14,6 +14,7 @@ import seedu.unienable.command.common.Command;
 import seedu.unienable.exception.ParseException;
 import seedu.unienable.model.FacilityFeature;
 import seedu.unienable.model.enums.AccessibilityStatus;
+import seedu.unienable.ui.SafeText;
 
 //@@author lukelouyu
 /**
@@ -107,7 +108,7 @@ public class FacilityCommandParser {
             type = FacilityFeature.Type.valueOf(featureName.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
             throw new ParseException(WARNING_MESSAGE
-                    + " Unknown facility feature type '" + featureName + "'.\n"
+                    + " Unknown facility feature type '" + SafeText.format(featureName) + "'.\n"
                     + "Supported types: LIFT, RAMP, SHELTERED_RAMP, ACCESSIBLE_WASHROOM, "
                     + "STEP_FREE_ENTRANCE, REST_POINT, AUTOMATIC_DOOR, OTHER\n" + usage);
         }
@@ -124,7 +125,7 @@ public class FacilityCommandParser {
                 status = AccessibilityStatus.valueOf(statusName.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException exception) {
                 throw new ParseException(WARNING_MESSAGE
-                        + " Invalid facility status '" + statusName + "'.\n"
+                        + " Invalid facility status '" + SafeText.format(statusName) + "'.\n"
                         + "Supported statuses: YES, NO, UNKNOWN\n" + usage);
             }
         }

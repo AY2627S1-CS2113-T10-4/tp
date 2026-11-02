@@ -9,6 +9,7 @@ import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
+import seedu.unienable.ui.SafeText;
 
 /**
  * Deletes one activity chosen by its 1-based displayed index in the canonical list.
@@ -41,7 +42,7 @@ public class DeleteCommand extends Command {
         String remainingMessage = remainingSize == 0
                 ? ActivityList.NO_ACTIVITIES_MESSAGE
                 : "Total activities: " + remainingSize;
-        String message = "Deleted activity: " + activity.getName() + "\n"
+        String message = "Deleted activity: " + SafeText.format(activity.getName()) + "\n"
                 + "Date: " + activity.getDate() + "\n"
                 + "Time: " + activity.getStartTime() + " - " + activity.getEndTime() + "\n"
                 + "Demand: " + activity.getDemand() + "\n"

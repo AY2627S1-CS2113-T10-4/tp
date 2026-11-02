@@ -30,14 +30,17 @@ import seedu.unienable.model.enums.DemandLevel;
  * The saved format is {@code NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM}.
  * A stored dash means an unset rating; V1.0 records load with all ratings unset.
  *
- * <p>Malformed rows are skipped with line-numbered warnings. After malformed rows
- * or a fatal read failure, a later save preserves and verifies the original bytes
+ * <p>Malformed rows are skipped with line-numbered warnings. Blank lines and a leading UTF-8 BOM
+ * are ignored. After malformed rows or a fatal read failure, a later save preserves and verifies the original bytes
  * in a {@code .corrupt.bak} file before replacing the activity file.</p>
  */
 public class Storage {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd")
             .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
+    /**
+     * Accepts minute-only records and optional seconds for programmatic activities.
+     */
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm[:ss]")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String FIELD_SEPARATOR = "|";
 
@@ -92,6 +95,12 @@ public class Storage {
             try {
                 String line = StandardCharsets.UTF_8.newDecoder().decode(ByteBuffer.wrap(
                         lines.get(i).getBytes(StandardCharsets.ISO_8859_1))).toString();
+                if (i == 0 && line.startsWith("\uFEFF")) {
+                    line = line.substring(1);
+                }
+                if (line.isBlank()) {
+                    continue;
+                }
                 activities.add(parseLine(line));
             } catch (CharacterCodingException exception) {
                 hasLoadedCorruptData = true;
@@ -185,20 +194,28 @@ public class Storage {
         Integer urgency = fields.length == 9 ? parseStoredRating(fields[7]) : null;
         Integer commitment = fields.length == 9 ? parseStoredRating(fields[8]) : null;
 
+        LocalDate date;
+        LocalTime startTime;
+        LocalTime endTime;
         try {
-            LocalDate date = LocalDate.parse(fields[1], DATE_FORMAT);
-            LocalTime startTime = LocalTime.parse(fields[2], TIME_FORMAT);
-            LocalTime endTime = LocalTime.parse(fields[3], TIME_FORMAT);
-            if (!endTime.isAfter(startTime)) {
-                throw new IllegalArgumentException("end time must be later than start time on the same day.");
-            }
-            DemandLevel demand = DemandLevel.valueOf(fields[4].toUpperCase(Locale.ROOT));
-            boolean isDone = parseDone(fields[5]);
-            return new Activity(fields[0], date, startTime, endTime, demand, isDone,
-                    importance, urgency, commitment);
-        } catch (DateTimeParseException | IllegalArgumentException exception) {
-            throw new IllegalArgumentException("invalid date, time, demand, or completion value.");
+            date = LocalDate.parse(fields[1], DATE_FORMAT);
+            startTime = LocalTime.parse(fields[2], TIME_FORMAT);
+            endTime = LocalTime.parse(fields[3], TIME_FORMAT);
+        } catch (DateTimeParseException exception) {
+            throw new IllegalArgumentException("invalid date or time format.");
         }
+        if (!endTime.isAfter(startTime)) {
+            throw new IllegalArgumentException("end time must be later than start time on the same day.");
+        }
+        DemandLevel demand;
+        try {
+            demand = DemandLevel.valueOf(fields[4].toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("demand must be LOW, MEDIUM, or HIGH.");
+        }
+        boolean isDone = parseDone(fields[5]);
+        return new Activity(fields[0], date, startTime, endTime, demand, isDone,
+                importance, urgency, commitment);
     }
 
     /**

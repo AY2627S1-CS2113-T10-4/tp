@@ -14,6 +14,7 @@ import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.model.enums.DemandLevel;
 import seedu.unienable.storage.Storage;
+import seedu.unienable.ui.SafeText;
 
 /**
  * Edits the supplied fields of one activity selected by its chronological index.
@@ -94,7 +95,7 @@ public class EditCommand extends Command {
         ActivityScheduleValidator.validate(replacement, activities, activity,
                 isOverlapAllowed || !isScheduleChanged);
         activities.replaceByDisplayedIndex(displayedIndex, replacement);
-        String message = "Edited activity: " + replacement.getName() + "\n"
+        String message = "Edited activity: " + SafeText.format(replacement.getName()) + "\n"
                 + "Date: " + replacement.getDate() + "\n"
                 + "Time: " + replacement.getStartTime() + " - " + replacement.getEndTime() + "\n"
                 + "Demand: " + replacement.getDemand() + "\n"
