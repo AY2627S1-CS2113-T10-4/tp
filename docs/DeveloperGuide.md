@@ -645,7 +645,8 @@ byte order mark at the start of the file is removed before the first record is
 parsed, so it never becomes part of a name or is saved back. Invalid
 encoding skips only that row and produces a line-numbered warning. Raw bytes are
 preserved until a recovery save verifies the original backup. Saves use nine pipe-separated
-fields; unset ratings are `-`, and `DONE` is `true` or `false`:
+fields; unset ratings are `-`, and `DONE` is `true` or `false`. Dates are written as
+`YYYY-MM-DD` and times as 24-hour `HH:mm`, the same formats that loading accepts:
 
 ```text
 NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM

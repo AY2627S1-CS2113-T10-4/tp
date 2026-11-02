@@ -242,12 +242,16 @@ public class Storage {
         throw new IllegalArgumentException("completion value must be true or false.");
     }
 
+    /**
+     * Writes dates and times with the same formatters that loading uses, so every saved
+     * record can be read back. LocalTime.toString() would add seconds when they are set.
+     */
     private static String formatActivity(Activity activity) {
         return String.join(FIELD_SEPARATOR,
                 activity.getName(),
-                activity.getDate().toString(),
-                activity.getStartTime().toString(),
-                activity.getEndTime().toString(),
+                DATE_FORMAT.format(activity.getDate()),
+                TIME_FORMAT.format(activity.getStartTime()),
+                TIME_FORMAT.format(activity.getEndTime()),
                 activity.getDemand().name(),
                 Boolean.toString(activity.isDone()),
                 formatStoredRating(activity.getImportance()),

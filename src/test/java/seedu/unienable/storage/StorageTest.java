@@ -81,6 +81,21 @@ class StorageTest {
     }
 
     @Test
+    void save_timesWithSeconds_useTheHourMinuteFormatThatLoadingAccepts() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        Activity activity = new Activity("Seconds", LocalDate.of(2026, 1, 1), LocalTime.of(9, 0, 30),
+                LocalTime.of(10, 0, 45), DemandLevel.LOW, false);
+
+        new Storage(file).save(new ActivityList(List.of(activity)));
+
+        assertEquals("Seconds|2026-01-01|09:00|10:00|LOW|false|-|-|-\n",
+                Files.readString(file, StandardCharsets.UTF_8));
+        Storage restarted = new Storage(file);
+        assertEquals(List.of("Seconds"), restarted.load().getActivities().stream().map(Activity::getName).toList());
+        assertTrue(restarted.getWarnings().isEmpty());
+    }
+
+    @Test
     void load_legacyAndRatedRows_migratesOnlyOnSave() throws Exception {
         Path file = tempDir.resolve("activities.txt");
         String legacyDone = "Legacy done|2026-01-01|09:00|10:00|HIGH|true";
