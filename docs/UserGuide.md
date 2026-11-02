@@ -61,9 +61,10 @@ unreadable lines and warns you with their line numbers. Other valid activities
 still load. If the entire file cannot be read, the app shows a warning and starts
 with an empty list.
 
-Each activity row is `NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM`, with 24-hour
-`HH:mm` times and `-` for an unset rating. A historical name containing control
-characters is displayed with `\uXXXX` escapes so it cannot change the terminal.
+New rows use `NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM`; legacy six-field rows
+load with ratings unset. Times use 24-hour `HH:mm`, and `-` means an unset rating.
+A historical name containing control characters is displayed with `\uXXXX` escapes
+so it cannot change the terminal.
 
 Loading leaves the original file unchanged. Before saving after a loading problem,
 the app copies the original to `data/activities.txt.corrupt.bak`. If this backup
