@@ -972,7 +972,10 @@ These tests check input validation at three levels:
 checks the output and saved files. This tests the application's main
 execution path rather than calling a validator directly. It also checks that
 rejected commands leave activities unchanged and do not create an activity file
-unnecessarily.
+unnecessarily. The separate process reads the computer's real clock, and add and
+edit reject activities that have ended. The test therefore works out its
+activity dates from the current date instead of using fixed dates, so it keeps
+passing after any particular day.
 
 <!-- @@author -->
 
