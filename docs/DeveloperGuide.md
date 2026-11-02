@@ -82,8 +82,9 @@ Enter `help` to see the commands and `bye` to exit. Activity data is stored at
 `data/activities.txt`, relative to the directory where the application starts.
 Use the same working directory between sessions to load the same activities.
 Git ignores the `data/` folder, so a schedule created while developing is never
-committed by accident. Facility and connection data come from `src/main/resources/facilities.txt` and
-`src/main/resources/connections.txt`; these resources are also included in the JAR.
+committed by accident. Facility and connection data come from
+`src/main/resources/facilities.txt` and `src/main/resources/connections.txt`;
+these resources are also included in the JAR.
 
 <a id="design-and-implementation"></a>
 <a id="system-design"></a>
@@ -1508,8 +1509,8 @@ Start the app and enter `unmark 1`: saving must fail, preserving the original
 activity file and showing an unsaved notice. `list` still shows the in-memory
 incomplete activity. Entering `bye` while the backup remains blocked must keep
 the session open, and the warning must name Ctrl+D (Ctrl+Z, then Enter on
-Windows) as the way to quit without saving. Move the blocking directory to a safe separate location, then
-enter `bye` again; saving should succeed and exit. Restart and verify the change.
+Windows) as the way to quit without saving. Move the blocking directory to a
+safe separate location, then enter `bye` again; saving should succeed and exit. Restart and verify the change.
 Follow the [UG recovery instructions](UserGuide.md#error-handling) when preserving
 existing files and backups.
 
