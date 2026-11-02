@@ -42,7 +42,7 @@ public class Storage {
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String FIELD_SEPARATOR = "|";
     /** Invisible marker some editors write at the start of a UTF-8 file; it is never part of a name. */
-    private static final char BYTE_ORDER_MARK = '﻿';
+    private static final char BYTE_ORDER_MARK = '\uFEFF';
 
     private final Path activityFile;
     private List<String> warnings = List.of();

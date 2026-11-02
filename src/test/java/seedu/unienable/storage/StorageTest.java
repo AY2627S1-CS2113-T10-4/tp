@@ -219,7 +219,7 @@ class StorageTest {
     @Test
     void load_byteOrderMarkOnItsOwnLine_isSkippedLikeABlankLine() throws Exception {
         Path file = tempDir.resolve("activities.txt");
-        Files.writeString(file, "﻿\nFirst|2026-01-01|09:00|10:00|LOW|false\n", StandardCharsets.UTF_8);
+        Files.writeString(file, "\uFEFF\nFirst|2026-01-01|09:00|10:00|LOW|false\n", StandardCharsets.UTF_8);
         Storage storage = new Storage(file);
 
         ActivityList loaded = storage.load();
