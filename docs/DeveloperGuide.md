@@ -677,7 +677,10 @@ and verifies the original bytes in `.corrupt.bak`; backup failure prevents repla
 
 A failed save leaves the change in memory and keeps the unsaved warning visible.
 `bye` retries dirty data and closes only after saving succeeds; clean exits make
-no extra write. Read-only commands do not retry writes. See the
+no extra write. Read-only commands do not retry writes. Because `bye` never
+discards changes, the unsaved warning also names the deliberate way out: ending
+input (Ctrl+D, or Ctrl+Z then Enter on Windows) stops the console loop without
+saving, so a user is not trapped when storage cannot be repaired. See the
 [UG storage and recovery instructions](UserGuide.md#error-handling).
 
 The shared sequence below begins after a command returns its `CommandResult`.
@@ -1504,7 +1507,8 @@ same original two-line file. Before launch, create a **directory** named
 Start the app and enter `unmark 1`: saving must fail, preserving the original
 activity file and showing an unsaved notice. `list` still shows the in-memory
 incomplete activity. Entering `bye` while the backup remains blocked must keep
-the session open. Move the blocking directory to a safe separate location, then
+the session open, and the warning must name Ctrl+D (Ctrl+Z, then Enter on
+Windows) as the way to quit without saving. Move the blocking directory to a safe separate location, then
 enter `bye` again; saving should succeed and exit. Restart and verify the change.
 Follow the [UG recovery instructions](UserGuide.md#error-handling) when preserving
 existing files and backups.

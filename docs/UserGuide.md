@@ -775,6 +775,10 @@ failed, it retries saving before exiting. A failed retry keeps the app open;
 fix the reported file or backup-path problem and enter `bye` again. If all changes
 are already saved, `bye` exits without another write.
 
+If the problem cannot be fixed, you can still quit without saving by ending the
+input: press Ctrl+D (on Windows, press Ctrl+Z, then Enter). Changes made since
+the last successful save are lost.
+
 Input: `bye`
 
 Output: `Goodbye from UniEnable!`
@@ -863,6 +867,8 @@ appears after subsequent commands. Repeating an add is not a save retry.
 3. A successful retry displays `Goodbye from UniEnable!` and exits. If saving
    still fails, the app stays open with the error and unsaved-change warning.
    Correct the problem and enter `bye` again.
+4. If you cannot correct the problem, press Ctrl+D (on Windows, Ctrl+Z, then
+   Enter) to quit without saving. Changes since the last successful save are lost.
 <!-- @@author -->
 
 <!-- TEAM: Each FAQ answer is maintained by the owner of the feature it describes. -->
