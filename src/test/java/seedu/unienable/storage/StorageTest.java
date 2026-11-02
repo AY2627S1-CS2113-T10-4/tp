@@ -146,6 +146,38 @@ class StorageTest {
     }
 
     @Test
+    void load_blankLines_areSkippedWithoutWarningsOrRecoveryBackup() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        String first = "First|2026-01-01|09:00|10:00|LOW|false|-|-|-";
+        String second = "Second|2026-01-02|09:00|10:00|HIGH|true|1|2|3";
+        String original = "\n" + first + "\n\n   \n" + second + "\n\n";
+        Files.writeString(file, original, StandardCharsets.UTF_8);
+        Storage storage = new Storage(file);
+
+        ActivityList loaded = storage.load();
+
+        assertEquals(List.of("First", "Second"), loaded.getActivities().stream().map(Activity::getName).toList());
+        assertTrue(storage.getWarnings().isEmpty());
+        assertEquals(original, Files.readString(file, StandardCharsets.UTF_8));
+
+        storage.save(loaded);
+
+        assertEquals(first + "\n" + second + "\n", Files.readString(file, StandardCharsets.UTF_8));
+        assertFalse(Files.exists(tempDir.resolve("activities.txt.corrupt.bak")));
+    }
+
+    @Test
+    void load_blankLines_stillCountTowardsWarningLineNumbers() throws Exception {
+        Path file = tempDir.resolve("activities.txt");
+        Files.writeString(file, "Valid|2026-01-01|09:00|10:00|LOW|false\n\nbroken row\n", StandardCharsets.UTF_8);
+        Storage storage = new Storage(file);
+
+        storage.load();
+
+        assertEquals(List.of("Line 3: expected 6 or 9 fields separated by '|'."), storage.getWarnings());
+    }
+
+    @Test
     void load_invalidTimeRanges_warnsAndPreservesOriginalBeforeRecoverySave() throws Exception {
         String valid = "Historical|2026-01-01|09:00|10:00|LOW|false";
         String[] ranges = {"09:00|09:00", "10:00|09:00"};

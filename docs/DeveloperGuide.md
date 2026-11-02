@@ -650,7 +650,9 @@ NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM
 ```
 
 Legacy six-field rows load with ratings unset. Malformed rows are skipped with
-line-numbered warnings, including invalid time ranges.
+line-numbered warnings, including invalid time ranges. Blank lines hold no record,
+so they are skipped without a warning or recovery backup; they still count
+towards warning line numbers.
 
 <a id="historical-name-compatibility"></a>
 

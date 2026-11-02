@@ -30,7 +30,7 @@ import seedu.unienable.model.enums.DemandLevel;
  * The saved format is {@code NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM}.
  * A stored dash means an unset rating; V1.0 records load with all ratings unset.
  *
- * <p>Malformed rows are skipped with line-numbered warnings. After malformed rows
+ * <p>Blank lines are ignored. Malformed rows are skipped with line-numbered warnings. After malformed rows
  * or a fatal read failure, a later save preserves and verifies the original bytes
  * in a {@code .corrupt.bak} file before replacing the activity file.</p>
  */
@@ -92,6 +92,11 @@ public class Storage {
             try {
                 String line = StandardCharsets.UTF_8.newDecoder().decode(ByteBuffer.wrap(
                         lines.get(i).getBytes(StandardCharsets.ISO_8859_1))).toString();
+                // A blank line holds no record, as in the facility and connection files,
+                // so it is skipped without a corruption warning or recovery backup.
+                if (line.isBlank()) {
+                    continue;
+                }
                 activities.add(parseLine(line));
             } catch (CharacterCodingException exception) {
                 hasLoadedCorruptData = true;
