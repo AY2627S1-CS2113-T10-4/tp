@@ -1,5 +1,19 @@
 # UniEnable systematic review — 28 October 2026
 
+> **Historical snapshot.** This report records the code as it was on 28 October 2026
+> and is kept as evidence of the review process. Later commits changed several things
+> it describes, so do not use it as a description of the current product:
+>
+> - Route help now accepts facility IDs such as F01, as well as names.
+> - `case` labels are now aligned with `switch`, following the CS2113 coding standard.
+> - The changes it calls uncommitted were committed on 28 October 2026.
+> - `UniEnableProcessTest` runs a separate JVM on the real clock; it now computes its
+>   dates from today rather than relying on an injected clock.
+> - The two `../build/` links point to local build output that is not in the repository.
+>
+> For current behaviour, see the [User Guide](../docs/UserGuide.md) and the
+> [Developer Guide](../docs/DeveloperGuide.md).
+
 The Java 25 build, regression suite, Checkstyle checks, configured coverage gate,
 JAR packaging, and Javadoc generation pass. Concrete behavior and documentation
 defects found during this review have been corrected. Changes are uncommitted.

@@ -324,6 +324,7 @@ public class HelpCommand extends Command {
                       - Accepts no arguments and ends the current console session.
                       - Activity changes save when made; bye retries saving only if changes remain unsaved.
                       - A failed retry keeps the app running. Fix the file problem and enter bye again.
+                      - To quit without saving, end input with Ctrl+D (Windows: Ctrl+Z, then Enter).
                       - Reading help bye displays these instructions and keeps the app running.
 
                     Examples:

@@ -142,6 +142,13 @@ class HelpCommandTest {
     }
 
     @Test
+    void execute_byeHelp_namesTheWayToQuitWithoutSaving() throws Exception {
+        String bye = parser.parse("help bye").execute(new ActivityList(), noWrites).getMessage();
+        assertTrue(bye.contains("A failed retry keeps the app running."), bye);
+        assertTrue(bye.contains("To quit without saving, end input with Ctrl+D (Windows: Ctrl+Z, then Enter)."), bye);
+    }
+
+    @Test
     void execute_routeHelp_matchesSupportedEndpoints() throws Exception {
         String route = parser.parse("help route").execute(new ActivityList(), noWrites).getMessage();
         assertTrue(route.contains("facility names (AS1-AS8 or CLB)"), route);

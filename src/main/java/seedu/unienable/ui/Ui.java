@@ -70,12 +70,31 @@ public class Ui {
     /**
      * Displays one complete response between horizontal lines.
      * Multiline responses keep their contents together inside a single pair of borders.
+     * Every response passes through here, so this is where untrusted text is made safe to print.
      *
      * @param message complete response to display.
      */
     public void showMessage(String message) {
         output.println(HORIZONTAL_LINE);
-        output.println(message);
+        output.println(replaceControlCharacters(String.valueOf(message)));
         output.println(HORIZONTAL_LINE);
+    }
+
+    /**
+     * Replaces control characters other than line breaks with '?'.
+     * Saved activity names and echoed command arguments can contain characters such as ESC,
+     * which a terminal would treat as a colour or cursor command instead of text.
+     * Printable Unicode text, such as Chinese or accented names, is left unchanged.
+     *
+     * @param message text that may contain untrusted characters.
+     * @return the same text with each unsafe control character shown as '?'.
+     */
+    private static String replaceControlCharacters(String message) {
+        StringBuilder safe = new StringBuilder(message.length());
+        for (char character : message.toCharArray()) {
+            boolean isUnsafe = character != '\n' && Character.isISOControl(character);
+            safe.append(isUnsafe ? '?' : character);
+        }
+        return safe.toString();
     }
 }

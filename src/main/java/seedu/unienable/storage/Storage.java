@@ -30,7 +30,8 @@ import seedu.unienable.model.enums.DemandLevel;
  * The saved format is {@code NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM}.
  * A stored dash means an unset rating; V1.0 records load with all ratings unset.
  *
- * <p>Malformed rows are skipped with line-numbered warnings. After malformed rows
+ * <p>Blank lines and a leading UTF-8 byte order mark are ignored. Malformed rows are skipped
+ * with line-numbered warnings. After malformed rows
  * or a fatal read failure, a later save preserves and verifies the original bytes
  * in a {@code .corrupt.bak} file before replacing the activity file.</p>
  */
@@ -40,6 +41,8 @@ public class Storage {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String FIELD_SEPARATOR = "|";
+    /** Invisible marker some editors write at the start of a UTF-8 file; it is never part of a name. */
+    private static final char BYTE_ORDER_MARK = '\uFEFF';
 
     private final Path activityFile;
     private List<String> warnings = List.of();
@@ -92,6 +95,14 @@ public class Storage {
             try {
                 String line = StandardCharsets.UTF_8.newDecoder().decode(ByteBuffer.wrap(
                         lines.get(i).getBytes(StandardCharsets.ISO_8859_1))).toString();
+                if (i == 0 && !line.isEmpty() && line.charAt(0) == BYTE_ORDER_MARK) {
+                    line = line.substring(1);
+                }
+                // A blank line holds no record, as in the facility and connection files,
+                // so it is skipped without a corruption warning or recovery backup.
+                if (line.isBlank()) {
+                    continue;
+                }
                 activities.add(parseLine(line));
             } catch (CharacterCodingException exception) {
                 hasLoadedCorruptData = true;
@@ -185,20 +196,26 @@ public class Storage {
         Integer urgency = fields.length == 9 ? parseStoredRating(fields[7]) : null;
         Integer commitment = fields.length == 9 ? parseStoredRating(fields[8]) : null;
 
+        LocalDate date;
+        LocalTime startTime;
+        LocalTime endTime;
+        DemandLevel demand;
+        boolean isDone;
         try {
-            LocalDate date = LocalDate.parse(fields[1], DATE_FORMAT);
-            LocalTime startTime = LocalTime.parse(fields[2], TIME_FORMAT);
-            LocalTime endTime = LocalTime.parse(fields[3], TIME_FORMAT);
-            if (!endTime.isAfter(startTime)) {
-                throw new IllegalArgumentException("end time must be later than start time on the same day.");
-            }
-            DemandLevel demand = DemandLevel.valueOf(fields[4].toUpperCase(Locale.ROOT));
-            boolean isDone = parseDone(fields[5]);
-            return new Activity(fields[0], date, startTime, endTime, demand, isDone,
-                    importance, urgency, commitment);
+            date = LocalDate.parse(fields[1], DATE_FORMAT);
+            startTime = LocalTime.parse(fields[2], TIME_FORMAT);
+            endTime = LocalTime.parse(fields[3], TIME_FORMAT);
+            demand = DemandLevel.valueOf(fields[4].toUpperCase(Locale.ROOT));
+            isDone = parseDone(fields[5]);
         } catch (DateTimeParseException | IllegalArgumentException exception) {
             throw new IllegalArgumentException("invalid date, time, demand, or completion value.");
         }
+        // Checked outside the catch above so the warning names this specific problem.
+        if (!endTime.isAfter(startTime)) {
+            throw new IllegalArgumentException("end time must be later than start time on the same day.");
+        }
+        return new Activity(fields[0], date, startTime, endTime, demand, isDone,
+                importance, urgency, commitment);
     }
 
     /**
@@ -231,12 +248,16 @@ public class Storage {
         throw new IllegalArgumentException("completion value must be true or false.");
     }
 
+    /**
+     * Writes dates and times with the same formatters that loading uses, so every saved
+     * record can be read back. LocalTime.toString() would add seconds when they are set.
+     */
     private static String formatActivity(Activity activity) {
         return String.join(FIELD_SEPARATOR,
                 activity.getName(),
-                activity.getDate().toString(),
-                activity.getStartTime().toString(),
-                activity.getEndTime().toString(),
+                DATE_FORMAT.format(activity.getDate()),
+                TIME_FORMAT.format(activity.getStartTime()),
+                TIME_FORMAT.format(activity.getEndTime()),
                 activity.getDemand().name(),
                 Boolean.toString(activity.isDone()),
                 formatStoredRating(activity.getImportance()),
