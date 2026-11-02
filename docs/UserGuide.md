@@ -56,9 +56,14 @@ If the file is missing, the app starts with an empty list.
 Viewing information does not save the file. Repeated `mark` or `unmark` commands
 also do not save if completion is unchanged. Successful edits always save.
 
-The app skips invalid or unreadable lines and warns you with their line numbers.
-Other valid activities still load. If the entire file cannot be read, the app
-shows a warning and starts with an empty list.
+Blank lines and a leading UTF-8 BOM are ignored. The app skips other invalid or
+unreadable lines and warns you with their line numbers. Other valid activities
+still load. If the entire file cannot be read, the app shows a warning and starts
+with an empty list.
+
+Each activity row is `NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM`, with 24-hour
+`HH:mm` times and `-` for an unset rating. A historical name containing control
+characters is displayed with `\uXXXX` escapes so it cannot change the terminal.
 
 Loading leaves the original file unchanged. Before saving after a loading problem,
 the app copies the original to `data/activities.txt.corrupt.bak`. If this backup

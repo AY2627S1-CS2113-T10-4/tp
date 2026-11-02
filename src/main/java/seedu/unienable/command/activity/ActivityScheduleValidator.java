@@ -6,6 +6,7 @@ import java.util.List;
 import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
+import seedu.unienable.ui.SafeText;
 
 /**
  * Rejects duplicate activities and unapproved overlapping times before add or edit changes the list.
@@ -76,7 +77,7 @@ final class ActivityScheduleValidator {
      * Identifies the stored activity using the index and schedule shown by list.
      */
     private static String describe(int index, Activity activity) {
-        return "index " + index + ": " + activity.getName() + " (" + activity.getDate() + ", "
+        return "index " + index + ": " + SafeText.format(activity.getName()) + " (" + activity.getDate() + ", "
                 + activity.getStartTime() + "-" + activity.getEndTime() + ").";
     }
 }

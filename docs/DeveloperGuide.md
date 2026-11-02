@@ -650,6 +650,8 @@ NAME|DATE|START|END|DEMAND|DONE|IMP|URG|COM
 
 Legacy six-field rows load with ratings unset. Malformed rows are skipped with
 line-numbered warnings, including invalid time ranges.
+Blank lines and a leading UTF-8 BOM are ignored. `START` and `END` use 24-hour
+`HH:mm`; rows with other time formats are malformed.
 
 <a id="historical-name-compatibility"></a>
 
@@ -665,7 +667,9 @@ and verifies the original bytes in `.corrupt.bak`; backup failure prevents repla
 
 A failed save leaves the change in memory and keeps the unsaved warning visible.
 `bye` retries dirty data and closes only after saving succeeds; clean exits make
-no extra write. Read-only commands do not retry writes. See the
+no extra write. Read-only commands do not retry writes. If the file cannot be
+repaired, ending input (Ctrl-D; Ctrl-Z then Enter on Windows) exits without saving
+the in-memory changes. See the
 [UG storage and recovery instructions](UserGuide.md#error-handling).
 
 The shared sequence below begins after a command returns its `CommandResult`.

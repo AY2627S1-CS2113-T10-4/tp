@@ -37,10 +37,7 @@ import seedu.unienable.model.enums.DemandLevel;
 public class Storage {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd")
             .withResolverStyle(ResolverStyle.STRICT);
-    /**
-     * Accepts minute-only records and optional seconds for programmatic activities.
-     */
-    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm[:ss]")
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final String FIELD_SEPARATOR = "|";
 

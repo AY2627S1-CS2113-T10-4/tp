@@ -7,6 +7,7 @@ import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
+import seedu.unienable.ui.SafeText;
 
 /**
  * Marks one chronologically displayed activity as completed.
@@ -36,8 +37,8 @@ public class MarkCommand extends Command {
         Activity activity = activities.getByDisplayedIndex(displayedIndex);
         boolean isChanged = activities.setDoneAtDisplayedIndex(displayedIndex, true);
         String message = isChanged
-                ? "Marked activity as done: " + activity.getName()
-                : "[WARNING] Activity is already marked as done: " + activity.getName();
+                ? "Marked activity as done: " + SafeText.format(activity.getName())
+                : "[WARNING] Activity is already marked as done: " + SafeText.format(activity.getName());
         return new CommandResult(message, false, isChanged);
     }
 }

@@ -121,7 +121,8 @@ class StorageTest {
                 "BadTime|2026-01-01|25:00|10:00|LOW|false",
                 "BadDemand|2026-01-01|09:00|10:00|URGENT|false",
                 "BadDone|2026-01-01|09:00|10:00|LOW|maybe",
-                valid + "|1", valid + "|1|2", valid + "|1|2|3|4"));
+                valid + "|1", valid + "|1|2", valid + "|1|2|3|4",
+                "Seconds|2030-01-01|09:00:15|10:00:00|LOW|false"));
         for (String value : new String[] {"", "0", "6", "-1", "1.5", "text", "2147483648"}) {
             for (int field = 0; field < 3; field++) {
                 String[] ratings = {"1", "2", "3"};
@@ -274,21 +275,6 @@ class StorageTest {
         assertTrue(storage.getWarnings().isEmpty());
         storage.save(loaded);
         assertFalse(Files.exists(tempDir.resolve("activities.txt.corrupt.bak")));
-    }
-
-    @Test
-    void saveAndLoad_roundTripsSecondsInTimes() throws Exception {
-        Path file = tempDir.resolve("activities.txt");
-        Activity timed = new Activity("Timed", LocalDate.of(2030, 1, 1),
-                LocalTime.of(9, 0, 15), LocalTime.of(10, 0, 45), DemandLevel.LOW, false);
-        new Storage(file).save(new ActivityList(List.of(timed)));
-
-        Storage restarted = new Storage(file);
-        Activity loaded = restarted.load().getActivities().getFirst();
-
-        assertEquals(LocalTime.of(9, 0, 15), loaded.getStartTime());
-        assertEquals(LocalTime.of(10, 0, 45), loaded.getEndTime());
-        assertTrue(restarted.getWarnings().isEmpty());
     }
 
 }

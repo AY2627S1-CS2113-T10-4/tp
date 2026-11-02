@@ -7,6 +7,7 @@ import seedu.unienable.exception.UniEnableException;
 import seedu.unienable.model.Activity;
 import seedu.unienable.model.ActivityList;
 import seedu.unienable.storage.Storage;
+import seedu.unienable.ui.SafeText;
 
 /**
  * Marks one chronologically displayed activity as incomplete.
@@ -36,8 +37,8 @@ public class UnmarkCommand extends Command {
         Activity activity = activities.getByDisplayedIndex(displayedIndex);
         boolean isChanged = activities.setDoneAtDisplayedIndex(displayedIndex, false);
         String message = isChanged
-                ? "Unmarked activity: " + activity.getName()
-                : "[WARNING] Activity is already unmarked: " + activity.getName();
+                ? "Unmarked activity: " + SafeText.format(activity.getName())
+                : "[WARNING] Activity is already unmarked: " + SafeText.format(activity.getName());
         return new CommandResult(message, false, isChanged);
     }
 }

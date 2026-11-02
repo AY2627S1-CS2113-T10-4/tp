@@ -442,7 +442,7 @@ class UniEnableProcessTest {
         Files.writeString(file, name + "|" + DATE + "|10:00|11:00|MEDIUM|false|-|-|-\n",
                 StandardCharsets.UTF_8);
 
-        String output = runSession(tempDir, "list\nfind Evil\nbye\n");
+        String output = runSession(tempDir, "list\nfind Evil\nmark 1\nunmark 1\nbye\n");
 
         assertFalse(output.contains("\u001b"), output);
         assertTrue(output.contains("Evil\\u001B[31mRED"), output);
