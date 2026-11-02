@@ -81,7 +81,8 @@ java -ea -jar build/libs/unienable.jar
 Enter `help` to see the commands and `bye` to exit. Activity data is stored at
 `data/activities.txt`, relative to the directory where the application starts.
 Use the same working directory between sessions to load the same activities.
-Facility and connection data come from `src/main/resources/facilities.txt` and
+Git ignores the `data/` folder, so a schedule created while developing is never
+committed by accident. Facility and connection data come from `src/main/resources/facilities.txt` and
 `src/main/resources/connections.txt`; these resources are also included in the JAR.
 
 <a id="design-and-implementation"></a>
